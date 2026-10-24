@@ -46,9 +46,24 @@ val LocalAppNav = compositionLocalOf<AppNav> {
     error("No AppNav provided")
 }
 
+/** The page shown: its route with its arguments (e.g. "feature/ohm", "settings/tasks"), for the end-to-end tests (src/androidTest). */
+object CurrentPage {
+    @Volatile
+    var route: String? = null
+        private set
+
+    internal fun set(entry: NavBackStackEntry?) {
+        route = entry?.destination?.route?.let { pattern ->
+            Regex("""\{(\w+)\}""").replace(pattern.substringBefore('?')) { entry.arguments?.getString(it.groupValues[1]).orEmpty() }
+        }
+    }
+}
+
 @Composable
 fun NavigatedUI(paddingValues: PaddingValues, startDestination: String = Screen.Main.route, sharedText: String? = null) {
     var alreadyForwardedArgs by remember { mutableStateOf(sharedText?.isNotBlank()) }
+    val entry by LocalAppNav.current.controller.currentBackStackEntryAsState()
+    SideEffect { CurrentPage.set(entry) }
 
     NavHost(
         navController = LocalAppNav.current.controller,

@@ -40,6 +40,9 @@ android {
 
         versionCode = appVersionCode
         versionName = appVersionName
+
+        // The end-to-end tests (src/androidTest), against the app installed with its Play modules (e2e-tests.yml)
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
         sourceCompatibility = jvm
@@ -86,10 +89,6 @@ android {
             useLegacyPackaging = true
         }
     }
-    testOptions {
-        // android.* stubs (e.g. Log) return defaults instead of throwing in JVM unit tests
-        unitTests.isReturnDefaultValues = true
-    }
     // Every language in the app's main APK, as the app switches them itself (per-app language, search)
     @Suppress("UnstableApiUsage")
     bundle {
@@ -134,9 +133,15 @@ dependencies {
         implementation(libs.kotlinx.coroutines.android)
     }
 
-    testImplementation(libs.junit)
-    testImplementation(libs.org.json)
-    testImplementation(libs.kotlinx.coroutines.test)
+    // The end-to-end tests: the app driven as a user would (Compose), the system's pickers answered (Espresso-Intents)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.androidx.test.espresso.intents)
+    androidTestImplementation(libs.androidx.test.uiautomator)
 }
 
 // The Linux packages and PRoot of the release gradle.properties pins, before every build; updateLinuxRelease

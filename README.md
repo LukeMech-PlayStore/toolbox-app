@@ -66,7 +66,8 @@ toolbox-app/
 │       │       └── widgets/              Home screen widgets (spirit level, compass)
 │       ├── main/res/                     The app's strings and those several tools share
 │       ├── main/res-features/<category>/<route>/   Each tool's own resources (strings, drawables, widget layouts)
-│       └── test/                         Unit tests, in the packages of what they test
+│       └── androidTest/                  End-to-end tests on a device: each tool's test (OhmTest...) in its
+│                                         package, the pages' in theirs, the harness in e2e/
 ├── features/<part>/                  On-demand Play modules, one per part of the Linux subsystem
 │   └── src/main/                         The part's archive (jniLibs, downloaded at build time) and, for a
 │                                         tool alone on that part, its pages, strings and scripts (assets/)
@@ -101,7 +102,7 @@ checks that the routes are unique.
   (`linux/parts/`: `Java`, `Tunnel`), and their modules are just their archives. So a tool gets one only once
   it needs it, and no part's module depends on another's.
 - A module lays its tools out as the app does: `features/<category>/<route>/` for what isn't UI (its
-  `FeatureUi`, jobs, maths and parsing, tested in `src/test/` under the same package),
+  `FeatureUi`, jobs, maths and parsing; its end-to-end test in the app's `src/androidTest/`, same package),
   `ui/pages/features/<category>/<route>/` for its pages, and `assets/features/<route>/` for its scripts
   (installed into the subsystem by `LinuxScripts` each time they run, as the app ships them; folders no tool
   has anymore go with the subsystem's update).
@@ -212,7 +213,6 @@ newer version, and about deprecated Gradle features it uses itself, are expected
 ```sh
 ./gradlew assembleDebug          # debug APKs (applicationId org.lukemech.lmtoolbox.dbg)
 ./gradlew bundleRelease          # release bundle (needs the signing config, see the release workflow)
-./gradlew test                   # unit tests (the app and the modules)
 ./gradlew updateLinuxRelease     # pin the subsystem's newest release
 ```
 
@@ -233,10 +233,28 @@ JDK and bytecode level of all of them, and `buildSrc/` holds the app's tasks (`L
 ./gradlew :app:installLocalTesting -Pdevice=<serial>
 ```
 
+### Testing
+
+The tests run the app on emulators as a user would: [`e2e-tests.yml`](.github/workflows/e2e-tests.yml) installs
+the debug bundle with Play's local testing (so the tools' modules download as from Play) and runs
+`app/src/androidTest/` on the oldest Android the app supports (API 29), the one it targets (37) and the newest
+canary (16 KB pages), for x86_64 and x86 (and arm64-v8a, armeabi-v7a under emulation, allowed to fail). Each tool
+has a test named after it in its own package (`features/electronics/ohm/OhmTest.kt`), which opens it from the
+home page and goes through every button, switch, field and slider (`e2e/Explorer.kt`), installing the tool's
+Linux packages first if it's on the subsystem. The Minecraft server's tests make a Paper server on every Java,
+start it, use its console and options, add a plugin from Modrinth, export its world, and do the same with
+Vanilla, Fabric (a mod), Forge and NeoForge. Failures show as annotations on the pull request and in the run's
+summary, with screenshots and logcat as artifacts. Every run (pull requests, main, by hand) tests everything.
+
+```sh
+./gradlew :app:installLocalTesting :app:installDebugAndroidTest   # on a connected device
+adb shell am instrument -w -e class org.lukemech.lmtoolbox.features.electronics.ohm.OhmTest   org.lukemech.lmtoolbox.dbg.test/androidx.test.runner.AndroidJUnitRunner
+```
+
 ### Versioning and releases
 
 `gradle.properties` holds `versionName` (`YY.MM.DD`) and `gplayCode`. The
-[`build-app.yml`](.github/workflows/build-app.yml) workflow runs the unit tests, then builds the debug and the
+[`build-app.yml`](.github/workflows/build-app.yml) workflow builds the debug and the
 signed release artifacts, and can push them to Play tracks as drafts. A version's tag
 (`v<versionName>_<gplayCode>`) runs it on its own: the release goes to internal and alpha, internal's published.
 [`publish-draft.yml`](.github/workflows/publish-draft.yml) publishes the drafts of the tracks picked (by hand,
@@ -251,7 +269,7 @@ Gradle daemon's JDK has newer builds.
 - Every user-facing string exists in both `values` and `values-pl-rpl` (error messages aside, see
   [UI conventions](#ui-conventions)), and none is left unused.
 - Logic that isn't UI (maths, parsing, commands) sits apart from the pages, in the tool's
-  `features/<category>/<route>/`, with unit tests.
+  `features/<category>/<route>/`. Each tool has an end-to-end test named after it (see [Testing](#testing)).
 
 ## License
 
