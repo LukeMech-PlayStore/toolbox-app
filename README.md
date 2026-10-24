@@ -238,8 +238,8 @@ JDK and bytecode level of all of them, and `buildSrc/` holds the app's tasks (`L
 The tests run the app on emulators as a user would: [`e2e-tests.yml`](.github/workflows/e2e-tests.yml) installs
 the debug bundle with Play's local testing (so the tools' modules download as from Play) and runs
 `app/src/androidTest/` on the oldest Android the app supports (API 29), the one it targets (37) and the newest
-canary (16 KB pages), for x86_64 and x86, and for ARM translated on x86_64 images from API 30 (allowed to fail: GitHub's runners
-can't run an ARM emulator). Each tool
+canary (16 KB pages), for x86_64 and x86, and for ARM translated on the x86_64 images that can (as their own ABI lists say; allowed to
+fail: GitHub's runners can't run an ARM emulator). Each tool
 has a test named after it in its own package (`features/electronics/ohm/OhmTest.kt`), which opens it from the
 home page and goes through every button, switch, field and slider (`e2e/Explorer.kt`), installing the tool's
 Linux packages first if it's on the subsystem. The Minecraft server's test makes every type of server (Vanilla,
