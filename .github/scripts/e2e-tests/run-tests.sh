@@ -52,10 +52,19 @@ spec["supportedAbis"] = [sys.argv[2]]
 json.dump(spec, open(sys.argv[1], "w"))
 EOF
 fi
+# One key for the app's APKs and the tests' (they can only instrument an app signed as they are): made here, whatever
+# key Gradle signed the build with
+KEY=$(mktemp -d)/e2e.keystore
+keytool -genkeypair -keystore "$KEY" -storepass android -keypass android -alias e2e -keyalg RSA -keysize 2048 \
+  -validity 365 -dname "CN=LMToolbox e2e" > /dev/null 2>&1 || setup_failed "keytool couldn't make a key"
+APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
 "${BUNDLETOOL[@]}" build-apks --bundle="$DIST/app-debug.aab" --output=app.apks --overwrite --local-testing --device-spec=spec.json \
+  --ks="$KEY" --ks-pass=pass:android --ks-key-alias=e2e --key-pass=pass:android \
   || setup_failed "bundletool couldn't build the APKs"
+"$APKSIGNER" sign --ks "$KEY" --ks-pass pass:android --ks-key-alias e2e --key-pass pass:android \
+  --out tests.apk "$DIST/app-debug-androidTest.apk" || setup_failed "apksigner couldn't sign the tests"
 "${BUNDLETOOL[@]}" install-apks --apks=app.apks --modules=core --allow-test-only || setup_failed "The app couldn't be installed"
-adb install -r -t "$DIST/app-debug-androidTest.apk" || setup_failed "The tests couldn't be installed"
+adb install -r -t tests.apk || setup_failed "The tests couldn't be installed"
 echo "Installed: $(adb shell dumpsys package $APP | grep -m1 -E 'primaryCpuAbi' | tr -d '\r' | xargs)"
 
 # 2. The tests: listed, run class by class, those a crash kept from running one by one, each failed one once more
