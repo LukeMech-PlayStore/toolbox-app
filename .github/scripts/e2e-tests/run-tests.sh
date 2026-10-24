@@ -7,7 +7,7 @@
 #  3. their results as JUnit XML (e2e-results/junit), screenshots and each class's logcat beside them
 # Always exits 0 once results are written: the report step fails the job on failed tests.
 #
-# Env: E2E_LEG (the matrix leg's name), FORCE_ABI, E2E_DIST (the build job's files)
+# Env: E2E_LEG (the matrix leg's name), E2E_CLASSES (its shard's test classes, a regex), FORCE_ABI, E2E_DIST (the build job's files)
 set -uo pipefail
 
 DIST=${E2E_DIST:-dist}
@@ -80,7 +80,7 @@ fi
 echo "Installed: $(adb shell dumpsys package $APP | grep -m1 -E 'primaryCpuAbi' | tr -d '\r' | xargs)"
 
 # 2. The tests: listed, run class by class, those a crash kept from running one by one, each failed one once more
-python3 "$HERE/instrument.py" "$RUNNER" "$OUT" "$LEG"
+python3 "$HERE/instrument.py" "$RUNNER" "$OUT" "$LEG" "${E2E_CLASSES:-}"
 
 # 3. Screenshots (the app's external files: the instrumentation runs in its process)
 adb pull "/sdcard/Android/data/$APP/files/e2e" "$OUT/" > /dev/null 2>&1 || true

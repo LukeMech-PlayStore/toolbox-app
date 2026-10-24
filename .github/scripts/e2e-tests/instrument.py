@@ -9,7 +9,7 @@ for mikepenz/action-junit-report (run-tests.sh calls it once the app and the tes
 - a test that failed is run once more on its own; both tries are in the report (check_retries: one that
   passed the second time counts as flaky, not failed)
 
-    instrument.py <runner> <out dir> <suite name>
+    instrument.py <runner> <out dir> <suite name> [classes]    classes: a regex of the test classes to run (a shard)
 
 Output: <out>/junit/<Class>.xml, the raw `am instrument -r` output of each run in <out>/raw/, each class's logcat
 in <out>/logcat/.
@@ -121,6 +121,7 @@ def only(cls, test):
 
 def main():
     runner, out, suite_name = sys.argv[1:4]
+    shard = re.compile(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] else None
     for d in ("raw", "junit", "logcat"):
         os.makedirs(os.path.join(out, d), exist_ok=True)
 
@@ -130,7 +131,8 @@ def main():
     listed, run_output = parse(listing)
     tests = {}
     for cls, test, *_ in listed:
-        tests.setdefault(cls, []).append(test)
+        if shard is None or shard.search(cls):
+            tests.setdefault(cls, []).append(test)
     if not tests:
         write_junit(os.path.join(out, "junit", "setup.xml"), suite_name,
                     [("e2e.Setup", "listTests", "error", "No tests found:\n" + run_output[-3000:], 0.0)])
