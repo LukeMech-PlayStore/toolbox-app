@@ -52,9 +52,10 @@ object CurrentPage {
     var route: String? = null
         private set
 
-    internal fun set(entry: NavBackStackEntry?) {
-        route = entry?.destination?.route?.let { pattern ->
-            Regex("""\{(\w+)\}""").replace(pattern.substringBefore('?')) { entry.arguments?.getString(it.groupValues[1]).orEmpty() }
+    /** Told by the navigation itself as it moves: no composition or coroutine in between. */
+    internal val listener = NavController.OnDestinationChangedListener { _, destination, arguments ->
+        route = destination.route?.let { pattern ->
+            Regex("""\{(\w+)\}""").replace(pattern.substringBefore('?')) { arguments?.getString(it.groupValues[1]).orEmpty() }
         }
     }
 }
@@ -62,8 +63,11 @@ object CurrentPage {
 @Composable
 fun NavigatedUI(paddingValues: PaddingValues, startDestination: String = Screen.Main.route, sharedText: String? = null) {
     var alreadyForwardedArgs by remember { mutableStateOf(sharedText?.isNotBlank()) }
-    val entry by LocalAppNav.current.controller.currentBackStackEntryAsState()
-    SideEffect { CurrentPage.set(entry) }
+    val controller = LocalAppNav.current.controller
+    DisposableEffect(controller) {
+        controller.addOnDestinationChangedListener(CurrentPage.listener)
+        onDispose { controller.removeOnDestinationChangedListener(CurrentPage.listener) }
+    }
 
     NavHost(
         navController = LocalAppNav.current.controller,

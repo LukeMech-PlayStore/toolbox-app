@@ -130,7 +130,9 @@ def main():
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
         with open(summary, "a", encoding="utf-8") as f:
-            f.write(f"### Emulator legs\n\nsdkMin {sdk_min}, sdkTarget {sdk_target}\n\n| Leg | System image | Channel |\n|---|---|---|\n")
+            f.write("### Emulator legs\n\n")
+            f.write(f"sdkMin {sdk_min}, sdkTarget {sdk_target}\n\n")
+            f.write("| Leg | System image | Channel |\n|---|---|---|\n")
             for l in legs:
                 f.write(f"| {l['name']} | android-{l['image']};{l['target']};{l['arch']} | {l['channel']} |\n")
     print(json.dumps({"include": legs}))

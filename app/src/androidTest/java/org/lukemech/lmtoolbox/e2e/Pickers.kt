@@ -77,8 +77,4 @@ object Pickers {
         file.outputStream().use { bitmap.compress(format, 90, it) }
         return file
     }
-
-    /** A plain file of its own to pick. */
-    fun sampleFile(context: Context, name: String, content: ByteArray): File =
-        File(shareDir(context), name).apply { writeBytes(content) }
 }

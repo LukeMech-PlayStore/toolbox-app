@@ -50,7 +50,10 @@ class FeaturesTest : E2eTest() {
         val keyword = ui.str(CompassFeature.keywordsResId).split(',').first().trim()
         ui.type(ui.str(R.string.search_features), keyword)
         ui.waitShown(hasText(ui.str(CompassFeature.titleStringResId)) and hasClickAction(), what = "the compass found by \"$keyword\"")
-        ui.type(ui.str(R.string.search_features), "zzzqqqxxx")
+        // Nothing is called that, in any language
+        @Suppress("SpellCheckingInspection")
+        val nonsense = "zzzqqqxxx"
+        ui.type(ui.str(R.string.search_features), nonsense)
         ui.waitShown(hasText(ui.str(R.string.search_no_results)))
     }
 

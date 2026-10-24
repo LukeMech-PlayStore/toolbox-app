@@ -7,7 +7,6 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.performClick
@@ -15,13 +14,15 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.helpers.Screen
+import org.lukemech.lmtoolbox.linux.LinuxParts
 
 /**
  * Goes through everything a page offers, as a curious user would: taps every button, switch, chip and choice,
  * types into every field, moves every slider; a dialog it opened is looked at, then closed (Cancel, else back);
  * a page it led to is gone through as well ([depth] pages down), then left. What it did is logged and each page
- * it went through is screenshot (named after [name]). What must not be tapped ([skip]: deleting, clearing, the
- * app's language) is left alone, as are the bottom bar's tabs.
+ * it went through is screenshot (named after [name]). What deletes, clears, removes or resets is left alone, in the
+ * device's language (the app's own strings for it, see [destructive]), as are the bottom bar's tabs and [extraSkips].
  *
  * It fails the test when the app crashes (the run reports it), when it ends up on another page it can't
  * come back from, or when [check] (after each action) says what's wrong.
@@ -35,6 +36,7 @@ class Explorer(
     private val check: () -> String? = { null },
 ) {
     private val skips: List<String> = (DEFAULT_SKIPS + extraSkips).map { it.lowercase() }
+    private val destructive = destructive(ui)
     private val navLabels = setOf(ui.str(R.string.nav_main_page), ui.str(R.string.nav_settings))
     private val cancel = ui.str(android.R.string.cancel)
     private var actions = 0
@@ -123,12 +125,17 @@ class Explorer(
         if (ui.dialogShown) throw AssertionError("$name: a dialog doesn't close (Cancel, back)")
     }
 
-    /** Back to [route]: the way back (a page opened over it), else the bottom bar's tab of the same page. */
+    /**
+     * Back to [route]: the way back from a page opened over it; gone back past it instead (its own arrow back), or
+     * on the home page (where back closes the app), it's opened again.
+     */
     private fun comeBack(route: String?) {
         repeat(3) {
             if (ui.page == route) return
+            if (ui.page == Screen.Main.route) return@repeat
             ui.back()
         }
+        if (ui.page != route && route != null) ui.goTo(route)
         if (ui.page != route) throw AssertionError("$name: couldn't come back to $route from ${ui.page}")
     }
 
@@ -137,9 +144,9 @@ class Explorer(
         if (words.any { it in navLabels }) return true
         // The bottom bar's tabs: icons alone (their names for screen readers), the middle one the tool's
         if (node.config.getOrNull(SemanticsProperties.Role) == Role.Tab && texts(node).isEmpty()) return true
+        if (words.any { it.lowercase() in destructive }) return true
         val all = words.joinToString(" ").lowercase()
-        if (all == ui.str(R.string.back).lowercase()) return true
-        return skips.any { it in all }
+        return all == ui.str(R.string.back).lowercase() || skips.any { it in all }
     }
 
     private fun texts(node: SemanticsNode): List<String> =
@@ -167,10 +174,25 @@ class Explorer(
     private fun screenshot(what: String) = Device.screenshot("$name-${shot++}-$what")
 
     companion object {
-        /** Not tapped: what deletes, clears or resets (the tests' own data and installs), and the app's language. */
-        val DEFAULT_SKIPS = listOf(
-            "delete", "remove", "clear", "uninstall", "reset", "discard", "erase", "language", "report",
-        )
+        /** Not tapped, besides [destructive]: what deletes, clears or resets (the tests' own data and installs) in English. */
+        val DEFAULT_SKIPS = listOf("delete", "remove", "clear", "uninstall", "reset", "discard", "erase")
+
+        private val DESTRUCTIVE_NAME = Regex("delete|clear|remove|reset|discard|uninstall|erase")
+
+        /**
+         * What the app's buttons for deleting, clearing, removing or resetting say, in the device's language: its
+         * strings named so (s_feature_delete, recent_clear...), the app's and its Play modules' (their R classes),
+         * lower case.
+         */
+        fun destructive(ui: Ui): Set<String> {
+            val modules = LinuxParts.parts(ui.context).keys.map { "org.lukemech.lmtoolbox.features.$it.R\$string" }
+            return (listOf("org.lukemech.lmtoolbox.R\$string") + modules)
+                .mapNotNull { runCatching { Class.forName(it) }.getOrNull() }
+                .flatMap { it.fields.toList() }
+                .filter { DESTRUCTIVE_NAME.containsMatchIn(it.name) }
+                .mapNotNull { runCatching { ui.context.getString(it.getInt(null)).lowercase() }.getOrNull() }
+                .toSet()
+        }
 
         const val SAMPLE_URL = "https://www.w3schools.com/html/mov_bbb.mp4"
     }

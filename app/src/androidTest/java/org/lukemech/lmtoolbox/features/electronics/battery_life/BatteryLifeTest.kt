@@ -2,5 +2,5 @@ package org.lukemech.lmtoolbox.features.electronics.battery_life
 
 import org.lukemech.lmtoolbox.e2e.ToolTest
 
-/** The battery life, opened from the home page and gone through (see ToolTest). */
+/** Battery life, opened from the home page and gone through (see ToolTest). */
 class BatteryLifeTest : ToolTest(BatteryLifeFeature)

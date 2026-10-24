@@ -56,7 +56,7 @@ jobs:
           retention-days: 3
 
   # The legs: every ABI on the app's oldest Android, its target and the newest canary, as Google's images are now
-  # (x86's newest alone; armeabi-v7a as 32-bit on arm64-v8a ones), see .github/scripts/e2e-tests/matrix.py
+  # (x86's newest alone; armeabi-v7a as 32-bit on arm64-v8a ones): see matrix.py, in the scripts' e2e-tests folder
   plan:
     runs-on: ubuntu-latest
     outputs:

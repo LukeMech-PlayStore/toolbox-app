@@ -8,7 +8,6 @@ import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
@@ -21,10 +20,13 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
 import org.lukemech.lmtoolbox.MainActivity
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.AppFeature
+import org.lukemech.lmtoolbox.helpers.FeatureCategory
 import org.lukemech.lmtoolbox.helpers.Screen
+import org.lukemech.lmtoolbox.helpers.SettingsSubPage
 import org.lukemech.lmtoolbox.ui.helpers.CurrentPage
 
 /**
@@ -86,19 +88,32 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
 
     val dialogShown get() = exists(isDialog())
 
-    /** Replaces the text of the field labelled (or holding) [label] by [text]. */
+    /**
+     * The text field named [label]: its own label (or placeholder) says so, or [label] is the title just above it
+     * (the calculators' fields: "Voltage" over the box, its unit beside).
+     */
+    fun field(label: String): SemanticsNode? {
+        nodes(hasSetTextAction() and hasText(label, substring = true)).firstOrNull()?.let { return it }
+        val title = nodes(hasText(label)).firstOrNull() ?: return null
+        val below = title.boundsInRoot.bottom
+        return nodes(hasSetTextAction())
+            .filter { it.boundsInRoot.top >= below - 1 && it.boundsInRoot.left <= title.boundsInRoot.right }
+            .minByOrNull { it.boundsInRoot.top }
+    }
+
+    /** Replaces the text of the field named [label] (see [field]) by [text]. */
     fun type(label: String, text: String) {
-        val field = hasSetTextAction() and hasText(label, substring = true)
-        waitShown(field, what = "field $label")
-        scrollTo(field)
-        compose.onAllNodes(field)[0].performTextReplacement(text)
+        runCatching { compose.waitUntil(20_000) { field(label) != null } }
+            .onFailure { throw AssertionError("No field \"$label\"") }
+        val target = compose.onNode(withId(field(label)!!.id))
+        runCatching { target.performScrollTo() }
+        target.performTextReplacement(text)
         compose.waitForIdle()
     }
 
-    /** What a text field holds (the one labelled [label]). */
+    /** What the field named [label] holds (see [field]). */
     fun fieldText(label: String): String =
-        nodes(hasSetTextAction() and hasText(label, substring = true)).firstOrNull()
-            ?.config?.getOrNull(SemanticsProperties.EditableText)?.text.orEmpty()
+        field(label)?.config?.getOrNull(SemanticsProperties.EditableText)?.text.orEmpty()
 
     // The bottom bar's tabs: their icons' descriptions
 
@@ -121,12 +136,48 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
             .onFailure { throw AssertionError("Expected page $route, on ${page ?: "none"}") }
     }
 
-    /** Back, as the system's button (closing a dialog first, if one is open). */
+    /**
+     * The system's back button: to what's in front (a dialog, a menu, else the page). On the home page it'd close
+     * the app, so it isn't pressed there.
+     */
     fun back() {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            compose.activity.onBackPressedDispatcher.onBackPressed()
-        }
+        if (page == Screen.Main.route && !dialogShown) throw AssertionError("Back on the home page would close the app")
+        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).pressBack()
         compose.waitForIdle()
+    }
+
+    /** Straight to the page [route] (CurrentPage's), however the app is: e.g. back to what a tap led away from. */
+    fun goTo(route: String) {
+        val activity = compose.activity
+        fun open(intent: android.content.Intent) = compose.runOnUiThread { activity.startActivity(intent) }
+        when {
+            route == Screen.Main.route -> home()
+            route == Screen.Settings.route -> settings()
+            route == SettingsSubPage.Tasks.route -> open(MainActivity.openTasksIntent(context))
+            route.startsWith("settings/features/") -> open(MainActivity.openFeatureIntent(context, route.substringAfterLast('/'), settings = true))
+            route.startsWith("feature/") -> open(MainActivity.openFeatureIntent(context, route.substringAfter('/')))
+            route.startsWith("category/") -> {
+                val id = route.substringAfter('/')
+                home()
+                waitPage(Screen.Main.route)
+                clickText(
+                    when (id) {
+                        Screen.Category.ALL -> str(R.string.all_features)
+                        Screen.Category.FAVOURITES -> str(R.string.favourites)
+                        Screen.Category.RECENT -> str(R.string.recent)
+                        else -> str(FeatureCategory.valueOf(id).titleRes)
+                    }
+                )
+            }
+            route.startsWith("settings/") -> {
+                // A settings page of its own: from the settings
+                settings()
+                waitPage(Screen.Settings.route)
+                return
+            }
+            else -> throw AssertionError("Don't know how to get to $route")
+        }
+        waitPage(route)
     }
 
     fun log(message: String) {
@@ -146,6 +197,3 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
         }
     }
 }
-
-/** The node [this] interaction targets, if it's there. */
-fun SemanticsNodeInteraction.nodeOrNull(): SemanticsNode? = runCatching { fetchSemanticsNode() }.getOrNull()

@@ -64,7 +64,6 @@ data class LinuxTask(
     val downloads: Set<String> = emptySet(),
 ) {
     enum class Type(@param:StringRes val titleRes: Int, val isEnvChange: Boolean) {
-        Install(R.string.s_tasks_type_install, true),
         Update(R.string.s_tasks_type_update, true),
         Command(R.string.s_tasks_type_command, false),
         /** A feature's tools unpacked on its first use (see [LinuxInstaller.installExtension]). */

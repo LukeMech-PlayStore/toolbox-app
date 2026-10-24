@@ -13,7 +13,8 @@ class OhmTest : ToolTest(OhmFeature) {
         val voltage = ui.str(R.string.ec_voltage)
         // Its defaults: 10 mA through 1 kΩ
         ui.compose.waitUntil(10_000) { ui.fieldText(voltage).startsWith("10") }
-        ui.type(ui.str(R.string.ec_resistance), "2 k")
+        // Its unit (kΩ) is picked beside it
+        ui.type(ui.str(R.string.ec_resistance), "2")
         ui.compose.waitUntil(10_000) { ui.fieldText(voltage).startsWith("20") }
         assertTrue("U = 10 mA · 2 kΩ = 20 V, got ${ui.fieldText(voltage)}", ui.fieldText(voltage).startsWith("20"))
     }

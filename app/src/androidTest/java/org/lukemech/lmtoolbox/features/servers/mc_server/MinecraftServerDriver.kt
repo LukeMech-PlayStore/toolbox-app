@@ -106,9 +106,9 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
 
     /** Fails the wait when the server's not getting there anymore: crashed, or stopped by itself (saying why). */
     private fun crashed(): String? = run?.let { r ->
-        when {
-            r.phase == ServerRunner.Phase.Crashed -> "the server crashed: ${r.error}\n${logTail()}"
-            r.phase == ServerRunner.Phase.Stopped && r.error != null -> "the server stopped: ${r.error}\n${logTail()}"
+        when (r.phase) {
+            ServerRunner.Phase.Crashed -> "the server crashed: ${r.error}\n${logTail()}"
+            ServerRunner.Phase.Stopped -> r.error?.let { "the server stopped: $it\n${logTail()}" }
             else -> null
         }
     } ?: linux.failure()
@@ -231,9 +231,6 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         Device.waitFor("${profile.name} deleted", 60_000) { Servers.load(context, profile.id) == null }
         ui.waitShown(hasText(s(R.string.f_Mc_new)) and hasClickAction(), what = "the server list")
     }
-
-    /** Lines of its log, for checks. */
-    fun logHas(text: String) = ServerRunner.log.value.any { text in it }
 
     fun waitLog(what: String, timeoutMs: Long = 2 * Device.MINUTE, matches: (String) -> Boolean) =
         Device.waitFor(what, timeoutMs, failFast = ::crashed) { ServerRunner.log.value.any(matches) }
