@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-The end-to-end tests' emulator legs (e2e-tests.yml), from what the app supports and what Google has: for every ABI
-the app ships, its oldest Android (sdkMin), the one it targets (sdkTarget) and the newest there is (canary), on
-Google's own system images (sys-img/<tag>/sys-img2-4.xml), each with the channel it's on.
+The end-to-end tests' emulator legs (e2e-tests.yml), from what the app supports and what Google has: for x86_64
+and x86, its oldest Android (sdkMin), the one it targets (sdkTarget) and the newest there is (canary), on Google's
+own system images (sys-img/<tag>/sys-img2-4.xml), each with the channel it's on.
 
 - an ABI whose images end before sdkTarget (x86's at API 30): sdkMin and its newest image instead
-- armeabi-v7a: on its own images where they reach sdkMin, else installed as 32-bit on the arm64-v8a legs
-- ARM legs run under emulation on the x86_64 runners: allowed to fail
+- no ARM: GitHub's runners can't run an ARM emulator (x86 hosts refuse ARM images, the ARM Linux runners have no
+  KVM, the Apple Silicon ones are M1s with no virtualization inside their VM)
 - a job per leg, running every test
 
     matrix.py <gradle.properties>     prints {"include": [...]} for strategy.matrix (and the legs as a table in the
@@ -18,7 +18,7 @@ import re
 import sys
 import urllib.request
 
-ABIS = ["x86_64", "x86", "arm64-v8a", "armeabi-v7a"]
+ABIS = ["x86_64", "x86"]
 TAGS = ["google_apis", "android"]
 # Most wanted first: Google APIs (the device a user has), 4 KB pages before 16 KB ones (canary's are 16 KB anyway)
 TARGET_ORDER = ["google_apis", "default", "google_apis_ps16k"]
@@ -80,53 +80,37 @@ def main():
     all_images, all_platforms = images(), platforms()
     legs = []
 
-    def leg(image, label, abi=None, force=None):
+    def leg(image, label):
         token, target, arch, channel = image
-        shown = abi or arch
         level = "canary" if token == "CANARY" else f"API {release(token)}"
-        on = f", on {arch}" if force else ""
         legs.append({
-            "id": f"{shown}-{token}".lower().replace(".", "_"),
-            "name": f"{shown} · {level} ({label}{on})",
+            "id": f"{arch}-{token}".lower().replace(".", "_"),
+            "name": f"{arch} · {level} ({label})",
             "arch": arch,
             # The SDK platform of the same name if there's one, else its API level's
             "api": token if token in all_platforms else str(release(token)),
             "image": token,
             "target": target,
             "channel": channel,
-            # ARM under emulation on an x86_64 runner: tried, never failing the run
-            "experimental": arch.startswith("arm"),
-            "force_abi": force or "",
         })
 
-    def min_target_canary(abi, force=None, on=None):
-        image_abi = on or abi
-        shown = abi if force else None
-        minimum = pick(all_images, image_abi, sdk_min)
+    for abi in ABIS:
+        minimum = pick(all_images, abi, sdk_min)
         if minimum:
-            leg(minimum, "min", shown, force)
-        target = pick(all_images, image_abi, sdk_target)
-        newest = canary(all_images, image_abi)
+            leg(minimum, "min")
+        else:
+            print(f"::warning title=E2E matrix::No {abi} image of API {sdk_min}", file=sys.stderr)
+        target = pick(all_images, abi, sdk_target)
+        newest = canary(all_images, abi)
         if target:
-            leg(target, "target", shown, force)
+            leg(target, "target")
         if newest:
-            leg(newest, "newest", shown, force)
+            leg(newest, "newest")
         if not target and not newest:
             # Its images ended before the app's target (x86's at API 30): its newest one past sdkMin
-            levels = sorted({release(i[0]) for i in all_images if i[2] == image_abi and (release(i[0]) or 0) > sdk_min})
+            levels = sorted({release(i[0]) for i in all_images if i[2] == abi and (release(i[0]) or 0) > sdk_min})
             if levels:
-                leg(pick(all_images, image_abi, levels[-1]), "its newest image", shown, force)
-        if not minimum:
-            print(f"::warning title=E2E matrix::No {image_abi} image of API {sdk_min}", file=sys.stderr)
-
-    min_target_canary("x86_64")
-    min_target_canary("x86")
-    min_target_canary("arm64-v8a")
-    # armeabi-v7a: its own images if they reach sdkMin (none have since API 25), else as 32-bit on arm64-v8a ones
-    if any(i[2] == "armeabi-v7a" and (release(i[0]) or 0) >= sdk_min for i in all_images):
-        min_target_canary("armeabi-v7a")
-    else:
-        min_target_canary("armeabi-v7a", force="armeabi-v7a", on="arm64-v8a")
+                leg(pick(all_images, abi, levels[-1]), "its newest image")
 
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:

@@ -42,9 +42,13 @@ abstract class E2eTest {
     @get:Rule(order = 1)
     val compose: AndroidComposeTestRule<ActivityScenarioRule<MainActivity>, MainActivity> = createAndroidComposeRule<MainActivity>()
 
-    /** Inside the activity's life, so it's still on screen when one fails. */
+    /** Inside the activity's life, so it's still on screen when one fails. Each test's start in the job's log too. */
     @get:Rule(order = 2)
     val screenshots = object : TestWatcher() {
+        override fun starting(description: Description) {
+            Log.i(TAG, "Test ${description.className.substringAfterLast('.')}.${description.methodName}")
+        }
+
         override fun failed(e: Throwable?, description: Description) {
             Device.screenshot("FAILED-${description.className.substringAfterLast('.')}.${description.methodName}")
         }

@@ -33,9 +33,18 @@ EOF
 }
 
 adb wait-for-device
-# Booted isn't ready: the package manager answers a while later (bundletool asks it first)
-for _ in $(seq 1 90); do
-  adb shell pm list features 2>/dev/null | grep -q '^feature:' && break
+# Root (Google APIs images allow it): Android 11 keeps the shell out of the app's folder the Play modules go in
+adb root > /dev/null 2>&1 && sleep 3
+adb wait-for-device
+# Booted isn't ready: the package manager answers a while later (bundletool asks it first), and the system may
+# restart once more after that; ready once it has answered for a while
+ok=0
+for _ in $(seq 1 120); do
+  if adb shell pm list features 2>/dev/null | grep -q '^feature:' && adb shell cmd activity get-current-user > /dev/null 2>&1; then
+    ok=$((ok + 1)); [[ $ok -ge 5 ]] && break
+  else
+    ok=0
+  fi
   sleep 2
 done
 abis=$(adb shell getprop ro.product.cpu.abilist | tr -d '\r')
@@ -47,7 +56,11 @@ adb shell svc power stayon true || true
 adb shell settings put secure location_mode 3 || true
 
 # 1. The app, as from Play
-"${BUNDLETOOL[@]}" get-device-spec --output=spec.json --overwrite || setup_failed "bundletool couldn't read the device"
+for try in 1 2 3; do
+  "${BUNDLETOOL[@]}" get-device-spec --output=spec.json --overwrite && break
+  [[ $try == 3 ]] && setup_failed "bundletool couldn't read the device"
+  sleep 20
+done
 if [[ -n "${FORCE_ABI:-}" ]]; then
   [[ ",$abis," == *",$FORCE_ABI,"* ]] || setup_failed "This image doesn't run $FORCE_ABI apps (its ABIs: $abis)"
   python3 - spec.json "$FORCE_ABI" <<'EOF'
@@ -79,8 +92,12 @@ if ! install_app; then
 fi
 echo "Installed: $(adb shell dumpsys package $APP | grep -m1 -E 'primaryCpuAbi' | tr -d '\r' | xargs)"
 
-# 2. The tests: listed, run class by class, those a crash kept from running one by one, each failed one once more
+# 2. The tests: listed, run class by class, those a crash kept from running one by one, each failed one once more.
+# What they say they're doing (each test, each element tried, what's waited for) shown as they go
+adb logcat -v time -s E2E:I &
+LOGCAT=$!
 python3 "$HERE/instrument.py" "$RUNNER" "$OUT" "$LEG"
+kill $LOGCAT 2>/dev/null
 
 # 3. Screenshots (the app's external files: the instrumentation runs in its process)
 adb pull "/sdcard/Android/data/$APP/files/e2e" "$OUT/" > /dev/null 2>&1 || true

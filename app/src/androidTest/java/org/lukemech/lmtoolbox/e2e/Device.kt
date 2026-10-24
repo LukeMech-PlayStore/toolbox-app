@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.os.SystemClock
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
+import org.lukemech.lmtoolbox.linux.LinuxTask
+import org.lukemech.lmtoolbox.linux.LinuxTasks
 import java.io.File
 
 /** The device under test: screenshots, waiting. */
@@ -25,16 +27,27 @@ object Device {
     /**
      * Waits (polling, off the main thread: not for the UI to settle, a server takes minutes) until [condition]
      * holds; fails saying [what] after [timeoutMs]. [failFast]: a message when it can't come anymore (e.g. a crash).
+     * Every half a minute it says what it's still waiting for, and the Linux tasks running (the job's log shows it).
      */
     fun waitFor(what: String, timeoutMs: Long, intervalMs: Long = 1000, failFast: () -> String? = { null }, condition: () -> Boolean) {
-        val end = SystemClock.uptimeMillis() + timeoutMs
+        val start = SystemClock.uptimeMillis()
+        val end = start + timeoutMs
+        var told = start
         while (true) {
             if (condition()) return
             failFast()?.let { throw AssertionError("$what: $it") }
-            if (SystemClock.uptimeMillis() > end) throw AssertionError("Timed out after ${timeoutMs / 1000} s waiting for $what")
+            val now = SystemClock.uptimeMillis()
+            if (now > end) throw AssertionError("Timed out after ${timeoutMs / 1000} s waiting for $what")
+            if (now - told >= 30_000) {
+                told = now
+                Log.i(E2eTest.TAG, "Waiting for $what (${(now - start) / 1000} s)${running()}")
+            }
             Thread.sleep(intervalMs)
         }
     }
+
+    private fun running() = LinuxTasks.tasks.value.filter { it.state == LinuxTask.State.Running }
+        .joinToString("") { "\n  ${it.type} ${it.label}" + (it.progress?.let { p -> " ${p.toInt()}%" } ?: "") }
 
     const val MINUTE = 60_000L
 }
