@@ -9,8 +9,7 @@ for mikepenz/action-junit-report (run-tests.sh calls it once the app and the tes
 - a test that failed is run once more on its own; both tries are in the report (check_retries: one that
   passed the second time counts as flaky, not failed)
 
-    instrument.py <runner> <out dir> <suite name> [tests]    tests: a regex of those to run (a shard), matched
-                                                             against Class#test[parameters]
+    instrument.py <runner> <out dir> <suite name>
 
 Output: <out>/junit/<Class>.xml, the raw `am instrument -r` output of each run in <out>/raw/, each class's logcat
 in <out>/logcat/.
@@ -27,7 +26,8 @@ import xml.etree.ElementTree as ET
 # INSTRUMENTATION_STATUS_CODE values (androidx.test's InstrumentationResultPrinter)
 START, OK, ERROR, FAILURE, IGNORED, ASSUMPTION = 1, 0, -1, -2, -3, -4
 
-CLASS_TIMEOUT = 150 * 60
+# A class's whole run: MinecraftServerTest's every server type on every Java the longest
+CLASS_TIMEOUT = 300 * 60
 TEST_TIMEOUT = 60 * 60
 
 
@@ -127,7 +127,6 @@ def any_of(cls, tests):
 
 def main():
     runner, out, suite_name = sys.argv[1:4]
-    shard = re.compile(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4] else None
     for d in ("raw", "junit", "logcat"):
         os.makedirs(os.path.join(out, d), exist_ok=True)
 
@@ -136,11 +135,8 @@ def main():
     instrument(runner, listing, ["-e", "log", "true", "-e", "notClass", "org.lukemech.lmtoolbox.e2e.DeviceSetup"], 10 * 60)
     listed, run_output = parse(listing)
     tests = {}
-    all_tests = {}
     for cls, test, *_ in listed:
-        all_tests.setdefault(cls, []).append(test)
-        if shard is None or shard.search(f"{cls}#{test}"):
-            tests.setdefault(cls, []).append(test)
+        tests.setdefault(cls, []).append(test)
     if not tests:
         write_junit(os.path.join(out, "junit", "setup.xml"), suite_name,
                     [("e2e.Setup", "listTests", "error", "No tests found:\n" + run_output[-3000:], 0.0)])
@@ -153,9 +149,7 @@ def main():
         subprocess.run(["adb", "logcat", "-c"], check=False)
         raw = lambda what: os.path.join(out, "raw", f"{short}{what}.txt")
 
-        # All of the class, or the shard's part of it (a parameterized one's, e.g. one Java's servers)
-        whole = len(names) == len(all_tests[cls])
-        instrument(runner, raw(""), ["-e", "class", cls] if whole else any_of(cls, names), CLASS_TIMEOUT)
+        instrument(runner, raw(""), ["-e", "class", cls], CLASS_TIMEOUT)
         results, _ = parse(raw(""))
 
         # Those a crash kept from running: one by one

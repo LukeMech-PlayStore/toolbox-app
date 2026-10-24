@@ -104,7 +104,6 @@ jobs:
         env:
           E2E_LEG: ${{ matrix.name }}
           FORCE_ABI: ${{ matrix.force_abi }}
-          E2E_CLASSES: ${{ matrix.classes }}
         with:
           api-level: ${{ matrix.api }}
           system-image-api-level: ${{ matrix.image }}
@@ -116,7 +115,6 @@ jobs:
           # The Java versions and the servers' worlds take room
           disk-size: 16G
           emulator-boot-timeout: ${{ matrix.experimental && 1800 || 900 }}
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot
           disable-animations: true
           script: bash .github/scripts/e2e-tests/run-tests.sh
 

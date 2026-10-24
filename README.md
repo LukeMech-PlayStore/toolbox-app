@@ -244,9 +244,8 @@ home page and goes through every button, switch, field and slider (`e2e/Explorer
 Linux packages first if it's on the subsystem. The Minecraft server's test makes every type of server (Vanilla,
 Paper, Fabric, Forge, NeoForge) on every Java, each on the newest Minecraft made for it: starts it, uses its console
 and options, changes its loader, exports its world. Failures show as annotations on the pull request and in the
-run's summary, with screenshots and logcat as artifacts. Each leg runs as jobs side by side (the tools and pages,
-then the Minecraft servers of each Java), so a leg takes as long as its slowest part. Every run (pull requests,
-main, by hand) tests everything.
+run's summary, with screenshots and logcat as artifacts. Each leg is a single job, running every test. Every run
+(pull requests, main, by hand) tests everything.
 
 ```sh
 ./gradlew :app:installLocalTesting :app:installDebugAndroidTest   # on a connected device
