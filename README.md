@@ -238,7 +238,7 @@ JDK and bytecode level of all of them, and `buildSrc/` holds the app's tasks (`L
 `gradle.properties` holds `versionName` (`YY.MM.DD`) and `gplayCode`. The
 [`build-app.yml`](.github/workflows/build-app.yml) workflow runs the unit tests, then builds the debug and the
 signed release artifacts, and can push them to Play tracks as drafts. A version's tag
-(`v<versionName>_<gplayCode>`) runs it on its own: the release goes to internal and alpha, internal's published.
+(`v<gplayCode>_<versionName>`, e.g. `v76_26.10.24`) runs it on its own: the release goes to internal and alpha, internal's published.
 [`publish-draft.yml`](.github/workflows/publish-draft.yml) publishes the drafts of the tracks picked (by hand,
 or as the build's last job). The release notes come from `whatsNew/`. A tag also makes a GitHub release,
 titled by the tag: the English release notes (`whatsnew-en-US`), then the commits since the previous tag.

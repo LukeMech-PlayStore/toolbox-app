@@ -4,7 +4,7 @@ env:
   packageName: org.lukemech.lmtoolbox
 
 on:
-  # A version's tag (v26.10.22_75): the release, as drafts to internal and alpha, internal's published
+  # A version's tag (v75_26.10.22: the Play version code first): the release, as drafts to internal and alpha, internal's published
   push:
     tags: ["v*"]
   workflow_dispatch:
