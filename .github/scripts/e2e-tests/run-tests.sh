@@ -32,21 +32,21 @@ EOF
   exit 0
 }
 
-adb wait-for-device
-# Root (Google APIs images allow it): Android 11 keeps the shell out of the app's folder the Play modules go in
-adb root > /dev/null 2>&1 && sleep 3
-adb wait-for-device
 # Booted isn't ready: the package manager answers a while later (bundletool asks it first), and the system may
-# restart once more after that; ready once it has answered for a while
-ok=0
-for _ in $(seq 1 120); do
-  if adb shell pm list features 2>/dev/null | grep -q '^feature:' && adb shell cmd activity get-current-user > /dev/null 2>&1; then
-    ok=$((ok + 1)); [[ $ok -ge 5 ]] && break
-  else
-    ok=0
-  fi
-  sleep 2
-done
+# restart once more after that (or during an install); ready once it has answered for a while
+wait_ready() {
+  adb wait-for-device
+  local ok=0
+  for _ in $(seq 1 120); do
+    if adb shell pm list features 2>/dev/null | grep -q '^feature:' && adb shell cmd activity get-current-user > /dev/null 2>&1; then
+      ok=$((ok + 1)); [[ $ok -ge 5 ]] && return 0
+    else
+      ok=0
+    fi
+    sleep 2
+  done
+}
+wait_ready
 abis=$(adb shell getprop ro.product.cpu.abilist | tr -d '\r')
 sdk=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
 echo "Device: API $sdk, ABIs $abis${FORCE_ABI:+, installing as $FORCE_ABI}"
@@ -81,14 +81,32 @@ APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
   || setup_failed "bundletool couldn't build the APKs"
 "$APKSIGNER" sign --ks "$KEY" --ks-pass pass:android --ks-key-alias e2e --key-pass pass:android \
   --out tests.apk "$DIST/app-debug-androidTest.apk" || setup_failed "apksigner couldn't sign the tests"
-install_app() { "${BUNDLETOOL[@]}" install-apks --apks=app.apks --modules=core --allow-test-only; }
-adb install -r -t tests.apk || setup_failed "The tests couldn't be installed"
+# Installed again once the system is back, when it went away in the middle (the package service restarting)
+install_app() {
+  for try in 1 2 3; do
+    "${BUNDLETOOL[@]}" install-apks --apks=app.apks --modules=core --allow-test-only && return 0
+    adb shell pm path "$APP" 2>/dev/null | grep -q package: && return 1
+    sleep 10; wait_ready
+  done
+  return 1
+}
+installed() { adb shell pm path "$APP" 2>/dev/null | grep -q package:; }
+adb install -r -t tests.apk || { wait_ready; adb install -r -t tests.apk; } || setup_failed "The tests couldn't be installed"
 if ! install_app; then
+  installed || setup_failed "The app couldn't be installed"
   # From Android 11 bundletool can't make the app's folder it puts the Play modules in (Android/data/<app>): the
   # app makes it (DeviceSetup, in its process), then they're put there again
-  adb shell pm path "$APP" | grep -q package: || setup_failed "The app couldn't be installed"
   adb shell am instrument -w -e class org.lukemech.lmtoolbox.e2e.DeviceSetup "$RUNNER"
-  install_app || setup_failed "The app couldn't be installed (its Play modules couldn't be put on the device)"
+  if ! install_app; then
+    # Android 11 keeps the shell out of it even then: as root (Google APIs images allow it), the files given to the
+    # app after (they'd be root's, unreadable to it: Play's error -13)
+    adb root > /dev/null 2>&1; sleep 3; wait_ready
+    install_app || setup_failed "The app couldn't be installed (its Play modules couldn't be put on the device)"
+    dir=/data/media/0/Android/data/$APP/files
+    owner=$(adb shell stat -c %u:%g "$dir" | tr -d '\r')
+    adb shell "chown -R $owner $dir/local_testing && chmod -R u+rwX,g+rwX $dir/local_testing && restorecon -R $dir/local_testing" \
+      || setup_failed "The Play modules couldn't be given to the app"
+  fi
 fi
 echo "Installed: $(adb shell dumpsys package $APP | grep -m1 -E 'primaryCpuAbi' | tr -d '\r' | xargs)"
 

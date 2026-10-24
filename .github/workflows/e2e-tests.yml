@@ -61,7 +61,8 @@ jobs:
           retention-days: 3
 
   # The legs: x86_64 and x86 on the app's oldest Android, its target and the newest canary, as Google's images are
-  # now (x86's newest instead of the last two): see matrix.py, in the scripts' e2e-tests folder
+  # now (x86's newest instead of the last two), and ARM translated on x86_64's: see matrix.py, in the scripts'
+  # e2e-tests folder
   plan:
     runs-on: ubuntu-latest
     outputs:
@@ -78,6 +79,8 @@ jobs:
     needs: [plan, build]
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    # The ARM legs (the app under Google's ARM translator): tried, never failing the run
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
@@ -101,6 +104,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
           E2E_LEG: ${{ matrix.name }}
+          FORCE_ABI: ${{ matrix.force_abi }}
         with:
           api-level: ${{ matrix.api }}
           system-image-api-level: ${{ matrix.image }}

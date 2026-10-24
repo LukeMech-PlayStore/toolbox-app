@@ -5,8 +5,10 @@ and x86, its oldest Android (sdkMin), the one it targets (sdkTarget) and the new
 own system images (sys-img/<tag>/sys-img2-4.xml), each with the channel it's on.
 
 - an ABI whose images end before sdkTarget (x86's at API 30): sdkMin and its newest image instead
-- no ARM: GitHub's runners can't run an ARM emulator (x86 hosts refuse ARM images, the ARM Linux runners have no
-  KVM, the Apple Silicon ones are M1s with no virtualization inside their VM)
+- ARM: GitHub's runners can't run an ARM emulator (x86 hosts refuse ARM images, the ARM Linux runners have no
+  KVM, the Apple Silicon ones are M1s with no virtualization inside their VM), so the ARM app on x86_64 images,
+  which translate ARM apps from API 30 (ARM_FROM): arm64-v8a there, on the target and the canary; armeabi-v7a
+  there alone (the newer images are 64-bit only). Allowed to fail: our ARM code under Google's translator
 - a job per leg, running every test
 
     matrix.py <gradle.properties>     prints {"include": [...]} for strategy.matrix (and the legs as a table in the
@@ -20,9 +22,12 @@ import urllib.request
 
 ABIS = ["x86_64", "x86"]
 TAGS = ["google_apis", "android"]
-# Most wanted first: Google APIs (the device a user has), 4 KB pages before 16 KB ones (canary's are 16 KB anyway)
+# Among the images of a release's newest minor (37.2): Google APIs first (the device a user has), 4 KB pages before 16 KB
+# ones (the newest minors and canaries come in 16 KB alone)
 TARGET_ORDER = ["google_apis", "default", "google_apis_ps16k"]
 CHANNELS = {"channel-0": "stable", "channel-1": "beta", "channel-2": "dev", "channel-3": "canary"}
+# The first x86_64 images translating ARM apps (Google's ARM translation)
+ARM_FROM = 30
 
 
 def properties(path):
@@ -62,9 +67,9 @@ def release(token):
 
 
 def pick(all_images, abi, level):
-    """The image of Android [level] for [abi] (by TARGET_ORDER, then the newest minor release), or None."""
+    """The image of Android [level] for [abi] (its newest minor release, e.g. 37.2, then by TARGET_ORDER), or None."""
     found = [i for i in all_images if i[2] == abi and i[1] in TARGET_ORDER and release(i[0]) == level]
-    found.sort(key=lambda i: (TARGET_ORDER.index(i[1]), -float(i[0])))
+    found.sort(key=lambda i: (-float(i[0]), TARGET_ORDER.index(i[1])))
     return found[0] if found else None
 
 
@@ -80,18 +85,22 @@ def main():
     all_images, all_platforms = images(), platforms()
     legs = []
 
-    def leg(image, label):
+    def leg(image, label, force=None):
         token, target, arch, channel = image
         level = "canary" if token == "CANARY" else f"API {release(token)}"
+        shown = force or arch
         legs.append({
-            "id": f"{arch}-{token}".lower().replace(".", "_"),
-            "name": f"{arch} · {level} ({label})",
+            "id": f"{shown}-{token}".lower().replace(".", "_"),
+            "name": f"{shown} · {level} ({label}{', translated on ' + arch if force else ''})",
             "arch": arch,
             # The SDK platform of the same name if there's one, else its API level's
             "api": token if token in all_platforms else str(release(token)),
             "image": token,
             "target": target,
             "channel": channel,
+            # Installed as that ABI alone (run-tests.sh), under Google's translator: tried, never failing the run
+            "force_abi": force or "",
+            "experimental": bool(force),
         })
 
     for abi in ABIS:
@@ -111,6 +120,17 @@ def main():
             levels = sorted({release(i[0]) for i in all_images if i[2] == abi and (release(i[0]) or 0) > sdk_min})
             if levels:
                 leg(pick(all_images, abi, levels[-1]), "its newest image")
+
+    # ARM, on x86_64's images: the oldest translating (or sdkMin, past it), the target, the canary; 32-bit on the first
+    arm_min = max(sdk_min, ARM_FROM)
+    oldest = pick(all_images, "x86_64", arm_min)
+    if oldest:
+        leg(oldest, "min" if arm_min == sdk_min else "oldest translating", "arm64-v8a")
+    for image, label in ((pick(all_images, "x86_64", sdk_target), "target"), (canary(all_images, "x86_64"), "newest")):
+        if image and image != oldest:
+            leg(image, label, "arm64-v8a")
+    if oldest:
+        leg(oldest, "min" if arm_min == sdk_min else "oldest translating", "armeabi-v7a")
 
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
