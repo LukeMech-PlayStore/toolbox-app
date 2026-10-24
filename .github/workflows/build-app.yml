@@ -74,14 +74,13 @@ jobs:
         with:
           cache-provider: basic
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-
       # The app is tested on emulators by e2e-tests.yml (every pull request and push to main)
 
       - name: Build Debug APK
         if: ${{ steps.settings.outputs.debug == 'true' }}
-        run: ./gradlew --build-cache assembleDebug
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --build-cache assembleDebug
 
       - name: Decode keystore from GitHub secrets
         if: ${{ steps.settings.outputs.release == 'true' }}
@@ -96,6 +95,7 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
+          chmod +x ./gradlew
           ./gradlew --build-cache assembleRelease bundleRelease \
             -Pandroid.injected.signing.store.file=$(pwd)/toolboxKeystore.jks \
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \

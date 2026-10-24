@@ -29,6 +29,7 @@ jobs:
       - name: Regenerate the daemon JVM criteria
         run: |
           version=$(sed -n 's/^toolchainVersion=//p' gradle/gradle-daemon-jvm.properties)
+          chmod +x ./gradlew
           ./gradlew --build-cache updateDaemonJvm --jvm-version="$version"
 
       - name: Open a pull request
