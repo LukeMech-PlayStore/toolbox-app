@@ -125,7 +125,8 @@ def main():
         os.makedirs(os.path.join(out, d), exist_ok=True)
 
     listing = os.path.join(out, "raw", "list.txt")
-    instrument(runner, listing, ["-e", "log", "true"], 10 * 60)
+    # DeviceSetup is run-tests.sh's, before the tests: not one of them
+    instrument(runner, listing, ["-e", "log", "true", "-e", "notClass", "org.lukemech.lmtoolbox.e2e.DeviceSetup"], 10 * 60)
     listed, run_output = parse(listing)
     tests = {}
     for cls, test, *_ in listed:

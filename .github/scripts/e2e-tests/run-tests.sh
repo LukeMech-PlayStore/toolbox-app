@@ -33,6 +33,11 @@ EOF
 }
 
 adb wait-for-device
+# Booted isn't ready: the package manager answers a while later (bundletool asks it first)
+for _ in $(seq 1 90); do
+  adb shell pm list features 2>/dev/null | grep -q '^feature:' && break
+  sleep 2
+done
 abis=$(adb shell getprop ro.product.cpu.abilist | tr -d '\r')
 sdk=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
 echo "Device: API $sdk, ABIs $abis${FORCE_ABI:+, installing as $FORCE_ABI}"
@@ -63,8 +68,15 @@ APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
   || setup_failed "bundletool couldn't build the APKs"
 "$APKSIGNER" sign --ks "$KEY" --ks-pass pass:android --ks-key-alias e2e --key-pass pass:android \
   --out tests.apk "$DIST/app-debug-androidTest.apk" || setup_failed "apksigner couldn't sign the tests"
-"${BUNDLETOOL[@]}" install-apks --apks=app.apks --modules=core --allow-test-only || setup_failed "The app couldn't be installed"
+install_app() { "${BUNDLETOOL[@]}" install-apks --apks=app.apks --modules=core --allow-test-only; }
 adb install -r -t tests.apk || setup_failed "The tests couldn't be installed"
+if ! install_app; then
+  # From Android 11 bundletool can't make the app's folder it puts the Play modules in (Android/data/<app>): the
+  # app makes it (DeviceSetup, in its process), then they're put there again
+  adb shell pm path "$APP" | grep -q package: || setup_failed "The app couldn't be installed"
+  adb shell am instrument -w -e class org.lukemech.lmtoolbox.e2e.DeviceSetup "$RUNNER"
+  install_app || setup_failed "The app couldn't be installed (its Play modules couldn't be put on the device)"
+fi
 echo "Installed: $(adb shell dumpsys package $APP | grep -m1 -E 'primaryCpuAbi' | tr -d '\r' | xargs)"
 
 # 2. The tests: listed, run class by class, those a crash kept from running one by one, each failed one once more
