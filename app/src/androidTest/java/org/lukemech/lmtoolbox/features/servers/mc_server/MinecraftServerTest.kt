@@ -1,6 +1,5 @@
 package org.lukemech.lmtoolbox.features.servers.mc_server
 
-import java.io.File
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -12,13 +11,13 @@ import org.lukemech.lmtoolbox.e2e.Linux
 import org.lukemech.lmtoolbox.linux.parts.Java
 
 /**
- * A Paper server on every Java the subsystem has (each on the newest Minecraft made for it: 1.16.5 on 8, 1.20.4
- * on 17, the newest 1.21 on 21, the newest of all on 25): made, its Java installed along, started, its console
- * and options used, a plugin added (Chunky, from Modrinth) and loaded on a restart, its world exported, stopped
- * and deleted.
+ * Every type of server on every Java the subsystem has, each on the newest Minecraft of that type made for that Java
+ * (e.g. Paper 1.16.5 on Java 8, Fabric's newest 1.21 on Java 21): made (its Java installed along), started, its
+ * console and options used, a setting taken on a restart, its loader changed, its world exported, deleted. A type
+ * with no Minecraft for a Java (NeoForge on 8), or a Java this device's ABI hasn't (25 on x86), is skipped.
  */
 @RunWith(Parameterized::class)
-class MinecraftServerTest(private val jdkPart: String) : E2eTest() {
+class MinecraftServerTest(private val typeName: String, private val jdkPart: String) : E2eTest() {
     private val linux by lazy { Linux(ui) }
     private val mc by lazy { MinecraftServerDriver(ui, linux) }
 
@@ -29,30 +28,26 @@ class MinecraftServerTest(private val jdkPart: String) : E2eTest() {
     fun cleanAfter() = mc.cleanUp()
 
     @Test
-    fun paperServer() {
+    fun server() {
+        val type = ServerType.valueOf(typeName)
         val jdk = Java.byPart(jdkPart)!!
-        assumeTrue("$jdkPart isn't built for this device's ABI", jdk in Java.available(context))
-        val version = mc.newestFor(ServerType.Paper, jdk)
-        assumeTrue("Paper has no Minecraft made for $jdkPart", version != null)
+        assumeTrue("Java ${jdk.version} isn't built for this device's ABI", jdk in Java.available(context))
+        val version = mc.newestFor(type, jdk)
+        assumeTrue("$type has no Minecraft made for Java ${jdk.version}", version != null)
 
         mc.open()
-        val server = mc.create("e2e-paper-${jdk.version}", ServerType.Paper, version!!)
+        val server = mc.create("e2e-${type.name.lowercase()}-${jdk.version}", type, version!!)
         mc.start(server)
         mc.console()
         mc.changeAndRestart(server)
         mc.exploreOptions(server)
-
-        // A plugin, as a user downloads one and adds it
-        val plugin = Modrinth.download("chunky", "paper", version, File(context.cacheDir, "e2e-addons"))
-        if (plugin != null) {
-            mc.addAddon(server, plugin)
-            mc.stopAndStart(server)
-            mc.waitLog("Chunky to load") { "Chunky" in it && ("Enabling" in it || "Loading" in it) }
-        } else {
-            ui.log("No Chunky for Paper $version on Modrinth: no plugin tried")
-        }
-
         mc.stop(server)
+        // Another version of its loader (Paper's build, Fabric's, Forge's...), installed in its place, and run
+        if (type != ServerType.Vanilla) {
+            mc.changeLoader(server)
+            mc.start(server)
+            mc.stop(server)
+        }
         mc.exportWorld(server)
         mc.delete(server)
         linux.failure()?.let { throw AssertionError(it) }
@@ -60,7 +55,8 @@ class MinecraftServerTest(private val jdkPart: String) : E2eTest() {
 
     companion object {
         @JvmStatic
-        @Parameterized.Parameters(name = "{0}")
-        fun jdks(): List<String> = Java.JDKS.map { it.part }
+        @Parameterized.Parameters(name = "{0}-{1}")
+        fun servers(): List<Array<String>> =
+            ServerType.entries.flatMap { type -> Java.JDKS.map { arrayOf(type.name, it.part) } }
     }
 }

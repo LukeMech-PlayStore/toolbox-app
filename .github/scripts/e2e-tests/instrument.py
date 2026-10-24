@@ -9,7 +9,8 @@ for mikepenz/action-junit-report (run-tests.sh calls it once the app and the tes
 - a test that failed is run once more on its own; both tries are in the report (check_retries: one that
   passed the second time counts as flaky, not failed)
 
-    instrument.py <runner> <out dir> <suite name> [classes]    classes: a regex of the test classes to run (a shard)
+    instrument.py <runner> <out dir> <suite name> [tests]    tests: a regex of those to run (a shard), matched
+                                                             against Class#test[parameters]
 
 Output: <out>/junit/<Class>.xml, the raw `am instrument -r` output of each run in <out>/raw/, each class's logcat
 in <out>/logcat/.
@@ -116,7 +117,12 @@ def write_junit(path, suite_name, results):
 
 def only(cls, test):
     """-e tests_regex for one test: its class and method, a parameterized one's [parameters] too."""
-    return ["-e", "tests_regex", "^" + re.escape(f"{cls}#{test}") + "$"]
+    return any_of(cls, [test])
+
+
+def any_of(cls, tests):
+    """-e tests_regex for some of [cls]'s tests."""
+    return ["-e", "tests_regex", "^(" + "|".join(re.escape(f"{cls}#{t}") for t in tests) + ")$"]
 
 
 def main():
@@ -130,8 +136,10 @@ def main():
     instrument(runner, listing, ["-e", "log", "true", "-e", "notClass", "org.lukemech.lmtoolbox.e2e.DeviceSetup"], 10 * 60)
     listed, run_output = parse(listing)
     tests = {}
+    all_tests = {}
     for cls, test, *_ in listed:
-        if shard is None or shard.search(cls):
+        all_tests.setdefault(cls, []).append(test)
+        if shard is None or shard.search(f"{cls}#{test}"):
             tests.setdefault(cls, []).append(test)
     if not tests:
         write_junit(os.path.join(out, "junit", "setup.xml"), suite_name,
@@ -145,7 +153,9 @@ def main():
         subprocess.run(["adb", "logcat", "-c"], check=False)
         raw = lambda what: os.path.join(out, "raw", f"{short}{what}.txt")
 
-        instrument(runner, raw(""), ["-e", "class", cls], CLASS_TIMEOUT)
+        # All of the class, or the shard's part of it (a parameterized one's, e.g. one Java's servers)
+        whole = len(names) == len(all_tests[cls])
+        instrument(runner, raw(""), ["-e", "class", cls] if whole else any_of(cls, names), CLASS_TIMEOUT)
         results, _ = parse(raw(""))
 
         # Those a crash kept from running: one by one

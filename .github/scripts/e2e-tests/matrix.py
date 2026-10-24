@@ -7,7 +7,7 @@ Google's own system images (sys-img/<tag>/sys-img2-4.xml), each with the channel
 - an ABI whose images end before sdkTarget (x86's at API 30): sdkMin and its newest image instead
 - armeabi-v7a: on its own images where they reach sdkMin, else installed as 32-bit on the arm64-v8a legs
 - ARM legs run under emulation on the x86_64 runners: allowed to fail
-- each leg's tests in shards (SHARDS), each a job of its own: the Minecraft servers take far longer than the rest
+- each leg's tests in shards (shards()), each a job of its own: the tools, and the Minecraft servers of each Java
 
     matrix.py <gradle.properties>     prints {"include": [...]} for strategy.matrix (and the legs as a table in the
                                       job's summary, on GitHub)
@@ -23,12 +23,17 @@ TAGS = ["google_apis", "android"]
 # Most wanted first: Google APIs (the device a user has), 4 KB pages before 16 KB ones (canary's are 16 KB anyway)
 TARGET_ORDER = ["google_apis", "default", "google_apis_ps16k"]
 CHANNELS = {"channel-0": "stable", "channel-1": "beta", "channel-2": "dev", "channel-3": "canary"}
-# Each leg's tests, run side by side: (id, name, the test classes' names it takes, as a regex instrument.py matches)
-SHARDS = [
-    ("tools", "tools & pages", r"^(?!.*\.mc_server\.)"),
-    ("mc-java", "Minecraft · every Java", r"\.mc_server\.MinecraftServerTest$"),
-    ("mc-types", "Minecraft · every server type", r"\.mc_server\.MinecraftServerTypesTest$"),
-]
+# The Java versions the subsystem has (the app's Java.JDKS): a shard of the Minecraft servers each
+JAVA_KT = "app/src/main/java/org/lukemech/lmtoolbox/linux/parts/Java.kt"
+
+
+def shards():
+    """Each leg's tests, run side by side: (id, name, which tests, a regex instrument.py matches on Class#test[params])."""
+    jdks = re.findall(r'Jdk\("(jdk\d+)", (\d+)\)', open(JAVA_KT, encoding="utf-8").read())
+    return [("tools", "tools & pages", r"^(?!.*\.mc_server\.)")] + [
+        (f"mc-{part}", f"Minecraft · Java {version}", rf"\.mc_server\.MinecraftServerTest#.*-{part}\]$")
+        for part, version in jdks
+    ]
 
 
 def properties(path):
@@ -91,7 +96,7 @@ def main():
         shown = abi or arch
         level = "canary" if token == "CANARY" else f"API {release(token)}"
         on = f", on {arch}" if force else ""
-        for shard, shard_name, classes in SHARDS:
+        for shard, shard_name, classes in shards():
             legs.append({
                 "id": f"{shown}-{token}-{shard}".lower().replace(".", "_"),
                 "name": f"{shown} · {level} ({label}{on}) · {shard_name}",

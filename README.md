@@ -241,11 +241,12 @@ the debug bundle with Play's local testing (so the tools' modules download as fr
 canary (16 KB pages), for x86_64 and x86 (and arm64-v8a, armeabi-v7a under emulation, allowed to fail). Each tool
 has a test named after it in its own package (`features/electronics/ohm/OhmTest.kt`), which opens it from the
 home page and goes through every button, switch, field and slider (`e2e/Explorer.kt`), installing the tool's
-Linux packages first if it's on the subsystem. The Minecraft server's tests make a Paper server on every Java,
-start it, use its console and options, add a plugin from Modrinth, export its world, and do the same with
-Vanilla, Fabric (a mod), Forge and NeoForge. Failures show as annotations on the pull request and in the run's
-summary, with screenshots and logcat as artifacts. Each leg runs as three jobs side by side (the tools and pages,
-Minecraft on every Java, Minecraft as every server type), so a leg takes as long as its slowest part. Every run (pull requests, main, by hand) tests everything.
+Linux packages first if it's on the subsystem. The Minecraft server's test makes every type of server (Vanilla,
+Paper, Fabric, Forge, NeoForge) on every Java, each on the newest Minecraft made for it: starts it, uses its console
+and options, changes its loader, exports its world. Failures show as annotations on the pull request and in the
+run's summary, with screenshots and logcat as artifacts. Each leg runs as jobs side by side (the tools and pages,
+then the Minecraft servers of each Java), so a leg takes as long as its slowest part. Every run (pull requests,
+main, by hand) tests everything.
 
 ```sh
 ./gradlew :app:installLocalTesting :app:installDebugAndroidTest   # on a connected device

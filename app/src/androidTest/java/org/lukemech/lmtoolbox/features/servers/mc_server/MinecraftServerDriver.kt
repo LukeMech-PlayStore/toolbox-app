@@ -6,7 +6,6 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
-import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -20,7 +19,7 @@ import org.lukemech.lmtoolbox.linux.parts.Java
 
 /**
  * The Minecraft server tool, as a user goes about it: a server made on its page (its kind, version, loader),
- * started, its console used, its options changed (and taken on a restart), plugins or mods added, its world
+ * started, its console used, its options changed (and taken on a restart), its loader changed, its world
  * exported, stopped and deleted. Driven through the UI; how it went read from the tool's own state.
  */
 class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
@@ -187,22 +186,6 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         Device.screenshot("mc-loader-${other.version}")
     }
 
-    /** Adds [jar] (a plugin or a mod) from its options, as picked in the system's picker. */
-    fun addAddon(profile: ServerProfile, jar: File) {
-        tab(R.string.f_Mc_tab_options)
-        Pickers.pick(context, jar)
-        ui.clickText(if (profile.type.hasMods) R.string.f_Mc_add_mods else R.string.f_Mc_add_plugins)
-        Device.waitFor("${jar.name} added", 60_000) { Transfers.addons(context, profile).any { it.name == jar.name } }
-        ui.waitShown(hasText(jar.name.removeSuffix(".jar")), what = "${jar.name} listed")
-        Device.screenshot("mc-addon-${jar.name}")
-    }
-
-    /** Stopped, then started again from its status tab (e.g. for what was added to load). */
-    fun stopAndStart(profile: ServerProfile) {
-        stop(profile)
-        start(profile)
-    }
-
     fun stop(profile: ServerProfile) {
         tab(R.string.f_Mc_tab_status)
         ui.click(hasText(s(R.string.f_Mc_stop)) and hasClickAction(), what = "Stop")
@@ -231,7 +214,4 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         Device.waitFor("${profile.name} deleted", 60_000) { Servers.load(context, profile.id) == null }
         ui.waitShown(hasText(s(R.string.f_Mc_new)) and hasClickAction(), what = "the server list")
     }
-
-    fun waitLog(what: String, timeoutMs: Long = 2 * Device.MINUTE, matches: (String) -> Boolean) =
-        Device.waitFor(what, timeoutMs, failFast = ::crashed) { ServerRunner.log.value.any(matches) }
 }
