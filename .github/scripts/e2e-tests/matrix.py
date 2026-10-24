@@ -26,8 +26,8 @@ CHANNELS = {"channel-0": "stable", "channel-1": "beta", "channel-2": "dev", "cha
 # Each leg's tests, run side by side: (id, name, the test classes' names it takes, as a regex instrument.py matches)
 SHARDS = [
     ("tools", "tools & pages", r"^(?!.*\.mc_server\.)"),
-    ("paper", "Minecraft · Paper", r"\.mc_server\.MinecraftServerTest$"),
-    ("loaders", "Minecraft · loaders", r"\.mc_server\.MinecraftLoadersTest$"),
+    ("mc-java", "Minecraft · every Java", r"\.mc_server\.MinecraftServerTest$"),
+    ("mc-types", "Minecraft · every server type", r"\.mc_server\.MinecraftServerTypesTest$"),
 ]
 
 

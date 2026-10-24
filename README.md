@@ -245,7 +245,7 @@ Linux packages first if it's on the subsystem. The Minecraft server's tests make
 start it, use its console and options, add a plugin from Modrinth, export its world, and do the same with
 Vanilla, Fabric (a mod), Forge and NeoForge. Failures show as annotations on the pull request and in the run's
 summary, with screenshots and logcat as artifacts. Each leg runs as three jobs side by side (the tools and pages,
-the Paper servers, the other Minecraft loaders), so a leg takes as long as its slowest part. Every run (pull requests, main, by hand) tests everything.
+Minecraft on every Java, Minecraft as every server type), so a leg takes as long as its slowest part. Every run (pull requests, main, by hand) tests everything.
 
 ```sh
 ./gradlew :app:installLocalTesting :app:installDebugAndroidTest   # on a connected device

@@ -10,11 +10,12 @@ import org.lukemech.lmtoolbox.e2e.E2eTest
 import org.lukemech.lmtoolbox.e2e.Linux
 
 /**
- * The other kinds of server, on the newest Minecraft each has (that this device has a Java for): Vanilla,
- * Fabric with a mod (Lithium) and its loader changed, Forge and NeoForge (their installers run on the phone).
+ * Every other type of server (MinecraftServerTest has Paper, on every Java), each on the newest Minecraft it has that
+ * this device has a Java for: Vanilla, Fabric with a mod (Lithium) and its loader changed, Forge and NeoForge (their
+ * installers run on the phone).
  */
 @RunWith(Parameterized::class)
-class MinecraftLoadersTest(private val typeName: String) : E2eTest() {
+class MinecraftServerTypesTest(private val typeName: String) : E2eTest() {
     private val linux by lazy { Linux(ui) }
     private val mc by lazy { MinecraftServerDriver(ui, linux) }
 
@@ -54,7 +55,7 @@ class MinecraftLoadersTest(private val typeName: String) : E2eTest() {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun loaders(): List<String> =
+        fun types(): List<String> =
             listOf(ServerType.Vanilla, ServerType.Fabric, ServerType.Forge, ServerType.NeoForge).map { it.name }
     }
 }
