@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_ne555">555 timer</string>
+    <string name="fd_ne555">Frequency and pulses</string>
+    <string name="fk_ne555">555, ne555, timer, astable, monostable, oscillator, pulse, blinker, 555 timer, square wave, frequency, calculator, calc, compute, electronics</string>
+    <string name="ec_astable">Astable (oscillator)</string>
+    <string name="ec_monostable">Monostable (single pulse)</string>
+    <string name="ec_duty">Duty cycle</string>
+    <string name="ec_t_high">High time</string>
+    <string name="ec_t_low">Low time</string>
+    <string name="ec_pulse_width">Pulse width</string>
+</resources>

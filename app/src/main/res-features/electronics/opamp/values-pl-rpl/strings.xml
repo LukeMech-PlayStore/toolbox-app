@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_opamp">Wzmacniacz operacyjny</string>
+    <string name="fd_opamp">Wzmocnienie i wyjście</string>
+    <string name="fk_opamp">wzmacniacz operacyjny, wzmacniacz, wzmocnienie, odwracający, nieodwracający, sprzężenie, op-amp, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_gain">Wzmocnienie</string>
+    <string name="ec_gain_db">Wzmocnienie w decybelach</string>
+    <string name="ec_non_inverting">Nieodwracający</string>
+    <string name="ec_inverting">Odwracający</string>
+</resources>

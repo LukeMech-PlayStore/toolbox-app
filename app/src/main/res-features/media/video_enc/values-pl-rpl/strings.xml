@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_VideoEnc">Konwerter mediów</string>
+    <string name="fk_VideoEnc">multimedia, media, wideo, film, muzyka, enkoder, koder, ffmpeg, konwertuj, konwerter, przytnij, wytnij, klip, kompresja, zmniejsz, obróć, tempo, mp4, mkv, webm, gif, mp3, audio, dźwięk, h264, hevc, av1, enkoder multimediów, enkoder wideo, edytor, edytuj, transkodowanie, przerób, konwersja</string>
+    <string name="fd_VideoEnc">Zmniejsz, przytnij, przerób</string>
+    <string name="f_VidEnc_share_desc">Udostępniaj filmy i audio do enkodera z innych aplikacji</string>
+</resources>

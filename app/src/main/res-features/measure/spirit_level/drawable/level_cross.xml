@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spirit level center cross.
+     Drawn in white and tinted where used; shared by the spirit level page and its widget. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="168"
+    android:viewportHeight="168">
+    <path android:pathData="M60.0,84 L108.0,84 M84,60.0 L84,108.0" android:strokeColor="#FFFFFFFF" android:strokeWidth="1.609" />
+</vector>

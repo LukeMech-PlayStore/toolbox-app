@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A block of a game world (the Minecraft server's icon): a cube seen from above, grass hanging over
+     its sides. One color, as icons are tinted: its faces apart by how opaque they are -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Left side, then the right one (darker) -->
+    <path android:fillColor="#000000" android:fillAlpha="0.55"
+        android:pathData="M3,7.5L11.5,12.3L11.5,22L3,17.2Z" />
+    <path android:fillColor="#000000" android:fillAlpha="0.3"
+        android:pathData="M12.5,12.3L21,7.5L21,17.2L12.5,22Z" />
+    <!-- The grass over the sides' tops, ragged -->
+    <path android:fillColor="#000000" android:fillAlpha="0.85"
+        android:pathData="M3,7.5L11.5,12.3L11.5,14.8L10,15.4L8.5,13.1L7,13.7L5.5,11.4L4,12L3,10Z" />
+    <path android:fillColor="#000000" android:fillAlpha="0.65"
+        android:pathData="M12.5,12.3L21,7.5L21,10L20,12L18.5,11.4L17,13.7L15.5,13.1L14,15.4L12.5,14.8Z" />
+    <!-- The top, over both -->
+    <path android:fillColor="#000000"
+        android:pathData="M12,2L21,7L12,11.8L3,7Z" />
+</vector>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_pcb_trace">Ścieżka PCB</string>
+    <string name="fd_pcb_trace">Szerokość dla prądu</string>
+    <string name="fk_pcb_trace">pcb, ścieżka, szerokość, prąd, ipc-2221, miedź, płytka, szerokość ścieżki pcb, płytka drukowana, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_1oz">1 oz (35 μm)</string>
+    <string name="ec_2oz">2 oz (70 μm)</string>
+    <string name="ec_layer">Warstwa</string>
+    <string name="ec_external">Zewnętrzna</string>
+    <string name="ec_internal">Wewnętrzna</string>
+    <string name="ec_t_rise">Przyrost temperatury</string>
+    <string name="ec_width">Szerokość ścieżki</string>
+    <string name="ec_width_mil">W milach</string>
+</resources>

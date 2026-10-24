@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_spirit_level">Spirit level</string>
+    <string name="fk_spirit_level">spirit level, bubble, level, tilt, angle, slope, inclinometer, horizontal, vertical, bubble level, leveler, tools</string>
+    <string name="fd_spirit_level">Get it straight</string>
+    <string name="f_level_accuracy_title">Low sensor accuracy</string>
+    <string name="f_level_accuracy_message">The accelerometer reports low accuracy, so the readings may be off. Lay the phone on a flat surface for a moment.</string>
+    <string name="f_level_missing_sensors_message">The accelerometer the spirit level needs was not found.</string>
+    <string name="w_level_values" translatable="false">X: %1$.1f° · Y: %2$.1f°</string>
+    <string name="w_level_desc">A spirit level that moves live while switched on. Tap it to switch.</string>
+    <string name="w_level_live">Spirit level widget is on</string>
+    <string name="w_level_live_desc">Open the spirit level</string>
+</resources>

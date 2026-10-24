@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_rms">RMS</string>
+    <string name="fd_rms">Szczyt, RMS, średnia</string>
+    <string name="fk_rms">rms, wartość skuteczna, szczytowa, średnia, sinus, prostokąt, trójkąt, przebieg, rms i wartość szczytowa, międzyszczytowa, kalkulator, oblicz, obliczenia, policz, elektronika, konwerter, konwertuj, konwersja, przelicznik, przelicz, zamiana</string>
+    <string name="ec_rms_value">Wartość skuteczna (RMS)</string>
+    <string name="ec_waveform">Przebieg</string>
+    <string name="ec_sine">Sinus</string>
+    <string name="ec_square">Prostokąt</string>
+    <string name="ec_triangle">Trójkąt</string>
+    <string name="ec_peak">Wartość szczytowa</string>
+    <string name="ec_avg">Średnia (wyprostowana)</string>
+    <string name="ec_peak_to_peak">Międzyszczytowa</string>
+</resources>

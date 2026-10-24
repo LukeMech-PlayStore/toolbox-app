@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_rc_filter">Filtr RC</string>
+    <string name="fd_rc_filter">Częstotliwość graniczna</string>
+    <string name="fk_rc_filter">filtr, rc, dolnoprzepustowy, górnoprzepustowy, częstotliwość graniczna, bode, filtr rc, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_cutoff">Częstotliwość graniczna</string>
+</resources>

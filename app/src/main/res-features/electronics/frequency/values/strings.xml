@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_frequency">Frequency</string>
+    <string name="fd_frequency">Period, wavelength, antenna</string>
+    <string name="fk_frequency">frequency, period, wavelength, hertz, antenna, quarter wave, radio, frequency and wavelength, wave, antenna length, calculator, calc, compute, electronics, converter, convert, conversion</string>
+    <string name="ec_velocity_factor">Velocity factor</string>
+    <string name="ec_angular">Angular frequency</string>
+    <string name="ec_wavelength">Wavelength</string>
+    <string name="ec_quarter_wave">Quarter wave</string>
+</resources>

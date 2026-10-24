@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_FileSize">Kompresor plików</string>
+    <string name="fk_FileSize">rozmiar pliku, kompresja, zmniejsz, mniejszy, megabajty, mb, limit, email, załącznik, wysyłanie, wideo, film, audio, zdjęcie, obraz, zmiana rozmiaru pliku, kompresor, konwerter, konwertuj, zmniejsz plik, zmieść, discord</string>
+    <string name="fd_FileSize">Zmieść plik w limicie</string>
+
+    <string name="f_FileSize_intro_title">Zmniejsz plik do wybranego rozmiaru</string>
+    <string name="f_FileSize_intro_media">Wideo i audio: enkoder multimediów</string>
+    <string name="f_FileSize_intro_image">Zdjęcia: enkoder obrazów</string>
+    <string name="f_FileSize_intro_tip">Narzędzie otworzy się z ustawionym rozmiarem pliku, który możesz zmienić.</string>
+    <string name="f_FileSize_question">Jaki to plik?</string>
+    <string name="f_FileSize_media">Wideo lub audio</string>
+    <string name="f_FileSize_image">Zdjęcie</string>
+</resources>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_series_parallel">Series/parallel</string>
+    <string name="fd_series_parallel">Combine parts</string>
+    <string name="fk_series_parallel">series, parallel, resistor, capacitor, combination, pair, ratio, equivalent, series and parallel, combine, resistors, capacitors, calculator, calc, compute, electronics</string>
+    <string name="ec_resistors">Resistors</string>
+    <string name="ec_capacitors">Capacitors</string>
+    <string name="ec_series">Series</string>
+    <string name="ec_parallel">Parallel</string>
+    <string name="ec_two_values">Two components</string>
+    <string name="ec_find_pair">Find a pair</string>
+    <string name="ec_first">First</string>
+    <string name="ec_second">Second</string>
+    <string name="ec_target">Target value</string>
+    <string name="ec_no_combos">No pair within 2%</string>
+</resources>

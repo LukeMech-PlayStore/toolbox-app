@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spirit level ring.
+     Drawn in white and tinted where used; shared by the spirit level page and its widget. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="168"
+    android:viewportHeight="168">
+    <path android:pathData="M4,84 a80,80 0 1,0 160,0 a80,80 0 1,0 -160,0" android:strokeColor="#FFFFFFFF" android:strokeWidth="4.828" />
+</vector>

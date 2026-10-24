@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_y_delta">Star-delta</string>
+    <string name="fd_y_delta">Convert resistor networks</string>
+    <string name="fk_y_delta">star, delta, wye, y, transformation, network, resistors, kennelly, star-delta, star delta, y-delta, wye-delta, pi-t, calculator, calc, compute, electronics, converter, convert, conversion</string>
+    <string name="ec_ra">Ra</string>
+    <string name="ec_rb">Rb</string>
+    <string name="ec_rc">Rc</string>
+    <string name="ec_rab">Rab</string>
+    <string name="ec_rbc">Rbc</string>
+    <string name="ec_rca">Rca</string>
+    <string name="ec_to_delta">Y → Δ</string>
+    <string name="ec_to_star">Δ → Y</string>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_zener">Zener regulator</string>
+    <string name="fd_zener">Zener diode regulator</string>
+    <string name="fk_zener">zener, diode, regulator, stabilizer, resistor, reference, zener regulator, zener diode, shunt regulator, calculator, calc, compute, electronics</string>
+    <string name="ec_vz">Zener voltage</string>
+    <string name="ec_iz">Zener current</string>
+    <string name="ec_zener_power">Zener power (no load)</string>
+</resources>

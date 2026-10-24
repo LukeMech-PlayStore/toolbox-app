@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Whether there's a connection (e.g. the currency converter updating outdated rates by itself) -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Background Linux subsystem tasks (unpacking, updating, commands) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- The Minecraft server (features/servers/mc_server): the phone and its Wi-Fi awake while it runs -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Live widgets (sensors only reach foreground apps); the Minecraft server's service too -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- Compass altitude (GPS; approximate location has none). Asked for on the compass page -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+
+    <!-- SplitCompat: the Play modules' code and assets (features/) right after they're installed -->
+    <application
+        android:name="com.google.android.play.core.splitcompat.SplitCompatApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="${appLabel}"
+        android:supportsRtl="true"
+        android:theme="@style/android:Theme.Material.Light.NoActionBar"
+        android:localeConfig="@xml/locales_config"
+        tools:targetApi="33">
+
+        <service
+            android:name=".linux.LinuxTaskService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- Home screen widgets (ui/widgets/features) -->
+        <receiver
+            android:name=".ui.widgets.features.measure.compass.CompassWidget"
+            android:exported="true"
+            android:label="@string/fp_compass">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/w_compass_info" />
+        </receiver>
+        <service
+            android:name=".ui.widgets.features.measure.compass.CompassWidgetService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse|location">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Live compass home screen widget: reads the compass sensors (and GPS altitude, when allowed) while the user has switched the widget on, stops with the screen" />
+        </service>
+
+        <receiver
+            android:name=".ui.widgets.features.measure.spirit_level.SpiritLevelWidget"
+            android:exported="true"
+            android:label="@string/fp_spirit_level">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/w_level_info" />
+        </receiver>
+        <service
+            android:name=".ui.widgets.features.measure.spirit_level.SpiritLevelWidgetService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Live spirit level home screen widget: reads the accelerometer while the user has switched the widget on, stops with the screen" />
+        </service>
+
+        <!-- Keeps a started Minecraft server going (and the phone awake for it) until it's stopped. Not the
+             subsystem's dataSync service: Android 15+ stops that after 6 hours a day -->
+        <service
+            android:name=".features.servers.mc_server.ServerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Hosts a Minecraft game server the user started on the phone, for players to connect to, until the user stops it (from the app or the notification)" />
+        </service>
+
+        <!-- Normal app start -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/android:Theme.Material.Light.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- A widget's settings in the launcher: opens its feature's settings. Invisible, in a
+             task of its own, see WidgetSettingsActivity -->
+        <activity
+            android:name=".ui.widgets.helpers.WidgetSettingsActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <!-- Share to QR encoder -->
+        <activity-alias
+            android:name="share.QR.Gen"
+            android:enabled="false"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:label="@string/fp_QREncode">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Share (an amount, "100 USD") to Currency converter -->
+        <activity-alias
+            android:name="share.Currency.Convert"
+            android:enabled="false"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:label="@string/fp_CurrencyConvert">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Share to Metadata editor -->
+        <activity-alias
+            android:name="share.Metadata.Edit"
+            android:enabled="false"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:label="@string/fp_MdEd">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Open in Metadata editor -->
+        <activity-alias
+            android:name="openIn.Metadata.Edit"
+            android:enabled="false"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:label="@string/fp_MdEd">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+
+        </activity-alias>
+
+
+        <!-- Share (a link) to Media downloader -->
+        <activity-alias
+            android:name="share.Media.Download"
+            android:enabled="false"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:label="@string/fp_MediaDl">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Share (a video or audio file) to Video encoder -->
+        <activity-alias
+            android:name="share.Video.Encode"
+            android:enabled="false"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:label="@string/fp_VideoEnc">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Share (a picture) to Image resizer -->
+        <activity-alias
+            android:name="share.Image.Resize"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:label="@string/fp_ImgRes">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Shares the QR generator's codes (res/xml/file_paths.xml) -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+</manifest>

@@ -1,0 +1,25 @@
+*.iml
+.gradle
+/local.properties
+# IDE state: keep only the shared code style, inspections (+ the scopes they use), spelling dictionary and run configurations
+/.idea/*
+!/.idea/codeStyles/
+!/.idea/inspectionProfiles/
+!/.idea/scopes/
+!/.idea/dictionaries/
+!/.idea/runConfigurations/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+*.jks
+**/build
+**/jniLibs/*/libpackage-*.so
+**/jniLibs/*/libproot*.so
+**/jniLibs/*/libparts.json.so
+
+# Python bytecode (the workflows' scripts)
+__pycache__/
+*.pyc

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_smd_code">SMD code</string>
+    <string name="fd_smd_code">Resistor markings</string>
+    <string name="fk_smd_code">smd, resistor, code, marking, eia-96, chip, 4r7, smd resistor code, decoder, decode, calculator, calc, compute, electronics, converter, convert, conversion</string>
+    <string name="ec_invalid_code">Enter a valid code</string>
+    <string name="ec_smd_code">SMD code</string>
+</resources>

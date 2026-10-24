@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fp_VideoEnc">Media converter</string>
+    <string name="fk_VideoEnc" tools:ignore="Typos">media, multimedia, video, music, encoder, ffmpeg, convert, converter, cut, trim, clip, compress, resize, rotate, speed, mp4, mkv, webm, GIF, mp3, audio, h264, hevc, av1, media encoder, video encoder, editor, edit, transcode, conversion</string>
+    <string name="fd_VideoEnc">Shrink, cut, convert</string>
+    <string name="f_VidEnc_share_desc">Share videos and audio to the encoder from other apps</string>
+</resources>

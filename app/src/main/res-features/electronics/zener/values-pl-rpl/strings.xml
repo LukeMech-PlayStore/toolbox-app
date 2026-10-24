@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_zener">Stabilizator Zenera</string>
+    <string name="fd_zener">Stabilizator na diodzie Zenera</string>
+    <string name="fk_zener">zener, dioda, stabilizator, rezystor, napięcie odniesienia, stabilizator zenera, dioda zenera, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_vz">Napięcie Zenera</string>
+    <string name="ec_iz">Prąd Zenera</string>
+    <string name="ec_zener_power">Moc diody (bez obciążenia)</string>
+</resources>

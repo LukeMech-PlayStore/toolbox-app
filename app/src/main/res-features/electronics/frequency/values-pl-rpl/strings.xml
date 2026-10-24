@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_frequency">Częstotliwość</string>
+    <string name="fd_frequency">Okres, fala, antena</string>
+    <string name="fk_frequency">częstotliwość, okres, długość fali, herc, antena, ćwierćfalowa, radio, częstotliwość i fala, fala, długość anteny, kalkulator, oblicz, obliczenia, policz, elektronika, konwerter, konwertuj, konwersja, przelicznik, przelicz, zamiana</string>
+    <string name="ec_velocity_factor">Współczynnik skrócenia</string>
+    <string name="ec_angular">Pulsacja</string>
+    <string name="ec_wavelength">Długość fali</string>
+    <string name="ec_quarter_wave">Ćwierć fali</string>
+</resources>

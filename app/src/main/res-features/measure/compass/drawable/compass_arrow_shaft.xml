@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The compass arrow's shaft, fixed (its head is compass_arrow_head); also what compass_altitude_fill
+     and _band color up. Drawn in white and tinted where used; shared by the compass page and its
+     widget. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="240"
+    android:viewportHeight="240">
+    <path android:pathData="M120,79.171 L120,160.829" android:strokeColor="#FFFFFFFF" android:strokeWidth="4.693" android:strokeLineCap="round" />
+</vector>

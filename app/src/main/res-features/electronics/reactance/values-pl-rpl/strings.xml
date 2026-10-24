@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_reactance">Reaktancja</string>
+    <string name="fd_reactance">C, L i rezonans LC</string>
+    <string name="fk_reactance">reaktancja, impedancja, kondensator, cewka, dławik, rezonans, lc, częstotliwość, dobroć, reaktancja i rezonans, pojemnościowa, indukcyjna, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_cap_reactance">Reaktancja pojemnościowa</string>
+    <string name="ec_ind_reactance">Reaktancja indukcyjna</string>
+    <string name="ec_resonance">Rezonans</string>
+    <string name="ec_resonant_freq">Częstotliwość rezonansowa</string>
+    <string name="ec_quality">Dobroć (Q)</string>
+</resources>

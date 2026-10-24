@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_pcb_trace">PCB trace</string>
+    <string name="fd_pcb_trace">Width for your current</string>
+    <string name="fk_pcb_trace">pcb, trace, track, width, current, ipc-2221, copper, board, pcb trace width, printed circuit board, track width, calculator, calc, compute, electronics</string>
+    <string name="ec_1oz">1 oz (35 μm)</string>
+    <string name="ec_2oz">2 oz (70 μm)</string>
+    <string name="ec_layer">Layer</string>
+    <string name="ec_external">Outer</string>
+    <string name="ec_internal">Inner</string>
+    <string name="ec_t_rise">Temperature rise</string>
+    <string name="ec_width">Trace width</string>
+    <string name="ec_width_mil">In mils</string>
+</resources>

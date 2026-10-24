@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_color_code">Color code</string>
+    <string name="fd_color_code">Resistor stripes</string>
+    <!-- Keywords as people type them in the search, so the British spelling too -->
+    <!--suppress GrazieInspection -->
+    <string name="fk_color_code">resistor, inductor, color, colour, bands, stripes, code, value, tolerance, color code, resistor color code, decoder, decode, calculator, calc, compute, electronics, converter, convert, conversion</string>
+    <string name="ec_value">Value</string>
+    <string name="ec_bands">Bands</string>
+    <string name="ec_band1">Band 1</string>
+    <string name="ec_band2">Band 2</string>
+    <string name="ec_band3">Band 3</string>
+    <string name="ec_tolerance">Tolerance</string>
+    <string name="ec_multiplier">Multiplier</string>
+    <string name="ec_tempco">Temperature coefficient</string>
+    <string name="ec_no_color_code">No color code for this value</string>
+    <string name="ec_resistor">Resistor</string>
+    <string name="ec_inductor">Inductor</string>
+    <string name="ec_direction">Direction</string>
+    <string name="ec_value_to_bands">Value → bands</string>
+    <string name="ec_bands_to_value">Bands → value</string>
+    <string name="ec_black">Black</string>
+    <string name="ec_brown">Brown</string>
+    <string name="ec_red">Red</string>
+    <string name="ec_orange">Orange</string>
+    <string name="ec_yellow">Yellow</string>
+    <string name="ec_green">Green</string>
+    <string name="ec_blue">Blue</string>
+    <string name="ec_violet">Violet</string>
+    <string name="ec_grey">Grey</string>
+    <string name="ec_white">White</string>
+    <string name="ec_gold">Gold</string>
+    <string name="ec_silver">Silver</string>
+</resources>

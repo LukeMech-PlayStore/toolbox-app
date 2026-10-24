@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The altitude's accuracy on the compass arrow: the shaft colored faintly up to the highest likely
+     altitude, under compass_altitude_fill (up to the lowest). Clipped from the bottom by its level
+     (CompassFeature.altitudeLevel); tinted where used, shared by the compass page and its widget. -->
+<clip xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clipOrientation="vertical"
+    android:drawable="@drawable/compass_arrow_shaft"
+    android:gravity="bottom" />

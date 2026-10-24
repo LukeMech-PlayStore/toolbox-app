@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_QREncode">QR generator</string>
+    <!-- Keywords as people type them in the search, so Wi-Fi without its hyphen -->
+    <!--suppress GrazieInspection -->
+    <string name="fk_QREncode">qr, code, barcode, generator, link, url, text, share, wifi, contact, vcard, email, sms, phone, location, map, qr generator, qr code, create, make, maker</string>
+    <string name="fd_QREncode">Links, Wi-Fi, contacts</string>
+</resources>

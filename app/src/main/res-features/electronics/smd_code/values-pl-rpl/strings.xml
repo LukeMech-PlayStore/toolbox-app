@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_smd_code">Kod SMD</string>
+    <string name="fd_smd_code">Oznaczenia rezystorów</string>
+    <string name="fk_smd_code">smd, rezystor, opornik, kod, oznaczenie, eia-96, 4r7, kod rezystora smd, dekoder, odczytaj, kalkulator, oblicz, obliczenia, policz, elektronika, konwerter, konwertuj, konwersja, przelicznik, przelicz, zamiana</string>
+    <string name="ec_invalid_code">Podaj poprawny kod</string>
+    <string name="ec_smd_code">Kod SMD</string>
+</resources>

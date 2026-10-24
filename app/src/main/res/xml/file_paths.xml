@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Files other apps get through the FileProvider: the QR codes and edited files being shared -->
+<paths>
+    <cache-path name="qr" path="qr/" />
+    <cache-path name="metadata" path="metadata/share/" />
+</paths>

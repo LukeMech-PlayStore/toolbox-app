@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_pt100">Czujnik PT100</string>
+    <string name="fd_pt100">Opór na temperaturę</string>
+    <string name="fk_pt100">pt100, pt1000, rtd, platyna, czujnik, temperatura, rezystancja, czujnik pt100, termometr, czujnik temperatury, kalkulator, oblicz, obliczenia, policz, elektronika, konwerter, konwertuj, konwersja, przelicznik, przelicz, zamiana</string>
+    <string name="ec_sensor">Czujnik</string>
+    <string name="ec_temp">Temperatura</string>
+</resources>

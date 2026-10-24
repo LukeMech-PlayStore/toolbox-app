@@ -1,0 +1,19 @@
+<resources>
+    <string name="f_CurrencyConvert_convFrom">Domyślna waluta źródłowa</string>
+    <string name="f_CurrencyConvert_convTo">Domyślna waluta docelowa</string>
+    <string name="f_CurrencyConvert_from">Z</string>
+    <string name="f_CurrencyConvert_to">Na</string>
+    <string name="f_CurrencyConvert_conv">Przelicz</string>
+    <string name="f_CurrencyConvert_amount">Kwota</string>
+    <string name="f_CurrencyConvert_result">Wynik</string>
+    <string name="f_CurrencyConvert_data_label">Kursy z dnia</string>
+    <string name="f_CurrencyConvert_data_outdated">%s · nieaktualne</string>
+    <string name="f_CurrencyConvert_swap_cd">Zamień waluty</string>
+    <string name="f_CurrencyConvert_use_latest">Używaj najnowszych kursów</string>
+    <string name="f_CurrencyConvert_source_latest_desc">Z EBC, aktualizowane ręcznie</string>
+    <string name="f_CurrencyConvert_source_builtin_desc">Offline, mogą być nieaktualne</string>
+    <string name="f_CurrencyConvert_updated">Zaktualizowano kursy walut</string>
+    <string name="f_CurrencyConvert_prompt_builtin">Używane są wbudowane kursy</string>
+    <string name="f_CurrencyConvert_builtin_title">Wbudowane kursy</string>
+    <string name="f_CurrencyConvert_builtin_msg">W ustawieniach wybrano wbudowane kursy walut. Mogą być nieaktualne.</string>
+</resources>

@@ -1,0 +1,45 @@
+<resources>
+    <string name="f_MdEd_pick">Wybierz plik</string>
+    <string name="f_MdEd_intro_title">Edytuj metadane pliku</string>
+    <string name="f_MdEd_intro_1">Wybierz zdjęcie, film, plik audio, PDF lub dokument</string>
+    <string name="f_MdEd_intro_2">Edytuj jego tagi albo usuń lokalizację GPS lub wszystko</string>
+    <string name="f_MdEd_intro_3">Zastąp oryginał, zapisz kopię lub udostępnij</string>
+    <string name="f_MdEd_intro_tip">Pliki można też udostępnić lub otworzyć prosto w edytorze z innych aplikacji.</string>
+    <string name="f_MdEd_continue">Wróć do %1$s</string>
+    <string name="f_MdEd_add_tag">Dodaj tag</string>
+    <string name="f_MdEd_edit_tag">Edytuj tag</string>
+    <string name="f_MdEd_remove_gps">Usuń GPS</string>
+    <string name="f_MdEd_remove_all">Usuń wszystko</string>
+    <string name="f_MdEd_no_tags">Brak tagów do edycji. Dodaj jakiś powyżej.</string>
+    <string name="f_MdEd_group_read_only">%1$s · tylko odczyt</string>
+    <string name="f_MdEd_remove">Usuń</string>
+    <string name="f_MdEd_restore">Przywróć</string>
+    <string name="f_MdEd_next">Dalej</string>
+    <string name="f_MdEd_no_changes">Bez zmian</string>
+    <string name="f_MdEd_export_note">Zapisano w kopii: zastąp nią oryginał, zapisz jako nowy plik albo udostępnij.</string>
+    <string name="f_MdEd_export_note_unchanged">Plik jest bez zmian: zapisz kopię albo udostępnij.</string>
+    <string name="f_MdEd_replace">Zastąp</string>
+    <string name="f_MdEd_share">Udostępnij</string>
+    <string name="f_MdEd_saved">Zapisano</string>
+    <string name="f_MdEd_open_another">Otwórz inny plik</string>
+    <plurals name="f_MdEd_write">
+        <item quantity="one">Zapisz %d zmianę</item>
+        <item quantity="few">Zapisz %d zmiany</item>
+        <item quantity="many">Zapisz %d zmian</item>
+        <item quantity="other">Zapisz %d zmiany</item>
+    </plurals>
+    <plurals name="f_MdEd_written">
+        <item quantity="one">Zapisano %d zmianę</item>
+        <item quantity="few">Zapisano %d zmiany</item>
+        <item quantity="many">Zapisano %d zmian</item>
+        <item quantity="other">Zapisano %d zmiany</item>
+    </plurals>
+    <string name="f_MdEd_str_group">Grupa</string>
+    <string name="f_MdEd_str_tag">Tag</string>
+    <string name="f_MdEd_str_value">Wartość</string>
+    <string name="f_MdEd_str_reset">Odrzuć zmiany</string>
+    <string name="f_MdEd_str_readonly">Tag tylko do odczytu</string>
+    <string name="f_MdEd_str_save_as">Zapisz jako</string>
+    <string name="f_MdEd_str_save_fail_fallback">Zapis nieudany. Zapisz kopię jako…</string>
+
+</resources>

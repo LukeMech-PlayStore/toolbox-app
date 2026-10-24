@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="LinuxPackages" pattern="file:jniLibs//*||file:src/main/jniLibs//*||file:app/src/main/jniLibs//*" />
+</component>

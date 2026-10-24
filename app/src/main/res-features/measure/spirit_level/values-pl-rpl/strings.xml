@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_spirit_level">Poziomica</string>
+    <string name="fk_spirit_level">poziomica, libella, poziom, pion, nachylenie, kąt, spadek, przechył, wypoziomuj, narzędzia</string>
+    <string name="fd_spirit_level">Żeby było równo</string>
+    <string name="f_level_accuracy_title">Niska dokładność czujnika</string>
+    <string name="f_level_accuracy_message">Akcelerometr zgłasza niską dokładność, więc odczyty mogą być niedokładne. Połóż telefon na chwilę na płaskiej powierzchni.</string>
+    <string name="f_level_missing_sensors_message">Nie znaleziono akcelerometru wymaganego do działania poziomicy.</string>
+    <string name="w_level_desc">Poziomica działająca na żywo po włączeniu. Dotknij, aby przełączyć.</string>
+    <string name="w_level_live">Widżet poziomicy jest włączony</string>
+    <string name="w_level_live_desc">Otwórz poziomicę</string>
+</resources>

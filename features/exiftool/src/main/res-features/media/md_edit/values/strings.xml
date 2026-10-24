@@ -1,0 +1,41 @@
+<resources>
+    <string name="f_MdEd_pick">Choose a file</string>
+    <string name="f_MdEd_intro_title">Edit a file\'s metadata</string>
+    <string name="f_MdEd_intro_1">Choose a photo, video, audio file, PDF or document</string>
+    <string name="f_MdEd_intro_2">Edit its tags, or remove the GPS location or everything</string>
+    <string name="f_MdEd_intro_3">Replace the original, save a copy or share it</string>
+    <string name="f_MdEd_intro_tip">Files can also be shared or opened straight into the editor from other apps.</string>
+    <string name="f_MdEd_continue">Back to %1$s</string>
+    <string name="f_MdEd_add_tag">Add tag</string>
+    <string name="f_MdEd_edit_tag">Edit tag</string>
+    <string name="f_MdEd_remove_gps">Remove GPS</string>
+    <string name="f_MdEd_remove_all">Remove all</string>
+    <string name="f_MdEd_no_tags">No tags to edit. Add one above.</string>
+    <string name="f_MdEd_group_read_only">%1$s · read-only</string>
+    <string name="f_MdEd_remove">Remove</string>
+    <string name="f_MdEd_restore">Restore</string>
+    <string name="f_MdEd_next">Next</string>
+    <string name="f_MdEd_no_changes">No changes</string>
+    <string name="f_MdEd_export_note">Written into a copy: replace the original with it, save it as a new file or share it.</string>
+    <string name="f_MdEd_export_note_unchanged">The file is as it was: save a copy or share it.</string>
+    <string name="f_MdEd_replace">Replace</string>
+    <string name="f_MdEd_share">Share</string>
+    <string name="f_MdEd_saved">Saved</string>
+    <string name="f_MdEd_open_another">Open another file</string>
+    <plurals name="f_MdEd_write">
+        <item quantity="one">Write %d change</item>
+        <item quantity="other">Write %d changes</item>
+    </plurals>
+    <plurals name="f_MdEd_written">
+        <item quantity="one">%d change written</item>
+        <item quantity="other">%d changes written</item>
+    </plurals>
+    <string name="f_MdEd_str_group">Group</string>
+    <string name="f_MdEd_str_tag">Tag</string>
+    <string name="f_MdEd_str_value">Value</string>
+    <string name="f_MdEd_str_reset">Reset changes</string>
+    <string name="f_MdEd_str_readonly">Read-only tag</string>
+    <string name="f_MdEd_str_save_as">Save as</string>
+    <string name="f_MdEd_str_save_fail_fallback">Save failed. Opening \'Save As\'…</string>
+
+</resources>

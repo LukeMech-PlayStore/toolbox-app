@@ -1,0 +1,267 @@
+# Toolbox (LMToolbox)
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Android Build & Release](https://github.com/LukeMech-PlayStore/toolbox-app/actions/workflows/build-app.yml/badge.svg)](https://github.com/LukeMech-PlayStore/toolbox-app/actions/workflows/build-app.yml)
+
+**One app, a drawer full of tools.** Measure with a ruler, a spirit level and a compass; work out a resistor's
+color code or a 555 timer with 25 electronics calculators; convert currencies; download, convert and shrink
+videos, music and images; edit a photo's metadata; or run your own Minecraft server, Vanilla to NeoForge,
+straight from your phone and reachable by your friends through a Cloudflare tunnel.
+
+The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared) inside a
+PRoot-based Linux subsystem. You never set it up: the app installs it part by part, only when a tool you open
+needs it, and removes what no tool uses anymore. No root, no terminal, and in English and Polish.
+
+<a href="https://play.google.com/store/apps/details?id=org.lukemech.lmtoolbox"><img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="80"></a>
+
+The app is open source: read it, learn from it, build it yourself. Buying it on
+[Google Play](https://play.google.com/store/apps/details?id=org.lukemech.lmtoolbox) is the easy way to get it,
+with automatic updates, and it's what supports its development. Thank you!
+
+## For developers
+
+Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is built in its own repository,
+[`toolbox-linux-subsystem`](https://github.com/LukeMech-PlayStore/toolbox-linux-subsystem).
+
+### Tools
+
+| Category    | Tool                                                                          | Runs on                                                                                                                                                      | Module              |
+|-------------|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|
+| Measure     | Ruler                                                                         | Android                                                                                                                                                      | `app`               |
+| Measure     | Spirit level (with a widget)                                                  | Android sensors                                                                                                                                              | `app`               |
+| Measure     | Compass (with a widget, GPS altitude)                                         | Android sensors                                                                                                                                              | `app`               |
+| Electronics | 25 calculators (listed below)                                                 | Android                                                                                                                                                      | `app`               |
+| Finance     | Currency converter (ECB rates, amounts shared from other apps)                | Python (`CurrencyConverter`)                                                                                                                                 | `features:pypkgs`   |
+| Media       | QR generator                                                                  | Python (`qrcode`, Pillow)                                                                                                                                    | `features:pypkgs`   |
+| Media       | Metadata editor                                                               | ExifTool                                                                                                                                                     | `features:exiftool` |
+| Media       | Media downloader                                                              | yt-dlp (with FFmpeg, QuickJS)                                                                                                                                | `features:ytdlp`    |
+| Media       | Media encoder (video, GIF, sound; cut, resize, a target file size)            | FFmpeg                                                                                                                                                       | `features:ffmpeg`   |
+| Media       | Image encoder (resizing, a target file size)                                  | Android (`ImageDecoder`, `Bitmap`)                                                                                                                           | `app`               |
+| Media       | File size (a shortcut to the media or the image encoder)                      | Android                                                                                                                                                      | `app`               |
+| Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Cloudflare tunnel) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); cloudflared once a server's tunnel is on (`features:cloudflared`) | `app`               |
+
+The electronics calculators: color code, SMD resistor code, Ohm's law, electric power, reactance and
+resonance, RC filter, voltage divider, series and parallel, capacitor charging, op-amp amplifier, LED
+resistor, Zener regulator, LM317 regulator, 555 timer, heat sink, battery life, air-core coil, cable voltage
+drop, PCB trace width, star-delta, PT100 sensor, decibels, frequency and wavelength, ADC converter, RMS and peak.
+
+### Project layout
+
+```
+toolbox-app/
+├── app/                              The app: home, settings, navigation, the native tools, the subsystem's runtime
+│   └── src/
+│       ├── main/java/org/lukemech/lmtoolbox/
+│       │   ├── MainActivity.kt           Entry point; "Share to" / "Open in" intents → a tool's page
+│       │   ├── features/<category>/<route>/   Each tool's definition and its logic (maths, jobs, parsing)
+│       │   │   └── electronics/common/   Units, SI prefixes, E-series: what the calculators share
+│       │   ├── helpers/                  The tool registry, Play delivery, preferences, files, resource monitor
+│       │   ├── linux/                    The Linux subsystem: its parts, running commands, tasks (see below)
+│       │   │   └── parts/                APIs of parts several tools pick among: Java, Tunnel (cloudflared)
+│       │   └── ui/
+│       │       ├── components/           Shared building blocks (headings, setting rows, tiles, results, step bar…)
+│       │       ├── helpers/              Navigation, the bottom bar, the install prompt, the subsystem's setup
+│       │       ├── pages/                Home (Features.kt), settings, and each tool's pages under features/
+│       │       │   └── features/electronics/common/   The calculators' page, fields, linked fields, formula
+│       │       └── widgets/              Home screen widgets (spirit level, compass)
+│       ├── main/res/                     The app's strings and those several tools share
+│       ├── main/res-features/<category>/<route>/   Each tool's own resources (strings, drawables, widget layouts)
+│       └── test/                         Unit tests, in the packages of what they test
+├── features/<part>/                  On-demand Play modules, one per part of the Linux subsystem
+│   └── src/main/                         The part's archive (jniLibs, downloaded at build time) and, for a
+│                                         tool alone on that part, its pages, strings and scripts (assets/)
+├── buildSrc/                         The build's own code: the Linux packages' tasks, Play local testing
+├── gradle/libs.versions.toml         Dependency versions
+├── gradle.properties                 App version, SDK levels, JDK and bytecode levels, the subsystem's release
+└── whatsNew/                         Play Store release notes (en-US, pl-PL)
+```
+
+### How a tool is made
+
+Every tool is an `AppFeature`, listed in `FeatureRegistry.features`
+([`helpers/FeatureRegistry.kt`](app/src/main/java/org/lukemech/lmtoolbox/helpers/FeatureRegistry.kt)): add a
+new one there. Its pages are opened by its `route` (`feature/<route>`, its settings at
+`settings/features/<route>`, see `FeatureRegistry.byRoute`), so the list's order is only the order shown. A test
+checks that the routes are unique.
+
+- Every tool has a title, search keywords and a short catchy line under its name on the home page
+  (`descriptionResId`, searched too). It may list the tiles its work's load shows in (`resourceTiles`, see
+  [UI conventions](#ui-conventions)).
+- A **native tool** (e.g. `RulerFeature`, `ImageResizerFeature`) is an `object : AppFeature` in
+  `features/<category>/<route>/<Name>Fun.kt`, with its logic next to it (e.g. `OhmCalc.kt`, tested). Its pages
+  are in `ui/pages/features/<category>/<route>/`, and its strings in
+  `res-features/<category>/<route>/values{,-pl-rpl}/strings.xml`.
+- A **tool on the Linux subsystem** is a `ModuleFeature` (`features/<category>/<route>/<Name>Feature.kt`),
+  holding only what the app needs before its module is installed: title, icon, keywords, preference keys.
+  It lists the parts it runs on (`linuxExtensions`, each with what it builds on). Its pages are a `FeatureUi`
+  object in the part's module (`uiClass`, loaded by name through `FeatureDelivery`). Until its parts are
+  there, `ExtensionGate` shows what they take and installs them.
+- A tool on several parts (the Minecraft server) is the app's: there's no module of code alone. The parts it
+  picks among or turns on (`extraExtensions`: a Java version, cloudflared) have their API in the app
+  (`linux/parts/`: `Java`, `Tunnel`), and their modules are just their archives. So a tool gets one only once
+  it needs it, and no part's module depends on another's.
+- A module lays its tools out as the app does: `features/<category>/<route>/` for what isn't UI (its
+  `FeatureUi`, jobs, maths and parsing, tested in `src/test/` under the same package),
+  `ui/pages/features/<category>/<route>/` for its pages, and `assets/features/<route>/` for its scripts
+  (installed into the subsystem by `LinuxScripts` each time they run, as the app ships them; folders no tool
+  has anymore go with the subsystem's update).
+- What a tool makes is saved with [`helpers/SavedFiles.kt`](app/src/main/java/org/lukemech/lmtoolbox/helpers/SavedFiles.kt):
+  into the folder picked in its settings (`OutputFolder`), else into MediaStore (`saveToMediaStore`). Its page
+  then opens or shares it (`openFile`, `shareFile`, which leaves the tool's own "Share to" out).
+- "Share to" and "Open in" entries are `<activity-alias>`es in the manifest, listed in `SystemEntries` (a
+  test checks the two match). Each is switched on or off in the system section of the tool's settings
+  (`AppEntrySetting`), on only while the tool is installed.
+- A tool's preferences are listed in its `preferenceKeys`, and its files in `dataFiles`, so that "Delete
+  data" in its settings removes everything it keeps.
+
+#### The electronics calculators
+
+They share one page (`CalculatorPage`), with fields that take values with SI prefixes (`UnitField`,
+`parseValue`, `formatValue`). Where any of several values follows from the others (Ohm's law's voltage,
+current, resistance and power), the fields are linked (`rememberLinkedFields`): the last ones typed are the
+inputs, the rest are computed and marked as such, and tapping a computed one makes it an input. Each
+calculator's formula is shown from the button in its corner (`Formula`), and a resistor value can be
+rounded to the nearest value of an E-series (`ESeries`, `ESeriesSetting`). The maths that's more than a
+line lives in the tool's `<Name>Calc.kt`, with tests.
+
+### The Linux subsystem
+
+The subsystem is a Termux-based rootfs, split into parts (`core`, `python`, `pypkgs`, `ffmpeg`, `exiftool`,
+`ytdlp`, `jdk8`, `jdk17`, `jdk21`, `jdk25`, `cloudflared`), plus PRoot. Each part is an on-demand Play module under
+`features/`, installed with the first tool that needs it (the core, with PRoot, comes with the first one). A
+part may not be built for every ABI (`jdk25`: no OpenJDK 25 for x86); a tool none of whose parts are there
+says it isn't available. Its commands run as argv lists through PRoot, with the Termux prefix bound to
+`/data/data/com.termux/files/usr`.
+
+The code is in [`app/…/linux/`](app/src/main/java/org/lukemech/lmtoolbox/linux):
+
+| File                | What it does                                                                                            |
+|---------------------|---------------------------------------------------------------------------------------------------------|
+| `LinuxParts.kt`     | What the app ships of the parts (this ABI's, from `libparts.json.so`) and what's downloaded or unpacked |
+| `LinuxInstaller.kt` | Unpacks a part from its module's archive, updates the outdated ones, deletes them                       |
+| `PartUsers.kt`      | Which tool uses which part (or was unlocked by another's installation): a part goes once none uses it   |
+| `LinuxEnv.kt`       | Runs a command through PRoot (`exec`), with the environment Termux's programs expect                    |
+| `LinuxTasks.kt`     | Every command, installation and update as a task: the bottom bar, the notification, cancelling          |
+| `LinuxScripts.kt`   | Installs the tools' scripts (their modules' assets) into the subsystem                                  |
+| `InstallPrompt.kt`  | Asks before installing what a tool needs now                                                            |
+| `parts/`            | `Java` and `Tunnel`: the APIs of the parts a tool picks among or turns on                               |
+
+From UI code, use `LinuxTasks.run` or `runInBackground` (and `runService` for what runs until it's stopped,
+e.g. a server). A task carries the tool that started it (`LinuxTask.source`), which titles it and opens its
+page from the bottom bar. Each command gets its task's id in its environment (`LMTOOLBOX_TASK`); that's how
+what it takes is measured (`ResourceScope.Task`).
+
+A tool can install parts itself when it needs them (`LinuxTasks.installParts`, e.g. the server's Java
+version) and they're uninstalled once nothing uses them. A tool another's installation brought all its parts
+for (the media encoder with the downloader's FFmpeg) is unlocked: there to use, but it keeps no part.
+
+#### The packages in the build
+
+The parts aren't stored in this repository. `gradle.properties` pins the subsystem's release the app ships
+(`linuxRelease`), and `:app:updateLinuxPackages` (it runs before every build) downloads it and puts each
+archive into its module's `jniLibs`. It only downloads when what's there is of another release, so it works
+offline after that, and builds never ask GitHub's API. `./gradlew updateLinuxRelease` does: it pins the newest
+published release (set `GITHUB_TOKEN` to avoid its rate limit). Commit that line with what uses the new release.
+
+To add a program, define it in the subsystem's `config.yaml` (a Termux or pip package in a part), let its
+workflow release it, pin that release, and use it from the module of the part it's in.
+
+### UI conventions
+
+- **Errors are told in one place**: the red line of the bottom bar (`TaskStatusBar`). Tapping it opens the
+  tool that failed; the log is in the task list. A failed command shows there on its own. A failure outside a
+  command (a download of the tool's own, a file it couldn't save, a server that crashed) goes through
+  `LinuxTasks.reportFailure`. Pages never show an error themselves. Error messages are short English text in
+  code, not string resources, to keep the app small. Cancelling isn't an error.
+- **Progress is the steps' bar**, at the bottom of the app over its other bars. A page's `Steps` (given to its
+  `PageHeading`) are shown by `StepBarSlot`: what the work is at, how far (a percentage) and a short detail
+  over the bars, and a button cancelling it.
+- **What a job takes** shows in tiles (`ResourceTiles`, read by `ResourceMonitor` from `/proc` and
+  `TrafficStats`): CPU, memory, storage and network, as the tool lists them (`resourceTiles`), of its task's
+  processes or of the whole app. They, a finished job's actions and an installation's button sit at the bottom
+  of the page, where its buttons go.
+- **Installing is asked first**: `LinuxTasks.installParts` shows what's to get and what it takes
+  (`InstallPrompt`, shown by `InstallPromptHost`) and returns `InstallResult` (`Installed`, `Declined`,
+  `Failed`). Declining isn't an error. A page that tells it all itself (full screen) passes `confirm = false`;
+  `ExtensionGate` is the installation page.
+- **Everything that appears or disappears animates**, through `Reveal` (and `revealEnter`, `revealExit`): one
+  duration and curve across the app. Nothing pops in or out.
+- **A number field holds a number**: no switch (a unit, a mode, a component) may leave letters in it. A value
+  with a prefix the new unit doesn't take is turned into a plain number ("4.7 k" → 4700).
+- A setting that can't be changed now is grayed out (`OptionSetting`'s `enabled`); one whose choices are loading
+  shows a spinner instead of its arrow (`loading`). What's typed into a calculator is kept when the screen turns.
+- **The shared pieces are used, not rebuilt**: `InputField` for every text field (the app's corners, Done closing
+  the keyboard), `RowColors` for a row's colors (`default`, `danger`, `alert`, `changed`, `highlighted`,
+  `tinted`), `PermissionDialog` for every permission asked, `PromptBar` for a bar asking for something on top of
+  a page (`SensorWarning` for the measuring tools' sensors), `ConfirmDialog` before what can't be undone.
+- **A page is a plain function** named `<Name>Page`, in its tool's own package (so its helpers' names never
+  clash with another tool's). A settings sub-page is a `…Page` too; a part of the main settings page is a
+  `…Section`.
+
+### Building
+
+Requirements:
+- Android Studio (its bundled JDK runs Gradle; Gradle provisions JDK 25 for the code through the foojay
+  resolver)
+- Android SDK with platform 37 (`local.properties`: `sdk.dir`)
+- Network access on the first build (the subsystem's release)
+
+The Android Gradle Plugin stays at 9.1.1: it's the newest Android Studio's plugin syncs. Its warnings about a
+newer version, and about deprecated Gradle features it uses itself, are expected.
+
+```sh
+./gradlew assembleDebug          # debug APKs (applicationId org.lukemech.lmtoolbox.dbg)
+./gradlew bundleRelease          # release bundle (needs the signing config, see the release workflow)
+./gradlew test                   # unit tests (the app and the modules)
+./gradlew updateLinuxRelease     # pin the subsystem's newest release
+```
+
+The build files share what they can: the root `build.gradle.kts` configures every Play module and the Kotlin
+JDK and bytecode level of all of them, and `buildSrc/` holds the app's tasks (`LinuxPackages.kt`,
+`LocalTesting.kt`).
+
+#### Running on a device
+
+- **app**: Android Studio's plain run configuration installs the app *with every module*, so there's nothing
+  to download.
+- **app (Play local testing)**: runs `:app:installLocalTesting`. It builds the debug bundle and installs it with
+  bundletool's local testing, so the modules are "downloaded" the way Play would deliver them. The core module
+  is installed for real, because PRoot has to be executed from `nativeLibraryDir`. Pick a device with
+  `-Pdevice=<serial>` (or `ANDROID_SERIAL`) when several are connected.
+
+```sh
+./gradlew :app:installLocalTesting -Pdevice=<serial>
+```
+
+### Versioning and releases
+
+`gradle.properties` holds `versionName` (`YY.MM.DD`) and `gplayCode`. The
+[`build-app.yml`](.github/workflows/build-app.yml) workflow runs the unit tests, then builds the debug and the
+signed release artifacts, and can push them to Play tracks as drafts. A version's tag
+(`v<versionName>_<gplayCode>`) runs it on its own: the release goes to internal and alpha, internal's published.
+[`publish-draft.yml`](.github/workflows/publish-draft.yml) publishes the drafts of the tracks picked (by hand,
+or as the build's last job). The release notes come from `whatsNew/`. A tag also makes a GitHub release,
+titled by the tag: the English release notes (`whatsnew-en-US`), then the commits since the previous tag.
+[`update-daemon-jvm.yml`](.github/workflows/update-daemon-jvm.yml) opens a pull request each week when the
+Gradle daemon's JDK has newer builds.
+
+### Conventions
+
+- Comments say *why* and *what for*, in plain words. Match the surrounding style.
+- Every user-facing string exists in both `values` and `values-pl-rpl` (error messages aside, see
+  [UI conventions](#ui-conventions)), and none is left unused.
+- Logic that isn't UI (maths, parsing, commands) sits apart from the pages, in the tool's
+  `features/<category>/<route>/`, with unit tests.
+
+## License
+
+Toolbox is free software: you can redistribute it and/or modify it under the terms of the
+[GNU General Public License v3.0](LICENSE) as published by the Free Software Foundation. It comes with no
+warranty. A modified version you distribute has to be under the same license, with its source.
+
+The license covers the code, not the brand: the names "Toolbox" and "LMToolbox", the app's icon and its Google
+Play listing are LukeMech's and aren't licensed under the GPL. A fork you publish must use its own name, icon
+and application ID. See [TRADEMARKS.md](TRADEMARKS.md).
+
+The Linux subsystem's programs (PRoot, Termux packages, OpenJDK and the rest) are their authors', under their
+own licenses.

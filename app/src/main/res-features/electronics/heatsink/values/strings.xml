@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_heatsink">Heatsink</string>
+    <string name="fd_heatsink">Will it overheat?</string>
+    <string name="fk_heatsink">heatsink, heat, thermal, junction, temperature, dissipation, cooling, rth, heat sink, overheating, cooler, calculator, calc, compute, electronics</string>
+    <string name="ec_t_amb">Ambient temperature</string>
+    <string name="ec_t_max">Max junction temperature</string>
+    <string name="ec_rth_ja">Rth junction–ambient</string>
+    <string name="ec_t_junction">Junction temperature</string>
+    <string name="ec_p_max">Max power without a heatsink</string>
+    <string name="ec_no_heatsink">No heat sink needed</string>
+    <string name="ec_rth_needed">Total Rth allowed</string>
+</resources>

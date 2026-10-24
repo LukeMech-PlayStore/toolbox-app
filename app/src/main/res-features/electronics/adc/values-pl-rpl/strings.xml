@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_adc">Przetwornik ADC</string>
+    <string name="fd_adc">Odczyty na wolty</string>
+    <string name="fk_adc">adc, przetwornik, analogowo-cyfrowy, rozdzielczość, bity, lsb, arduino, mikrokontroler, przetwornik adc, analogowo cyfrowy, napięcie, kalkulator, oblicz, obliczenia, policz, elektronika, konwerter, konwertuj, konwersja, przelicznik, przelicz, zamiana</string>
+    <string name="ec_bits">Rozdzielczość</string>
+    <string name="ec_vref">Napięcie odniesienia</string>
+    <string name="ec_code">Odczyt</string>
+    <string name="ec_lsb">Jeden krok (LSB)</string>
+    <string name="ec_levels">Poziomy</string>
+</resources>

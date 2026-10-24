@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_power">Electric power</string>
+    <string name="fd_power">Watts, DC or AC</string>
+    <string name="fk_power">power, watt, ac, dc, three-phase, single-phase, power factor, apparent, reactive, va, electric power, electrical power, energy, calculator, calc, compute, electronics</string>
+    <string name="ec_current_type">Supply</string>
+    <string name="ec_dc">DC</string>
+    <string name="ec_ac_1phase">AC, single-phase</string>
+    <string name="ec_ac_3phase">AC, three-phase</string>
+    <string name="ec_pf">Power factor (cos φ)</string>
+    <string name="ec_apparent">Apparent power</string>
+    <string name="ec_active">Active power</string>
+    <string name="ec_reactive">Reactive power</string>
+</resources>

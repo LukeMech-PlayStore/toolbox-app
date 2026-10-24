@@ -1,0 +1,65 @@
+name: Publish Play Draft
+
+# The newest draft on each track picked goes out (see the publish_drafts.py script): by hand, or as
+# the build's last job when it's asked to publish what it uploaded (build-app.yml)
+
+env:
+  packageName: org.lukemech.lmtoolbox
+
+on:
+  workflow_dispatch:
+    inputs:
+      track_internal:
+        description: "Publish track: internal"
+        default: true
+        type: boolean
+      track_alpha:
+        description: "Publish track: alpha"
+        default: false
+        type: boolean
+  workflow_call:
+    inputs:
+      tracks:
+        description: "Tracks to publish, comma-separated (e.g. internal,alpha)"
+        required: true
+        type: string
+    secrets:
+      PLAY_STORE_SERVICE_ACCOUNT_JSON:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Tracks to publish
+        id: tracks
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            tracks=()
+            [[ "${{ inputs.track_internal }}" == "true" ]] && tracks+=(internal)
+            [[ "${{ inputs.track_alpha }}" == "true" ]] && tracks+=(alpha)
+            echo "tracks=$(IFS=,; echo "${tracks[*]}")" >> $GITHUB_OUTPUT
+          else
+            echo "tracks=${{ inputs.tracks }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish the drafts
+        if: ${{ steps.tracks.outputs.tracks != '' }}
+        env:
+          PACKAGE_NAME: ${{ env.packageName }}
+          TRACKS: ${{ steps.tracks.outputs.tracks }}
+          SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          pip install --quiet google-auth requests
+          python3 .github/scripts/publish_drafts.py
+
+      - name: No track picked
+        if: ${{ steps.tracks.outputs.tracks == '' }}
+        run: |
+          echo "::notice ::No track picked: nothing published"

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_ruler">Ruler</string>
+    <string name="fk_ruler">ruler, length, measure, distance, size, centimeter, millimeter, inch, tape measure, measuring, tools</string>
+    <string name="fd_ruler">Measure on the screen</string>
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_rms">RMS</string>
+    <string name="fd_rms">Peak, RMS, average</string>
+    <string name="fk_rms">rms, peak, average, sine, square, triangle, waveform, effective, rms and peak, rms calculator, peak to peak, true rms, calculator, calc, compute, electronics, converter, convert, conversion</string>
+    <string name="ec_rms_value">RMS value</string>
+    <string name="ec_waveform">Waveform</string>
+    <string name="ec_sine">Sine</string>
+    <string name="ec_square">Square</string>
+    <string name="ec_triangle">Triangle</string>
+    <string name="ec_peak">Peak</string>
+    <string name="ec_avg">Average (rectified)</string>
+    <string name="ec_peak_to_peak">Peak-to-peak</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_led_resistor">Rezystor LED</string>
+    <string name="fd_led_resistor">Rezystor dla diod</string>
+    <string name="fk_led_resistor">led, dioda, rezystor, prąd, napięcie przewodzenia, szeregowo, rezystor do led, rezystor led, dioda świecąca, ograniczenie prądu, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_vcc">Napięcie zasilania</string>
+    <string name="ec_vf">Napięcie przewodzenia diody</string>
+    <string name="ec_if">Prąd diody</string>
+    <string name="ec_led_count">Diody szeregowo</string>
+    <string name="ec_led_too_many">Za niskie zasilanie dla tylu diod</string>
+</resources>

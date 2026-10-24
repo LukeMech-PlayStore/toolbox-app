@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_capacitor_charge">Ładowanie RC</string>
+    <string name="fd_capacitor_charge">Ładowanie przez rezystor</string>
+    <string name="fk_capacitor_charge">kondensator, ładowanie, rc, stała czasowa, tau, rozładowanie, ładowanie kondensatora, ładowanie rc, czas, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_time">Czas</string>
+    <string name="ec_time_const">Stała czasowa (τ = RC)</string>
+    <string name="ec_full_charge">Praktycznie pełny (5τ)</string>
+    <string name="ec_vcap">Napięcie na kondensatorze</string>
+    <string name="ec_charge">Ładunek</string>
+</resources>

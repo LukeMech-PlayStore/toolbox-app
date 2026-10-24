@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_voltage_divider">Voltage divider</string>
+    <string name="fd_voltage_divider">Two resistors, loaded too</string>
+    <string name="fk_voltage_divider">voltage divider, resistor, ratio, output, load, potential, divider, resistive divider, calculator, calc, compute, electronics</string>
+    <string name="ec_load">Load</string>
+    <string name="ec_rl">Load resistance</string>
+</resources>

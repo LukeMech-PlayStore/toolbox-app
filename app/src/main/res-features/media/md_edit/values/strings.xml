@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_MdEd">Metadata editor</string>
+    <string name="fk_MdEd">metadata, exif, exiftool, photo, picture, image, tags, location, gps, date, file, metadata editor, editor, edit, privacy, remove, clean, strip, exif remover</string>
+    <string name="fd_MdEd">See and clean photo data</string>
+    <string name="s_openIn">Open file in…</string>
+    <string name="s_openIn_desc">In the system\'s Open with list</string>
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Altitude scale on the compass arrow: ticks across its shaft in fifths (see compass_altitude_fill).
+     Drawn in white and tinted where used; shared by the compass page and its widget. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="240"
+    android:viewportHeight="240">
+    <path android:pathData="M112.5,144.497 L127.5,144.497 M112.5,128.166 L127.5,128.166 M112.5,111.834 L127.5,111.834 M112.5,95.503 L127.5,95.503" android:strokeColor="#FFFFFFFF" android:strokeWidth="2.5" android:strokeLineCap="round" />
+</vector>

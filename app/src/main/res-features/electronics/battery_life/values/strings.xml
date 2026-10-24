@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_battery_life">Battery life</string>
+    <string name="fd_battery_life">Runtime on one charge</string>
+    <string name="fk_battery_life">battery, runtime, mAh, capacity, current, life, sleep, accumulator, battery life, power bank, autonomy, calculator, calc, compute, electronics</string>
+    <string name="ec_capacity">Capacity</string>
+    <string name="ec_stage1">Active</string>
+    <string name="ec_stage2">Sleep</string>
+    <string name="ec_duration">Each time for</string>
+    <string name="ec_avg_current">Average current</string>
+    <string name="ec_life">Lasts</string>
+</resources>

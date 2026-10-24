@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_led_resistor">LED resistor</string>
+    <string name="fd_led_resistor">The resistor for your LEDs</string>
+    <string name="fk_led_resistor">led, diode, resistor, current, forward voltage, series, led resistor, light, current limiting, calculator, calc, compute, electronics</string>
+    <string name="ec_vcc">Supply voltage</string>
+    <string name="ec_vf">LED forward voltage</string>
+    <string name="ec_if">LED current</string>
+    <string name="ec_led_count">LEDs in series</string>
+    <string name="ec_led_too_many">The supply is too low for these LEDs</string>
+</resources>

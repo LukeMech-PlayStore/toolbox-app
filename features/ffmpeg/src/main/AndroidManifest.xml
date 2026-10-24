@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:dist="http://schemas.android.com/apk/distribution">
+
+    <dist:module
+        dist:instant="false"
+        dist:title="@string/fp_VideoEnc">
+        <!-- Downloaded from Play when the tool is installed (see FeatureDelivery) -->
+        <dist:delivery>
+            <dist:on-demand />
+        </dist:delivery>
+        <!-- In APKs made without Play (universal ones) too -->
+        <dist:fusing dist:include="true" />
+    </dist:module>
+</manifest>

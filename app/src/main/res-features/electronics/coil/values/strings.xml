@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_coil">Air coil</string>
+    <string name="fd_coil">Turns for an inductance</string>
+    <string name="fk_coil">coil, inductor, inductance, turns, air core, wheeler, winding, air-core coil, solenoid, calculator, calc, compute, electronics</string>
+    <string name="ec_core_d">Coil diameter</string>
+    <string name="ec_height">Coil length</string>
+    <string name="ec_turns">Turns</string>
+</resources>

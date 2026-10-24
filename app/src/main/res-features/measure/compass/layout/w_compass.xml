@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compass widget: transparent, the dial (layers turned / tinted by the launcher, the altitude
+     scale on its arrow) and the heading with the altitude -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@android:id/background"
+    android:clipToOutline="true"
+    tools:targetApi="s"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingHorizontal="10dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="8dp">
+
+    <FrameLayout
+        android:id="@+id/w_compass_dial"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:contentDescription="@string/fp_compass">
+
+        <ImageView
+            android:id="@+id/w_compass_ring"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/compass_ring" />
+
+        <ImageView
+            android:id="@+id/w_compass_arrow_shaft"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/compass_arrow_shaft" />
+
+        <ImageView
+            android:id="@+id/w_compass_arrow_head"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/compass_arrow_head" />
+
+        <ImageView
+            android:id="@+id/w_compass_scale"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/compass_scale" />
+
+        <ImageView
+            android:id="@+id/w_compass_north"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/compass_north" />
+
+        <!-- The altitude's scale on the arrow, and its shaft colored up to it (by image level) -->
+        <ImageView
+            android:id="@+id/w_compass_altitude_ticks"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/compass_altitude_ticks"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/w_compass_altitude_band"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/compass_altitude_band"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/w_compass_altitude_fill"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/compass_altitude_fill"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Fixed size, so a new text doesn't lay the dial out again. The text sits ~2dp inside its
+         20dp line, so 8dp above it and below the widget's padding give equal 10dp gaps:
+         edge-dial, dial-text and text-edge -->
+    <TextView
+        android:id="@+id/w_compass_status"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+</LinearLayout>

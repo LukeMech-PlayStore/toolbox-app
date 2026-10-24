@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compass scale, turning: the ticks and E/S/W (N is compass_north, in its own color).
+     Turned by its level (0 to 10000 = 0° to -360°) and tinted where used; shared by the compass page and
+     its widget (where the launcher turns it, so a frame is just a number). Letters are Roboto outlines. -->
+<rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromDegrees="0"
+    android:toDegrees="-360"
+    android:pivotX="50%"
+    android:pivotY="50%">
+    <vector
+        android:width="200dp"
+        android:height="200dp"
+        android:viewportWidth="240"
+        android:viewportHeight="240">
+        <group android:rotation="90" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,15.265" android:strokeColor="#FFFFFFFF" android:strokeWidth="3.129" android:strokeLineCap="butt" /><path android:pathData="M117.116 30.163V19.995H123.506V21.099H118.464V24.367H122.863V25.463H118.464V29.067H123.576V30.163Z" android:fillColor="#FFFFFFFF" /></group>
+        <group android:rotation="180" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,15.265" android:strokeColor="#FFFFFFFF" android:strokeWidth="3.129" android:strokeLineCap="butt" /><path android:pathData="M122.353 27.593Q122.353 26.895 121.882 26.476Q121.411 26.057 119.902 25.614Q118.394 25.17 117.517 24.482Q116.641 23.794 116.641 22.621Q116.641 21.434 117.587 20.645Q118.533 19.856 120.098 19.856Q121.816 19.856 122.748 20.798Q123.68 21.741 123.68 22.928H122.339Q122.339 22.076 121.788 21.518Q121.236 20.959 120.098 20.959Q119.022 20.959 118.506 21.43Q117.989 21.902 117.989 22.607Q117.989 23.243 118.537 23.665Q119.085 24.088 120.321 24.437Q122.088 24.933 122.898 25.662Q123.708 26.392 123.708 27.579Q123.708 28.823 122.738 29.563Q121.767 30.303 120.161 30.303Q119.225 30.303 118.341 29.954Q117.458 29.605 116.889 28.917Q116.32 28.229 116.32 27.216H117.661Q117.661 28.257 118.422 28.732Q119.183 29.207 120.161 29.207Q121.215 29.207 121.784 28.77Q122.353 28.334 122.353 27.593Z" android:fillColor="#FFFFFFFF" /></group>
+        <group android:rotation="270" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,15.265" android:strokeColor="#FFFFFFFF" android:strokeWidth="3.129" android:strokeLineCap="butt" /><path android:pathData="M126.037 19.995 123.579 30.163H122.357L120.262 22.754L120.101 21.979L119.941 22.754L117.769 30.163H116.547L114.081 19.995H115.422L117.028 26.951L117.231 28.299L117.51 27.091L119.529 19.995H120.653L122.615 27.091L122.902 28.327L123.118 26.944L124.689 19.995Z" android:fillColor="#FFFFFFFF" /></group>
+        <group android:rotation="10" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="20" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="30" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="40" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="50" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="60" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="70" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="80" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="100" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="110" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="120" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="130" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="140" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="150" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="160" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="170" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="190" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="200" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="210" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="220" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="230" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="240" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="250" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="260" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="280" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="290" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="300" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="310" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="320" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="330" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="340" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+        <group android:rotation="350" android:pivotX="120" android:pivotY="120"><path android:pathData="M120,6.326 L120,10.796" android:strokeColor="#FFFFFFFF" android:strokeWidth="0.782" android:strokeLineCap="butt" /></group>
+    </vector>
+</rotate>

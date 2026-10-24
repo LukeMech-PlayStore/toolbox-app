@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_QREncode">Generator QR</string>
+    <string name="fk_QREncode">qr, kod, kod kreskowy, generator, link, adres, tekst, udostępnij, wifi, kontakt, wizytówka, email, sms, telefon, lokalizacja, mapa, generator qr, kod qr, utwórz, stwórz, generuj</string>
+    <string name="fd_QREncode">Link, Wi-Fi, kontakt</string>
+</resources>

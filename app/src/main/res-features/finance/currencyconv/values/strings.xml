@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_CurrencyConvert">Currency converter</string>
+    <string name="fk_CurrencyConvert">currency, exchange, rate, money, forex, euro, dollar, zloty, convert, currency converter, converter, conversion, calculator, exchange rates, cash, gbp, chf</string>
+    <string name="fd_CurrencyConvert">Rates, offline too</string>
+</resources>

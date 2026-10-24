@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The arrow's shaft colored from its tail up to the altitude: the shaft clipped from the bottom
+     by its level (CompassFeature.altitudeLevel maps the altitude onto the shaft). Tinted where used;
+     shared by the compass page and its widget. -->
+<clip xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clipOrientation="vertical"
+    android:drawable="@drawable/compass_arrow_shaft"
+    android:gravity="bottom" />

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_power">Moc elektryczna</string>
+    <string name="fd_power">Waty, DC lub AC</string>
+    <string name="fk_power">moc, wat, ac, dc, trójfazowy, jednofazowy, siła, współczynnik mocy, pozorna, bierna, va, moc elektryczna, energia, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_current_type">Zasilanie</string>
+    <string name="ec_dc">DC (stały)</string>
+    <string name="ec_ac_1phase">AC, jednofazowe</string>
+    <string name="ec_ac_3phase">AC, trójfazowe</string>
+    <string name="ec_pf">Współczynnik mocy (cos φ)</string>
+    <string name="ec_apparent">Moc pozorna</string>
+    <string name="ec_active">Moc czynna</string>
+    <string name="ec_reactive">Moc bierna</string>
+</resources>

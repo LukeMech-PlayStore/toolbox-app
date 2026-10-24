@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_heatsink">Radiator</string>
+    <string name="fd_heatsink">Czy się przegrzeje?</string>
+    <string name="fk_heatsink">radiator, ciepło, termika, złącze, temperatura, rozpraszanie, chłodzenie, rth, przegrzewanie, chłodnica, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_t_amb">Temperatura otoczenia</string>
+    <string name="ec_t_max">Maks. temperatura złącza</string>
+    <string name="ec_rth_ja">Rth złącze–otoczenie</string>
+    <string name="ec_t_junction">Temperatura złącza</string>
+    <string name="ec_p_max">Maks. moc bez radiatora</string>
+    <string name="ec_no_heatsink">Radiator niepotrzebny</string>
+    <string name="ec_rth_needed">Dopuszczalne Rth łącznie</string>
+</resources>

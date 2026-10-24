@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_ruler">Linijka</string>
+    <string name="fk_ruler">linijka, miarka, długość, mierzyć, pomiar, odległość, wymiar, centymetr, milimetr, cal, taśma miernicza, mierzenie, narzędzia</string>
+    <string name="fd_ruler">Mierz na ekranie</string>
+</resources>

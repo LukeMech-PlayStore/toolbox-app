@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_compass">Kompas</string>
+    <string name="fk_compass">kompas, busola, północ, kierunek, azymut, magnetyczny, nawigacja, wysokość, n.p.m., gps, orientacja, mapa, narzędzia</string>
+    <string name="fd_compass">Znajdź północ</string>
+    <string name="f_compass_missing_sensors_message">Nie znaleziono czujników wymaganych do działania kompasu.</string>
+    <string name="f_compass_calibration_title">Kompas wymaga kalibracji</string>
+    <string name="f_compass_calibration_message">Poruszaj telefonem w kształcie ósemki, aż dokładność wzrośnie.</string>
+    <string name="f_compass_info_band">Jaśniejsza część trzonu nad wypełnieniem to dokładność: wysokość leży gdzieś na jej odcinku.</string>
+    <string name="f_compass_info_title">Odczyt</string>
+    <string name="f_compass_info_heading">Kierunek: kąt od północy magnetycznej, zgodnie z ruchem wskazówek zegara.</string>
+    <string name="f_compass_info_altitude">Wysokość: metry nad poziomem morza (m n.p.m.), z GPS.</string>
+    <string name="f_compass_info_accuracy">Obecna dokładność GPS: ±%1$d m</string>
+    <string name="f_compass_info_arrow">Na strzałce trzon wypełnia się od ogona do wysokości, a kreski dzielą skalę na piąte części. Skala rośnie z wysokością: im dłuższy grot, tym większa skala, a wypełnienie przyjmuje jej kolor:</string>
+    <string name="f_compass_info_scale">0–%1$d m · działka co %2$d m</string>
+    <string name="f_compass_location_needed">Zezwól na lokalizację, aby widzieć wysokość</string>
+    <string name="f_compass_location_off">Lokalizacja jest wyłączona</string>
+    <string name="f_compass_location_title">Wysokość z GPS</string>
+    <string name="f_compass_location_message">Kompas pokazuje wysokość nad poziomem morza z GPS. Potrzebuje do tego dokładnej lokalizacji, używanej tylko gdy kompas lub jego widżet jest włączony.</string>
+    <string name="f_compass_location_allow">Zezwól</string>
+    <string name="f_compass_location_later">Nie teraz</string>
+    <string name="f_compass_setting_altitude">Pokazuj wysokość</string>
+    <string name="f_compass_setting_altitude_desc">Nad poziomem morza z GPS, obok kierunku i na strzałce</string>
+    <string name="f_compass_altitude_permission">Nie udzielono dostępu do lokalizacji</string>
+    <string name="w_compass_desc">Kompas obracający się na żywo po włączeniu. Dotknij, aby przełączyć.</string>
+    <string name="w_compass_live">Widżet kompasu jest włączony</string>
+    <string name="w_compass_live_desc">Otwórz kompas</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_regulator">LM317 regulator</string>
+    <string name="fd_regulator">Resistors for its output</string>
+    <string name="fk_regulator">regulator, lm317, voltage, adjustable, linear, power supply, lm317 regulator, voltage regulator, calculator, calc, compute, electronics</string>
+    <string name="ec_dissipation">Heat in the regulator</string>
+    <string name="ec_dropout_note">The LM317 needs about 3 V more at its input than at its output</string>
+</resources>

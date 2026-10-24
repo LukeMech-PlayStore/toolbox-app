@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dist="http://schemas.android.com/apk/distribution">
+
+    <dist:module
+        dist:instant="false"
+        dist:title="@string/fm_jdk8">
+        <!-- Downloaded from Play when the tool is installed (see FeatureDelivery) -->
+        <dist:delivery>
+            <dist:on-demand />
+        </dist:delivery>
+        <!-- In APKs made without Play (universal ones) too -->
+        <dist:fusing dist:include="true" />
+    </dist:module>
+    <!-- Just its package's archive (jniLibs) -->
+    <application android:hasCode="false" />
+</manifest>

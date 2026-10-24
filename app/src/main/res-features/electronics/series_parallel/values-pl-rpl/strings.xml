@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_series_parallel">Szereg/równolegle</string>
+    <string name="fd_series_parallel">Łączenie elementów</string>
+    <string name="fk_series_parallel">szeregowo, równolegle, rezystor, kondensator, łączenie, para, stosunek, zastępczy, szeregowo i równolegle, rezystory, kondensatory, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_resistors">Rezystory</string>
+    <string name="ec_capacitors">Kondensatory</string>
+    <string name="ec_series">Szeregowo</string>
+    <string name="ec_parallel">Równolegle</string>
+    <string name="ec_two_values">Dwa elementy</string>
+    <string name="ec_find_pair">Dobierz parę</string>
+    <string name="ec_first">Pierwszy</string>
+    <string name="ec_second">Drugi</string>
+    <string name="ec_target">Wartość docelowa</string>
+    <string name="ec_no_combos">Brak pary w granicach 2%</string>
+</resources>

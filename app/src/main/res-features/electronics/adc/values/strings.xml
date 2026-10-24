@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_adc">ADC converter</string>
+    <string name="fd_adc">Raw readings to volts</string>
+    <string name="fk_adc">adc, analog, digital, converter, resolution, bits, lsb, arduino, microcontroller, adc converter, analog to digital, voltage, calculator, calc, compute, electronics, convert, conversion</string>
+    <string name="ec_bits">Resolution</string>
+    <string name="ec_vref">Reference voltage</string>
+    <string name="ec_code">Reading</string>
+    <string name="ec_lsb">One step (LSB)</string>
+    <string name="ec_levels">Levels</string>
+</resources>

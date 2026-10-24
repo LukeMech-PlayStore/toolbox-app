@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_MediaDl">Media downloader</string>
+    <string name="fk_MediaDl">download, downloader, video, audio, music, song, mp3, mp4, podcast, save, link, url, clip, media downloader, YouTube, yt-dlp, TikTok, instagram, save video, save music</string>
+    <string name="fd_MediaDl">Videos and music from the web</string>
+    <string name="f_MediaDl_share_desc">Share links to the downloader from other apps</string>
+</resources>

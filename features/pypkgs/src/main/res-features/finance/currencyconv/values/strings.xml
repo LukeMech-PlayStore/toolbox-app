@@ -1,0 +1,19 @@
+<resources>
+    <string name="f_CurrencyConvert_convFrom">Default source currency</string>
+    <string name="f_CurrencyConvert_convTo">Default output currency</string>
+    <string name="f_CurrencyConvert_from">From</string>
+    <string name="f_CurrencyConvert_to">To</string>
+    <string name="f_CurrencyConvert_conv">Convert</string>
+    <string name="f_CurrencyConvert_amount">Amount</string>
+    <string name="f_CurrencyConvert_result">Result</string>
+    <string name="f_CurrencyConvert_data_label">Rates from</string>
+    <string name="f_CurrencyConvert_data_outdated">%s · outdated</string>
+    <string name="f_CurrencyConvert_swap_cd">Swap currencies</string>
+    <string name="f_CurrencyConvert_use_latest">Use latest rates</string>
+    <string name="f_CurrencyConvert_source_latest_desc">From the ECB, updated on demand</string>
+    <string name="f_CurrencyConvert_source_builtin_desc">Offline, may be outdated</string>
+    <string name="f_CurrencyConvert_updated">Exchange rates updated</string>
+    <string name="f_CurrencyConvert_prompt_builtin">Using built-in rates</string>
+    <string name="f_CurrencyConvert_builtin_title">Built-in Rates</string>
+    <string name="f_CurrencyConvert_builtin_msg">Built-in exchange rates are selected in settings. They may be outdated.</string>
+</resources>

@@ -1,0 +1,10 @@
+✨ New
+• 25 electronics calculators: type any field, the rest is computed
+• Minecraft Server from 1.2.5: older versions run on Java 8
+• Currency converter in the Share menu, reads amounts from shared text
+
+⚡ Improvements
+• Each Minecraft version runs on its own Java, nothing to pick
+• Option lists scroll in their own box, opened at the selected one
+• What you typed in a calculator stays when the screen turns
+• Smoother animations, fixes for QR codes, decimal commas and more

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_voltage_drop">Voltage drop</string>
+    <string name="fd_voltage_drop">Loss along a cable</string>
+    <string name="fk_voltage_drop">voltage drop, wire, cable, awg, cross-section, length, copper, aluminum, cable voltage drop, wire gauge, loss, calculator, calc, compute, electronics</string>
+    <string name="ec_material">Material</string>
+    <string name="ec_aluminium">Aluminum</string>
+    <string name="ec_wire_size">Wire size</string>
+    <string name="ec_length">Cable length</string>
+    <string name="ec_drop">Voltage drop</string>
+    <string name="ec_drop_pct">Drop</string>
+    <string name="ec_v_load">Voltage at the load</string>
+    <string name="ec_loss">Lost as heat</string>
+</resources>

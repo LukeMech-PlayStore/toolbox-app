@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_FileSize">File compressor</string>
+    <string name="fk_FileSize">file size, compress, shrink, smaller, megabytes, mb, limit, email, attachment, upload, video, audio, picture, photo, compressor, converter, convert, reduce, fit, discord</string>
+    <string name="fd_FileSize">Fit under a size limit</string>
+
+    <string name="f_FileSize_intro_title">Shrink a file to the size you need</string>
+    <string name="f_FileSize_intro_media">Video and audio: the media encoder</string>
+    <string name="f_FileSize_intro_image">Pictures: the image encoder</string>
+    <string name="f_FileSize_intro_tip">The tool opens with a file size set, which you can change.</string>
+    <string name="f_FileSize_question">What kind of file is it?</string>
+    <string name="f_FileSize_media">Video or audio</string>
+    <string name="f_FileSize_image">Picture</string>
+</resources>

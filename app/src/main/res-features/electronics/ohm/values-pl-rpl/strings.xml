@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_ohm">Prawo Ohma</string>
+    <string name="fd_ohm">U, I, R i moc</string>
+    <string name="fk_ohm">ohm, prawo, napięcie, prąd, rezystancja, opór, moc, wat, amper, wolt, prawo ohma, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_capacitor_charge">Capacitor charging</string>
+    <string name="fd_capacitor_charge">Charging through a resistor</string>
+    <string name="fk_capacitor_charge">capacitor, charge, charging, rc, time constant, tau, discharge, capacitor charging, rc charging, time, calculator, calc, compute, electronics</string>
+    <string name="ec_time">Time</string>
+    <string name="ec_time_const">Time constant (τ = RC)</string>
+    <string name="ec_full_charge">Practically full (5τ)</string>
+    <string name="ec_vcap">Capacitor voltage</string>
+    <string name="ec_charge">Charge</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_regulator">Stabilizator LM317</string>
+    <string name="fd_regulator">Rezystory dla napięcia</string>
+    <string name="fk_regulator">stabilizator, regulator, lm317, napięcie, regulowany, liniowy, zasilacz, stabilizator lm317, stabilizator napięcia, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_dissipation">Ciepło w stabilizatorze</string>
+    <string name="ec_dropout_note">LM317 potrzebuje na wejściu ok. 3 V więcej niż na wyjściu</string>
+</resources>

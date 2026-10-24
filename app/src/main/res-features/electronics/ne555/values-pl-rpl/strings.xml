@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_ne555">Timer 555</string>
+    <string name="fd_ne555">Częstotliwość i impulsy</string>
+    <string name="fk_ne555">555, ne555, timer, astabilny, monostabilny, generator, impuls, migacz, timer 555, przebieg prostokątny, częstotliwość, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_astable">Astabilny (generator)</string>
+    <string name="ec_monostable">Monostabilny (jeden impuls)</string>
+    <string name="ec_duty">Współczynnik wypełnienia</string>
+    <string name="ec_t_high">Czas stanu wysokiego</string>
+    <string name="ec_t_low">Czas stanu niskiego</string>
+    <string name="ec_pulse_width">Długość impulsu</string>
+</resources>

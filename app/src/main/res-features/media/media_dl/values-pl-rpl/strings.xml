@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_MediaDl">Pobieranie mediów</string>
+    <string name="fk_MediaDl">pobieranie, pobierz, ściągnij, wideo, film, audio, muzyka, piosenka, mp3, mp4, podcast, zapisz, link, url, klip, pobieranie mediów, YouTube, yt-dlp, TikTok, instagram, pobierz film, pobierz muzykę</string>
+    <string name="fd_MediaDl">Filmy i muzyka z sieci</string>
+    <string name="f_MediaDl_share_desc">Udostępniaj linki do pobierania z innych aplikacji</string>
+</resources>

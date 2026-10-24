@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_reactance">Reactance</string>
+    <string name="fd_reactance">C, L and LC resonance</string>
+    <string name="fk_reactance">reactance, impedance, capacitor, inductor, coil, resonance, lc, frequency, q, reactance and resonance, capacitive, inductive, calculator, calc, compute, electronics</string>
+    <string name="ec_cap_reactance">Capacitive reactance</string>
+    <string name="ec_ind_reactance">Inductive reactance</string>
+    <string name="ec_resonance">Resonance</string>
+    <string name="ec_resonant_freq">Resonant frequency</string>
+    <string name="ec_quality">Quality factor (Q)</string>
+</resources>

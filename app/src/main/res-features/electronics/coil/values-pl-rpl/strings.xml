@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_coil">Cewka powietrzna</string>
+    <string name="fd_coil">Zwoje dla indukcyjności</string>
+    <string name="fk_coil">cewka, indukcyjność, zwoje, rdzeń powietrzny, wheeler, uzwojenie, cewka powietrzna, dławik, solenoid, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_core_d">Średnica cewki</string>
+    <string name="ec_height">Długość cewki</string>
+    <string name="ec_turns">Liczba zwojów</string>
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_opamp">Op-amp</string>
+    <string name="fd_opamp">Gain and output</string>
+    <string name="fk_opamp">op-amp, opamp, amplifier, gain, inverting, non-inverting, feedback, op-amp amplifier, operational amplifier, calculator, calc, compute, electronics</string>
+    <string name="ec_gain">Gain</string>
+    <string name="ec_gain_db">Gain in decibels</string>
+    <string name="ec_non_inverting">Non-inverting</string>
+    <string name="ec_inverting">Inverting</string>
+</resources>

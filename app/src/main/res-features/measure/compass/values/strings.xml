@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_compass">Compass</string>
+    <string name="fk_compass">compass, north, direction, heading, bearing, azimuth, magnetic, navigation, altitude, elevation, height, gps, orientation, map, tools</string>
+    <string name="fd_compass">Find north</string>
+    <string name="f_compass_missing_sensors_message">The sensors required for the compass to work were not found.</string>
+    <string name="f_compass_calibration_title">Compass calibration required</string>
+    <string name="f_compass_calibration_message">Move your phone in a figure-eight motion until the accuracy improves.</string>
+    <string name="f_compass_altitude_value" translatable="false">%1$d m</string>
+    <string name="f_compass_altitude_accuracy" translatable="false">±%1$d m</string>
+    <string name="f_compass_info_band">The faint part of the shaft above the fill is how far the altitude may be off: it lies somewhere along the shaft between the fill\'s top and the faint part\'s.</string>
+    <string name="f_compass_info_title">Reading</string>
+    <string name="f_compass_info_heading">Heading: the angle from magnetic north, clockwise.</string>
+    <string name="f_compass_info_altitude">Altitude: meters above sea level (m a.s.l.), from GPS.</string>
+    <string name="f_compass_info_accuracy">Current GPS accuracy: ±%1$d m</string>
+    <string name="f_compass_info_arrow">On the arrow, the shaft fills from its tail up to the altitude, and the ticks split the scale into fifths. The scale grows with the altitude: the longer the head, the larger the scale, and the fill takes its color:</string>
+    <string name="f_compass_info_scale">0–%1$d m · tick every %2$d m</string>
+    <string name="f_compass_altitude_searching" translatable="false">GPS…</string>
+    <string name="f_compass_location_needed">Allow location to see the altitude</string>
+    <string name="f_compass_location_off">Location is off</string>
+    <string name="f_compass_location_title">Altitude from GPS</string>
+    <string name="f_compass_location_message">The compass shows the altitude above sea level from GPS. It needs precise location for that, used only while the compass or its widget is on.</string>
+    <string name="f_compass_location_allow">Allow</string>
+    <string name="f_compass_location_later">Not now</string>
+    <string name="f_compass_setting_altitude">Show altitude</string>
+    <string name="f_compass_setting_altitude_desc">Above sea level from GPS, next to the heading and on the arrow</string>
+    <string name="f_compass_altitude_permission">No access to location</string>
+    <string name="w_compass_heading" translatable="false">%1$.1f°</string>
+    <string name="w_compass_desc">A compass that turns live while switched on. Tap it to switch.</string>
+    <string name="w_compass_live">Compass widget is on</string>
+    <string name="w_compass_live_desc">Open the compass</string>
+</resources>

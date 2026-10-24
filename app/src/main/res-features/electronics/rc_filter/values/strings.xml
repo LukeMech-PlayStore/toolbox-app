@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_rc_filter">RC filter</string>
+    <string name="fd_rc_filter">Cutoff frequency</string>
+    <string name="fk_rc_filter">filter, rc, low-pass, high-pass, cutoff, corner, frequency, bode, rc filter, cutoff frequency, low pass, high pass, calculator, calc, compute, electronics</string>
+    <string name="ec_cutoff">Cutoff frequency</string>
+</resources>

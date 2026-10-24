@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compass north, turning with the scale: the N tick and letter, in their own color.
+     Turned by its level (0 to 10000 = 0° to -360°) and tinted where used; shared by the compass page and
+     its widget (where the launcher turns it, so a frame is just a number). Letters are Roboto outlines. -->
+<rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromDegrees="0"
+    android:toDegrees="-360"
+    android:pivotX="50%"
+    android:pivotY="50%">
+    <vector
+        android:width="200dp"
+        android:height="200dp"
+        android:viewportWidth="240"
+        android:viewportHeight="240">
+        <path android:pathData="M120,6.326 L120,15.265" android:strokeColor="#FFFFFFFF" android:strokeWidth="3.129" android:strokeLineCap="butt" />
+        <path android:pathData="M123.9 19.995V30.163H122.546L117.427 22.321V30.163H116.079V19.995H117.427L122.566 27.859V19.995Z" android:fillColor="#FFFFFFFF" />
+    </vector>
+</rotate>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_battery_life">Czas baterii</string>
+    <string name="fd_battery_life">Czas pracy na baterii</string>
+    <string name="fk_battery_life">bateria, akumulator, czas pracy, mah, pojemność, prąd, uśpienie, czas pracy baterii, powerbank, autonomia, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_capacity">Pojemność</string>
+    <string name="ec_stage1">Praca</string>
+    <string name="ec_stage2">Uśpienie</string>
+    <string name="ec_duration">Za każdym razem przez</string>
+    <string name="ec_avg_current">Prąd średni</string>
+    <string name="ec_life">Wytrzyma</string>
+</resources>

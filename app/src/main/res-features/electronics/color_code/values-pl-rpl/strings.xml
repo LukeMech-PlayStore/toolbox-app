@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_color_code">Kod paskowy</string>
+    <string name="fd_color_code">Paski rezystora</string>
+    <string name="fk_color_code">rezystor, opornik, dławik, cewka, kolory, paski, kod, wartość, tolerancja, kod paskowy, kod barwny, kolory rezystora, dekoder, odczytaj, kalkulator, oblicz, obliczenia, policz, elektronika, konwerter, konwertuj, konwersja, przelicznik, przelicz, zamiana</string>
+    <string name="ec_value">Wartość</string>
+    <string name="ec_bands">Paski</string>
+    <string name="ec_band1">Pasek 1</string>
+    <string name="ec_band2">Pasek 2</string>
+    <string name="ec_band3">Pasek 3</string>
+    <string name="ec_tolerance">Tolerancja</string>
+    <string name="ec_multiplier">Mnożnik</string>
+    <string name="ec_tempco">Współczynnik temperaturowy</string>
+    <string name="ec_no_color_code">Ta wartość nie ma kodu paskowego</string>
+    <string name="ec_resistor">Rezystor</string>
+    <string name="ec_inductor">Dławik</string>
+    <string name="ec_direction">Kierunek</string>
+    <string name="ec_value_to_bands">Wartość → paski</string>
+    <string name="ec_bands_to_value">Paski → wartość</string>
+    <string name="ec_black">Czarny</string>
+    <string name="ec_brown">Brązowy</string>
+    <string name="ec_red">Czerwony</string>
+    <string name="ec_orange">Pomarańczowy</string>
+    <string name="ec_yellow">Żółty</string>
+    <string name="ec_green">Zielony</string>
+    <string name="ec_blue">Niebieski</string>
+    <string name="ec_violet">Fioletowy</string>
+    <string name="ec_grey">Szary</string>
+    <string name="ec_white">Biały</string>
+    <string name="ec_gold">Złoty</string>
+    <string name="ec_silver">Srebrny</string>
+</resources>

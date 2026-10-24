@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_CurrencyConvert">Przelicznik walut</string>
+    <string name="fk_CurrencyConvert">waluta, waluty, kurs, wymiana, pieniądze, kantor, euro, dolar, złoty, przelicz, przelicznik walut, konwerter walut, konwerter, konwertuj, przelicznik, kalkulator walut, kalkulator, kursy walut, gotówka, funt, frank</string>
+    <string name="fd_CurrencyConvert">Kursy, też offline</string>
+</resources>

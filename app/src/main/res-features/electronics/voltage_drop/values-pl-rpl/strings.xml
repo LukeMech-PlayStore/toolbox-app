@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_voltage_drop">Spadek napięcia</string>
+    <string name="fd_voltage_drop">Strata na przewodzie</string>
+    <string name="fk_voltage_drop">spadek napięcia, przewód, kabel, awg, przekrój, długość, miedź, aluminium, spadek napięcia na kablu, przekrój przewodu, strata, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_material">Materiał</string>
+    <string name="ec_aluminium">Aluminium</string>
+    <string name="ec_wire_size">Przekrój przewodu</string>
+    <string name="ec_length">Długość kabla</string>
+    <string name="ec_drop">Spadek napięcia</string>
+    <string name="ec_drop_pct">Spadek</string>
+    <string name="ec_v_load">Napięcie na odbiorniku</string>
+    <string name="ec_loss">Strata w cieple</string>
+</resources>
