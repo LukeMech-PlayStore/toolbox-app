@@ -7,6 +7,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -53,31 +54,25 @@ internal class Rcon(private val port: Int, private val password: String) {
         send(out, 2, COMMAND, command)
         // Its answer: in several packets if long, none at all for some (Forge's say). Then a marker, answered in
         // turn, ends it; sent once the command's surely read (the server takes a packet a read, two sent together
-        // lose the second): its answer starting, or a while without one
+        // lose the second): its answer starting, or a while without one.
+        // Closed before the end: the server stopping ("stop" itself, or a restart while the answer waited for its
+        // turn), the command sent all the same: what came of it is all there is
         val answer = StringBuilder()
-        var answered = false
-        socket.soTimeout = QUIET_MS
         try {
-            answer.append(read(input).third)
-            answered = true
-        } catch (_: SocketTimeoutException) {
-        }
-        try {
-            send(out, MARKER_ID, MARKER, "")
-        } catch (e: IOException) {
-            if (answered) return@use answer.toString() else throw e
-        }
-        socket.soTimeout = ANSWER_MS
-        while (true) {
-            val (id, _, body) = try {
-                read(input)
-            } catch (e: IOException) {
-                // Closed once it answered ("stop"): that answer's all
-                if (answered) break else throw e
+            socket.soTimeout = QUIET_MS
+            try {
+                answer.append(read(input).third)
+            } catch (_: SocketTimeoutException) {
             }
-            if (id == MARKER_ID) break
-            answer.append(body)
-            answered = true
+            send(out, MARKER_ID, MARKER, "")
+            socket.soTimeout = ANSWER_MS
+            while (true) {
+                val (id, _, body) = read(input)
+                if (id == MARKER_ID) break
+                answer.append(body)
+            }
+        } catch (_: EOFException) {
+        } catch (_: SocketException) {
         }
         answer.toString()
     }
