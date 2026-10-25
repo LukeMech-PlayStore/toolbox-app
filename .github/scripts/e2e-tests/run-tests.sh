@@ -28,6 +28,8 @@ c = ET.SubElement(s, "testcase", classname="e2e.Setup", name="install", time="0"
 ET.SubElement(c, "error", message=sys.argv[3]).text = sys.argv[3]
 ET.ElementTree(s).write(sys.argv[1], encoding="utf-8", xml_declaration=True)
 EOF
+  # What the system said meanwhile (e.g. its package service restarting), in the artifact
+  adb logcat -d > "$OUT/logcat/setup.txt" 2>/dev/null || true
   echo "::error title=E2E setup ($LEG)::$1"
   exit 0
 }
@@ -81,17 +83,43 @@ APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
   || setup_failed "bundletool couldn't build the APKs"
 "$APKSIGNER" sign --ks "$KEY" --ks-pass pass:android --ks-key-alias e2e --key-pass pass:android \
   --out tests.apk "$DIST/app-debug-androidTest.apk" || setup_failed "apksigner couldn't sign the tests"
+# FORCE_ABI: as bundletool's install-apks does (its InstallApksCommand), but for that ABI, which it'd take from the
+# device again (its first, x86_64), finding none of its APKs: the core's APKs installed with that ABI, the other
+# modules' (but the base's master) put where the app's local testing looks for them, what it emulated of them before
+# gone
+install_forced() {
+  rm -rf apks-core apks-all
+  "${BUNDLETOOL[@]}" extract-apks --apks=app.apks --device-spec=spec.json --modules=core --output-dir=apks-core || return 1
+  "${BUNDLETOOL[@]}" extract-apks --apks=app.apks --device-spec=spec.json --modules=_ALL_ --output-dir=apks-all || return 1
+  adb install-multiple -r -t --no-incremental --abi "$FORCE_ABI" apks-core/*.apk || return 1
+  local dir=/sdcard/Android/data/$APP/files/local_testing
+  find apks-all -name '*.apk' ! -name 'base-master*.apk' > pushed.txt
+  adb shell "rm -rf $dir && mkdir -p $dir" || return 1
+  while read -r apk; do adb push "$apk" "$dir/" > /dev/null || return 1; done < pushed.txt
+  adb shell "chmod 775 $dir" 2>/dev/null
+  adb shell run-as "$APP" rm -rf files/splitcompat 2>/dev/null
+  return 0
+}
 # Installed again once the system is back, when it went away in the middle (the package service restarting)
 install_app() {
-  for try in 1 2 3; do
-    "${BUNDLETOOL[@]}" install-apks --apks=app.apks --modules=core --allow-test-only && return 0
+  for try in 1 2 3 4 5; do
+    if [[ -n "${FORCE_ABI:-}" ]]; then
+      install_forced && return 0
+    else
+      "${BUNDLETOOL[@]}" install-apks --apks=app.apks --modules=core --allow-test-only && return 0
+    fi
     adb shell pm path "$APP" 2>/dev/null | grep -q package: && return 1
-    sleep 10; wait_ready
+    sleep 15; wait_ready
   done
   return 1
 }
 installed() { adb shell pm path "$APP" 2>/dev/null | grep -q package:; }
-adb install -r -t tests.apk || { wait_ready; adb install -r -t tests.apk; } || setup_failed "The tests couldn't be installed"
+# Not incremental (Android 11 on): the APK whole on the device before the install goes on
+for try in 1 2 3; do
+  adb install -r -t --no-incremental tests.apk && break
+  [[ $try == 3 ]] && setup_failed "The tests couldn't be installed"
+  sleep 15; wait_ready
+done
 if ! install_app; then
   installed || setup_failed "The app couldn't be installed"
   # From Android 11 bundletool can't make the app's folder it puts the Play modules in (Android/data/<app>): the

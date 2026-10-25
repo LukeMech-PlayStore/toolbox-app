@@ -1,11 +1,15 @@
 package org.lukemech.lmtoolbox.features.servers.mc_server
 
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isEnabled
+import androidx.compose.ui.test.performSemanticsAction
+import java.net.ServerSocket
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -26,9 +30,16 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
     private val context get() = ui.context
     private fun s(id: Int, vararg args: Any) = ui.str(id, *args)
 
-    /** No server left from an earlier test (one that failed half-way): none running, none there. */
+    /**
+     * No server left from an earlier test (one that failed half-way): none running (its Java gone, its port free for
+     * the next), none there.
+     */
     fun cleanUp() {
         if (ServerRunner.state.value?.isActive == true) ServerRunner.kill(delete = false)
+        Device.waitFor("the server left running to end", 2 * Device.MINUTE) { ServerRunner.state.value?.isActive != true }
+        Device.waitFor("port $PORT freed by the server left running (its Java still there)", 2 * Device.MINUTE) {
+            runCatching { ServerSocket(PORT).close() }.isSuccess
+        }
         Servers.list(context).forEach { Servers.delete(context, it.id) }
     }
 
@@ -54,16 +65,32 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
 
     private val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
 
-    /** Picks [value] in the OptionSetting titled [title], once its choices have loaded. */
-    private fun choose(title: String, value: String) {
+    /**
+     * Picks [value] in the OptionSetting titled [title], once its choices have loaded, until [taken] (by default:
+     * the setting shows it).
+     */
+    private fun choose(title: String, value: String, taken: () -> Boolean = { ui.exists(hasText(title) and Ui.choice(value)) }) {
         val row = hasText(title) and hasClickAction()
-        val target = Ui.choice(value) and hasClickAction()
-        ui.compose.waitUntil(3 * Device.MINUTE) {
-            // Opened (a tap), unless its choices are open already; while they load, the tap does nothing
-            if (!ui.exists(radio)) runCatching { ui.click(row, timeoutMs = 5_000) }
-            ui.exists(radio) && ui.scrollTo(target)
+        val target = Ui.choice(value) and hasClickAction() and isEnabled()
+        runCatching {
+            ui.compose.waitUntil(3 * Device.MINUTE) {
+                when {
+                    taken() -> return@waitUntil true
+                    // Opened (a tap), unless its choices are open already; while they load, the tap does nothing
+                    !ui.exists(radio) -> runCatching { ui.click(row, timeoutMs = 5_000) }
+                    // Its own click, not a tap at its middle: in a box scrolling inside the page, that may land
+                    // past the box's edge (a tap that picked nothing)
+                    ui.scrollTo(target) -> runCatching {
+                        ui.compose.onAllNodes(target)[0].performSemanticsAction(SemanticsActions.OnClick)
+                        ui.compose.waitForIdle()
+                    }
+                }
+                taken()
+            }
+        }.onFailure {
+            Device.screenshot("mc-not-chosen-$value")
+            throw AssertionError("$value not picked in $title after 3 min")
         }
-        ui.click(target, what = "$value in $title")
     }
 
     /** A new server from the page's form: [name], [type], Minecraft [version] and the loader's [loader] (its recommended one if null). */
@@ -174,7 +201,8 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         val other = runBlocking { Installer.loaders(profile.type, profile.version) }.firstOrNull { it.version != profile.loader }
             ?: return ui.log("${profile.type} ${profile.version} has a single loader: not changed")
         tab(R.string.f_Mc_tab_options)
-        choose(s(R.string.f_Mc_loader_version, profile.type.label), Installer.loaderLabel(profile.type, other.version))
+        // Asked first: the setting changes once it's installed
+        choose(s(R.string.f_Mc_loader_version, profile.type.label), Installer.loaderLabel(profile.type, other.version)) { ui.dialogShown }
         ui.clickInDialog(s(R.string.f_Mc_install))
         Device.waitFor("its loader changed to ${other.version}", 30 * Device.MINUTE, intervalMs = 2000, failFast = {
             Installer.state.value?.takeIf { it.stage == Installer.Stage.Failed }?.let { "it failed: ${it.error}\n${linux.failure().orEmpty()}" }
@@ -213,5 +241,10 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         ui.clickInDialog(s(R.string.f_Mc_delete))
         Device.waitFor("${profile.name} deleted", 60_000) { Servers.load(context, profile.id) == null }
         ui.waitShown(hasText(s(R.string.f_Mc_new)) and hasClickAction(), what = "the server list")
+    }
+
+    companion object {
+        /** Minecraft's own, every test's server's (what changes it is dropped, see [exploreOptions]). */
+        const val PORT = 25565
     }
 }

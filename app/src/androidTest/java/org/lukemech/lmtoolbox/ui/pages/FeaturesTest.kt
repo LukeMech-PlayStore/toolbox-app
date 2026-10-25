@@ -50,7 +50,8 @@ class FeaturesTest : E2eTest() {
         val keyword = ui.str(CompassFeature.keywordsResId).split(',').first().trim()
         ui.type(ui.str(R.string.search_features), keyword)
         ui.waitShown(hasText(ui.str(CompassFeature.titleStringResId)) and hasClickAction(), what = "the compass found by \"$keyword\"")
-        // Nothing is called that, in any language
+        // Cleared (its ✕), the field's named again by its placeholder: nothing is called that, in any language
+        ui.click(hasContentDescription(ui.str(R.string.search_clear)) and hasClickAction(), what = "the search's clear")
         @Suppress("SpellCheckingInspection")
         val nonsense = "zzzqqqxxx"
         ui.type(ui.str(R.string.search_features), nonsense)

@@ -127,9 +127,11 @@ jobs:
           check_name: "E2E · ${{ matrix.name }}"
           # A fork's pull request can't make check runs: annotations alone
           annotate_only: ${{ github.event.pull_request.head.repo.fork == true }}
+          # Every test in the summary's table (passed, skipped with why, failed), not the failed alone
           job_summary: true
           detailed_summary: true
-          include_passed: false
+          include_passed: true
+          include_skipped: true
           require_tests: true
           # A failed test is run once more (instrument.py): passing then, it's flaky, not failed
           check_retries: true

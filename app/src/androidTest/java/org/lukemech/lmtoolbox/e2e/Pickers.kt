@@ -29,7 +29,8 @@ object Pickers {
     /** Documents the app created (ACTION_CREATE_DOCUMENT), by the name it suggested. */
     val created = mutableListOf<File>()
 
-    private fun shareDir(context: Context) = File(context.cacheDir, "metadata/share/e2e").apply { mkdirs() }
+    /** The debug build's own FileProvider path (src/debug's file_paths.xml): no tool clears it (the metadata editor its). */
+    private fun shareDir(context: Context) = File(context.cacheDir, "e2e").apply { mkdirs() }
 
     fun uri(context: Context, file: File): Uri = FileProvider.getUriForFile(context, "${context.packageName}.files", file)
 

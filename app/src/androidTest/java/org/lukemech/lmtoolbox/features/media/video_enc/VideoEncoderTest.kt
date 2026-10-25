@@ -10,7 +10,7 @@ import org.lukemech.lmtoolbox.linux.LinuxTasks
 class VideoEncoderTest : LinuxToolTest(VideoEncoderFeature) {
     /** A 3-second video with sound, made by the subsystem's ffmpeg (the encoder's own, installed by now). */
     override fun files(): List<Pair<String, File>> {
-        val out = File(context.cacheDir, "metadata/share/e2e/sample.mp4").apply { parentFile?.mkdirs(); delete() }
+        val out = File(context.cacheDir, "e2e/sample.mp4").apply { parentFile?.mkdirs(); delete() }
         val result = runBlocking {
             LinuxTasks.run(
                 context,

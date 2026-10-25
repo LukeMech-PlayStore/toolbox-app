@@ -3,6 +3,7 @@ package org.lukemech.lmtoolbox.e2e
 import android.graphics.Bitmap
 import android.os.SystemClock
 import android.util.Log
+import androidx.compose.ui.test.MainTestClock
 import androidx.test.platform.app.InstrumentationRegistry
 import org.lukemech.lmtoolbox.linux.LinuxTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
@@ -13,6 +14,12 @@ object Device {
     /** Where the screenshots go, pulled by the workflow: the app's external files (instrumentation runs in its process). */
     val outputDir: File
         get() = File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null), "e2e").apply { mkdirs() }
+
+    /**
+     * The test's clock, which the app's pages' coroutines run on (the compose rule's: its effects, what a page
+     * runs, e.g. a command): they go on only as it's moved, which [waitFor] does as it waits. Set by [E2eTest].
+     */
+    var clock: MainTestClock? = null
 
     /** The screen as it is, as [name].png. */
     fun screenshot(name: String) {
@@ -43,6 +50,8 @@ object Device {
                 Log.i(E2eTest.TAG, "Waiting for $what (${(now - start) / 1000} s)${running()}")
             }
             Thread.sleep(intervalMs)
+            // The pages' coroutines as far on as real time went (a sleep alone would hold them where they are)
+            clock?.let { c -> runCatching { c.advanceTimeBy(intervalMs) } }
         }
     }
 

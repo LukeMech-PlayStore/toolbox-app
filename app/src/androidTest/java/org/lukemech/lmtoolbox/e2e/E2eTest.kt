@@ -62,10 +62,12 @@ abstract class E2eTest {
     fun stubOtherApps() {
         Intents.init()
         Pickers.install(context)
+        Device.clock = compose.mainClock
     }
 
     @After
     fun releaseStubs() {
+        Device.clock = null
         Intents.release()
     }
 

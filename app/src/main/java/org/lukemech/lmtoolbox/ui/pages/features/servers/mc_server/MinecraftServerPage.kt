@@ -61,6 +61,7 @@ import org.lukemech.lmtoolbox.ui.components.ToolIntro
 import org.lukemech.lmtoolbox.features.servers.mc_server.MinecraftServerFeature
 import org.lukemech.lmtoolbox.ui.components.InputField
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import kotlin.coroutines.cancellation.CancellationException
 
 private const val LIST = "list"
 private const val NEW = "new"
@@ -232,6 +233,8 @@ private fun NewServer(onBack: () -> Unit, onCreated: (String) -> Unit) {
                 if (version !in list) version = list.firstOrNull()
             }
             .onFailure { e ->
+                // Left (the page, or this kind for another) before they came: nothing failed
+                if (e is CancellationException) throw e
                 versionsError = true
                 // Told in the one place errors are, the bottom bar
                 LinuxTasks.reportFailure(MinecraftServerFeature, type.label, "Couldn't get the versions: ${e.message ?: e.javaClass.simpleName}")
