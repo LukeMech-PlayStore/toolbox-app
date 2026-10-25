@@ -19,6 +19,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextReplacement
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import org.lukemech.lmtoolbox.MainActivity
@@ -130,7 +133,28 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
         val target = compose.onNode(withId(field(label)!!.id))
         runCatching { target.performScrollTo() }
         target.performTextReplacement(text)
+        hideKeyboard()
+    }
+
+    /**
+     * The keyboard a field opened, closed (as a user would once done typing): left open, on a small screen it
+     * covers what's next (a setting's choices under it, never shown).
+     */
+    fun hideKeyboard() {
+        compose.runOnUiThread {
+            val window = compose.activity.window
+            WindowCompat.getInsetsController(window, window.decorView).hide(WindowInsetsCompat.Type.ime())
+        }
+        runCatching { compose.waitUntil(5_000) { !keyboardShown() } }
         compose.waitForIdle()
+    }
+
+    private fun keyboardShown(): Boolean {
+        var shown = false
+        compose.runOnUiThread {
+            shown = ViewCompat.getRootWindowInsets(compose.activity.window.decorView)?.isVisible(WindowInsetsCompat.Type.ime()) == true
+        }
+        return shown
     }
 
     /** What the field named [label] holds (see [field]). */

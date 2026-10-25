@@ -80,8 +80,9 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
                     // Opened (a tap), unless its choices are open already; while they load, the tap does nothing
                     !ui.exists(radio) -> runCatching { ui.click(row, timeoutMs = 5_000) }
                     // Its own click, not a tap at its middle: in a box scrolling inside the page, that may land
-                    // past the box's edge (a tap that picked nothing)
-                    ui.scrollTo(target) -> runCatching {
+                    // past the box's edge (a tap that picked nothing). So composed is enough, its middle shown or
+                    // not (under the keyboard the name's field leaves open, on a small screen it never is)
+                    ui.scrollTo(target) || ui.exists(target) -> runCatching {
                         ui.compose.onAllNodes(target)[0].performSemanticsAction(SemanticsActions.OnClick)
                         ui.compose.waitForIdle()
                     }

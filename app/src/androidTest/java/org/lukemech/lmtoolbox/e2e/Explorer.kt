@@ -91,7 +91,10 @@ class Explorer(
             runCatching { target.performScrollTo() }
             val config = node.config
             when {
-                config.contains(SemanticsActions.SetText) -> target.performTextReplacement(sampleText(node))
+                config.contains(SemanticsActions.SetText) -> {
+                    target.performTextReplacement(sampleText(node))
+                    ui.hideKeyboard()
+                }
                 config.contains(SemanticsActions.SetProgress) -> {
                     val range = config.getOrNull(SemanticsProperties.ProgressBarRangeInfo)?.range ?: 0f..1f
                     val value = range.start + (range.endInclusive - range.start) * 0.6f
