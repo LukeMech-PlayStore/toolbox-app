@@ -270,13 +270,13 @@ it took before ([`durations.json`](.github/scripts/e2e-tests/durations.json)), s
 same time. A new test counts as the median until it's measured. The report job writes the times of each run
 to the `e2e-durations` artifact. Commit it over `durations.json` when the shards drift apart. On a shard,
 [`instrument.py`](.github/scripts/e2e-tests/instrument.py) runs the tests class by class, each in a fresh
-process. After a crash, the tests it kept from running run one by one. A failed test runs once more; passing then
+process. After a crash, the tests it cut off are run one by one. A failed test runs once more; passing then
 counts as flaky, not failed.
 
 **Results.** The `report` job ([`merge.py`](.github/scripts/e2e-tests/merge.py)) puts every shard's results in one
 table in the run's summary: each test on each leg, failed first, then why each failed. Failures are annotations on
 the pull request. Screenshots, logcat and the raw output are each shard's `e2e-results-*` artifact. The job fails
-if a test failed or didn't run (a shard that crashed or was cancelled).
+if a test failed or didn't run (a shard that crashed or was canceled).
 
 **Inspections.** Alongside them, the `inspect` job inspects the code as Android Studio's Inspect Code does, with the
 project's profile (`.idea/inspectionProfiles`), in Qodana Community for Android's newest image, with the Jetpack
