@@ -3,6 +3,7 @@ package org.lukemech.lmtoolbox.ui.pages.features.servers.mc_server
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.VpnLock
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,8 +29,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.servers.mc_server.MinecraftServerFeature
 import org.lukemech.lmtoolbox.features.servers.mc_server.Network
@@ -36,6 +41,7 @@ import org.lukemech.lmtoolbox.features.servers.mc_server.ServerProfile
 import org.lukemech.lmtoolbox.features.servers.mc_server.ServerRunner
 import org.lukemech.lmtoolbox.features.servers.mc_server.Servers
 import org.lukemech.lmtoolbox.helpers.ResourceScope
+import org.lukemech.lmtoolbox.linux.parts.Bore
 import org.lukemech.lmtoolbox.linux.parts.Tunnel
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.InfoTile
@@ -44,14 +50,21 @@ import org.lukemech.lmtoolbox.ui.components.ResourceTiles
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 
-/** How it's doing and what it takes, who's on, and the addresses to join it at. */
+/** How it's doing and what it takes, who's on, and the addresses to join it at (the network's, the tailnet's, the tunnel's). */
 @Composable
 internal fun StatusTab(profile: ServerProfile, run: ServerRunner.Run?, onTunnelSettings: () -> Unit) {
     val context = LocalContext.current
     val tunnelState by ServerRunner.tunnel.collectAsState()
     val tunnel = tunnelState?.takeIf { it.serverId == profile.id }?.state
+    val boreState by ServerRunner.bore.collectAsState()
+    val bore = boreState?.takeIf { it.serverId == profile.id }?.state
     val port = remember(profile.id, run?.phase) { Servers.properties(context, profile.id).get("server-port")?.toIntOrNull() ?: 25565 }
     val lan = remember(run?.phase) { Network.lanAddresses(context) }
+    val tailnet = remember(run?.phase) { Network.tailscaleAddresses(context) }
+    // MagicDNS's names, as they're looked up (the addresses until then, or without it)
+    val tailnetNames by produceState(emptyMap<String, String>(), tailnet) {
+        value = withContext(Dispatchers.IO) { tailnet.mapNotNull { ip -> Network.tailscaleName(ip)?.let { ip to it } }.toMap() }
+    }
     val hasToken = remember(profile.id, run?.phase) { ServerRunner.tunnelOf(context, profile).hasToken }
 
     Column(verticalArrangement = RowArrangement) {
@@ -107,6 +120,46 @@ internal fun StatusTab(profile: ServerProfile, run: ServerRunner.Run?, onTunnelS
         } else {
             lan.forEach { ip -> AddressButton(stringResource(R.string.f_Mc_lan), "$ip$portSuffix", Icons.Default.Wifi) }
         }
+        if (tailnet.isEmpty()) {
+            // Not connected: to the Tailscale app (or its page on Play)
+            FeatureButton(
+                title = stringResource(R.string.f_Mc_tailscale),
+                subtitle = stringResource(R.string.f_Mc_tailscale_none),
+                icon = Icons.Default.VpnLock,
+                icon2 = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                onClick = { openTailscale(context) }
+            )
+        } else {
+            tailnet.forEach { ip -> AddressButton(stringResource(R.string.f_Mc_tailscale), "${tailnetNames[ip] ?: ip}$portSuffix", Icons.Default.VpnLock) }
+        }
+
+        if (profile.boreEnabled) {
+            // Its address once it's connected (bore.pub's port: the same as last time while it's free)
+            bore?.address?.takeIf { bore.phase == Bore.Phase.Connected }?.let { AddressButton(stringResource(R.string.f_Mc_internet_bore), it, Icons.Default.Public) }
+            val (boreText, boreIcon) = when (bore?.phase) {
+                Bore.Phase.Connected -> stringResource(R.string.f_Mc_bore_connected) to Icons.Default.Cloud
+                Bore.Phase.Connecting -> stringResource(R.string.f_Mc_tunnel_connecting) to Icons.Default.Cloud
+                Bore.Phase.Failed -> stringResource(R.string.f_Mc_tunnel_failed) to Icons.Default.CloudOff
+                else -> stringResource(R.string.f_Mc_tunnel_off) to Icons.Default.CloudOff
+            }
+            FeatureButton(
+                title = stringResource(R.string.f_Mc_bore),
+                // Why it failed: the bottom bar tells (see ServerRunner.startBore)
+                subtitle = boreText,
+                icon = boreIcon,
+                buttonContent = {
+                    val stop = if (bore?.isActive == true) true else if (run?.isActive == true) false else null
+                    Crossfade(stop, animationSpec = tween(REVEAL_MS), label = "boreButton") { s ->
+                        when (s) {
+                            true -> TextButton(onClick = { ServerRunner.stopBore() }) { Text(stringResource(R.string.f_Mc_stop)) }
+                            false -> TextButton(onClick = { ServerRunner.startBore(context, profile) }) { Text(stringResource(R.string.f_Mc_start)) }
+                            null -> {}
+                        }
+                    }
+                }
+            )
+            Note(stringResource(R.string.f_Mc_internet_bore_desc))
+        }
 
         val hostname = profile.tunnelHostname
         if (profile.tunnelEnabled && hasToken && hostname.isNotEmpty()) {
@@ -135,8 +188,8 @@ internal fun StatusTab(profile: ServerProfile, run: ServerRunner.Run?, onTunnelS
                 }
             )
             Note(stringResource(R.string.f_Mc_internet_desc))
-        } else {
-            // Not set up: to its settings
+        } else if (!profile.boreEnabled) {
+            // Neither set up: to their settings
             FeatureButton(
                 title = stringResource(R.string.f_Mc_internet),
                 subtitle = stringResource(R.string.f_Mc_internet_none),
@@ -181,6 +234,15 @@ private fun AddressButton(title: String, address: String, icon: ImageVector) {
         onClick = { copy(context, address) }
     )
 }
+
+/** The Tailscale app, to connect the phone to its tailnet; its page on Play if it isn't installed. */
+private fun openTailscale(context: Context) {
+    val launch = context.packageManager.getLaunchIntentForPackage(TAILSCALE)
+        ?: Intent(Intent.ACTION_VIEW, "https://play.google.com/store/apps/details?id=$TAILSCALE".toUri())
+    runCatching { context.startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+}
+
+private const val TAILSCALE = "com.tailscale.ipn"
 
 // A setter: primaryClip is a val in Kotlin (its getter is nullable, the setter isn't)
 @Suppress("UsePropertyAccessSyntax")

@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.MainActivity
+import org.lukemech.lmtoolbox.linux.parts.Bore
 import org.lukemech.lmtoolbox.linux.parts.Tunnel
 
 /**
@@ -46,7 +47,7 @@ class ServerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // startForeground must follow every startForegroundService call
         ServiceCompat.startForeground(
-            this, NOTIFICATION_ID, notification(ServerRunner.state.value, ServerRunner.tunnel.value),
+            this, NOTIFICATION_ID, notification(ServerRunner.state.value, tunnel = false),
             // The type exists from Android 14 (as the app's widgets' services have it)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE else 0
         )
@@ -57,7 +58,10 @@ class ServerService : Service() {
         if (!collecting) {
             collecting = true
             scope.launch {
-                combine(ServerRunner.state, ServerRunner.tunnel) { run, tunnel -> run to tunnel }
+                // A tunnel connected: Cloudflare's or bore's
+                combine(ServerRunner.state, ServerRunner.tunnel, ServerRunner.bore) { run, tunnel, bore ->
+                    run to (tunnel?.state?.phase == Tunnel.Phase.Connected || bore?.state?.phase == Bore.Phase.Connected)
+                }
                     .distinctUntilChanged { a, b -> key(a.first, a.second) == key(b.first, b.second) }
                     .collect { (run, tunnel) ->
                         if (run?.isActive != true) {
@@ -78,8 +82,8 @@ class ServerService : Service() {
     }
 
     /** What the notification shows of it changed. */
-    private fun key(run: ServerRunner.Run?, tunnel: ServerRunner.ServerTunnel?) =
-        listOf(run?.phase, run?.online, run?.name, tunnel?.state?.phase)
+    private fun key(run: ServerRunner.Run?, tunnel: Boolean) =
+        listOf(run?.phase, run?.online, run?.name, tunnel)
 
     /**
      * The CPU and Wi-Fi kept going with the screen off (it goes off as always: neither keeps it on),
@@ -109,7 +113,7 @@ class ServerService : Service() {
         super.onDestroy()
     }
 
-    private fun notification(run: ServerRunner.Run?, tunnel: ServerRunner.ServerTunnel?): Notification {
+    private fun notification(run: ServerRunner.Run?, tunnel: Boolean): Notification {
         val status = getString(
             when (run?.phase) {
                 ServerRunner.Phase.Running -> R.string.f_Mc_phase_running
@@ -120,7 +124,7 @@ class ServerService : Service() {
         val details = listOfNotNull(
             status,
             run?.online?.let { resources.getQuantityString(R.plurals.f_Mc_players_online, it, it) },
-            getString(R.string.f_Mc_tunnel_short).takeIf { tunnel?.state?.phase == Tunnel.Phase.Connected }
+            getString(R.string.f_Mc_tunnel_short).takeIf { tunnel }
         ).joinToString(" · ")
         val open = PendingIntent.getActivity(
             this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),

@@ -65,30 +65,30 @@ internal fun TunnelSection(profile: ServerProfile, onChanged: () -> Unit) {
         }
         Reveal(visible = enabled) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                TunnelPackage()
+                PartPackage(Tunnel.PART)
                 TunnelSettings(profile, onChanged)
             }
         }
     }
 }
 
-/** cloudflared's row, as the Java's table has them: on the phone (its version), or what getting it takes, each step as it installs. */
+/** A tunnel's part's row (cloudflared's, bore's), as the Java's table has them: on the phone (its version), or what getting it takes, each step as it installs. */
 @Composable
-private fun TunnelPackage() {
+internal fun PartPackage(part: String) {
     val context = LocalContext.current
     // Again once it's installed or removed
     val tasks by LinuxTasks.tasks.collectAsState()
     val removed by LinuxTasks.extensionsRemoved.collectAsState()
     val states by LinuxTasks.packages.collectAsState()
-    val ext = remember { LinuxParts.parts(context)[Tunnel.PART] } ?: return
+    val ext = remember(part) { LinuxParts.parts(context)[part] } ?: return
     val installing = tasks.firstOrNull { it.isActive && it.type == LinuxTask.Type.Extension && it.source == MinecraftServerFeature }
-        ?.takeIf { Tunnel.PART in it.packages }
-    val there = remember(tasks, removed) { LinuxParts.installedParts(context).firstOrNull { it.part.name == Tunnel.PART }?.takeIf { it.unpacked } }
+        ?.takeIf { part in it.packages }
+    val there = remember(tasks, removed) { LinuxParts.installedParts(context).firstOrNull { it.part.name == part }?.takeIf { it.unpacked } }
     // While it installs, as it was when it started (its download's size too, unpacking), each step as it goes: as the Java's table
     val row = when {
-        installing != null -> PackageTableRow(ext, archive = Tunnel.PART in installing.downloads, state = states[Tunnel.PART])
+        installing != null -> PackageTableRow(ext, archive = part in installing.downloads, state = states[part])
         there != null -> PackageTableRow(ext, archive = true, unpacked = true, version = there.version)
-        else -> PackageTableRow(ext, archive = !LinuxParts.isExtensionDownloaded(context, Tunnel.PART))
+        else -> PackageTableRow(ext, archive = !LinuxParts.isExtensionDownloaded(context, part))
     }
     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) { PackageTable(listOf(row)) }
 }

@@ -19,9 +19,9 @@
 **One app, a drawer full of tools.** Measure with a ruler, a spirit level and a compass; work out a resistor's
 color code or a 555 timer with 25 electronics calculators; convert currencies; download, convert and shrink
 videos, music and images; edit a photo's metadata; or run your own Minecraft server, Vanilla to NeoForge,
-straight from your phone and reachable by your friends through a Cloudflare tunnel.
+straight from your phone and reachable by your friends through bore, a Cloudflare tunnel or Tailscale.
 
-The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared) inside a
+The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared, bore) inside a
 PRoot-based Linux subsystem. You never set it up: the app installs it part by part, only when a tool you open
 needs it, and removes what no tool uses anymore. No root, no terminal, and in English and Polish.
 
@@ -38,20 +38,20 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 
 ### Tools
 
-| Category    | Tool                                                                          | Runs on                                                                                                                                                      | Module              |
-|-------------|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|
-| Measure     | Ruler                                                                         | Android                                                                                                                                                      | `app`               |
-| Measure     | Spirit level (with a widget)                                                  | Android sensors                                                                                                                                              | `app`               |
-| Measure     | Compass (with a widget, GPS altitude)                                         | Android sensors                                                                                                                                              | `app`               |
-| Electronics | 25 calculators (listed below)                                                 | Android                                                                                                                                                      | `app`               |
-| Finance     | Currency converter (ECB rates, amounts shared from other apps)                | Python (`CurrencyConverter`)                                                                                                                                 | `features:pypkgs`   |
-| Media       | QR generator                                                                  | Python (`qrcode`, Pillow)                                                                                                                                    | `features:pypkgs`   |
-| Media       | Metadata editor                                                               | ExifTool                                                                                                                                                     | `features:exiftool` |
-| Media       | Media downloader                                                              | yt-dlp (with FFmpeg, QuickJS)                                                                                                                                | `features:ytdlp`    |
-| Media       | Media encoder (video, GIF, sound; cut, resize, a target file size)            | FFmpeg                                                                                                                                                       | `features:ffmpeg`   |
-| Media       | Image encoder (resizing, a target file size)                                  | Android (`ImageDecoder`, `Bitmap`)                                                                                                                           | `app`               |
-| Media       | File size (a shortcut to the media or the image encoder)                      | Android                                                                                                                                                      | `app`               |
-| Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Cloudflare tunnel) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); cloudflared once a server's tunnel is on (`features:cloudflared`) | `app`               |
+| Category    | Tool                                                                                           | Runs on                                                                                                                                                                      | Module              |
+|-------------|------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|
+| Measure     | Ruler                                                                                          | Android                                                                                                                                                                      | `app`               |
+| Measure     | Spirit level (with a widget)                                                                   | Android sensors                                                                                                                                                              | `app`               |
+| Measure     | Compass (with a widget, GPS altitude)                                                          | Android sensors                                                                                                                                                              | `app`               |
+| Electronics | 25 calculators (listed below)                                                                  | Android                                                                                                                                                                      | `app`               |
+| Finance     | Currency converter (ECB rates, amounts shared from other apps)                                 | Python (`CurrencyConverter`)                                                                                                                                                 | `features:pypkgs`   |
+| Media       | QR generator                                                                                   | Python (`qrcode`, Pillow)                                                                                                                                                    | `features:pypkgs`   |
+| Media       | Metadata editor                                                                                | ExifTool                                                                                                                                                                     | `features:exiftool` |
+| Media       | Media downloader                                                                               | yt-dlp (with FFmpeg, QuickJS)                                                                                                                                                | `features:ytdlp`    |
+| Media       | Media encoder (video, GIF, sound; cut, resize, a target file size)                             | FFmpeg                                                                                                                                                                       | `features:ffmpeg`   |
+| Media       | Image encoder (resizing, a target file size)                                                   | Android (`ImageDecoder`, `Bitmap`)                                                                                                                                           | `app`               |
+| Media       | File size (a shortcut to the media or the image encoder)                                       | Android                                                                                                                                                                      | `app`               |
+| Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
 
 The electronics calculators: color code, SMD resistor code, Ohm's law, electric power, reactance and
 resonance, RC filter, voltage divider, series and parallel, capacitor charging, op-amp amplifier, LED
@@ -70,7 +70,7 @@ toolbox-app/
 │       │   │   └── electronics/common/   Units, SI prefixes, E-series: what the calculators share
 │       │   ├── helpers/                  The tool registry, Play delivery, preferences, files, resource monitor
 │       │   ├── linux/                    The Linux subsystem: its parts, running commands, tasks (see below)
-│       │   │   └── parts/                APIs of parts several tools pick among: Java, Tunnel (cloudflared)
+│       │   │   └── parts/                APIs of parts several tools pick among: Java, Tunnel (cloudflared), Bore
 │       │   └── ui/
 │       │       ├── components/           Shared building blocks (headings, setting rows, tiles, results, step bar…)
 │       │       ├── helpers/              Navigation, the bottom bar, the install prompt, the subsystem's setup
@@ -111,8 +111,8 @@ checks that the routes are unique.
   object in the part's module (`uiClass`, loaded by name through `FeatureDelivery`). Until its parts are
   there, `ExtensionGate` shows what they take and installs them.
 - A tool on several parts (the Minecraft server) is the app's: there's no module of code alone. The parts it
-  picks among or turns on (`extraExtensions`: a Java version, cloudflared) have their API in the app
-  (`linux/parts/`: `Java`, `Tunnel`), and their modules are just their archives. So a tool gets one only once
+  picks among or turns on (`extraExtensions`: a Java version, cloudflared, bore) have their API in the app
+  (`linux/parts/`: `Java`, `Tunnel`, `Bore`), and their modules are just their archives. So a tool gets one only once
   it needs it, and no part's module depends on another's.
 - A module lays its tools out as the app does: `features/<category>/<route>/` for what isn't UI (its
   `FeatureUi`, jobs, maths and parsing; its end-to-end test in the app's `src/androidTest/`, same package),
@@ -141,7 +141,7 @@ line lives in the tool's `<Name>Calc.kt`, with tests.
 ### The Linux subsystem
 
 The subsystem is a Termux-based rootfs, split into parts (`core`, `python`, `pypkgs`, `ffmpeg`, `exiftool`,
-`ytdlp`, `jdk8`, `jdk17`, `jdk21`, `jdk25`, `cloudflared`), plus PRoot. Each part is an on-demand Play module under
+`ytdlp`, `jdk8`, `jdk17`, `jdk21`, `jdk25`, `cloudflared`, `bore`), plus PRoot. Each part is an on-demand Play module under
 `features/`, installed with the first tool that needs it (the core, with PRoot, comes with the first one). A
 part may not be built for every ABI (`jdk25`: no OpenJDK 25 for x86); a tool none of whose parts are there
 says it isn't available. Its commands run as argv lists through PRoot, with the Termux prefix bound to

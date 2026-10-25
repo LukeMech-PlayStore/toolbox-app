@@ -49,9 +49,9 @@ import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.listBox
 
 /**
- * Its options: its settings (server.properties, memory, the config file itself), the tunnel, and its
+ * Its options: its settings (server.properties, memory, the config file itself), the tunnels, and its
  * files. Written right away; while it runs, those changed are marked until it's restarted.
- * [toTunnel]: scrolled to the tunnel's, then [onAtTunnel].
+ * [toTunnel]: scrolled to the tunnels', then [onAtTunnel].
  */
 @Composable
 internal fun OptionsTab(
@@ -188,7 +188,11 @@ internal fun OptionsTab(
             }
         }
 
-        Box(modifier = Modifier.bringIntoViewRequester(tunnelAt)) { Section(stringResource(R.string.f_Mc_tunnel)) }
+        // From anywhere: bore first (nothing to set up), then Cloudflare's
+        Box(modifier = Modifier.bringIntoViewRequester(tunnelAt)) { Section(stringResource(R.string.f_Mc_bore)) }
+        BoreSection(profile, onChanged)
+
+        Section(stringResource(R.string.f_Mc_tunnel))
         TunnelSection(profile, onChanged)
 
         Section(stringResource(R.string.f_Mc_section_files))

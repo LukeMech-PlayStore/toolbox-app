@@ -82,6 +82,7 @@
     <string name="fm_jdk21">Java 21</string>
     <string name="fm_jdk25">Java 25</string>
     <string name="fm_cloudflared">Tunel Cloudflare</string>
+    <string name="fm_bore">Tunel bore</string>
     <string name="s_ext_dialog_remove">Odinstalowanie funkcji (w jej ustawieniach) znów je usunie.</string>
     <string name="s_tasks_state_queued">Oczekuje</string>
     <string name="s_tasks_state_running">W toku</string>
