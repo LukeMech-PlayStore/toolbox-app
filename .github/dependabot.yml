@@ -1,7 +1,8 @@
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 #
-# GitHub Actions: keeps `uses:` SHA pins current. Gradle: covers gradle/libs.versions.toml,
-# the plugins and the wrapper.
+# GitHub Actions: keeps `uses:` SHA pins current. Gradle: the wrapper alone; the libraries and plugins
+# (gradle/libs.versions.toml) are the inspect job's (tests.yml: Android's newer-version inspections fail it), the
+# daemon's JVM update-daemon-jvm.yml's.
 
 version: 2
 updates:
@@ -14,3 +15,5 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    allow:
+      - dependency-name: "gradle-wrapper"

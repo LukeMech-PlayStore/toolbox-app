@@ -9,8 +9,10 @@ tests.yml, whose result is the tests':
 - an annotation for each test failed in a leg (GitHub shows 10 of them; the summary has them all); a shard without
   results is a failed e2e.Setup test of its own, its tests not run
 - exits 1 if any failed or didn't run
+- with <durations.json>: durations.json (instrument.py's, how it deals the tests among a leg's shards) with each test
+  that didn't fail, as long as it took on each ABI (the median of its legs), the tests not seen as they were
 
-    merge.py <matrix JSON> <artifacts dir> [<summary.md>]
+    merge.py <matrix JSON> <artifacts dir> [<summary.md> [<durations.json>]]
 
 <artifacts dir>/e2e-results-<id>/junit/*.xml, as download-artifact puts them.
 """
@@ -18,6 +20,7 @@ import glob
 import html
 import json
 import os
+import statistics
 import sys
 import xml.etree.ElementTree as ET
 
@@ -66,6 +69,31 @@ def load(legs, artifacts):
         for case in cases:
             tests.setdefault((case.get("classname"), case.get("name")), {}).setdefault(leg, []).append((shard["name"], case))
     return tests
+
+
+def durations(legs, tests, path):
+    """durations.json updated with how long each test took this time (see the docstring), written to [path]."""
+    abis = {shard["name"].rsplit(" · ", 1)[0]: shard["arch"] for shard in legs}
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "durations.json"), encoding="utf-8") as f:
+            table = json.load(f)
+    except (OSError, ValueError):
+        table = {}
+    took = {}
+    for (cls, name), ran in tests.items():
+        if cls == "e2e.Setup":
+            continue
+        for leg, tries in ran.items():
+            status, _ = outcome(tries[-1][1])
+            if status != "failed":
+                # Skipped: nothing (the ABI's servers on a Java it hasn't)
+                seconds = 0.0 if status == "skipped" else float(tries[-1][1].get("time") or 0)
+                took.setdefault(abis[leg], {}).setdefault(f"{cls.rsplit('.', 1)[-1]}#{name}", []).append(seconds)
+    for abi, its in took.items():
+        table.setdefault(abi, {}).update({test: round(statistics.median(s)) for test, s in its.items()})
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({abi: dict(sorted(its.items())) for abi, its in sorted(table.items())}, f, indent=1, ensure_ascii=False)
+        f.write("\n")
 
 
 def main():
@@ -119,6 +147,8 @@ def main():
             f.write("\n### Legs\n\n| Leg | System image | Channel |\n|---|---|---|\n")
             for shard in legs[::legs[0]["shards"]] if legs else []:
                 f.write(f"| {shard['name'].rsplit(' · ', 1)[0]} | android-{shard['image']};{shard['target']};{shard['arch']} | {shard['channel']} |\n")
+    if len(sys.argv) > 4:
+        durations(legs, tests, sys.argv[4])
     for title, message in failed:
         # A workflow command: its message one line, its % and line breaks escaped
         text = brief(message or "failed").replace("%", "%25").replace("\r", "").replace("\n", "%0A")

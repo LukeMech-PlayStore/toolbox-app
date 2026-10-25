@@ -5,7 +5,8 @@ Qodana's SARIF as the inspect job's report (tests.yml), as Android Studio's Insp
 - the job's summary: how many problems of each severity, a table of the inspections that found any (the worst
   first), then where each found them, every problem linked to its line
 - an annotation for each problem, on its line (GitHub shows 10 of each kind on a step; the summary has them all)
-- exits 1 if there's any problem, or no SARIF (Qodana didn't get to write it)
+- exits 1 if there's a problem of a [FAILING] severity (the IDE's errors and warnings, an outdated library's among
+  them), or no SARIF (Qodana didn't get to write it); the rest (weak warnings, typos, grammar) only reported
 
     report.py <qodana.sarif.json> [<summary.md>]
 """
@@ -24,6 +25,8 @@ SEVERITIES = {
 }
 # A result without Qodana's severity: by its SARIF level
 LEVELS = {"error": "Critical", "warning": "High", "note": "Moderate", "none": "Info"}
+# The severities that fail the job
+FAILING = ["Critical", "High"]
 
 
 def names(run):
@@ -90,7 +93,8 @@ def main():
             if not found:
                 f.write("✅ No problems\n")
                 return
-            f.write(f"{len(found)} problems from {len(by_inspection)} inspections: {counts}\n\n"
+            failing = " and ".join(s.lower() for s in FAILING)
+            f.write(f"{len(found)} problems from {len(by_inspection)} inspections: {counts} (the job fails on {failing})\n\n"
                     "Qodana's HTML report (Inspect Code's table) is in the run's `inspections` artifact.\n\n"
                     "| Inspection | Severity | Problems |\n|---|---|---|\n")
             for inspection, its in by_inspection.items():
@@ -112,7 +116,7 @@ def main():
         if column:
             props.append(f"col={column}")
         print(f"::{SEVERITIES[severity][1]} {','.join(props)}::{escape(message or inspection)}")
-    sys.exit(1 if found else 0)
+    sys.exit(1 if any(p[1] in FAILING for p in found) else 0)
 
 
 if __name__ == "__main__":

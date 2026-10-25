@@ -8,17 +8,19 @@ for the report job's merge.py (run-tests.sh calls it once the app and the tests 
 - a crash ends its class's run: the test it was in fails with it, and those that hadn't run yet run one by one
 - a test that failed is run once more on its own; both tries are in the report (merge.py: one that
   passed the second time counts as flaky, not failed)
-- with [shard] of [shards]: its share of the tests alone, dealt one by one as listed, a shard further each round (a long class, as the Minecraft
-  servers', shared among them all)
+- with [shard] of [shards]: its share of the tests alone, dealt by how long each takes (durations.json): the shards
+  done at about the same time
 
     instrument.py <runner> <out dir> <suite name> [<shard> <shards>]
 
 Output: <out>/junit/<Class>.xml, the raw `am instrument -r` output of each run in <out>/raw/, each class's logcat
 in <out>/logcat/.
 """
+import json
 import os
 import re
 import shlex
+import statistics
 import subprocess
 import sys
 import threading
@@ -33,6 +35,10 @@ CLASS_TIMEOUT = 300 * 60
 TEST_TIMEOUT = 60 * 60
 # A run that says nothing for this long is stuck (a test's waits say what they wait for every half a minute)
 IDLE_TIMEOUT = 15 * 60
+# Each test's seconds on each ABI, from earlier runs (merge.py's, the report job's e2e-durations artifact)
+DURATIONS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "durations.json")
+# A class's own run besides its tests: the app's process started, its logcat cleared and saved
+CLASS_OVERHEAD = 5
 
 
 def instrument(runner, raw_path, args, timeout):
@@ -159,6 +165,42 @@ def any_of(cls, tests):
     return ["-e", "tests_regex", "^(" + "|".join(re.escape(f"{cls}#{t}") for t in tests) + ")$"]
 
 
+def deal(listed, shard, shards):
+    """
+    This shard's share of [listed] ((class, test) in the listing's order), as {class: [tests]}: the longest first, each
+    to the shard with the least time so far, by durations.json's for the device's ABI (else the other's, else the median
+    of them); the same deal on every shard of a leg (the same tests listed, the same ABI).
+    """
+    abi = subprocess.run(["adb", "shell", "getprop", "ro.product.cpu.abi"], capture_output=True, text=True).stdout.strip()
+    try:
+        with open(DURATIONS, encoding="utf-8") as f:
+            table = json.load(f)
+    except (OSError, ValueError):
+        table = {}
+    known = table.get(abi, {})
+    others = {test: s for other, tests in table.items() if other != abi for test, s in tests.items()}
+    median = statistics.median(list(known.values()) or list(others.values()) or [0])
+
+    def seconds(cls, test):
+        key = f"{cls.rsplit('.', 1)[-1]}#{test}"
+        return known.get(key, others.get(key, median))
+
+    loads, started, mine = [0.0] * shards, set(), []
+    for i in sorted(range(len(listed)), key=lambda i: -seconds(*listed[i])):
+        cls, test = listed[i]
+        to = min(range(shards), key=lambda s: loads[s])
+        loads[to] += seconds(cls, test) + (0 if (to, cls) in started else CLASS_OVERHEAD)
+        started.add((to, cls))
+        if to == shard:
+            mine.append(i)
+    print(f"Shard {shard + 1}/{shards} ({abi}): about {loads[shard] / 60:.0f} min of tests, the shards' "
+          + " / ".join(f"{load / 60:.0f}" for load in loads), flush=True)
+    tests = {}
+    for i in sorted(mine):
+        tests.setdefault(listed[i][0], []).append(listed[i][1])
+    return tests
+
+
 def main():
     runner, out, suite_name = sys.argv[1:4]
     shard, shards = (int(sys.argv[4]), int(sys.argv[5])) if len(sys.argv) > 5 else (0, 1)
@@ -178,20 +220,13 @@ def main():
             break
         with open(os.path.join(out, "logcat", f"listTests-{attempt}.txt"), "w", encoding="utf-8") as log:
             subprocess.run(["adb", "logcat", "-d"], stdout=log, stderr=subprocess.DEVNULL, check=False)
-    tests = {}
-    for i, (cls, test, *_) in enumerate(listed):
-        # Each round a shard further: tests listed in [shards]-long runs (the Minecraft servers' 4 Javas) spread
-        # among them all, not each shard the same one of every run (one with every Java 17 server, one with
-        # Java 25's, skipped on x86)
-        if (i + i // shards) % shards == shard:
-            tests.setdefault(cls, []).append(test)
     if not listed:
         write_junit(os.path.join(out, "junit", "setup.xml"), suite_name,
                     [("e2e.Setup", "listTests", "error", "No tests listed in 3 tries (logcat/listTests-*.txt):\n" + run_output[-3000:], 0.0)])
         print("::error title=E2E::No tests listed in 3 tries: " + (run_output.strip().splitlines() or ["no output"])[0])
         return
 
-    for cls, names in tests.items():
+    for cls, names in deal([(cls, test) for cls, test, *_ in listed], shard, shards).items():
         short = cls.rsplit(".", 1)[-1]
         print(f"::group::{short} ({len(names)} tests)", flush=True)
         subprocess.run(["adb", "logcat", "-c"], check=False)

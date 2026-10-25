@@ -161,7 +161,18 @@ jobs:
         env:
           MATRIX: ${{ needs.plan.outputs.matrix }}
         # The summary (a row per test, opened to every leg's result), the failures as annotations, the job failed with them
-        run: python3 .github/scripts/e2e-tests/merge.py "$MATRIX" e2e-results "$GITHUB_STEP_SUMMARY"
+        run: python3 .github/scripts/e2e-tests/merge.py "$MATRIX" e2e-results "$GITHUB_STEP_SUMMARY" durations.json
+
+      # How long each test took, for the shards to be dealt by: committed as the scripts' durations.json when they've
+      # drifted (a shard much longer than the others)
+      - name: Upload the durations
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-durations
+          path: durations.json
+          if-no-files-found: ignore
+          retention-days: 14
 
   # The code inspected as Android Studio's Inspect Code does: IntelliJ's and Android's inspections with the project's
   # profile (.idea/inspectionProfiles), in Qodana Community for Android's image (no token, its Cloud not used), its
