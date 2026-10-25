@@ -27,6 +27,11 @@ internal class Rcon(private val port: Int, private val password: String) {
         const val TIMEOUT_MS = 8_000
         /** How long a command's answer has to start before it's taken as none (Forge's say answers nothing). */
         const val QUIET_MS = 1_000
+        /**
+         * How long its answer may take: the command runs on the server's main thread, in its turn, which a server
+         * just started (Forge's, on a slow phone) can keep busy for longer than [TIMEOUT_MS]
+         */
+        const val ANSWER_MS = 60_000
     }
 
     /** Runs [command] (without the slash), returning what the server answered; throws when it can't. */
@@ -62,7 +67,7 @@ internal class Rcon(private val port: Int, private val password: String) {
         } catch (e: IOException) {
             if (answered) return@use answer.toString() else throw e
         }
-        socket.soTimeout = TIMEOUT_MS
+        socket.soTimeout = ANSWER_MS
         while (true) {
             val (id, _, body) = try {
                 read(input)

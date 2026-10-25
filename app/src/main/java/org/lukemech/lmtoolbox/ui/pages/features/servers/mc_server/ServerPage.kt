@@ -77,7 +77,9 @@ internal fun ServerPage(profile: ServerProfile, onBack: () -> Unit, onChanged: (
         command = ""
         scope.launch {
             // Not sent: told in the one place errors are, the bottom bar
-            if (!ServerRunner.console(c)) LinuxTasks.reportFailure(MinecraftServerFeature, profile.name, "Couldn't send /$c")
+            ServerRunner.console(c).onFailure {
+                LinuxTasks.reportFailure(MinecraftServerFeature, profile.name, "Couldn't send /$c: ${it.message ?: it.javaClass.simpleName}")
+            }
         }
     }
 

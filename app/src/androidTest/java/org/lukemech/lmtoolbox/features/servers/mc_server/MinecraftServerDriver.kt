@@ -245,7 +245,8 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
     /** Deleted from its options (confirmed), gone from the list. */
     fun delete(profile: ServerProfile) {
         tab(R.string.f_Mc_tab_options)
-        ui.clickText(R.string.f_Mc_delete_server)
+        // Asked first: else the tap missed (the page moving under it, the export's steps leaving its title)
+        ui.clickText(R.string.f_Mc_delete_server, done = { ui.dialogShown })
         ui.clickInDialog(s(R.string.f_Mc_delete))
         Device.waitFor("${profile.name} deleted", 60_000) { Servers.load(context, profile.id) == null }
         ui.waitShown(hasText(s(R.string.f_Mc_new)) and hasClickAction(), what = "the server list")
