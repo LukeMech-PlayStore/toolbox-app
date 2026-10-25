@@ -117,8 +117,6 @@ jobs:
           disk-size: 16G
           emulator-boot-timeout: 900
           disable-animations: true
-          # The action's own, its renderer the leg's (matrix.py)
-          emulator-options: -no-window -gpu ${{ matrix.gpu }} -no-snapshot -noaudio -no-boot-anim
           script: bash .github/scripts/e2e-tests/run-tests.sh
 
       - name: Upload screenshots, logcat and raw results

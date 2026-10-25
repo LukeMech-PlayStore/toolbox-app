@@ -26,10 +26,6 @@ TAGS = ["google_apis", "android"]
 # else); 4 KB pages before 16 KB ones (the newest minors and canaries come in 16 KB alone)
 TARGET_ORDER = ["default", "google_apis", "google_apis_ps16k"]
 CHANNELS = {"channel-0": "stable", "channel-1": "beta", "channel-2": "dev", "channel-3": "canary"}
-# The emulator's renderer: SwiftShader, as the emulator action's default; Android 37's releases' SurfaceFlinger aborts
-# on it ("Assertion failed: !rcEnc->featureInfo()->hasReadColorBufferDma"), taking the system down every 20 s or so
-# (the package manager gone in the middle of an install): SwiftShader under ANGLE for them. The canary's runs on it
-GPU, GPU_FROM_37 = "swiftshader_indirect", "swangle_indirect"
 # Jobs per leg, the tests dealt among them (the Minecraft servers' alone take over an hour on one)
 SHARDS = 4
 REPOSITORY = "https://dl.google.com/android/repository"
@@ -106,7 +102,6 @@ def main():
                 "image": token,
                 "target": target,
                 "channel": channel,
-                "gpu": GPU_FROM_37 if (release(token) or 0) >= 37 else GPU,
                 "shard": shard,
                 "shards": SHARDS,
             })
