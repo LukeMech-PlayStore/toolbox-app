@@ -26,12 +26,27 @@ ICONS = {"failed": "❌", "not run": "⚠️", "flaky": "🔁", "passed": "✅",
 
 
 def outcome(case):
-    """(passed, failed or skipped; its message)."""
+    """(passed, failed or skipped; its message: the whole of it, as its stack has it, not its first line alone)."""
     for kind, status in (("failure", "failed"), ("error", "failed"), ("skipped", "skipped")):
         found = case.find(kind)
         if found is not None:
-            return status, found.get("message") or ""
+            title, stack = found.get("message") or "", (found.text or "").strip()
+            # A title of its own (a crash's): before the stack
+            return status, stack if stack.startswith(title) else "\n".join(filter(None, [title, stack]))
     return "passed", ""
+
+
+def brief(message, frames=3):
+    """[message] up to its stack's first [frames] frames (an annotation's: what failed, and where)."""
+    lines, seen = [], 0
+    for line in message.splitlines():
+        if line.lstrip().startswith("at "):
+            seen += 1
+            if seen > frames:
+                lines.append("\t...")
+                break
+        lines.append(line)
+    return "\n".join(lines)[:3000]
 
 
 def load(legs, artifacts):
@@ -106,7 +121,7 @@ def main():
                 f.write(f"| {shard['name'].rsplit(' · ', 1)[0]} | android-{shard['image']};{shard['target']};{shard['arch']} | {shard['channel']} |\n")
     for title, message in failed:
         # A workflow command: its message one line, its % and line breaks escaped
-        text = (message or "failed").replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+        text = brief(message or "failed").replace("%", "%25").replace("\r", "").replace("\n", "%0A")
         print(f"::error title={title.replace(',', '%2C').replace('::', ':')}::{text}")
     sys.exit(1 if totals["failed"] or totals["not run"] else 0)
 

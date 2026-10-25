@@ -8,7 +8,7 @@ for the report job's merge.py (run-tests.sh calls it once the app and the tests 
 - a crash ends its class's run: the test it was in fails with it, and those that hadn't run yet run one by one
 - a test that failed is run once more on its own; both tries are in the report (merge.py: one that
   passed the second time counts as flaky, not failed)
-- with [shard] of [shards]: its share of the tests alone, dealt one by one as listed (a long class, as the Minecraft
+- with [shard] of [shards]: its share of the tests alone, dealt one by one as listed, a shard further each round (a long class, as the Minecraft
   servers', shared among them all)
 
     instrument.py <runner> <out dir> <suite name> [<shard> <shards>]
@@ -180,7 +180,10 @@ def main():
             subprocess.run(["adb", "logcat", "-d"], stdout=log, stderr=subprocess.DEVNULL, check=False)
     tests = {}
     for i, (cls, test, *_) in enumerate(listed):
-        if i % shards == shard:
+        # Each round a shard further: tests listed in [shards]-long runs (the Minecraft servers' 4 Javas) spread
+        # among them all, not each shard the same one of every run (one with every Java 17 server, one with
+        # Java 25's, skipped on x86)
+        if (i + i // shards) % shards == shard:
             tests.setdefault(cls, []).append(test)
     if not listed:
         write_junit(os.path.join(out, "junit", "setup.xml"), suite_name,

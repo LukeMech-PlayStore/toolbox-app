@@ -165,7 +165,10 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         Device.waitFor("/list's answer", 60_000) { ServerRunner.log.value.any { "players online" in it || "There are" in it } }
         ui.type(s(R.string.f_Mc_command), "say e2e-hello")
         ui.click(hasContentDescription(s(R.string.f_Mc_send)) and hasClickAction())
-        Device.waitFor("the server to say it", 60_000) { ServerRunner.log.value.any { "e2e-hello" in it } }
+        // The server's own line ("[Rcon] e2e-hello"), not the command shown as sent ("> say e2e-hello")
+        Device.waitFor("the server to say it", 60_000, failFast = { linux.failure() }) {
+            ServerRunner.log.value.any { "e2e-hello" in it && !it.startsWith(">") }
+        }
         Device.screenshot("mc-console")
     }
 

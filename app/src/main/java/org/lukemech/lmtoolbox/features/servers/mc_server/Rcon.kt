@@ -21,7 +21,12 @@ internal class Rcon(private val port: Int, private val password: String) {
         const val LOGIN = 3
         const val COMMAND = 2
         const val AUTH_RESPONSE = 2
+        /** A type no server knows: answered ("Unknown request 64") after what came before it, the answer's end. */
+        const val MARKER = 100
+        const val MARKER_ID = 3
         const val TIMEOUT_MS = 8_000
+        /** How long a command's answer has to start before it's taken as none (Forge's say answers nothing). */
+        const val QUIET_MS = 1_000
     }
 
     /** Runs [command] (without the slash), returning what the server answered; throws when it can't. */
@@ -41,13 +46,33 @@ internal class Rcon(private val port: Int, private val password: String) {
         }
 
         send(out, 2, COMMAND, command)
-        val answer = StringBuilder(read(input).third)
-        // Long answers come in several packets, one right after the other
-        socket.soTimeout = 150
+        // Its answer: in several packets if long, none at all for some (Forge's say). Then a marker, answered in
+        // turn, ends it; sent once the command's surely read (the server takes a packet a read, two sent together
+        // lose the second): its answer starting, or a while without one
+        val answer = StringBuilder()
+        var answered = false
+        socket.soTimeout = QUIET_MS
         try {
-            while (true) answer.append(read(input).third)
+            answer.append(read(input).third)
+            answered = true
         } catch (_: SocketTimeoutException) {
-        } catch (_: EOFException) {
+        }
+        try {
+            send(out, MARKER_ID, MARKER, "")
+        } catch (e: IOException) {
+            if (answered) return@use answer.toString() else throw e
+        }
+        socket.soTimeout = TIMEOUT_MS
+        while (true) {
+            val (id, _, body) = try {
+                read(input)
+            } catch (e: IOException) {
+                // Closed once it answered ("stop"): that answer's all
+                if (answered) break else throw e
+            }
+            if (id == MARKER_ID) break
+            answer.append(body)
+            answered = true
         }
         answer.toString()
     }
