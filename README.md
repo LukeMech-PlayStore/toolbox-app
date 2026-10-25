@@ -235,18 +235,23 @@ JDK and bytecode level of all of them, and `buildSrc/` holds the app's tasks (`L
 
 ### Testing
 
-The tests run the app on emulators as a user would: [`e2e-tests.yml`](.github/workflows/e2e-tests.yml) installs
+The tests run the app on emulators as a user would: [`tests.yml`](.github/workflows/tests.yml) installs
 the debug bundle with Play's local testing (so the tools' modules download as from Play) and runs
 `app/src/androidTest/` on the oldest Android the app supports (API 29), the one it targets (37) and the newest
-canary (16 KB pages), for x86_64 and x86, and for ARM translated on the x86_64 images that can (as their own ABI lists say; allowed to
-fail: GitHub's runners can't run an ARM emulator). Each tool
+canary (16 KB pages), for x86_64 and x86 (GitHub's runners can't run an ARM emulator, and ARM translated on the x86_64
+images can't run the Linux subsystem). Each tool
 has a test named after it in its own package (`features/electronics/ohm/OhmTest.kt`), which opens it from the
 home page and goes through every button, switch, field and slider (`e2e/Explorer.kt`), installing the tool's
 Linux packages first if it's on the subsystem. The Minecraft server's test makes every type of server (Vanilla,
 Paper, Fabric, Forge, NeoForge) on every Java, each on the newest Minecraft made for it: starts it, uses its console
 and options, changes its loader, exports its world. Failures show as annotations on the pull request and in the
-run's summary, with screenshots and logcat as artifacts. Each leg is a single job, running every test. Every run
+run's summary, with screenshots and logcat as artifacts. Each leg runs in shards, sharing its tests. Every run
 (pull requests, main, by hand) tests everything.
+
+Alongside them, the code is inspected as Android Studio's Inspect Code does, with the project's inspection profile
+(Qodana Community for Android, [`qodana.yaml`](qodana.yaml)). It reports as soon as it's done, while the emulators
+still run: every problem as an annotation and in the run's summary, and Qodana's HTML report as the `inspections`
+artifact. Any problem fails it.
 
 ```sh
 ./gradlew :app:installLocalTesting :app:installDebugAndroidTest   # on a connected device

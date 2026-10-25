@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 The legs' JUnit XML (instrument.py's, each shard's in its own artifact) as one report, for the report job of
-e2e-tests.yml, whose result is the tests':
+tests.yml, whose result is the tests':
 
-- the job's summary (the run's only one, so on top): a table of every test's result on each leg, the failed first,
+- the job's summary (beside the inspect job's, report.py's): a table of every test's result on each leg, the failed first,
   then why each failed (or was flaky) where, and the legs' system images. A retried test's last try counts (passed
   after failing: flaky), a leg it didn't run in (its shard cut short, or without results) not run
 - an annotation for each test failed in a leg (GitHub shows 10 of them; the summary has them all); a shard without

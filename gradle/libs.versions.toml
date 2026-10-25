@@ -31,7 +31,7 @@ play-services-tasks = { group = "com.google.android.gms", name = "play-services-
 play-core-common = { group = "com.google.android.play", name = "core-common", version = "2.0.4" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 
-# The instrumented end-to-end tests (app/src/androidTest), run on emulators by e2e-tests.yml
+# The instrumented end-to-end tests (app/src/androidTest), run on emulators by tests.yml
 androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version = "1.7.0" }
 androidx-test-rules = { group = "androidx.test", name = "rules", version = "1.7.0" }

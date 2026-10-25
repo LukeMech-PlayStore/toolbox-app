@@ -12,7 +12,7 @@ import org.lukemech.lmtoolbox.linux.LinuxTasks
 
 /**
  * The tools on the Linux subsystem: their Play modules installed as from Play (bundletool's local testing,
- * see e2e-tests.yml) and their packages unpacked, through their installation page; and what failed meanwhile.
+ * see tests.yml) and their packages unpacked, through their installation page; and what failed meanwhile.
  */
 class Linux(private val ui: Ui) {
     private val known = LinuxTasks.tasks.value.map { it.id }.toMutableSet()

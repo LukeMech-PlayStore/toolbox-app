@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-The end-to-end tests' emulator legs (e2e-tests.yml), from what the app supports and what Google has: for x86_64 and
+The end-to-end tests' emulator legs (tests.yml), from what the app supports and what Google has: for x86_64 and
 x86, the oldest Android the app runs on (sdkMin), the one it targets (sdkTarget) and the newest there is (canary), on
 Google's own system images (sys-img/<tag>/sys-img2-4.xml), each with the channel it's on.
 

@@ -41,7 +41,7 @@ android {
         versionCode = appVersionCode
         versionName = appVersionName
 
-        // The end-to-end tests (src/androidTest), against the app installed with its Play modules (e2e-tests.yml)
+        // The end-to-end tests (src/androidTest), against the app installed with its Play modules (tests.yml)
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {

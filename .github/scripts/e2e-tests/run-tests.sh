@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# The end-to-end tests on the running emulator (e2e-tests.yml, android-emulator-runner's script):
+# The end-to-end tests on the running emulator (tests.yml, android-emulator-runner's script):
 #  1. the debug app installed as from Play: bundletool's local testing, the core module for real (PRoot is
 #     executed from nativeLibraryDir, see buildSrc's LocalTesting.kt), the other modules downloaded when a tool asks
 #  2. the tests (app/src/androidTest) run by instrument.py: class by class, carrying on after a crash, failed ones retried;
 #     with E2E_SHARD of E2E_SHARDS, its share of them alone
 #  3. their results as JUnit XML (e2e-results/junit), screenshots and each class's logcat beside them
-# Always exits 0 once results are written: the report job (e2e-tests.yml) fails on failed tests.
+# Always exits 0 once results are written: the report job (tests.yml) fails on failed tests.
 #
 # Env: E2E_LEG (the matrix leg's name), E2E_SHARD and E2E_SHARDS (0 of 1: all of them), E2E_DIST (the build job's files)
 set -uo pipefail

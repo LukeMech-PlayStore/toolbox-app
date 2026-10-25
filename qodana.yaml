@@ -1,0 +1,5 @@
+# The inspect job of .github/workflows/tests.yml: Qodana Community for Android, with the inspection profile the IDE uses
+version: "1.0"
+linter: jetbrains/qodana-jvm-android:2026.2
+profile:
+  path: .idea/inspectionProfiles/Project_Default.xml

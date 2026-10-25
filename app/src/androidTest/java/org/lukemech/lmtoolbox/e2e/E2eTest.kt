@@ -23,7 +23,7 @@ import org.lukemech.lmtoolbox.ui.helpers.PREF_NOTIFICATIONS_LATER
 /**
  * Every end-to-end test: the app started fresh on its home page (as from the launcher), its permissions
  * granted first, what it hands to other apps (pickers, browser, share sheet) answered here ([Pickers]),
- * and a screenshot of how it looked when a test failed (pulled by the workflow, see e2e-tests.yml).
+ * and a screenshot of how it looked when a test failed (pulled by the workflow, see tests.yml).
  */
 abstract class E2eTest {
     @get:Rule(order = 0)

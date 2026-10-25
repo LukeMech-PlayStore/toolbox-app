@@ -1,10 +1,11 @@
-name: End-to-end tests
+name: Tests
 
-# The app on emulators, every tool opened and gone through (app/src/androidTest): on the oldest Android it
-# supports (minSdk), the one it targets (targetSdk) and the newest there is (canary, 16 KB pages), on x86_64 and
-# x86 (the emulators GitHub's runners run; ARM translated on them can't run the Linux subsystem), each in shards. The report job's summary has
+# The end-to-end tests: the app on emulators, every tool opened and gone through (app/src/androidTest): on the oldest
+# Android it supports (minSdk), the one it targets (targetSdk) and the newest there is (canary, 16 KB pages), on x86_64
+# and x86 (the emulators GitHub's runners run; ARM translated on them can't run the Linux subsystem), each in shards. The report job's summary has
 # every test, opened to each leg's result, its failures as annotations on the PR (merge.py, from the shards' JUnit XML);
 # screenshots and logcat as artifacts. Every run tests everything: a Minecraft server on every Java, every loader.
+# Alongside them, the code inspected as Android Studio's Inspect Code does (the inspect job), reported as soon as it's done.
 
 on:
   pull_request:
@@ -13,7 +14,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: e2e-${{ github.ref }}
+  group: tests-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -113,6 +114,10 @@ jobs:
           channel: ${{ matrix.channel }}
           cores: 4
           ram-size: 4096M
+          # The app's Java heap: left out, the AVD's is 16 MB, which a command's output alone can fill
+          # (OutOfMemoryError in LinuxEnv.drain). A low-end phone's, so the tests still catch what would run out on
+          # one: AOSP's 1 GB phone profile (phone-xhdpi-1024-dalvik-heap.mk, heapgrowthlimit=96m)
+          heap-size: 96M
           # The Java versions and the servers' worlds take room
           disk-size: 16G
           emulator-boot-timeout: 900
@@ -157,4 +162,38 @@ jobs:
           MATRIX: ${{ needs.plan.outputs.matrix }}
         # The summary (a row per test, opened to every leg's result), the failures as annotations, the job failed with them
         run: python3 .github/scripts/e2e-tests/merge.py "$MATRIX" e2e-results "$GITHUB_STEP_SUMMARY"
+
+  # The code inspected as Android Studio's Inspect Code does: IntelliJ's and Android's inspections with the project's
+  # profile (.idea/inspectionProfiles), by Qodana Community for Android (qodana.yaml; no token, its Cloud not used),
+  # its Gradle sync with the runner's Android SDK. Not waiting for anything, it's reported while the emulators still
+  # run (report.py): the summary, every problem as an annotation, this job failed if there's any; Qodana's HTML report
+  # (Inspect Code's table) and SARIF as an artifact
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Inspect
+        run: |
+          mkdir -p "$RUNNER_TEMP/inspections"
+          docker run --rm \
+            -v "$PWD":/data/project \
+            -v "$RUNNER_TEMP/inspections":/data/results \
+            -v "$ANDROID_HOME":/data/android-sdk -e ANDROID_HOME=/data/android-sdk -e ANDROID_SDK_ROOT=/data/android-sdk \
+            jetbrains/qodana-jvm-android:2026.2@sha256:cc439c6cbe7f257dab04f24be8c2f5b64a47f3df253df2dd74baefb177c3a423 \
+            --save-report
+
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: inspections
+          path: ${{ runner.temp }}/inspections/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Report
+        if: always()
+        run: python3 .github/scripts/inspections/report.py "$RUNNER_TEMP/inspections/qodana.sarif.json" "$GITHUB_STEP_SUMMARY"
 
