@@ -145,6 +145,9 @@ internal fun ServerPage(profile: ServerProfile, onBack: () -> Unit, onChanged: (
                     Reveal(visible = pending != null) {
                         last[0]?.let { r ->
                             PendingBar(profile, r) {
+                                // A field being edited saved first (its text, as focus leaves it), so it's dropped
+                                // with the rest: else it saved itself as the tab is made again, waiting once more
+                                focusManager.clearFocus()
                                 ServerRunner.discard(context, profile.id)
                                 discarded++
                                 onChanged()

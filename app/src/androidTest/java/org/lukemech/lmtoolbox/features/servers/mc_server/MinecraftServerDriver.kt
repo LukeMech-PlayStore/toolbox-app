@@ -66,7 +66,9 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         Installer.versions(type).first { Java.forNeeds(context, Installer.javaNeeds(it)) != null }
     }
 
-    private val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
+    // An OptionSetting's choice: its radio button alone, no text (the server page's tabs are radio buttons too, named)
+    private val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton) and
+        SemanticsMatcher.keyNotDefined(SemanticsProperties.Text)
 
     /**
      * Picks [value] in the OptionSetting titled [title], once its choices have loaded, until [taken] (by default:
@@ -186,7 +188,7 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
     fun exploreOptions(profile: ServerProfile) {
         tab(R.string.f_Mc_tab_options)
         Explorer(
-            ui, "mc-${profile.name}", maxActions = 200, depth = 0,
+            ui, "mc-${profile.name}", maxActions = 400, depth = 0,
             extraSkips = listOf(
                 s(R.string.f_Mc_start), s(R.string.f_Mc_stop), s(R.string.f_Mc_restart), s(R.string.f_Mc_export_world),
                 s(R.string.f_Mc_export_server), s(R.string.f_Mc_import_world), s(R.string.f_Mc_add_plugins), s(R.string.f_Mc_add_mods),
