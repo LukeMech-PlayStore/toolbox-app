@@ -1,0 +1,29 @@
+name: Keep Test Durations
+
+# The tests' durations (tests.yml's durations.json, how its shards are dealt) live in the Actions cache, which GitHub
+# drops after 7 days unused: restored every 3 days, so a quiet week doesn't lose them. Scheduled runs are main's,
+# so it's main's entry kept, the one every branch reads
+
+on:
+  schedule:
+    - cron: "17 4 */3 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  keep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restore the durations
+        id: restore
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: durations.json
+          key: e2e-durations-${{ github.run_id }}
+          restore-keys: e2e-durations-
+
+      - name: None yet
+        if: ${{ steps.restore.outputs.cache-matched-key == '' }}
+        run: echo "::notice ::No durations cached yet (tests.yml's report job saves them)"

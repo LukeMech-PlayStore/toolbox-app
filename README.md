@@ -260,20 +260,21 @@ the newest Minecraft made for it: starts it, uses its console and options, chang
 The pages' own tests (home, search, navigation, settings, tasks) sit next to them.
 
 **Where.** The legs come from what the app supports and what Google publishes, worked out on every run
-([`matrix.py`](.github/scripts/e2e-tests/matrix.py)): for x86_64, the oldest Android the app supports (`sdkMin`,
+([`matrix.py`](.github/scripts/tests/e2e/matrix.py)): for x86_64, the oldest Android the app supports (`sdkMin`,
 API 29), the one it targets (`sdkTarget`, 37) and the newest canary (16 KB pages); for x86, whose images end at
 API 30, the oldest and its newest. No ARM: GitHub's runners can't run an ARM emulator, and ARM translated on the
 x86_64 images can't run the Linux subsystem.
 
 **How.** Each leg runs in 3 shards. Each test goes to the shard with the least work so far, longest first, by how long
-it took before ([`durations.json`](.github/scripts/e2e-tests/durations.json)), so the shards finish at about the
-same time. A new test counts as the median until it's measured. The report job writes the times of each run
-to the `e2e-durations` artifact. Commit it over `durations.json` when the shards drift apart. On a shard,
-[`instrument.py`](.github/scripts/e2e-tests/instrument.py) runs the tests class by class, each in a fresh
+it took before (`durations.json`, kept in the Actions cache: the report job saves each run's, and the next run restores
+the newest its branch can see, its own or main's; [`keep-durations.yml`](.github/workflows/keep-durations.yml)
+restores main's every 3 days, before GitHub drops it unused), so the shards finish at about the same time. A new test counts as
+the median until it's measured. With no cache yet, the tests are dealt by the listing alone. On a shard,
+[`instrument.py`](.github/scripts/tests/e2e/instrument.py) runs the tests class by class, each in a fresh
 process. After a crash, the tests it cut off are run one by one. A failed test runs once more; passing then
 counts as flaky, not failed.
 
-**Results.** The `report` job ([`merge.py`](.github/scripts/e2e-tests/merge.py)) puts every shard's results in one
+**Results.** The `report` job ([`merge.py`](.github/scripts/tests/e2e/merge.py)) puts every shard's results in one
 table in the run's summary: each test on each leg, failed first, then why each failed. Failures are annotations on
 the pull request. Screenshots, logcat and the raw output are each shard's `e2e-results-*` artifact. The job fails
 if a test failed or didn't run (a shard that crashed or was canceled).
@@ -281,7 +282,7 @@ if a test failed or didn't run (a shard that crashed or was canceled).
 **Inspections.** Alongside them, the `inspect` job inspects the code as Android Studio's Inspect Code does, with the
 project's profile (`.idea/inspectionProfiles`), in Qodana Community for Android's newest image, with the Jetpack
 Compose and Android Design Tools plugins added. It reports as soon as it's done, while the emulators still run
-([`report.py`](.github/scripts/inspections/report.py)): every problem in the run's summary and as an annotation,
+([`report.py`](.github/scripts/tests/inspections/report.py)): every problem in the run's summary and as an annotation,
 Qodana's HTML report as the `inspections` artifact. Critical and high problems (the IDE's errors and warnings, an
 outdated library among them) fail it. Moderate, low and info problems (weak warnings, typos, grammar) are only
 reported.
@@ -293,7 +294,10 @@ adb shell am instrument -w -e class org.lukemech.lmtoolbox.features.electronics.
 
 ### Versioning and releases
 
-`gradle.properties` holds `versionName` (`YY.MM.DD`) and `gplayCode`. The
+A release's version comes from its tag (`v<gplayCode>_<versionName>`), which `build-app.yml` passes to Gradle
+(`-PgplayCode=… -PversionName=…`). The tests' build is named after its commit's short hash, version code 1. Any
+other build is `<YY.MM.DD>-b<n>`, the day's n-th build on that machine, version code 1
+([`AppVersion.kt`](buildSrc/src/main/kotlin/AppVersion.kt), its count in `.gradle/dailyBuild.properties`). The
 [`build-app.yml`](.github/workflows/build-app.yml) workflow builds the debug and the
 signed release artifacts, and can push them to Play tracks as drafts. A version's tag
 (`v<gplayCode>_<versionName>`, e.g. `v76_26.10.24`) runs it on its own: the release goes to internal and alpha, internal's published.

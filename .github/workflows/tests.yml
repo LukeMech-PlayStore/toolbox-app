@@ -39,10 +39,14 @@ jobs:
           cache-read-only: false
           add-job-summary: never
 
+      # Named after the commit tested (its short hash, as GitHub shows it: a pull request's head, not the merge
+      # commit), version code 1: not a release (build-app.yml's come from their tags)
       - name: Build the debug bundle and the tests
+        env:
+          COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           chmod +x ./gradlew
-          ./gradlew --build-cache :app:bundleDebug :app:assembleDebugAndroidTest
+          ./gradlew --build-cache :app:bundleDebug :app:assembleDebugAndroidTest             -PversionName="${COMMIT::7}" -PgplayCode=1
 
       - name: Collect
         run: |
@@ -63,7 +67,7 @@ jobs:
           retention-days: 3
 
   # The legs: x86_64 and x86 on the app's oldest Android, its target and the newest canary, as Google's images are now
-  # (x86's newest instead of the last two), each in shards sharing the tests: see matrix.py, in the scripts' e2e-tests
+  # (x86's newest instead of the last two), each in shards sharing the tests: see matrix.py, in the scripts' tests/e2e
   # folder
   plan:
     runs-on: ubuntu-latest
@@ -75,7 +79,7 @@ jobs:
 
       - name: Plan the legs
         id: matrix
-        run: echo "matrix=$(python3 .github/scripts/e2e-tests/matrix.py gradle.properties)" >> "$GITHUB_OUTPUT"
+        run: echo "matrix=$(python3 .github/scripts/tests/e2e/matrix.py gradle.properties)" >> "$GITHUB_OUTPUT"
 
   test:
     needs: [plan, build]
@@ -93,6 +97,15 @@ jobs:
         with:
           name: e2e-build
           path: dist
+
+      # How long each test took before (the report job's), for the shards to be dealt by: the newest one this branch
+      # can see (its own, else main's); none yet, they're dealt by the listing alone
+      - name: Restore the durations
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: durations.json
+          key: e2e-durations-${{ github.run_id }}
+          restore-keys: e2e-durations-
 
       - name: Enable KVM
         run: |
@@ -131,7 +144,7 @@ jobs:
             -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
             -feature GLDirectMem,HasSharedSlotsHostMemoryAllocator
           disable-animations: true
-          script: bash .github/scripts/e2e-tests/run-tests.sh
+          script: bash .github/scripts/tests/e2e/run-tests.sh
 
       - name: Upload screenshots, logcat and raw results
         if: always()
@@ -157,22 +170,28 @@ jobs:
           pattern: e2e-results-*
           path: e2e-results
 
+      # The durations the shards were dealt by, updated by this run's (merge.py)
+      - name: Restore the durations
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: durations.json
+          key: e2e-durations-${{ github.run_id }}
+          restore-keys: e2e-durations-
+
       - name: Report
         env:
           MATRIX: ${{ needs.plan.outputs.matrix }}
         # The summary (a row per test, opened to every leg's result), the failures as annotations, the job failed with them
-        run: python3 .github/scripts/e2e-tests/merge.py "$MATRIX" e2e-results "$GITHUB_STEP_SUMMARY" durations.json
+        run: python3 .github/scripts/tests/e2e/merge.py "$MATRIX" e2e-results "$GITHUB_STEP_SUMMARY" durations.json
 
-      # How long each test took, for the shards to be dealt by: committed as the scripts' durations.json when they've
-      # drifted (a shard much longer than the others)
-      - name: Upload the durations
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      # For the next run's shards (a cache entry can't be overwritten: one per run, the newest restored). A pull
+      # request's stay its own; main's every branch reads
+      - name: Save the durations
+        if: always() && hashFiles('durations.json') != ''
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          name: e2e-durations
           path: durations.json
-          if-no-files-found: ignore
-          retention-days: 14
+          key: e2e-durations-${{ github.run_id }}-${{ github.run_attempt }}
 
   # The code inspected as Android Studio's Inspect Code does: IntelliJ's and Android's inspections with the project's
   # profile (.idea/inspectionProfiles), in Qodana Community for Android's image (no token, its Cloud not used), its
@@ -230,5 +249,5 @@ jobs:
         if: always()
         run: |
           apt-get update -qq && apt-get install -y -qq python3 > /dev/null
-          python3 .github/scripts/inspections/report.py /tmp/inspections/qodana.sarif.json "$GITHUB_STEP_SUMMARY"
+          python3 .github/scripts/tests/inspections/report.py /tmp/inspections/qodana.sarif.json "$GITHUB_STEP_SUMMARY"
 

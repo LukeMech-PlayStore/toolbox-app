@@ -60,6 +60,19 @@ jobs:
           fi
           # Nothing to publish without a release uploaded
           [[ "$release" != "true" ]] && { tracks=(); publish=""; }
+          # The version from the tag (v<gplayCode>_<versionName>, e.g. v76_26.10.24), passed to Gradle. Run by hand
+          # on a branch, there's none: the build is named as a local one (<YY.MM.DD>-b<n>, version code 1, buildSrc's
+          # AppVersion.kt), which Play won't take
+          version_args=""
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            if [[ ! "$GITHUB_REF_NAME" =~ ^v([0-9]+)_(.+)$ ]]; then
+              echo "::error ::Tag $GITHUB_REF_NAME isn't v<gplayCode>_<versionName>"; exit 1
+            fi
+            version_args="-PgplayCode=${BASH_REMATCH[1]} -PversionName=${BASH_REMATCH[2]}"
+          elif [[ ${#tracks[@]} -gt 0 ]]; then
+            echo "::error ::Uploading to Play needs a version: run this on a version's tag (v<gplayCode>_<versionName>)"; exit 1
+          fi
+          echo "version_args=$version_args" >> $GITHUB_OUTPUT
           echo "debug=$debug" >> $GITHUB_OUTPUT
           echo "release=$release" >> $GITHUB_OUTPUT
           echo "tracks=$(IFS=,; echo "${tracks[*]}")" >> $GITHUB_OUTPUT
@@ -80,7 +93,7 @@ jobs:
         if: ${{ steps.settings.outputs.debug == 'true' }}
         run: |
           chmod +x ./gradlew
-          ./gradlew --build-cache assembleDebug
+          ./gradlew --build-cache assembleDebug ${{ steps.settings.outputs.version_args }}
 
       - name: Decode keystore from GitHub secrets
         if: ${{ steps.settings.outputs.release == 'true' }}
@@ -96,7 +109,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           chmod +x ./gradlew
-          ./gradlew --build-cache assembleRelease bundleRelease \
+          ./gradlew --build-cache assembleRelease bundleRelease ${{ steps.settings.outputs.version_args }} \
             -Pandroid.injected.signing.store.file=$(pwd)/toolboxKeystore.jks \
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
             -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \

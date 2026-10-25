@@ -14,10 +14,11 @@ val sdkMin = property("sdkMin").toString().toInt()
 /** Bytecode level; Java and Kotlin must match. */
 val jvm = JavaVersion.toVersion(property("jvmTarget").toString())
 
-// Bumped per release / by the update tasks below, hence kept in gradle.properties
-/** version(YY.MM.DD) */
-val appVersionName = property("versionName").toString()
-val appVersionCode = property("gplayCode").toString().toInt()
+// Passed by the workflows: a release's from its tag (v<gplayCode>_<versionName>, build-app.yml), the tests' from
+// their commit (tests.yml). Else the day's n-th build here, <YY.MM.DD>-b<n> (buildSrc's AppVersion.kt), version code 1
+val appVersionName: String? = providers.gradleProperty("versionName").orNull
+/** 1 when not passed: AGP and bundletool won't take 0 (nor none). */
+val appVersionCode = providers.gradleProperty("gplayCode").map(String::toInt).getOrElse(1)
 
 /** The parts of the Linux subsystem, each a Play module (features/<name>, see settings.gradle.kts). */
 @Suppress("UNCHECKED_CAST") // settings.gradle.kts': the modules with a part's archive (not a tool's pages alone)
@@ -39,7 +40,8 @@ android {
         targetSdk = sdkTarget
 
         versionCode = appVersionCode
-        versionName = appVersionName
+        // Without one passed, a stand-in for what reads the DSL (the IDE): the variants get the day's build's below
+        versionName = appVersionName ?: "dev"
 
         // The end-to-end tests (src/androidTest), against the app installed with its Play modules (tests.yml)
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -142,6 +144,15 @@ dependencies {
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.test.espresso.intents)
     androidTestImplementation(libs.androidx.test.uiautomator)
+}
+
+// The day's build's name, set on every variant once dailyVersionName has counted it (its build type's suffix after it)
+if (appVersionName == null) {
+    val daily = dailyVersionName(registerDailyVersionName())
+    androidComponents.onVariants { variant ->
+        val suffix = android.buildTypes.getByName(variant.buildType!!).versionNameSuffix.orEmpty()
+        variant.outputs.forEach { it.versionName.set(daily.map { name -> name + suffix }) }
+    }
 }
 
 // The Linux packages and PRoot of the release gradle.properties pins, before every build; updateLinuxRelease

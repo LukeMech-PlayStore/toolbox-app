@@ -35,8 +35,9 @@ CLASS_TIMEOUT = 300 * 60
 TEST_TIMEOUT = 60 * 60
 # A run that says nothing for this long is stuck (a test's waits say what they wait for every half a minute)
 IDLE_TIMEOUT = 15 * 60
-# Each test's seconds on each ABI, from earlier runs (merge.py's, the report job's e2e-durations artifact)
-DURATIONS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "durations.json")
+# Each test's seconds on each ABI, from earlier runs (merge.py's, kept in the Actions cache by tests.yml); none yet,
+# the tests are dealt by the listing alone
+DURATIONS = os.environ.get("E2E_DURATIONS", "durations.json")
 # A class's own run besides its tests: the app's process started, its logcat cleared and saved
 CLASS_OVERHEAD = 5
 

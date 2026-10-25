@@ -9,8 +9,9 @@ tests.yml, whose result is the tests':
 - an annotation for each test failed in a leg (GitHub shows 10 of them; the summary has them all); a shard without
   results is a failed e2e.Setup test of its own, its tests not run
 - exits 1 if any failed or didn't run
-- with <durations.json>: durations.json (instrument.py's, how it deals the tests among a leg's shards) with each test
-  that didn't fail, as long as it took on each ABI (the median of its legs), the tests not seen as they were
+- with <durations.json>: that file (instrument.py's, how it deals the tests among a leg's shards; kept in the Actions
+  cache by tests.yml) updated in place with each test that didn't fail, as long as it took on each ABI (the median of
+  its legs), the tests not seen as they were
 
     merge.py <matrix JSON> <artifacts dir> [<summary.md> [<durations.json>]]
 
@@ -72,10 +73,10 @@ def load(legs, artifacts):
 
 
 def durations(legs, tests, path):
-    """durations.json updated with how long each test took this time (see the docstring), written to [path]."""
+    """[path] (durations.json) updated with how long each test took this time (see the docstring)."""
     abis = {shard["name"].rsplit(" · ", 1)[0]: shard["arch"] for shard in legs}
     try:
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "durations.json"), encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             table = json.load(f)
     except (OSError, ValueError):
         table = {}
