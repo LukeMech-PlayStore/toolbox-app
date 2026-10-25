@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-The end-to-end tests' emulator legs (e2e-tests.yml), from what the app supports and what Google has: x86_64's
-oldest Android the app runs on (sdkMin), the one it targets (sdkTarget) and the newest there is (canary), on Google's
-own system images (sys-img/<tag>/sys-img2-4.xml), each with the channel it's on.
+The end-to-end tests' emulator legs (e2e-tests.yml), from what the app supports and what Google has: for x86_64 and
+x86, the oldest Android the app runs on (sdkMin), the one it targets (sdkTarget) and the newest there is (canary), on
+Google's own system images (sys-img/<tag>/sys-img2-4.xml), each with the channel it's on.
 
-- x86_64 alone: GitHub's runners can't run an ARM emulator (x86 hosts refuse ARM images, the ARM Linux runners have
-  no KVM), and the ARM app under the x86_64 images' translator can't run the Linux subsystem (PRoot traces what it
+- an ABI whose images end before sdkTarget (x86's at API 30): sdkMin and its newest image instead
+- no ARM: GitHub's runners can't run an ARM emulator (x86 hosts refuse ARM images, the ARM Linux runners have no
+  KVM), and the ARM app under the x86_64 images' translator can't run the Linux subsystem (PRoot traces what it
   runs, and reads the host's registers, not the ARM ones it knows)
 - each leg in [SHARDS] jobs, each running its share of the tests (instrument.py): one emulator would take hours
 
@@ -18,7 +19,7 @@ import re
 import sys
 import urllib.request
 
-ABI = "x86_64"
+ABIS = ["x86_64", "x86"]
 TAGS = ["google_apis", "android"]
 # Among the images of a release's newest minor (37.2): Google APIs first (the device a user has), 4 KB pages before 16 KB
 # ones (the newest minors and canaries come in 16 KB alone)
@@ -43,16 +44,16 @@ def properties(path):
 
 
 def images():
-    """Every x86_64 system image: (version token, e.g. "29", "37.0", "CANARY"; target; channel)."""
+    """Every system image of [ABIS]: (version token, e.g. "29", "37.0", "CANARY"; target; ABI; channel)."""
     found = []
     for tag in TAGS:
         xml = urllib.request.urlopen(f"{REPOSITORY}/sys-img/{tag}/sys-img2-4.xml", timeout=60).read().decode("utf-8")
         for m in re.finditer(r'<remotePackage path="system-images;android-([^;"]+);([^;"]+);([^;"]+)"[^>]*>(.*?)</remotePackage>', xml, re.S):
             token, target, abi, body = m.groups()
-            if abi != ABI or "obsolete" in m.group(0)[:200]:
+            if abi not in ABIS or "obsolete" in m.group(0)[:200]:
                 continue
             channel = re.search(r'channelRef ref="([^"]+)"', body)
-            found.append((token, target, CHANNELS.get(channel.group(1) if channel else "", "stable")))
+            found.append((token, target, abi, CHANNELS.get(channel.group(1) if channel else "", "stable")))
     return found
 
 
@@ -68,15 +69,15 @@ def release(token):
     return int(m.group(1)) if m else None
 
 
-def pick(all_images, level):
-    """The image of Android [level] (its newest minor release, e.g. 37.2, then by TARGET_ORDER), or None."""
-    found = [i for i in all_images if i[1] in TARGET_ORDER and release(i[0]) == level]
+def pick(all_images, abi, level):
+    """The image of Android [level] for [abi] (its newest minor release, e.g. 37.2, then by TARGET_ORDER), or None."""
+    found = [i for i in all_images if i[2] == abi and i[1] in TARGET_ORDER and release(i[0]) == level]
     found.sort(key=lambda i: (-float(i[0]), TARGET_ORDER.index(i[1])))
     return found[0] if found else None
 
 
-def canary(all_images):
-    found = [i for i in all_images if i[0] == "CANARY" and i[1] in TARGET_ORDER]
+def canary(all_images, abi):
+    found = [i for i in all_images if i[2] == abi and i[0] == "CANARY" and i[1] in TARGET_ORDER]
     found.sort(key=lambda i: TARGET_ORDER.index(i[1]))
     return found[0] if found else None
 
@@ -87,17 +88,14 @@ def main():
     all_images, all_platforms = images(), platforms()
     legs = []
 
-    for image, label in ((pick(all_images, sdk_min), "min"), (pick(all_images, sdk_target), "target"), (canary(all_images), "newest")):
-        if not image:
-            print(f"::warning title=E2E matrix::No {ABI} image for the {label} leg", file=sys.stderr)
-            continue
-        token, target, channel = image
+    def leg(image, label):
+        token, target, abi, channel = image
         level = "canary" if token == "CANARY" else f"API {release(token)}"
         for shard in range(SHARDS):
             legs.append({
-                "id": f"{ABI}-{token}-{shard + 1}".lower().replace(".", "_"),
-                "name": f"{ABI} · {level} ({label}) · {shard + 1}/{SHARDS}",
-                "arch": ABI,
+                "id": f"{abi}-{token}-{shard + 1}".lower().replace(".", "_"),
+                "name": f"{abi} · {level} ({label}) · {shard + 1}/{SHARDS}",
+                "arch": abi,
                 # The SDK platform of the same name if there's one, else its API level's
                 "api": token if token in all_platforms else str(release(token)),
                 "image": token,
@@ -107,6 +105,22 @@ def main():
                 "shard": shard,
                 "shards": SHARDS,
             })
+
+    for abi in ABIS:
+        minimum, target, newest = pick(all_images, abi, sdk_min), pick(all_images, abi, sdk_target), canary(all_images, abi)
+        if minimum:
+            leg(minimum, "min")
+        else:
+            print(f"::warning title=E2E matrix::No {abi} image of API {sdk_min}", file=sys.stderr)
+        if target:
+            leg(target, "target")
+        if newest:
+            leg(newest, "newest")
+        if not target and not newest:
+            # Its images ended before the app's target (x86's at API 30): its newest one past sdkMin
+            levels = sorted({release(i[0]) for i in all_images if i[2] == abi and (release(i[0]) or 0) > sdk_min})
+            if levels:
+                leg(pick(all_images, abi, levels[-1]), "its newest image")
 
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:

@@ -1,8 +1,8 @@
 name: End-to-end tests
 
 # The app on emulators, every tool opened and gone through (app/src/androidTest): on the oldest Android it
-# supports (minSdk), the one it targets (targetSdk) and the newest there is (canary, 16 KB pages), on x86_64 (the
-# emulator GitHub's runners run; ARM translated on it can't run the Linux subsystem), each in shards. Failures come as annotations on the PR and in the job's summary (JUnit XML, mikepenz/action-junit-report);
+# supports (minSdk), the one it targets (targetSdk) and the newest there is (canary, 16 KB pages), on x86_64 and
+# x86 (the emulators GitHub's runners run; ARM translated on them can't run the Linux subsystem), each in shards. Failures come as annotations on the PR and in the job's summary (JUnit XML, mikepenz/action-junit-report);
 # screenshots and logcat as artifacts. Every run tests everything: a Minecraft server on every Java, every loader.
 
 on:
@@ -60,8 +60,9 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
-  # The legs: x86_64 on the app's oldest Android, its target and the newest canary, as Google's images are now, each
-  # in shards sharing the tests: see matrix.py, in the scripts' e2e-tests folder
+  # The legs: x86_64 and x86 on the app's oldest Android, its target and the newest canary, as Google's images are now
+  # (x86's newest instead of the last two), each in shards sharing the tests: see matrix.py, in the scripts' e2e-tests
+  # folder
   plan:
     runs-on: ubuntu-latest
     outputs:
