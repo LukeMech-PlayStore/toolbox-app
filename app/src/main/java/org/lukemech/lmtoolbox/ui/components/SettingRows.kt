@@ -150,7 +150,8 @@ fun SwitchButton(
     subtitle = subtitle,
     icon = icon,
     colors = if (enabled) colors else colors.disabled(),
-    buttonContent = { Switch(checked = checked, enabled = enabled, onCheckedChange = onCheckedChange) },
+    // The row alone toggles it: the switch a part of it, not a second, unnamed control of its own
+    buttonContent = { Switch(checked = checked, enabled = enabled, onCheckedChange = null) },
     onClick = { if (enabled) onCheckedChange(!checked) }
 )
 

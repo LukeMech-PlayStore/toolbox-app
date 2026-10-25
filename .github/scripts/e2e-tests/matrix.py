@@ -21,8 +21,8 @@ import urllib.request
 
 ABIS = ["x86_64", "x86"]
 TAGS = ["google_apis", "android"]
-# Among the images of a release's newest minor (37.2): Google APIs first (the device a user has), 4 KB pages before 16 KB
-# ones (the newest minors and canaries come in 16 KB alone)
+# Among a release's images: Google APIs first (the device a user has), 4 KB pages before 16 KB ones (the newest minors
+# and canaries come in 16 KB alone)
 TARGET_ORDER = ["google_apis", "default", "google_apis_ps16k"]
 CHANNELS = {"channel-0": "stable", "channel-1": "beta", "channel-2": "dev", "channel-3": "canary"}
 # The emulator's renderer: SwiftShader, as the emulator action's default; Android 37's releases' SurfaceFlinger aborts
@@ -70,9 +70,13 @@ def release(token):
 
 
 def pick(all_images, abi, level):
-    """The image of Android [level] for [abi] (its newest minor release, e.g. 37.2, then by TARGET_ORDER), or None."""
+    """
+    The image of Android [level] for [abi], or None: 4 KB pages over a newer minor (37.2 comes in 16 KB alone, and
+    on the runners it either takes SurfaceFlinger down (SwiftShader) or doesn't boot in 10 minutes (ANGLE); 37.0's
+    4 KB one is the same Android), then its newest minor, then by TARGET_ORDER.
+    """
     found = [i for i in all_images if i[2] == abi and i[1] in TARGET_ORDER and release(i[0]) == level]
-    found.sort(key=lambda i: (-float(i[0]), TARGET_ORDER.index(i[1])))
+    found.sort(key=lambda i: ("ps16k" in i[1], -float(i[0]), TARGET_ORDER.index(i[1])))
     return found[0] if found else None
 
 
