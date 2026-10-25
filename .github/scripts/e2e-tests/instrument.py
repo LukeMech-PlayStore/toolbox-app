@@ -166,17 +166,26 @@ def main():
         os.makedirs(os.path.join(out, d), exist_ok=True)
 
     listing = os.path.join(out, "raw", "list.txt")
-    # DeviceSetup is run-tests.sh's, before the tests: not one of them
-    instrument(runner, listing, ["-e", "log", "true", "-e", "notClass", "org.lukemech.lmtoolbox.e2e.DeviceSetup"], 10 * 60)
-    listed, run_output = parse(listing)
+    # DeviceSetup is run-tests.sh's, before the tests: not one of them. Listed again when the app's process died
+    # starting up (the canary's, once, right after the install), what the system said kept
+    for attempt in range(3):
+        if attempt:
+            time.sleep(20)
+        subprocess.run(["adb", "logcat", "-c"], check=False)
+        instrument(runner, listing, ["-e", "log", "true", "-e", "notClass", "org.lukemech.lmtoolbox.e2e.DeviceSetup"], 10 * 60)
+        listed, run_output = parse(listing)
+        if listed:
+            break
+        with open(os.path.join(out, "logcat", f"listTests-{attempt}.txt"), "w", encoding="utf-8") as log:
+            subprocess.run(["adb", "logcat", "-d"], stdout=log, stderr=subprocess.DEVNULL, check=False)
     tests = {}
     for i, (cls, test, *_) in enumerate(listed):
         if i % shards == shard:
             tests.setdefault(cls, []).append(test)
     if not listed:
         write_junit(os.path.join(out, "junit", "setup.xml"), suite_name,
-                    [("e2e.Setup", "listTests", "error", "No tests found:\n" + run_output[-3000:], 0.0)])
-        print("::error title=E2E::No tests found")
+                    [("e2e.Setup", "listTests", "error", "No tests listed in 3 tries (logcat/listTests-*.txt):\n" + run_output[-3000:], 0.0)])
+        print("::error title=E2E::No tests listed in 3 tries: " + (run_output.strip().splitlines() or ["no output"])[0])
         return
 
     for cls, names in tests.items():
