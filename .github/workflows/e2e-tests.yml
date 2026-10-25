@@ -2,8 +2,8 @@ name: End-to-end tests
 
 # The app on emulators, every tool opened and gone through (app/src/androidTest): on the oldest Android it
 # supports (minSdk), the one it targets (targetSdk) and the newest there is (canary, 16 KB pages), on x86_64 and
-# x86 (the emulators GitHub's runners run; ARM translated on them can't run the Linux subsystem), each in shards. Failures come as annotations on the PR and in the report job's summary, every leg in one table
-# (JUnit XML, merged by merge.py, mikepenz/action-junit-report);
+# x86 (the emulators GitHub's runners run; ARM translated on them can't run the Linux subsystem), each in shards. The report job's summary has
+# every test, opened to each leg's result, its failures as annotations on the PR (merge.py, from the shards' JUnit XML);
 # screenshots and logcat as artifacts. Every run tests everything: a Minecraft server on every Java, every loader.
 
 on:
@@ -18,8 +18,6 @@ concurrency:
 
 permissions:
   contents: read
-  checks: write
-  pull-requests: write
 
 jobs:
   # Once for every leg: the debug bundle and the tests' APK (each leg signs both with a key of its own)
@@ -116,6 +114,11 @@ jobs:
           # The Java versions and the servers' worlds take room
           disk-size: 16G
           emulator-boot-timeout: 900
+          # The action's own, with the emulator's async swap off: the runners' emulator (37.2) offers reading a color buffer
+          # by DMA along with it, and Android 37.0's graphics (mapper.ranchu) asserts it isn't offered. system_server went
+          # down on its first copy of one (a task's snapshot for Recents, as a test's activity closed), and every test after
+          # it with it ("Assertion failed: !rcEnc->featureInfo()->hasReadColorBufferDma")
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -feature -GLAsyncSwap
           disable-animations: true
           script: bash .github/scripts/e2e-tests/run-tests.sh
 
@@ -128,7 +131,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  # Every shard's results in one report, the legs in the plan's order (merge.py): one table in the summary, one check
+  # Every shard's results in one report (merge.py): the summary, the annotations, and this job failed if a test did
   report:
     needs: [plan, test]
     if: always() && needs.plan.result == 'success'
@@ -143,24 +146,9 @@ jobs:
           pattern: e2e-results-*
           path: e2e-results
 
-      - name: Merge
+      - name: Report
         env:
           MATRIX: ${{ needs.plan.outputs.matrix }}
-        run: python3 .github/scripts/e2e-tests/merge.py "$MATRIX" e2e-results e2e-report.xml
+        # The summary (a row per test, opened to every leg's result), the failures as annotations, the job failed with them
+        run: python3 .github/scripts/e2e-tests/merge.py "$MATRIX" e2e-results "$GITHUB_STEP_SUMMARY"
 
-      - name: Report
-        uses: mikepenz/action-junit-report@6ef3fdcfcd5f0b5d14df3e659ef19b8c6820f93d # v6.6.1
-        with:
-          report_paths: e2e-report.xml
-          check_name: E2E
-          # A fork's pull request can't make check runs: annotations alone
-          annotate_only: ${{ github.event.pull_request.head.repo.fork == true }}
-          # Every test in the summary's table (passed, skipped with why, failed), not the failed alone
-          job_summary: true
-          detailed_summary: true
-          include_passed: true
-          include_skipped: true
-          require_tests: true
-          # A failed test is run once more (instrument.py): passing then, it's flaky, not failed
-          check_retries: true
-          fail_on_failure: true

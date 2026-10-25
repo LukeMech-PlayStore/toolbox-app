@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
 Runs the end-to-end tests (app/src/androidTest) on the connected device and writes their results as JUnit XML,
-for mikepenz/action-junit-report (run-tests.sh calls it once the app and the tests are installed):
+for the report job's merge.py (run-tests.sh calls it once the app and the tests are installed):
 
 - every test is listed first (a run with -e log true reports each without running it)
 - then run class by class, each in a fresh process of the app
 - a crash ends its class's run: the test it was in fails with it, and those that hadn't run yet run one by one
-- a test that failed is run once more on its own; both tries are in the report (check_retries: one that
+- a test that failed is run once more on its own; both tries are in the report (merge.py: one that
   passed the second time counts as flaky, not failed)
 - with [shard] of [shards]: its share of the tests alone, dealt one by one as listed (a long class, as the Minecraft
   servers', shared among them all)

@@ -63,10 +63,6 @@ abstract class E2eTest {
         Intents.init()
         Pickers.install(context)
         Device.clock = compose.mainClock
-        // No screenshot of its task for Recents (the app's theme instead): on Android 37's emulators, saving one as a
-        // test's activity closes takes the system down (TaskSnapshotPersister: the emulator's buffer already gone,
-        // "Failed to find ColorBuffer"), and the next tests with it
-        if (Build.VERSION.SDK_INT >= 33) compose.activityRule.scenario.onActivity { it.setRecentsScreenshotEnabled(false) }
     }
 
     @After

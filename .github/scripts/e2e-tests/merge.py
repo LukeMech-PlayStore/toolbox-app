@@ -1,52 +1,98 @@
 #!/usr/bin/env python3
 """
 The legs' JUnit XML (instrument.py's, each shard's in its own artifact) as one report, for the report job of
-e2e-tests.yml: one table in the summary instead of a block per shard, in whatever order the jobs ended.
+e2e-tests.yml, whose result is the tests':
 
-- the legs in matrix.py's order, each one suite, its shards' tests together
-- in a leg: what kept a shard from running first (e2e.Setup), then by class and test (a retried test's tries kept
-  in the order they ran, for check_retries)
-- a shard without results (its job failed before writing them, or was cancelled): an error in its leg's suite
+- the job's summary: a row per test, its result over every leg, opened to each leg's (and shard's) own; the failed
+  first. A retried test's last try counts (passed after failing: flaky), a leg it didn't run in (its shard cut short,
+  or without results) not run
+- an annotation for each test failed in a leg (GitHub shows 10 of them; the summary has them all); a shard without
+  results is a failed e2e.Setup test of its own, its tests not run
+- exits 1 if any failed or didn't run
 
-    merge.py <matrix JSON> <artifacts dir> <out.xml>
+    merge.py <matrix JSON> <artifacts dir> [<summary.md>]
 
 <artifacts dir>/e2e-results-<id>/junit/*.xml, as download-artifact puts them.
 """
 import glob
+import html
 import json
 import os
 import sys
 import xml.etree.ElementTree as ET
 
+# A leg's result of a test, and a test's over them all: the worst first
+ICONS = {"failed": "❌", "not run": "⚠️", "flaky": "🔁", "passed": "✅", "skipped": "⏭️"}
 
-def main():
-    legs = json.loads(sys.argv[1])["include"]
-    artifacts, out = sys.argv[2], sys.argv[3]
-    suites, cases = {}, {}
+
+def outcome(case):
+    """(passed, failed or skipped; its message)."""
+    for kind, status in (("failure", "failed"), ("error", "failed"), ("skipped", "skipped")):
+        found = case.find(kind)
+        if found is not None:
+            return status, found.get("message") or ""
+    return "passed", ""
+
+
+def load(legs, artifacts):
+    """
+    {(class, test): {leg: [(shard, try), ...]}} in the legs' order (matrix.py's) and the order the tries ran; a shard
+    without results: a failed e2e.Setup test of its own.
+    """
+    tests = {}
     for shard in legs:
-        name = shard["name"].rsplit(" · ", 1)[0]
-        suites.setdefault(name, [])
+        leg = shard["name"].rsplit(" · ", 1)[0]
         files = sorted(glob.glob(os.path.join(artifacts, f"e2e-results-{shard['id']}", "junit", "*.xml")))
+        cases = [case for path in files for case in ET.parse(path).getroot().iter("testcase")]
         if not files:
             case = ET.Element("testcase", classname="e2e.Setup", name=f"shard {shard['shard'] + 1}/{shard['shards']}", time="0")
             ET.SubElement(case, "error", message="No results: the shard's job failed before writing them, or was cancelled")
-            suites[name].append(case)
-        for path in files:
-            suites[name] += ET.parse(path).getroot().iter("testcase")
+            cases = [case]
+        for case in cases:
+            tests.setdefault((case.get("classname"), case.get("name")), {}).setdefault(leg, []).append((shard["name"], case))
+    return tests
 
-    root = ET.Element("testsuites")
-    for name, found in suites.items():
-        found.sort(key=lambda c: (c.get("classname") != "e2e.Setup", c.get("classname"), c.get("name")))
-        suite = ET.SubElement(root, "testsuite", name=name)
-        counts = {"tests": len(found), "failures": 0, "errors": 0, "skipped": 0}
-        for case in found:
-            for kind, count in (("failure", "failures"), ("error", "errors"), ("skipped", "skipped")):
-                counts[count] += case.find(kind) is not None
-            suite.append(case)
-        suite.set("time", f"{sum(float(c.get('time') or 0) for c in found):.3f}")
-        for k, v in counts.items():
-            suite.set(k, str(v))
-    ET.ElementTree(root).write(out, encoding="utf-8", xml_declaration=True)
+
+def main():
+    legs = json.loads(sys.argv[1])["include"]
+    order = list(dict.fromkeys(shard["name"].rsplit(" · ", 1)[0] for shard in legs))
+    tests = load(legs, sys.argv[2])
+
+    rows, totals, failed = [], dict.fromkeys(ICONS, 0), []
+    for (cls, name), ran in tests.items():
+        title = f"{'Setup' if cls == 'e2e.Setup' else cls.rsplit('.', 1)[-1]} › {name}"
+        lines, results = [], []
+        for leg in order:
+            tries = ran.get(leg)
+            if not tries:
+                results.append("not run")
+                lines.append(f"| {ICONS['not run']} not run | {leg} | | |")
+                continue
+            shard = tries[-1][0]
+            status, message = outcome(tries[-1][1])
+            if status == "passed" and any(outcome(c)[0] == "failed" for _, c in tries[:-1]):
+                status, message = "flaky", next(outcome(c)[1] for _, c in tries if outcome(c)[0] == "failed")
+            if status == "failed":
+                failed.append((f"{title} ({shard})", message))
+            results.append(status)
+            seconds = sum(float(c.get("time") or 0) for _, c in tries)
+            why = html.escape(message.splitlines()[0][:200] if message else "", quote=False).replace("|", "\\|")
+            lines.append(f"| {ICONS[status]} {status} | {shard} | {seconds:.0f} s | {why} |")
+        overall = next((s for s in ICONS if s in results and s != "skipped"), "skipped")
+        totals[overall] += 1
+        rows.append((list(ICONS).index(overall), f"<details><summary>{ICONS[overall]} {html.escape(title, quote=False)}</summary>\n\n"
+                     "| Result | Leg | Time | Why |\n|---|---|---|---|\n" + "\n".join(lines) + "\n\n</details>\n"))
+
+    if len(sys.argv) > 3:
+        rows.sort(key=lambda r: r[0])
+        counts = " · ".join(f"{ICONS[s]} {n} {s}" for s, n in totals.items() if n)
+        with open(sys.argv[3], "a", encoding="utf-8") as f:
+            f.write(f"## E2E\n\n{len(tests)} tests on {len(order)} legs: {counts}\n\n" + "".join(r for _, r in rows))
+    for title, message in failed:
+        # A workflow command: its message one line, its % and line breaks escaped
+        text = (message or "failed").replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+        print(f"::error title={title.replace(',', '%2C').replace('::', ':')}::{text}")
+    sys.exit(1 if totals["failed"] or totals["not run"] else 0)
 
 
 if __name__ == "__main__":
