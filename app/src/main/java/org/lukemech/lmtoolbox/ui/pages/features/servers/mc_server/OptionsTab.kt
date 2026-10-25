@@ -1,6 +1,7 @@
 package org.lukemech.lmtoolbox.ui.pages.features.servers.mc_server
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,6 +46,7 @@ import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.OptionSetting
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.ui.components.listBox
 
 /**
  * Its options: its settings (server.properties, memory, the config file itself), the tunnel, and its
@@ -172,9 +174,13 @@ internal fun OptionsTab(
             }
         }
 
-        // The file itself, as the server keeps it (but the app's console's)
+        // The file itself, as the server keeps it (but the app's console's): some 60 fields, scrolling in a box
+        // of its own (as the versions' list)
         ExpandableButton(stringResource(R.string.f_Mc_config_file), Icons.Default.Description) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.listBox(rememberScrollState()).padding(horizontal = 12.dp, vertical = 4.dp)
+            ) {
                 Text("server.properties", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 val all = props.all.filterNot { (k, _) -> k.startsWith("rcon.") || k == "enable-rcon" }
                 if (all.size < 10) Text(stringResource(R.string.f_Mc_config_file_first), style = MaterialTheme.typography.bodySmall)
