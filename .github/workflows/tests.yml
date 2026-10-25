@@ -167,11 +167,12 @@ jobs:
   # profile (.idea/inspectionProfiles), in Qodana Community for Android's image (no token, its Cloud not used), its
   # Gradle sync with the runner's Android SDK (the image's has only android-33). Not waiting for anything, it's reported
   # while the emulators still run (report.py): the summary, every problem as an annotation, this job failed if there's
-  # any; Qodana's HTML report (Inspect Code's table) and SARIF as an artifact
+  # any; Qodana's HTML report (Inspect Code's table) and SARIF as an artifact. Its newest release, pulled on every run
+  # (Dependabot doesn't update a job's container image), as the IDE's inspections are kept current
   inspect:
     runs-on: ubuntu-latest
     container:
-      image: jetbrains/qodana-jvm-android:2026.2@sha256:cc439c6cbe7f257dab04f24be8c2f5b64a47f3df253df2dd74baefb177c3a423
+      image: jetbrains/qodana-jvm-android:latest
       volumes:
         - /usr/local/lib/android/sdk:/data/android-sdk
       env:
