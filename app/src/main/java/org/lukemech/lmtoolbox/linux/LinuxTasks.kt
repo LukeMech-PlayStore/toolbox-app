@@ -64,7 +64,6 @@ data class LinuxTask(
     val downloads: Set<String> = emptySet(),
 ) {
     enum class Type(@param:StringRes val titleRes: Int, val isEnvChange: Boolean) {
-        Install(R.string.s_tasks_type_install, true),
         Update(R.string.s_tasks_type_update, true),
         Command(R.string.s_tasks_type_command, false),
         /** A feature's tools unpacked on its first use (see [LinuxInstaller.installExtension]). */
@@ -244,7 +243,7 @@ object LinuxTasks {
         context: Context, cmd: List<String>, source: AppFeature,
         label: String = displayCommand(cmd),
         timeoutMs: Long = LinuxEnv.DEFAULT_TIMEOUT_MS,
-        maxOutput: Int = Int.MAX_VALUE,
+        maxOutput: Int = LinuxEnv.DEFAULT_MAX_OUTPUT,
         onStart: (id: Long) -> Unit = {},
         onLine: ((String) -> Unit)? = null
     ): ExecResult {

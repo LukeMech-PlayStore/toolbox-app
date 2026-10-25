@@ -57,7 +57,7 @@ jobs:
           SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
         run: |
           pip install --quiet google-auth requests
-          python3 .github/scripts/publish_drafts.py
+          python3 .github/scripts/publish-draft/publish_drafts.py
 
       - name: No track picked
         if: ${{ steps.tracks.outputs.tracks == '' }}

@@ -43,7 +43,7 @@ import org.lukemech.lmtoolbox.helpers.PreferenceHelper
 import org.lukemech.lmtoolbox.ui.components.PermissionDialog
 
 private const val PREF_NOTIFICATIONS_REQUESTED = "notifications_requested"
-private const val PREF_NOTIFICATIONS_LATER = "notifications_later"
+internal const val PREF_NOTIFICATIONS_LATER = "notifications_later"
 
 /** Whether the app may post notifications; re-checked whenever the app comes back to front. */
 @Composable

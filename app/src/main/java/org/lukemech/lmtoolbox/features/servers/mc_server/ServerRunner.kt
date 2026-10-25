@@ -3,6 +3,11 @@ package org.lukemech.lmtoolbox.features.servers.mc_server
 import org.lukemech.lmtoolbox.linux.InstallResult
 import android.app.Application
 import android.content.Context
+import android.os.Process
+import android.util.Log
+import java.io.File
+import java.io.IOException
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +36,10 @@ import org.lukemech.lmtoolbox.linux.LinuxTasks
  * tunnel ([tunnel]) runs next to it.
  */
 object ServerRunner {
+    private const val TAG = "ServerRunner"
     private const val LOG_LINES = 500
+    /** How long a Java left running after its run has to go once killed (see [killLeftover]). */
+    private val KILL_WAIT = 10.seconds
     private const val RCON_PORT = 25575
     private val PLAYERS_EVERY = 20.seconds
     private const val SEED_TRIES = 10
@@ -203,6 +211,9 @@ object ServerRunner {
             )
             playersJob?.cancel()
             stopTunnel()
+            // Its Java gone with it, before it counts as stopped: PRoot stopped by a signal (the server killed) may
+            // leave its Java running, its port held (the next start's "FAILED TO BIND")
+            killLeftover(app, pidFile)
             pidFile.delete()
             // Its files deleted meanwhile (the server, or the tool's data): what it wrote as it went too
             if (deleteAfter == profile.id) {
@@ -258,6 +269,21 @@ object ServerRunner {
                 pruneJava(app)
             }
         }
+    }
+
+    /**
+     * Kills the server's Java if it's still there once its run has ended: its process id in [pidFile] (the
+     * host's, PRoot keeps them), when that's still one of the app's but not the app itself (named after it).
+     * Waits until it's gone, a few seconds at most.
+     */
+    private suspend fun killLeftover(app: Context, pidFile: File) {
+        val pid = runCatching { pidFile.readText().trim().toInt() }.getOrNull()?.takeIf { it != Process.myPid() } ?: return
+        val proc = File("/proc/$pid")
+        val cmdline = runCatching { File(proc, "cmdline").readText() }.getOrNull() ?: return
+        if (cmdline.startsWith(app.packageName)) return
+        Log.w(TAG, "Its Java ($pid) outlived its run: killed")
+        Process.sendSignal(pid, Process.SIGNAL_KILL)
+        withTimeoutOrNull(KILL_WAIT) { while (proc.exists()) delay(100.milliseconds) }
     }
 
     /**
@@ -317,7 +343,7 @@ object ServerRunner {
         } else if (live != null && run?.phase == Phase.Running) {
             // Told it as it runs: nothing waits
             scope.launch {
-                val told = live(value)?.let { console(it) } ?: true
+                val told = live(value)?.let { console(it).isSuccess } ?: true
                 if (told) _state.update { run ->
                     if (run?.serverId != id) run else run.copy(startValues = run.startValues + (key to value), pending = run.pending - key)
                 } else pending(id, key, value)
@@ -436,22 +462,25 @@ object ServerRunner {
     }
 
     /** Runs [command] in the server (without the slash): its answer, or null when it can't be reached. */
-    suspend fun rcon(command: String): String? {
-        val run = _state.value?.takeIf { it.isActive } ?: return null
+    suspend fun rcon(command: String): String? = tryRcon(command).getOrNull()
+
+    /** [rcon]'s answer, or why there's none. */
+    private suspend fun tryRcon(command: String): Result<String> {
+        val run = _state.value?.takeIf { it.isActive } ?: return Result.failure(IOException("the server isn't running"))
         return withContext(Dispatchers.IO) {
-            runCatching { Rcon(run.rconPort, run.rconPassword).command(command) }.getOrNull()
+            runCatching { Rcon(run.rconPort, run.rconPassword).command(command) }
         }
     }
 
-    /** [command] typed in the app's console: shown in it with the server's answer. */
-    suspend fun console(command: String): Boolean {
+    /** [command] typed in the app's console: shown in it with the server's answer; a failure says why it wasn't sent. */
+    suspend fun console(command: String): Result<Unit> {
         val cmd = command.trim().removePrefix("/")
-        if (cmd.isEmpty()) return false
+        if (cmd.isEmpty()) return Result.failure(IllegalArgumentException("no command"))
         addLog("> $cmd")
-        val answer = rcon(cmd) ?: return false
+        val answer = tryRcon(cmd).getOrElse { return Result.failure(it) }
         clean(answer).lines().filter { it.isNotBlank() }.forEach(::addLog)
         if (cmd == "stop") _state.update { it?.copy(phase = Phase.Stopping) }
-        return true
+        return Result.success(Unit)
     }
 
     /** Saves the world and quits; killed if it doesn't within [STOP_TIMEOUT] (or can't be told to). */

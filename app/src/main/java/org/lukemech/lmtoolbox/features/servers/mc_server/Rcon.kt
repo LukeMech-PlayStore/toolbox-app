@@ -7,6 +7,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -21,7 +22,17 @@ internal class Rcon(private val port: Int, private val password: String) {
         const val LOGIN = 3
         const val COMMAND = 2
         const val AUTH_RESPONSE = 2
+        /** A type no server knows: answered ("Unknown request 64") after what came before it, the answer's end. */
+        const val MARKER = 100
+        const val MARKER_ID = 3
         const val TIMEOUT_MS = 8_000
+        /** How long a command's answer has to start before it's taken as none (Forge's say answers nothing). */
+        const val QUIET_MS = 1_000
+        /**
+         * How long its answer may take: the command runs on the server's main thread, in its turn, which a server
+         * just started (Forge's, on a slow phone) can keep busy for longer than [TIMEOUT_MS]
+         */
+        const val ANSWER_MS = 60_000
     }
 
     /** Runs [command] (without the slash), returning what the server answered; throws when it can't. */
@@ -41,13 +52,27 @@ internal class Rcon(private val port: Int, private val password: String) {
         }
 
         send(out, 2, COMMAND, command)
-        val answer = StringBuilder(read(input).third)
-        // Long answers come in several packets, one right after the other
-        socket.soTimeout = 150
+        // Its answer: in several packets if long, none at all for some (Forge's say). Then a marker, answered in
+        // turn, ends it; sent once the command's surely read (the server takes a packet a read, two sent together
+        // lose the second): its answer starting, or a while without one.
+        // Closed before the end: the server stopping ("stop" itself, or a restart while the answer waited for its
+        // turn), the command sent all the same: what came of it is all there is
+        val answer = StringBuilder()
         try {
-            while (true) answer.append(read(input).third)
-        } catch (_: SocketTimeoutException) {
+            socket.soTimeout = QUIET_MS
+            try {
+                answer.append(read(input).third)
+            } catch (_: SocketTimeoutException) {
+            }
+            send(out, MARKER_ID, MARKER, "")
+            socket.soTimeout = ANSWER_MS
+            while (true) {
+                val (id, _, body) = read(input)
+                if (id == MARKER_ID) break
+                answer.append(body)
+            }
         } catch (_: EOFException) {
+        } catch (_: SocketException) {
         }
         answer.toString()
     }

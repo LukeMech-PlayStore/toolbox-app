@@ -67,21 +67,20 @@ jobs:
 
       # No setup-java: the foojay toolchain resolver (settings.gradle.kts) provisions
       # the toolchain JDK (gradle.properties); the runner's default JDK runs Gradle.
+      # Gradle's home and build cache as main's runs left them (tests.yml keeps them): a tag's release reads
+      # them, only runs on main write them
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          cache-provider: basic
 
-      - name: Setup gradle cache
-        uses: burrunan/gradle-cache-action@404534c34a2faa40430357a3183522a845b04f3b # v3.0.3
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-
-      # First: nothing's built (nor uploaded) if they fail. The Linux packages (the release
-      # gradle.properties pins, downloaded without GitHub's API) only matter for packaging, not for unit tests
-      - name: Run unit tests
-        run: ./gradlew --no-daemon testDebugUnitTest -x updateLinuxPackages
+      # The app is tested on emulators by tests.yml (every pull request and push to main)
 
       - name: Build Debug APK
         if: ${{ steps.settings.outputs.debug == 'true' }}
-        run: ./gradlew --no-daemon assembleDebug
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --build-cache assembleDebug
 
       - name: Decode keystore from GitHub secrets
         if: ${{ steps.settings.outputs.release == 'true' }}
@@ -96,7 +95,8 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          ./gradlew --no-daemon assembleRelease bundleRelease \
+          chmod +x ./gradlew
+          ./gradlew --build-cache assembleRelease bundleRelease \
             -Pandroid.injected.signing.store.file=$(pwd)/toolboxKeystore.jks \
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
             -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \

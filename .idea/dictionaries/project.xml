@@ -3,9 +3,12 @@
     <words>
       <w>aarch</w>
       <w>abcd</w>
+      <w>abi</w>
       <w>abis</w>
       <w>abspath</w>
       <w>acodec</w>
+      <w>aerr</w>
+      <w>affero</w>
       <w>aktualizacja</w>
       <w>alac</w>
       <w>allocstall</w>
@@ -29,6 +32,8 @@
       <w>currencyconv</w>
       <w>currencyconverter</w>
       <w>defaultgamemode</w>
+      <w>devnull</w>
+      <w>dexed</w>
       <w>domyślne</w>
       <w>dorg</w>
       <w>downvtresh</w>
@@ -37,19 +42,29 @@
       <w>działa</w>
       <w>działające</w>
       <w>edytor</w>
+      <w>endgroup</w>
       <w>endlocal</w>
       <w>errorlevel</w>
       <w>eseries</w>
+      <w>etree</w>
       <w>exiftool</w>
       <w>faststart</w>
       <w>ffmpeg</w>
       <w>ffprobe</w>
       <w>filesize</w>
+      <w>findall</w>
+      <w>finditer</w>
       <w>fixupduplicatemoov</w>
       <w>fmpeg</w>
       <w>foojay</w>
+      <w>fromkeys</w>
+      <w>fullmatch</w>
       <w>gamemode</w>
       <w>getprop</w>
+      <w>getroot</w>
+      <w>gfxstream</w>
+      <w>gfxstream's</w>
+      <w>gitleaks</w>
       <w>heatsink</w>
       <w>heic</w>
       <w>henries</w>
@@ -75,13 +90,17 @@
       <w>libx</w>
       <w>linuxa</w>
       <w>lmtoolbox</w>
+      <w>lstrip</w>
       <w>lukemech</w>
+      <w>makedirs</w>
       <w>metadanych</w>
+      <w>mikepenz</w>
       <w>mjpeg</w>
       <w>mlock</w>
       <w>mniejsza</w>
       <w>modflared</w>
       <w>modflared's</w>
+      <w>modrinth</w>
       <w>moduledrawers</w>
       <w>mojang</w>
       <w>mojang's</w>
@@ -124,6 +143,7 @@
       <w>pgsteal</w>
       <w>plac</w>
       <w>podsystem</w>
+      <w>popen</w>
       <w>poprawki</w>
       <w>poziomica</w>
       <w>poziomicy</w>
@@ -141,32 +161,43 @@
       <w>quickjs</w>
       <w>rcon</w>
       <w>resizer</w>
+      <w>resizer's</w>
       <w>resolv</w>
+      <w>restorecon</w>
+      <w>rsplit</w>
+      <w>rstrip</w>
       <w>selfpromo</w>
+      <w>setdefault</w>
       <w>setlocal</w>
+      <w>shlex</w>
       <w>shmem</w>
       <w>skrótem</w>
       <w>softap</w>
       <w>spdx</w>
       <w>splitcompat</w>
       <w>splitcompat's</w>
+      <w>splitlines</w>
       <w>sponsorblock</w>
+      <w>startswith</w>
       <w>stillimage</w>
       <w>stime</w>
       <w>styledpil</w>
       <w>swapcached</w>
+      <w>swiftshader</w>
       <w>swlan</w>
       <w>swpout</w>
       <w>tempco</w>
       <w>termuxie</w>
       <w>trunc</w>
       <w>ubble</w>
+      <w>udevadm</w>
       <w>uid</w>
       <w>uid's</w>
       <w>układ</w>
       <w>ulepszenia</w>
       <w>upvtresh</w>
       <w>urllib</w>
+      <w>urlopen</w>
       <w>urlretrieve</w>
       <w>urządzeniach</w>
       <w>urządzeniami</w>
@@ -192,6 +223,7 @@
       <w>xfffffbfe</w>
       <w>ytdlp</w>
       <w>zamkowy</w>
+      <w>zener</w>
       <w>zgodny</w>
       <w>znów</w>
       <w>zolty</w>

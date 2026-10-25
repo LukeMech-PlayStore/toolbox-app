@@ -6,11 +6,13 @@ import android.util.Log
 import androidx.compose.runtime.Composable
 import com.google.android.play.core.ktx.requestInstall
 import com.google.android.play.core.splitcompat.SplitCompat
+import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
 import com.google.android.play.core.splitinstall.SplitInstallSessionState
 import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import java.lang.ref.WeakReference
+import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -51,7 +53,23 @@ object FeatureDelivery {
 
     private val uis = ConcurrentHashMap<String, FeatureUi>()
 
-    private fun manager(context: Context) = SplitInstallManagerFactory.create(context.applicationContext)
+    private fun manager(context: Context): SplitInstallManager {
+        fasterLocalTesting
+        return SplitInstallManagerFactory.create(context.applicationContext)
+    }
+
+    /**
+     * Local testing's "download" (FakeSplitInstallManager, see app/build.gradle.kts) takes 3 steps of a second each,
+     * its pause a constant of its own (its one static long): a third of that, a second in all. Play's own not touched
+     */
+    private val fasterLocalTesting by lazy {
+        runCatching {
+            Class.forName("com.google.android.play.core.splitinstall.testing.FakeSplitInstallManager").declaredFields
+                .single { Modifier.isStatic(it.modifiers) && it.type == Long::class.javaPrimitiveType }
+                .apply { isAccessible = true }
+                .setLong(null, 333L)
+        }.onFailure { Log.w(TAG, "Local testing's download as slow as it is", it) }
+    }
 
     /**
      * Installs [modules] from Play, [onProgress] getting how much (0..100) is downloaded (null while

@@ -1,0 +1,234 @@
+name: Tests
+
+# The end-to-end tests: the app on emulators, every tool opened and gone through (app/src/androidTest): on the oldest
+# Android it supports (minSdk), the one it targets (targetSdk) and the newest there is (canary, 16 KB pages), on x86_64
+# and x86 (the emulators GitHub's runners run; ARM translated on them can't run the Linux subsystem), each in shards. The report job's summary has
+# every test, opened to each leg's result, its failures as annotations on the PR (merge.py, from the shards' JUnit XML);
+# screenshots and logcat as artifacts. Every run tests everything: a Minecraft server on every Java, every loader.
+# Alongside them, the code inspected as Android Studio's Inspect Code does (the inspect job), reported as soon as it's done.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Once for every leg: the debug bundle and the tests' APK (each leg signs both with a key of its own)
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # No setup-java: the foojay toolchain resolver provisions the JDK (as in build-app.yml). Gradle's own home
+      # cached (its distribution, the dependencies, the libraries already dexed) and its build cache (the tasks'
+      # outputs), as every workflow here sets it up; pull requests' runs write them too, so the next push reuses them.
+      # No Gradle summary: GitHub shows the jobs' summaries in job order, and it'd sit above the report's
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          cache-provider: basic
+          cache-read-only: false
+          add-job-summary: never
+
+      - name: Build the debug bundle and the tests
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --build-cache :app:bundleDebug :app:assembleDebugAndroidTest
+
+      - name: Collect
+        run: |
+          mkdir dist
+          cp app/build/outputs/bundle/debug/app-debug.aab dist/
+          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk dist/
+          # The bundletool installLocalTesting uses (buildSrc's LocalTesting.kt): installed as on a developer's phone
+          version=$(sed -n 's/.*BUNDLETOOL_VERSION = "\(.*\)".*/\1/p' buildSrc/src/main/kotlin/LocalTesting.kt)
+          curl -sSfL -o dist/bundletool.jar \
+            "https://github.com/google/bundletool/releases/download/$version/bundletool-all-$version.jar"
+
+      - name: Upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-build
+          path: dist/
+          if-no-files-found: error
+          retention-days: 3
+
+  # The legs: x86_64 and x86 on the app's oldest Android, its target and the newest canary, as Google's images are now
+  # (x86's newest instead of the last two), each in shards sharing the tests: see matrix.py, in the scripts' e2e-tests
+  # folder
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Plan the legs
+        id: matrix
+        run: echo "matrix=$(python3 .github/scripts/e2e-tests/matrix.py gradle.properties)" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: [plan, build]
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Download the build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: e2e-build
+          path: dist
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run the tests
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        env:
+          E2E_LEG: ${{ matrix.name }}
+          E2E_SHARD: ${{ matrix.shard }}
+          E2E_SHARDS: ${{ matrix.shards }}
+        with:
+          api-level: ${{ matrix.api }}
+          system-image-api-level: ${{ matrix.image }}
+          target: ${{ matrix.target }}
+          arch: ${{ matrix.arch }}
+          channel: ${{ matrix.channel }}
+          cores: 4
+          ram-size: 4096M
+          # The app's Java heap: left out, the AVD's is 16 MB, which a command's output alone can fill
+          # (OutOfMemoryError in LinuxEnv.drain). A low-end phone's, so the tests still catch what would run out on
+          # one: AOSP's 1 GB phone profile (phone-xhdpi-1024-dalvik-heap.mk, heapgrowthlimit=96m)
+          heap-size: 96M
+          # The Java versions and the servers' worlds take room
+          disk-size: 16G
+          emulator-boot-timeout: 900
+          # The action's own, with reading a color buffer by DMA on: Android 37.0's graphics (mapper.ranchu) copies one only
+          # that way and dies without it ("Assertion failed: !rcEnc->featureInfo()->hasReadColorBufferDma", the condition
+          # that held), and the runners' emulator (37.2) offers it only with both these (gfxstream's RenderControl.cpp),
+          # direct memory turned on explicitly (left at its default, 37.0 died again). system_server went down on its
+          # first copy of one (a task's snapshot for Recents, as a test's activity closed), and every test after it with
+          # it; the canary's install with direct memory off
+          emulator-options: >-
+            -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+            -feature GLDirectMem,HasSharedSlotsHostMemoryAllocator
+          disable-animations: true
+          script: bash .github/scripts/e2e-tests/run-tests.sh
+
+      - name: Upload screenshots, logcat and raw results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-results-${{ matrix.id }}
+          path: e2e-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+  # Every shard's results in one report (merge.py): the summary, the annotations, and this job failed if a test did
+  report:
+    needs: [plan, test]
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Download the results
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: e2e-results-*
+          path: e2e-results
+
+      - name: Report
+        env:
+          MATRIX: ${{ needs.plan.outputs.matrix }}
+        # The summary (a row per test, opened to every leg's result), the failures as annotations, the job failed with them
+        run: python3 .github/scripts/e2e-tests/merge.py "$MATRIX" e2e-results "$GITHUB_STEP_SUMMARY" durations.json
+
+      # How long each test took, for the shards to be dealt by: committed as the scripts' durations.json when they've
+      # drifted (a shard much longer than the others)
+      - name: Upload the durations
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-durations
+          path: durations.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # The code inspected as Android Studio's Inspect Code does: IntelliJ's and Android's inspections with the project's
+  # profile (.idea/inspectionProfiles), in Qodana Community for Android's image (no token, its Cloud not used), its
+  # Gradle sync with the runner's Android SDK (the image's has only android-33). Not waiting for anything, it's reported
+  # while the emulators still run (report.py): the summary, every problem as an annotation, this job failed if there's
+  # any; Qodana's HTML report (Inspect Code's table) and SARIF as an artifact. Its newest release, pulled on every run
+  # (Dependabot doesn't update a job's container image), as the IDE's inspections are kept current
+  inspect:
+    runs-on: ubuntu-latest
+    container:
+      image: jetbrains/qodana-jvm-android:latest
+      volumes:
+        - /usr/local/lib/android/sdk:/data/android-sdk
+      env:
+        ANDROID_HOME: /data/android-sdk
+        ANDROID_SDK_ROOT: /data/android-sdk
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The code Gradle generates (BuildConfig): Qodana only syncs the project, so the files using it would be unresolved
+      # (its sanity check's problems) and left uninspected. The Linux packages left out: nothing here needs them. Its
+      # Gradle home the one Qodana's sync uses next, so the dependencies are downloaded once
+      - name: Generate BuildConfig
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon :app:generateDebugBuildConfig -x :app:updateLinuxPackages
+
+      # The plugins the IDE has next to Android's and the image lacks: Jetpack Compose (without it Kotlin's naming
+      # inspection flags every @Composable, named as a type) and Android Design Tools (the profile's Compose and Glance
+      # preview inspections). Qodana installs a qodana.yaml's plugins (Marketplace's builds for its IDE) before the
+      # run, so one with only them, written here (the profile stays on the command line)
+      - name: Inspect
+        run: |
+          cat > qodana.yaml <<'EOF'
+          version: "1.0"
+          plugins:
+            - id: androidx.compose.plugins.idea
+            - id: com.android.tools.design
+          EOF
+          qodana --project-dir "$GITHUB_WORKSPACE" --results-dir /tmp/inspections \
+            --profile-path .idea/inspectionProfiles/Project_Default.xml --save-report
+
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: inspections
+          path: /tmp/inspections/
+          if-no-files-found: warn
+          retention-days: 14
+
+      # The image has no Python
+      - name: Report
+        if: always()
+        run: |
+          apt-get update -qq && apt-get install -y -qq python3 > /dev/null
+          python3 .github/scripts/inspections/report.py /tmp/inspections/qodana.sarif.json "$GITHUB_STEP_SUMMARY"
+

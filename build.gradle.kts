@@ -38,7 +38,6 @@ subprojects {
             // As the app's: Android extracts every split's native libraries as the app's main APK says (the app's
             // must be, PRoot is exec'd from nativeLibraryDir), whatever a split's own manifest says (tried)
             packaging { jniLibs { useLegacyPackaging = true } }
-            testOptions { unitTests.isReturnDefaultValues = true }
             // Its tools' resources, as the app's (src/main/res-features/<category>/<route>)
             sourceSets.getByName("main") {
                 file("src/main/res-features").listFiles { it.isDirectory }.orEmpty().forEach { category ->
@@ -48,9 +47,6 @@ subprojects {
         }
         dependencies {
             "implementation"(dependencies.project(":app"))
-            "testImplementation"(libs.junit)
-            // What the app's tests use too: Android's own JSONObject is a stub there
-            "testImplementation"(libs.org.json)
         }
         tasks.matching { it.name == "preBuild" }.configureEach { dependsOn(":app:updateLinuxPackages") }
     }

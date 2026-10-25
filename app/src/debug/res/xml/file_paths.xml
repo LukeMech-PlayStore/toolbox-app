@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The debug build's: main's (res/xml/file_paths.xml, kept the same), and the end-to-end tests' files, picked as
+     from another app (androidTest's Pickers) where no tool clears them -->
+<paths>
+    <cache-path name="qr" path="qr/" />
+    <cache-path name="metadata" path="metadata/share/" />
+    <cache-path name="e2e" path="e2e/" />
+</paths>

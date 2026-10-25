@@ -1,7 +1,20 @@
 # Toolbox (LMToolbox)
 
+[![Tests](https://github.com/LukeMech-PlayStore/toolbox-app/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/LukeMech-PlayStore/toolbox-app/actions/workflows/tests.yml?query=branch%3Amain)
+[![Release](https://github.com/LukeMech-PlayStore/toolbox-app/actions/workflows/build-app.yml/badge.svg?event=push)](https://github.com/LukeMech-PlayStore/toolbox-app/actions/workflows/build-app.yml)
+[![Latest release](https://img.shields.io/github/v/release/LukeMech-PlayStore/toolbox-app?label=release)](https://github.com/LukeMech-PlayStore/toolbox-app/releases/latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![Android Build & Release](https://github.com/LukeMech-PlayStore/toolbox-app/actions/workflows/build-app.yml/badge.svg)](https://github.com/LukeMech-PlayStore/toolbox-app/actions/workflows/build-app.yml)
+
+[![Min API](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2FLukeMech-PlayStore%2Ftoolbox-app%2Fmain%2Fgradle.properties&search=sdkMin%3D(%5Cd%2B)&replace=%241&label=min%20API&color=3DDC84&logo=android&logoColor=white)](gradle.properties)
+[![Target API](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2FLukeMech-PlayStore%2Ftoolbox-app%2Fmain%2Fgradle.properties&search=sdkTarget%3D(%5Cd%2B)&replace=%241&label=target%20API&color=3DDC84&logo=android&logoColor=white)](gradle.properties)
+[![Kotlin](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FLukeMech-PlayStore%2Ftoolbox-app%2Fmain%2Fgradle%2Flibs.versions.toml&query=%24.versions.kotlin&label=Kotlin&color=7F52FF&logo=kotlin&logoColor=white)](gradle/libs.versions.toml)
+[![Last commit](https://img.shields.io/github/last-commit/LukeMech-PlayStore/toolbox-app)](https://github.com/LukeMech-PlayStore/toolbox-app/commits/main)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/LukeMech-PlayStore/toolbox-app)](https://github.com/LukeMech-PlayStore/toolbox-app/pulse)
+[![Stars](https://img.shields.io/github/stars/LukeMech-PlayStore/toolbox-app?style=flat)](https://github.com/LukeMech-PlayStore/toolbox-app/stargazers)
+<!-- Once the app is public on Google Play (playbadges answers "App not found" until then):
+[![Installs](https://playbadges.pavi2410.com/badge/downloads?id=org.lukemech.lmtoolbox)](https://play.google.com/store/apps/details?id=org.lukemech.lmtoolbox)
+[![Rating](https://playbadges.pavi2410.com/badge/ratings?id=org.lukemech.lmtoolbox)](https://play.google.com/store/apps/details?id=org.lukemech.lmtoolbox)
+-->
 
 **One app, a drawer full of tools.** Measure with a ruler, a spirit level and a compass; work out a resistor's
 color code or a 555 timer with 25 electronics calculators; convert currencies; download, convert and shrink
@@ -66,7 +79,8 @@ toolbox-app/
 │       │       └── widgets/              Home screen widgets (spirit level, compass)
 │       ├── main/res/                     The app's strings and those several tools share
 │       ├── main/res-features/<category>/<route>/   Each tool's own resources (strings, drawables, widget layouts)
-│       └── test/                         Unit tests, in the packages of what they test
+│       └── androidTest/                  End-to-end tests on a device: each tool's test (OhmTest...) in its
+│                                         package, the pages' in theirs, the harness in e2e/
 ├── features/<part>/                  On-demand Play modules, one per part of the Linux subsystem
 │   └── src/main/                         The part's archive (jniLibs, downloaded at build time) and, for a
 │                                         tool alone on that part, its pages, strings and scripts (assets/)
@@ -101,7 +115,7 @@ checks that the routes are unique.
   (`linux/parts/`: `Java`, `Tunnel`), and their modules are just their archives. So a tool gets one only once
   it needs it, and no part's module depends on another's.
 - A module lays its tools out as the app does: `features/<category>/<route>/` for what isn't UI (its
-  `FeatureUi`, jobs, maths and parsing, tested in `src/test/` under the same package),
+  `FeatureUi`, jobs, maths and parsing; its end-to-end test in the app's `src/androidTest/`, same package),
   `ui/pages/features/<category>/<route>/` for its pages, and `assets/features/<route>/` for its scripts
   (installed into the subsystem by `LinuxScripts` each time they run, as the app ships them; folders no tool
   has anymore go with the subsystem's update).
@@ -212,7 +226,6 @@ newer version, and about deprecated Gradle features it uses itself, are expected
 ```sh
 ./gradlew assembleDebug          # debug APKs (applicationId org.lukemech.lmtoolbox.dbg)
 ./gradlew bundleRelease          # release bundle (needs the signing config, see the release workflow)
-./gradlew test                   # unit tests (the app and the modules)
 ./gradlew updateLinuxRelease     # pin the subsystem's newest release
 ```
 
@@ -233,17 +246,64 @@ JDK and bytecode level of all of them, and `buildSrc/` holds the app's tasks (`L
 ./gradlew :app:installLocalTesting -Pdevice=<serial>
 ```
 
+### Testing
+
+The tests run the app on emulators as a user would: [`tests.yml`](.github/workflows/tests.yml) installs
+the debug bundle with Play's local testing (so the tools' modules download as from Play) and runs
+`app/src/androidTest/` on every pull request, every push to main and by hand. Every run tests everything.
+
+**What's tested.** Each tool has a test named after it in its own package
+(`features/electronics/ohm/OhmTest.kt`), which opens it from the home page and goes through every button, switch,
+field and slider (`e2e/Explorer.kt`), installing the tool's Linux packages first if it's on the subsystem. The
+Minecraft server's test makes every type of server (Vanilla, Paper, Fabric, Forge, NeoForge) on every Java, each on
+the newest Minecraft made for it: starts it, uses its console and options, changes its loader, exports its world.
+The pages' own tests (home, search, navigation, settings, tasks) sit next to them.
+
+**Where.** The legs come from what the app supports and what Google publishes, worked out on every run
+([`matrix.py`](.github/scripts/e2e-tests/matrix.py)): for x86_64, the oldest Android the app supports (`sdkMin`,
+API 29), the one it targets (`sdkTarget`, 37) and the newest canary (16 KB pages); for x86, whose images end at
+API 30, the oldest and its newest. No ARM: GitHub's runners can't run an ARM emulator, and ARM translated on the
+x86_64 images can't run the Linux subsystem.
+
+**How.** Each leg runs in 3 shards. Each test goes to the shard with the least work so far, longest first, by how long
+it took before ([`durations.json`](.github/scripts/e2e-tests/durations.json)), so the shards finish at about the
+same time. A new test counts as the median until it's measured. The report job writes the times of each run
+to the `e2e-durations` artifact. Commit it over `durations.json` when the shards drift apart. On a shard,
+[`instrument.py`](.github/scripts/e2e-tests/instrument.py) runs the tests class by class, each in a fresh
+process. After a crash, the tests it cut off are run one by one. A failed test runs once more; passing then
+counts as flaky, not failed.
+
+**Results.** The `report` job ([`merge.py`](.github/scripts/e2e-tests/merge.py)) puts every shard's results in one
+table in the run's summary: each test on each leg, failed first, then why each failed. Failures are annotations on
+the pull request. Screenshots, logcat and the raw output are each shard's `e2e-results-*` artifact. The job fails
+if a test failed or didn't run (a shard that crashed or was canceled).
+
+**Inspections.** Alongside them, the `inspect` job inspects the code as Android Studio's Inspect Code does, with the
+project's profile (`.idea/inspectionProfiles`), in Qodana Community for Android's newest image, with the Jetpack
+Compose and Android Design Tools plugins added. It reports as soon as it's done, while the emulators still run
+([`report.py`](.github/scripts/inspections/report.py)): every problem in the run's summary and as an annotation,
+Qodana's HTML report as the `inspections` artifact. Critical and high problems (the IDE's errors and warnings, an
+outdated library among them) fail it. Moderate, low and info problems (weak warnings, typos, grammar) are only
+reported.
+
+```sh
+./gradlew :app:installLocalTesting :app:installDebugAndroidTest   # on a connected device
+adb shell am instrument -w -e class org.lukemech.lmtoolbox.features.electronics.ohm.OhmTest   org.lukemech.lmtoolbox.dbg.test/androidx.test.runner.AndroidJUnitRunner
+```
+
 ### Versioning and releases
 
 `gradle.properties` holds `versionName` (`YY.MM.DD`) and `gplayCode`. The
-[`build-app.yml`](.github/workflows/build-app.yml) workflow runs the unit tests, then builds the debug and the
+[`build-app.yml`](.github/workflows/build-app.yml) workflow builds the debug and the
 signed release artifacts, and can push them to Play tracks as drafts. A version's tag
 (`v<gplayCode>_<versionName>`, e.g. `v76_26.10.24`) runs it on its own: the release goes to internal and alpha, internal's published.
 [`publish-draft.yml`](.github/workflows/publish-draft.yml) publishes the drafts of the tracks picked (by hand,
 or as the build's last job). The release notes come from `whatsNew/`. A tag also makes a GitHub release,
 titled by the tag: the English release notes (`whatsnew-en-US`), then the commits since the previous tag.
 [`update-daemon-jvm.yml`](.github/workflows/update-daemon-jvm.yml) opens a pull request each week when the
-Gradle daemon's JDK has newer builds.
+Gradle daemon's JDK has newer builds. [Dependabot](.github/dependabot.yml) keeps the actions' pins and the Gradle
+wrapper current. The libraries and plugins (`gradle/libs.versions.toml`) are left to the inspections, which fail
+on an outdated one.
 
 ### Conventions
 
@@ -251,7 +311,7 @@ Gradle daemon's JDK has newer builds.
 - Every user-facing string exists in both `values` and `values-pl-rpl` (error messages aside, see
   [UI conventions](#ui-conventions)), and none is left unused.
 - Logic that isn't UI (maths, parsing, commands) sits apart from the pages, in the tool's
-  `features/<category>/<route>/`, with unit tests.
+  `features/<category>/<route>/`. Each tool has an end-to-end test named after it (see [Testing](#testing)).
 
 ## License
 
