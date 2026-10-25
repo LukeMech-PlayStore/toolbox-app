@@ -31,6 +31,7 @@ abstract class E2eTest {
         object : Statement() {
             override fun evaluate() {
                 grantPermissions()
+                Device.dismissSystemDialogs()
                 // As a user who has said "Not now" to the notifications bar (on API < 33 there's nothing to grant):
                 // it'd cover the bottom of every page
                 PreferenceHelper.put(context, PREF_NOTIFICATIONS_LATER, true)

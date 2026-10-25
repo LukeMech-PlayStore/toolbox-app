@@ -56,6 +56,9 @@ adb logcat -G 16M || true
 # Awake, located (the compass), as a user's phone
 adb shell svc power stayon true || true
 adb shell settings put secure location_mode 3 || true
+# No "isn't responding" from other apps (the launcher hangs under the load): it'd take every key, the app's dialogs
+# never closed (a crash of the app's own the run reports)
+adb shell settings put global hide_error_dialogs 1 || true
 
 # 1. The app, as from Play
 for try in 1 2 3; do

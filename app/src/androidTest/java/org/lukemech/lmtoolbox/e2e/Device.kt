@@ -5,11 +5,13 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.compose.ui.test.MainTestClock
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
 import org.lukemech.lmtoolbox.linux.LinuxTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import java.io.File
 
-/** The device under test: screenshots, waiting. */
+/** The device under test: screenshots, waiting, the system's dialogs. */
 object Device {
     /** Where the screenshots go, pulled by the workflow: the app's external files (instrumentation runs in its process). */
     val outputDir: File
@@ -52,6 +54,20 @@ object Device {
             Thread.sleep(intervalMs)
             // The pages' coroutines as far on as real time went (a sleep alone would hold them where they are)
             clock?.let { c -> runCatching { c.advanceTimeBy(intervalMs) } }
+        }
+    }
+
+    /**
+     * The system's "isn't responding" for another app (the emulator's launcher, hung under the load) waited out, as a
+     * user would: in front of the app, it takes every key (back never reached the app's dialogs) and tap.
+     */
+    fun dismissSystemDialogs() {
+        val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        repeat(3) {
+            val wait = device.findObject(By.res("android", "aerr_wait")) ?: return
+            Log.w(E2eTest.TAG, "A system dialog in front of the app (another app not responding): waited")
+            runCatching { wait.click() }
+            device.waitForIdle()
         }
     }
 

@@ -188,6 +188,7 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
      */
     fun back() {
         if (page == Screen.Main.route && !dialogShown) throw AssertionError("Back on the home page would close the app")
+        Device.dismissSystemDialogs()
         UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).pressBack()
         compose.waitForIdle()
     }
