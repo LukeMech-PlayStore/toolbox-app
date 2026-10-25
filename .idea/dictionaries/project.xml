@@ -3,6 +3,7 @@
     <words>
       <w>aarch</w>
       <w>abcd</w>
+      <w>abi</w>
       <w>abis</w>
       <w>abspath</w>
       <w>acodec</w>
@@ -31,6 +32,7 @@
       <w>currencyconverter</w>
       <w>defaultgamemode</w>
       <w>devnull</w>
+      <w>dexed</w>
       <w>domyślne</w>
       <w>dorg</w>
       <w>downvtresh</w>
@@ -155,7 +157,9 @@
       <w>quickjs</w>
       <w>rcon</w>
       <w>resizer</w>
+      <w>resizer's</w>
       <w>resolv</w>
+      <w>restorecon</w>
       <w>rsplit</w>
       <w>rstrip</w>
       <w>selfpromo</w>

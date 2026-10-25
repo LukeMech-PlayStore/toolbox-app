@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Process
 import android.util.Log
 import java.io.File
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -210,7 +211,7 @@ object ServerRunner {
             playersJob?.cancel()
             stopTunnel()
             // Its Java gone with it, before it counts as stopped: PRoot stopped by a signal (the server killed) may
-            // leave what it ran running, its port held (the next start's "FAILED TO BIND")
+            // leave its Java running, its port held (the next start's "FAILED TO BIND")
             killLeftover(app, pidFile)
             pidFile.delete()
             // Its files deleted meanwhile (the server, or the tool's data): what it wrote as it went too
@@ -281,7 +282,7 @@ object ServerRunner {
         if (cmdline.startsWith(app.packageName)) return
         Log.w(TAG, "Its Java ($pid) outlived its run: killed")
         Process.sendSignal(pid, Process.SIGNAL_KILL)
-        withTimeoutOrNull(KILL_WAIT) { while (proc.exists()) delay(100) }
+        withTimeoutOrNull(KILL_WAIT) { while (proc.exists()) delay(100.milliseconds) }
     }
 
     /**

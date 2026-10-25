@@ -19,8 +19,8 @@ import urllib.request
 
 ABIS = ["x86_64", "x86"]
 TAGS = ["google_apis", "android"]
-# Among a release's images: plain Android first (the app needs no Google APIs, and Android 37's Google APIs image takes
-# its system down right after it boots on the runners), else Google APIs (x86's API 30 and the canary have nothing
+# Among the images of a release: plain Android first (the app needs no Google APIs, and Android 37's Google APIs image
+# takes its system down right after it boots on the runners), else Google APIs (x86's API 30 and the canary have nothing
 # else); 4 KB pages before 16 KB ones (the newest minors and canaries come in 16 KB alone)
 TARGET_ORDER = ["default", "google_apis", "google_apis_ps16k"]
 CHANNELS = {"channel-0": "stable", "channel-1": "beta", "channel-2": "dev", "channel-3": "canary"}
@@ -59,7 +59,7 @@ def platforms():
 
 
 def release(token):
-    """A release's API level (29, 37 for 37.0 or 37.2); None for previews, betas, extension levels, canaries."""
+    """The API level of a release (29, 37 for 37.0 or 37.2); None for previews, betas, extension levels, canaries."""
     m = re.fullmatch(r"(\d+)(?:\.(\d+))?", token)
     return int(m.group(1)) if m else None
 

@@ -74,14 +74,14 @@ def main():
                 continue
             shard = tries[-1][0]
             status, message = outcome(tries[-1][1])
-            if status == "passed" and any(outcome(c)[0] == "failed" for _, c in tries[:-1]):
-                status, message = "flaky", next(outcome(c)[1] for _, c in tries if outcome(c)[0] == "failed")
+            if status == "passed" and any(outcome(attempt)[0] == "failed" for _, attempt in tries[:-1]):
+                status, message = "flaky", next(outcome(attempt)[1] for _, attempt in tries if outcome(attempt)[0] == "failed")
             if status == "failed":
                 failed.append((f"{title} ({shard})", message))
             if status in ("failed", "flaky"):
                 why.append((list(ICONS).index(status), title, shard, status, message))
             results.append(status)
-            seconds = sum(float(c.get("time") or 0) for _, c in tries)
+            seconds = sum(float(attempt.get("time") or 0) for _, attempt in tries)
             cells.append(f"{ICONS[status]} {seconds:.0f} s" if status != "skipped" else ICONS[status])
         overall = next((s for s in ICONS if s in results and s != "skipped"), "skipped")
         totals[overall] += 1

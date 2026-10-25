@@ -185,8 +185,8 @@ class Explorer(
          * lower case.
          */
         fun destructive(ui: Ui): Set<String> {
-            val modules = LinuxParts.parts(ui.context).keys.map { "org.lukemech.lmtoolbox.features.$it.R\$string" }
-            return (listOf("org.lukemech.lmtoolbox.R\$string") + modules)
+            val modules = LinuxParts.parts(ui.context).keys.map { $$"org.lukemech.lmtoolbox.features.$$it.R$string" }
+            return (listOf($$"org.lukemech.lmtoolbox.R$string") + modules).asSequence()
                 .mapNotNull { runCatching { Class.forName(it) }.getOrNull() }
                 .flatMap { it.fields.toList() }
                 .filter { DESTRUCTIVE_NAME.containsMatchIn(it.name) }

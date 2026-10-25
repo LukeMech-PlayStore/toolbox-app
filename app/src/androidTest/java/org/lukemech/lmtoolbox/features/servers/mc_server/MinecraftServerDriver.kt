@@ -61,10 +61,6 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
             .take(5).firstOrNull { Java.madeFor(Installer.javaNeeds(it)) == jdk }
     }
 
-    /** [type]'s newest release this device has a Java for (no Java 25 on x86). */
-    fun newestRunnable(type: ServerType): String = runBlocking {
-        Installer.versions(type).first { Java.forNeeds(context, Installer.javaNeeds(it)) != null }
-    }
 
     // An OptionSetting's choice: its radio button alone, no text (the server page's tabs are radio buttons too, named)
     private val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton) and
