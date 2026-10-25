@@ -243,7 +243,7 @@ object LinuxTasks {
         context: Context, cmd: List<String>, source: AppFeature,
         label: String = displayCommand(cmd),
         timeoutMs: Long = LinuxEnv.DEFAULT_TIMEOUT_MS,
-        maxOutput: Int = Int.MAX_VALUE,
+        maxOutput: Int = LinuxEnv.DEFAULT_MAX_OUTPUT,
         onStart: (id: Long) -> Unit = {},
         onLine: ((String) -> Unit)? = null
     ): ExecResult {

@@ -44,10 +44,19 @@ object LinuxEnv {
     private const val GUEST_PATH = "$TERMUX_PREFIX/bin:/system/bin:/system/xbin"
 
     /**
+     * How much of a command's stdout is kept unless asked otherwise: room for what's parsed whole
+     * (yt-dlp's -J, the largest) while a chatty command (an installer, an encode) can't fill the heap.
+     */
+    const val DEFAULT_MAX_OUTPUT = 2 * 1024 * 1024
+    /** Of stderr only its end is ever read (the last line, a task's log), see [LinuxTasks]. */
+    private const val MAX_STDERR = 64 * 1024
+
+    /**
      * Runs [cmd] (argv, no shell involved) inside the Linux environment. If canceled, the
      * process is killed and [onCancelled] gets its output until then. [onLine] gets each line it
      * prints (stdout and stderr) as it comes, e.g. for progress. Of its output only the last
-     * [maxOutput] characters (of each stream) are kept, e.g. for a server printing for days.
+     * [maxOutput] characters of stdout (and at most [MAX_STDERR] of stderr) are kept, e.g. for a
+     * server printing for days.
      * [task]: its task's (or service's) id, in its environment as [TASK_ENV] (what it takes is
      * measured by it, see ResourceScope.Task). Use [LinuxTasks.run] from UI code, which tracks it as a
      * task and handles updates.
@@ -57,7 +66,7 @@ object LinuxEnv {
         cmd: List<String>,
         timeoutMs: Long = DEFAULT_TIMEOUT_MS,
         onLine: ((String) -> Unit)? = null,
-        maxOutput: Int = Int.MAX_VALUE,
+        maxOutput: Int = DEFAULT_MAX_OUTPUT,
         task: Long? = null,
         onCancelled: (partial: ExecResult) -> Unit = {}
     ): ExecResult = withContext(Dispatchers.IO) {
@@ -80,7 +89,7 @@ object LinuxEnv {
         val stderr = StringBuilder()
         val readers = listOf(
             drain(process.inputStream, stdout, onLine, maxOutput),
-            drain(process.errorStream, stderr, onLine, maxOutput)
+            drain(process.errorStream, stderr, onLine, minOf(maxOutput, MAX_STDERR))
         )
 
         fun output(exitCode: Int): ExecResult {
