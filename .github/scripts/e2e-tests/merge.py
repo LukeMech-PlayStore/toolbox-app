@@ -64,6 +64,10 @@ def main():
         cells, results = [], []
         for leg in order:
             tries = ran.get(leg)
+            if not tries and cls == "e2e.Setup":
+                # Only where a shard's setup went wrong: nothing missing elsewhere
+                cells.append("")
+                continue
             if not tries:
                 results.append("not run")
                 cells.append(ICONS["not run"])
