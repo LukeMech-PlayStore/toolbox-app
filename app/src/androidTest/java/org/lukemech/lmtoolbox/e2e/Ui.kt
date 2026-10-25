@@ -54,7 +54,8 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
 
     /**
      * Brings the node to sight: scrolled to in its page, or in a lazy list (the choices of a setting, a long list)
-     * until it's composed. True if it's there.
+     * until it's composed. True once its middle (where a tap lands) is on screen: not yet if the scroll failed, or
+     * the page moved after it.
      */
     fun scrollTo(matcher: SemanticsMatcher): Boolean {
         if (!exists(matcher)) {
@@ -65,22 +66,43 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
             }
         }
         if (!exists(matcher)) return false
+        // Fails where nothing scrolls (a dialog's buttons): then it's where it is
         runCatching { compose.onAllNodes(matcher)[0].performScrollTo() }
-        return true
-    }
-
-    /** Taps the first enabled node matching [matcher] (waiting for it, up to [timeoutMs]). */
-    fun click(matcher: SemanticsMatcher, timeoutMs: Long = 20_000, what: String = matcher.description) {
-        val target = matcher and isEnabled()
-        runCatching {
-            compose.waitUntil(timeoutMs) { scrollTo(target) }
-        }.onFailure { throw AssertionError("Nothing to tap after ${timeoutMs / 1000} s: $what") }
-        compose.onAllNodes(target)[0].performClick()
         compose.waitForIdle()
+        return nodes(matcher).firstOrNull()?.let(::middleShown) == true
     }
 
-    fun clickText(@StringRes id: Int, timeoutMs: Long = 20_000) = clickText(str(id), timeoutMs)
-    fun clickText(text: String, timeoutMs: Long = 20_000) = click(hasText(text) and hasClickAction(), timeoutMs, "\"$text\"")
+    /** Whether [node]'s middle is inside what scrolls it (a page, a list: each shows a part of what it holds). */
+    private fun middleShown(node: SemanticsNode): Boolean {
+        val middle = node.boundsInRoot.center
+        return generateSequence(node.parent) { it.parent }
+            .filter { SemanticsActions.ScrollBy in it.config }
+            .all { it.boundsInRoot.contains(middle) }
+    }
+
+    /**
+     * Taps the first enabled node matching [matcher] (waiting for it, up to [timeoutMs]). With [done], what the
+     * tap does: tapped again if it hasn't after a few seconds (a tap that missed, the page moving under it).
+     */
+    fun click(matcher: SemanticsMatcher, timeoutMs: Long = 20_000, what: String = matcher.description, done: (() -> Boolean)? = null) {
+        val target = matcher and isEnabled()
+        repeat(TAPS) { tap ->
+            runCatching {
+                compose.waitUntil(timeoutMs) { scrollTo(target) }
+            }.onFailure { throw AssertionError("Nothing to tap after ${timeoutMs / 1000} s: $what") }
+            // Gone between the two (recomposed): looked for again
+            if (runCatching { compose.onAllNodes(target)[0].performClick() }.isFailure) return@repeat
+            compose.waitForIdle()
+            if (done == null) return
+            if (runCatching { compose.waitUntil(TAP_TOOK_MS) { done() } }.isSuccess) return
+            log("Tapped $what, nothing came of it: tapping again (${tap + 2}/$TAPS)")
+        }
+        throw AssertionError("Tapped $what $TAPS times, nothing came of it")
+    }
+
+    fun clickText(@StringRes id: Int, timeoutMs: Long = 20_000, done: (() -> Boolean)? = null) = clickText(str(id), timeoutMs, done)
+    fun clickText(text: String, timeoutMs: Long = 20_000, done: (() -> Boolean)? = null) =
+        click(hasText(text) and hasClickAction(), timeoutMs, "\"$text\"", done)
 
     /** Taps [text] in the dialog shown (its buttons). */
     fun clickInDialog(text: String, timeoutMs: Long = 20_000) =
@@ -185,6 +207,10 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
     }
 
     companion object {
+        /** A [click] with what it does: tries before it fails, and how long each waits for it. */
+        const val TAPS = 3
+        const val TAP_TOOK_MS = 5_000L
+
         fun withId(id: Int) = SemanticsMatcher("id $id") { it.id == id }
 
         fun hasAnyAncestorDialog() = SemanticsMatcher("in a dialog") { node ->

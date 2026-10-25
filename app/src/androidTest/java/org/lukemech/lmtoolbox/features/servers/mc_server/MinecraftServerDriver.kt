@@ -143,7 +143,9 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
     /** Started from its status tab, until it's ready (Minecraft's "Done"). */
     fun start(profile: ServerProfile) {
         tab(R.string.f_Mc_tab_status)
-        ui.click(hasText(s(R.string.f_Mc_start)) and hasClickAction(), what = "Start")
+        ui.click(hasText(s(R.string.f_Mc_start)) and hasClickAction(), what = "Start", done = {
+            run?.let { it.serverId == profile.id && it.phase != ServerRunner.Phase.Stopped } == true
+        })
         waitRunning(profile)
         ui.waitShown(hasText(s(R.string.f_Mc_phase_running)), what = "\"running\" on its status")
         Device.screenshot("mc-running-${profile.name}")
@@ -217,7 +219,7 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
 
     fun stop(profile: ServerProfile) {
         tab(R.string.f_Mc_tab_status)
-        ui.click(hasText(s(R.string.f_Mc_stop)) and hasClickAction(), what = "Stop")
+        ui.click(hasText(s(R.string.f_Mc_stop)) and hasClickAction(), what = "Stop", done = { run?.phase != ServerRunner.Phase.Running })
         Device.waitFor("${profile.name} to stop", 5 * Device.MINUTE) { run?.isActive != true }
         assertTrue("It didn't stop cleanly: ${run?.phase} ${run?.error}\n${logTail()}", run?.phase != ServerRunner.Phase.Crashed)
     }
@@ -226,8 +228,9 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
     fun exportWorld(profile: ServerProfile) {
         tab(R.string.f_Mc_tab_options)
         Pickers.created.clear()
-        ui.clickText(R.string.f_Mc_export_world)
-        Device.waitFor("the world exported", 10 * Device.MINUTE, failFast = {
+        // Asked where to (the test's file): else the tap missed
+        ui.clickText(R.string.f_Mc_export_world, done = { Pickers.created.isNotEmpty() })
+        Device.waitFor("the world exported", 2 * Device.MINUTE, failFast = {
             Transfers.state.value?.takeIf { !it.isActive && it.error != null }?.error
         }) { Pickers.created.isNotEmpty() && Transfers.state.value?.let { !it.isActive && it.serverId == profile.id } == true }
         val zip = Pickers.created.single()
