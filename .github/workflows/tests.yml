@@ -184,21 +184,16 @@ jobs:
 
       # The plugins the IDE has next to Android's and the image lacks: Jetpack Compose (without it Kotlin's naming
       # inspection flags every @Composable, named as a type) and Android Design Tools (the profile's Compose and Glance
-      # preview inspections). Marketplace's builds for the image's IDE, in its plugins path
-      - name: Add the Compose plugins
-        run: |
-          apt-get update -qq && apt-get install -y -qq curl unzip > /dev/null
-          build=$(cat /opt/idea/build.txt)
-          major=${build#*-}
-          plugins="/data/cache/plugins/${major%%.*}"
-          mkdir -p "$plugins"
-          for id in androidx.compose.plugins.idea com.android.tools.design; do
-            curl -fsSL -o /tmp/plugin.zip "https://plugins.jetbrains.com/pluginManager?action=download&id=$id&build=$build"
-            unzip -q -o /tmp/plugin.zip -d "$plugins"
-          done
-
+      # preview inspections). Qodana installs a qodana.yaml's plugins (Marketplace's builds for its IDE) before the
+      # run, so one with only them, written here (the profile stays on the command line)
       - name: Inspect
         run: |
+          cat > qodana.yaml <<'EOF'
+          version: "1.0"
+          plugins:
+            - id: androidx.compose.plugins.idea
+            - id: com.android.tools.design
+          EOF
           qodana --project-dir "$GITHUB_WORKSPACE" --results-dir /tmp/inspections \
             --profile-path .idea/inspectionProfiles/Project_Default.xml --save-report
 
