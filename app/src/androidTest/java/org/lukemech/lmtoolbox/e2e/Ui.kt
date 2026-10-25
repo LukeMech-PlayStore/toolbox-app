@@ -137,7 +137,7 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
     }
 
     /**
-     * The keyboard a field opened, closed (as a user would once done typing): left open, on a small screen it
+     * The keyboard a field opened, closed (as a user would once they were done typing): left open, on a small screen it
      * covers what's next (a setting's choices under it, never shown).
      */
     fun hideKeyboard() {

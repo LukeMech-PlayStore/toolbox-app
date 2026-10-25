@@ -182,6 +182,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # The plugins the IDE has next to Android's and the image lacks: Jetpack Compose (without it Kotlin's naming
+      # inspection flags every @Composable, named as a type) and Android Design Tools (the profile's Compose and Glance
+      # preview inspections). Marketplace's builds for the image's IDE, in its plugins path
+      - name: Add the Compose plugins
+        run: |
+          apt-get update -qq && apt-get install -y -qq curl unzip > /dev/null
+          build=$(cat /opt/idea/build.txt)
+          major=${build#*-}
+          plugins="/data/cache/plugins/${major%%.*}"
+          mkdir -p "$plugins"
+          for id in androidx.compose.plugins.idea com.android.tools.design; do
+            curl -fsSL -o /tmp/plugin.zip "https://plugins.jetbrains.com/pluginManager?action=download&id=$id&build=$build"
+            unzip -q -o /tmp/plugin.zip -d "$plugins"
+          done
+
       - name: Inspect
         run: |
           qodana --project-dir "$GITHUB_WORKSPACE" --results-dir /tmp/inspections \

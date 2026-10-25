@@ -25,7 +25,7 @@ TAGS = ["google_apis", "android"]
 TARGET_ORDER = ["default", "google_apis", "google_apis_ps16k"]
 CHANNELS = {"channel-0": "stable", "channel-1": "beta", "channel-2": "dev", "channel-3": "canary"}
 # Jobs per leg, the tests dealt among them (the Minecraft servers' alone take over an hour on one)
-SHARDS = 4
+SHARDS = 3
 REPOSITORY = "https://dl.google.com/android/repository"
 
 
