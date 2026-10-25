@@ -267,7 +267,7 @@ x86_64 images can't run the Linux subsystem.
 
 **How.** Each leg runs in 3 shards. Each test goes to the shard with the least work so far, longest first, by how long
 it took before (`durations.json`, kept in the Actions cache: the report job saves each run's, and the next run restores
-the newest its branch can see, its own or main's; [`keep-durations.yml`](.github/workflows/keep-durations.yml)
+the newest its branch can see, its own or main's; [`cron.yml`](.github/workflows/cron.yml)
 restores main's every 3 days, before GitHub drops it unused), so the shards finish at about the same time. A new test counts as
 the median until it's measured. With no cache yet, the tests are dealt by the listing alone. On a shard,
 [`instrument.py`](.github/scripts/tests/e2e/instrument.py) runs the tests class by class, each in a fresh
@@ -304,7 +304,7 @@ signed release artifacts, and can push them to Play tracks as drafts. A version'
 [`publish-draft.yml`](.github/workflows/publish-draft.yml) publishes the drafts of the tracks picked (by hand,
 or as the build's last job). The release notes come from `whatsNew/`. A tag also makes a GitHub release,
 titled by the tag: the English release notes (`whatsnew-en-US`), then the commits since the previous tag.
-[`update-daemon-jvm.yml`](.github/workflows/update-daemon-jvm.yml) opens a pull request each week when the
+[`cron.yml`](.github/workflows/cron.yml)'s `daemon-jvm` job opens a pull request each week when the
 Gradle daemon's JDK has newer builds. [Dependabot](.github/dependabot.yml) keeps the actions' pins and the Gradle
 wrapper current. The libraries and plugins (`gradle/libs.versions.toml`) are left to the inspections, which fail
 on an outdated one.

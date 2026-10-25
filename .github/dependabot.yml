@@ -2,7 +2,7 @@
 #
 # GitHub Actions: keeps `uses:` SHA pins current. Gradle: the wrapper alone; the libraries and plugins
 # (gradle/libs.versions.toml) are the inspect job's (tests.yml: Android's newer-version inspections fail it), the
-# daemon's JVM update-daemon-jvm.yml's.
+# daemon's JVM cron.yml's (its daemon-jvm job).
 
 version: 2
 updates:
