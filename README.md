@@ -249,7 +249,7 @@ run's summary, with screenshots and logcat as artifacts. Each leg runs in shards
 (pull requests, main, by hand) tests everything.
 
 Alongside them, the code is inspected as Android Studio's Inspect Code does, with the project's inspection profile
-(Qodana Community for Android, [`qodana.yaml`](qodana.yaml)). It reports as soon as it's done, while the emulators
+(Qodana Community for Android, the `inspect` job). It reports as soon as it's done, while the emulators
 still run: every problem as an annotation and in the run's summary, and Qodana's HTML report as the `inspections`
 artifact. Any problem fails it.
 

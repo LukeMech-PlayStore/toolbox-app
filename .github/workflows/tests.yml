@@ -164,36 +164,41 @@ jobs:
         run: python3 .github/scripts/e2e-tests/merge.py "$MATRIX" e2e-results "$GITHUB_STEP_SUMMARY"
 
   # The code inspected as Android Studio's Inspect Code does: IntelliJ's and Android's inspections with the project's
-  # profile (.idea/inspectionProfiles), by Qodana Community for Android (qodana.yaml; no token, its Cloud not used),
-  # its Gradle sync with the runner's Android SDK. Not waiting for anything, it's reported while the emulators still
-  # run (report.py): the summary, every problem as an annotation, this job failed if there's any; Qodana's HTML report
-  # (Inspect Code's table) and SARIF as an artifact
+  # profile (.idea/inspectionProfiles), in Qodana Community for Android's image (no token, its Cloud not used), its
+  # Gradle sync with the runner's Android SDK (the image's has only android-33). Not waiting for anything, it's reported
+  # while the emulators still run (report.py): the summary, every problem as an annotation, this job failed if there's
+  # any; Qodana's HTML report (Inspect Code's table) and SARIF as an artifact
   inspect:
     runs-on: ubuntu-latest
+    container:
+      image: jetbrains/qodana-jvm-android:2026.2@sha256:cc439c6cbe7f257dab04f24be8c2f5b64a47f3df253df2dd74baefb177c3a423
+      volumes:
+        - /usr/local/lib/android/sdk:/data/android-sdk
+      env:
+        ANDROID_HOME: /data/android-sdk
+        ANDROID_SDK_ROOT: /data/android-sdk
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Inspect
         run: |
-          mkdir -p "$RUNNER_TEMP/inspections"
-          docker run --rm \
-            -v "$PWD":/data/project \
-            -v "$RUNNER_TEMP/inspections":/data/results \
-            -v "$ANDROID_HOME":/data/android-sdk -e ANDROID_HOME=/data/android-sdk -e ANDROID_SDK_ROOT=/data/android-sdk \
-            jetbrains/qodana-jvm-android:2026.2@sha256:cc439c6cbe7f257dab04f24be8c2f5b64a47f3df253df2dd74baefb177c3a423 \
-            --save-report
+          qodana --project-dir "$GITHUB_WORKSPACE" --results-dir /tmp/inspections \
+            --profile-path .idea/inspectionProfiles/Project_Default.xml --save-report
 
       - name: Upload the report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: inspections
-          path: ${{ runner.temp }}/inspections/
+          path: /tmp/inspections/
           if-no-files-found: warn
           retention-days: 14
 
+      # The image has no Python
       - name: Report
         if: always()
-        run: python3 .github/scripts/inspections/report.py "$RUNNER_TEMP/inspections/qodana.sarif.json" "$GITHUB_STEP_SUMMARY"
+        run: |
+          apt-get update -qq && apt-get install -y -qq python3 > /dev/null
+          python3 .github/scripts/inspections/report.py /tmp/inspections/qodana.sarif.json "$GITHUB_STEP_SUMMARY"
 
