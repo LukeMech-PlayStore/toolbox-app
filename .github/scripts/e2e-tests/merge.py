@@ -3,9 +3,9 @@
 The legs' JUnit XML (instrument.py's, each shard's in its own artifact) as one report, for the report job of
 e2e-tests.yml, whose result is the tests':
 
-- the job's summary: a row per test, its result over every leg, opened to each leg's (and shard's) own; the failed
-  first. A retried test's last try counts (passed after failing: flaky), a leg it didn't run in (its shard cut short,
-  or without results) not run
+- the job's summary (the run's only one, so on top): a table of every test's result on each leg, the failed first,
+  then why each failed (or was flaky) where, and the legs' system images. A retried test's last try counts (passed
+  after failing: flaky), a leg it didn't run in (its shard cut short, or without results) not run
 - an annotation for each test failed in a leg (GitHub shows 10 of them; the summary has them all); a shard without
   results is a failed e2e.Setup test of its own, its tests not run
 - exits 1 if any failed or didn't run
@@ -58,15 +58,15 @@ def main():
     order = list(dict.fromkeys(shard["name"].rsplit(" · ", 1)[0] for shard in legs))
     tests = load(legs, sys.argv[2])
 
-    rows, totals, failed = [], dict.fromkeys(ICONS, 0), []
+    rows, totals, failed, why = [], dict.fromkeys(ICONS, 0), [], []
     for (cls, name), ran in tests.items():
         title = f"{'Setup' if cls == 'e2e.Setup' else cls.rsplit('.', 1)[-1]} › {name}"
-        lines, results = [], []
+        cells, results = [], []
         for leg in order:
             tries = ran.get(leg)
             if not tries:
                 results.append("not run")
-                lines.append(f"| {ICONS['not run']} not run | {leg} | | |")
+                cells.append(ICONS["not run"])
                 continue
             shard = tries[-1][0]
             status, message = outcome(tries[-1][1])
@@ -74,20 +74,32 @@ def main():
                 status, message = "flaky", next(outcome(c)[1] for _, c in tries if outcome(c)[0] == "failed")
             if status == "failed":
                 failed.append((f"{title} ({shard})", message))
+            if status in ("failed", "flaky"):
+                why.append((list(ICONS).index(status), title, shard, status, message))
             results.append(status)
             seconds = sum(float(c.get("time") or 0) for _, c in tries)
-            why = html.escape(message.splitlines()[0][:200] if message else "", quote=False).replace("|", "\\|")
-            lines.append(f"| {ICONS[status]} {status} | {shard} | {seconds:.0f} s | {why} |")
+            cells.append(f"{ICONS[status]} {seconds:.0f} s" if status != "skipped" else ICONS[status])
         overall = next((s for s in ICONS if s in results and s != "skipped"), "skipped")
         totals[overall] += 1
-        rows.append((list(ICONS).index(overall), f"<details><summary>{ICONS[overall]} {html.escape(title, quote=False)}</summary>\n\n"
-                     "| Result | Leg | Time | Why |\n|---|---|---|---|\n" + "\n".join(lines) + "\n\n</details>\n"))
+        rows.append((list(ICONS).index(overall), title, f"| {html.escape(title, quote=False)} | " + " | ".join(cells) + " |\n"))
 
     if len(sys.argv) > 3:
-        rows.sort(key=lambda r: r[0])
+        rows.sort(key=lambda r: r[:2])
+        why.sort(key=lambda w: w[:3])
         counts = " · ".join(f"{ICONS[s]} {n} {s}" for s, n in totals.items() if n)
+        # A leg's column headed by its ABI over its Android, to keep the table narrow
+        head = " | ".join(leg.replace(" · ", "<br>", 1) for leg in order)
         with open(sys.argv[3], "a", encoding="utf-8") as f:
-            f.write(f"## E2E\n\n{len(tests)} tests on {len(order)} legs: {counts}\n\n" + "".join(r for _, r in rows))
+            f.write(f"## E2E\n\n{len(tests)} tests on {len(order)} legs: {counts}\n\n")
+            f.write(f"| Test | {head} |\n|---|" + "---|" * len(order) + "\n" + "".join(r for *_, r in rows))
+            if why:
+                f.write("\n### Why\n\n")
+                for _, title, shard, status, message in why:
+                    f.write(f"<details><summary>{ICONS[status]} {html.escape(title, quote=False)} · {html.escape(shard, quote=False)}</summary>\n\n"
+                            f"```\n{(message or status)[:4000].replace('```', '` ` `')}\n```\n\n</details>\n")
+            f.write("\n### Legs\n\n| Leg | System image | Channel |\n|---|---|---|\n")
+            for shard in legs[::legs[0]["shards"]] if legs else []:
+                f.write(f"| {shard['name'].rsplit(' · ', 1)[0]} | android-{shard['image']};{shard['target']};{shard['arch']} | {shard['channel']} |\n")
     for title, message in failed:
         # A workflow command: its message one line, its % and line breaks escaped
         text = (message or "failed").replace("%", "%25").replace("\r", "").replace("\n", "%0A")

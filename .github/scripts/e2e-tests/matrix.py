@@ -10,11 +10,9 @@ Google's own system images (sys-img/<tag>/sys-img2-4.xml), each with the channel
   runs, and reads the host's registers, not the ARM ones it knows)
 - each leg in [SHARDS] jobs, each running its share of the tests (instrument.py): one emulator would take hours
 
-    matrix.py <gradle.properties>     prints {"include": [...]} for strategy.matrix (and the legs as a table in the
-                                      job's summary, on GitHub)
+    matrix.py <gradle.properties>     prints {"include": [...]} for strategy.matrix (merge.py's summary lists them)
 """
 import json
-import os
 import re
 import sys
 import urllib.request
@@ -122,14 +120,6 @@ def main():
             if levels:
                 leg(pick(all_images, abi, levels[-1]), "its newest image")
 
-    summary = os.environ.get("GITHUB_STEP_SUMMARY")
-    if summary:
-        with open(summary, "a", encoding="utf-8") as f:
-            f.write("### Emulator legs\n\n")
-            f.write(f"sdkMin {sdk_min}, sdkTarget {sdk_target}, each in {SHARDS} shards\n\n")
-            f.write("| Leg | System image | Channel |\n|---|---|---|\n")
-            for l in legs[::SHARDS]:
-                f.write(f"| {l['name'].rsplit(' · ', 1)[0]} | android-{l['image']};{l['target']};{l['arch']} | {l['channel']} |\n")
     print(json.dumps({"include": legs}))
 
 
