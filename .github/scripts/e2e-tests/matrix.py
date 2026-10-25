@@ -47,7 +47,7 @@ def images():
             token, target, abi, body = m.groups()
             if abi not in ABIS or "obsolete" in m.group(0)[:200]:
                 continue
-            channel = re.search(r'channelRef ref="([^"]+)"', body)
+            channel = re.search('channelRef ref="([^"]+)"', body)
             found.append((token, target, abi, CHANNELS.get(channel.group(1) if channel else "", "stable")))
     return found
 
@@ -55,7 +55,7 @@ def images():
 def platforms():
     """The SDK platforms there are (the emulator action installs platforms;android-<api-level>)."""
     xml = urllib.request.urlopen("https://dl.google.com/android/repository/repository2-3.xml", timeout=60).read().decode("utf-8")
-    return set(re.findall(r'path="platforms;android-([^"]+)"', xml))
+    return set(re.findall('path="platforms;android-([^"]+)"', xml))
 
 
 def release(token):
