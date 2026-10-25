@@ -116,12 +116,13 @@ jobs:
           emulator-boot-timeout: 900
           # The action's own, with reading a color buffer by DMA on: Android 37.0's graphics (mapper.ranchu) copies one only
           # that way and dies without it ("Assertion failed: !rcEnc->featureInfo()->hasReadColorBufferDma", the condition
-          # that held), and the runners' emulator (37.2) offers it only with both these (gfxstream's RenderControl.cpp).
-          # system_server went down on its first copy of one (a task's snapshot for Recents, as a test's activity closed),
-          # and every test after it with it; the canary's install with direct memory off
+          # that held), and the runners' emulator (37.2) offers it only with direct memory (on by default) and this
+          # (gfxstream's RenderControl.cpp). system_server went down on its first copy of one (a task's snapshot for
+          # Recents, as a test's activity closed), and every test after it with it; the canary's install with direct
+          # memory off
           emulator-options: >-
             -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-            -feature GLDirectMem,HasSharedSlotsHostMemoryAllocator
+            -feature HasSharedSlotsHostMemoryAllocator
           disable-animations: true
           script: bash .github/scripts/e2e-tests/run-tests.sh
 
