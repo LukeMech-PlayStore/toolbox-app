@@ -3,6 +3,9 @@ package org.lukemech.lmtoolbox.features.servers.mc_server
 import org.lukemech.lmtoolbox.linux.InstallResult
 import android.app.Application
 import android.content.Context
+import android.os.Process
+import android.util.Log
+import java.io.File
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +34,10 @@ import org.lukemech.lmtoolbox.linux.LinuxTasks
  * tunnel ([tunnel]) runs next to it.
  */
 object ServerRunner {
+    private const val TAG = "ServerRunner"
     private const val LOG_LINES = 500
+    /** How long a Java left running after its run has to go once killed (see [killLeftover]). */
+    private val KILL_WAIT = 10.seconds
     private const val RCON_PORT = 25575
     private val PLAYERS_EVERY = 20.seconds
     private const val SEED_TRIES = 10
@@ -203,6 +209,9 @@ object ServerRunner {
             )
             playersJob?.cancel()
             stopTunnel()
+            // Its Java gone with it, before it counts as stopped: PRoot stopped by a signal (the server killed) may
+            // leave what it ran running, its port held (the next start's "FAILED TO BIND")
+            killLeftover(app, pidFile)
             pidFile.delete()
             // Its files deleted meanwhile (the server, or the tool's data): what it wrote as it went too
             if (deleteAfter == profile.id) {
@@ -258,6 +267,21 @@ object ServerRunner {
                 pruneJava(app)
             }
         }
+    }
+
+    /**
+     * Kills the server's Java if it's still there once its run has ended: its process id in [pidFile] (the
+     * host's, PRoot keeps them), when that's still one of the app's but not the app itself (named after it).
+     * Waits until it's gone, a few seconds at most.
+     */
+    private suspend fun killLeftover(app: Context, pidFile: File) {
+        val pid = runCatching { pidFile.readText().trim().toInt() }.getOrNull()?.takeIf { it != Process.myPid() } ?: return
+        val proc = File("/proc/$pid")
+        val cmdline = runCatching { File(proc, "cmdline").readText() }.getOrNull() ?: return
+        if (cmdline.startsWith(app.packageName)) return
+        Log.w(TAG, "Its Java ($pid) outlived its run: killed")
+        Process.sendSignal(pid, Process.SIGNAL_KILL)
+        withTimeoutOrNull(KILL_WAIT) { while (proc.exists()) delay(100) }
     }
 
     /**
