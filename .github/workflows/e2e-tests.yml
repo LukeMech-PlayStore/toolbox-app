@@ -2,7 +2,8 @@ name: End-to-end tests
 
 # The app on emulators, every tool opened and gone through (app/src/androidTest): on the oldest Android it
 # supports (minSdk), the one it targets (targetSdk) and the newest there is (canary, 16 KB pages), on x86_64 and
-# x86 (the emulators GitHub's runners run; ARM translated on them can't run the Linux subsystem), each in shards. Failures come as annotations on the PR and in the job's summary (JUnit XML, mikepenz/action-junit-report);
+# x86 (the emulators GitHub's runners run; ARM translated on them can't run the Linux subsystem), each in shards. Failures come as annotations on the PR and in the report job's summary, every leg in one table
+# (JUnit XML, merged by merge.py, mikepenz/action-junit-report);
 # screenshots and logcat as artifacts. Every run tests everything: a Minecraft server on every Java, every loader.
 
 on:
@@ -120,12 +121,40 @@ jobs:
           emulator-options: -no-window -gpu ${{ matrix.gpu }} -no-snapshot -noaudio -no-boot-anim
           script: bash .github/scripts/e2e-tests/run-tests.sh
 
-      - name: Report
+      - name: Upload screenshots, logcat and raw results
         if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-results-${{ matrix.id }}
+          path: e2e-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+  # Every shard's results in one report, the legs in the plan's order (merge.py): one table in the summary, one check
+  report:
+    needs: [plan, test]
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Download the results
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: e2e-results-*
+          path: e2e-results
+
+      - name: Merge
+        env:
+          MATRIX: ${{ needs.plan.outputs.matrix }}
+        run: python3 .github/scripts/e2e-tests/merge.py "$MATRIX" e2e-results e2e-report.xml
+
+      - name: Report
         uses: mikepenz/action-junit-report@6ef3fdcfcd5f0b5d14df3e659ef19b8c6820f93d # v6.6.1
         with:
-          report_paths: e2e-results/junit/*.xml
-          check_name: "E2E · ${{ matrix.name }}"
+          report_paths: e2e-report.xml
+          check_name: E2E
           # A fork's pull request can't make check runs: annotations alone
           annotate_only: ${{ github.event.pull_request.head.repo.fork == true }}
           # Every test in the summary's table (passed, skipped with why, failed), not the failed alone
@@ -137,12 +166,3 @@ jobs:
           # A failed test is run once more (instrument.py): passing then, it's flaky, not failed
           check_retries: true
           fail_on_failure: true
-
-      - name: Upload screenshots, logcat and raw results
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: e2e-${{ matrix.id }}
-          path: e2e-results/
-          if-no-files-found: warn
-          retention-days: 14

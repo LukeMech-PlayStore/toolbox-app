@@ -8,6 +8,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import org.lukemech.lmtoolbox.linux.LinuxTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import java.io.File
+import java.util.concurrent.FutureTask
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 /** The device under test: screenshots, waiting. */
 object Device {
@@ -23,13 +26,28 @@ object Device {
 
     /** The screen as it is, as [name].png. */
     fun screenshot(name: String) {
+        if (screenshotsStuck) return
         runCatching {
-            val bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot() ?: return
+            // On a thread of its own, given up on after a while: the system's capture can wait forever (Android
+            // 37's emulators, their renderer asked for a buffer it has freed), and the test with it
+            val task = FutureTask { InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot() }
+            Thread(task, "e2e-screenshot").apply { isDaemon = true }.start()
+            val bitmap = try {
+                task.get(SCREENSHOT_TIMEOUT_S, TimeUnit.SECONDS)
+            } catch (_: TimeoutException) {
+                // Still waiting: the next ones would wait behind it, none taken from now on
+                screenshotsStuck = true
+                Log.w(E2eTest.TAG, "No screenshot $name: none came in $SCREENSHOT_TIMEOUT_S s, no more taken")
+                return
+            } ?: return
             val file = File(outputDir, "screenshots/${name.replace(Regex("""[^\w.\-]"""), "_")}.png")
             file.parentFile?.mkdirs()
             file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         }.onFailure { Log.w(E2eTest.TAG, "No screenshot $name", it) }
     }
+
+    private const val SCREENSHOT_TIMEOUT_S = 15L
+    @Volatile private var screenshotsStuck = false
 
     /**
      * Waits (polling, off the main thread: not for the UI to settle, a server takes minutes) until [condition]

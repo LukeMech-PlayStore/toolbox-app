@@ -31,26 +31,58 @@ START, OK, ERROR, FAILURE, IGNORED, ASSUMPTION = 1, 0, -1, -2, -3, -4
 # A class's whole run: MinecraftServerTest's every server type on every Java the longest
 CLASS_TIMEOUT = 300 * 60
 TEST_TIMEOUT = 60 * 60
+# A run that says nothing for this long is stuck (a test's waits say what they wait for every half a minute)
+IDLE_TIMEOUT = 15 * 60
 
 
 def instrument(runner, raw_path, args, timeout):
-    """`am instrument -w -r` with [args], each line written to [raw_path] with when it came; killed after [timeout] s."""
+    """
+    `am instrument -w -r` with [args], each line written to [raw_path] with when it came; killed after [timeout] s,
+    or once neither it nor the tests' log (E2E: each action, what's waited for every half a minute) has said
+    anything for [IDLE_TIMEOUT] s: stuck (e.g. the system's screen capture, on Android 37's emulators).
+    """
     command = " ".join(shlex.quote(a) for a in ["am", "instrument", "-w", "-r", *args, runner])
     with open(raw_path, "w", encoding="utf-8") as out:
         proc = subprocess.Popen(["adb", "shell", command], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 text=True, encoding="utf-8", errors="replace")
-        killed = threading.Event()
-        timer = threading.Timer(timeout, lambda: (killed.set(), proc.kill()))
-        timer.start()
+        # The tests' log from now on: each line of it something going on
+        log = subprocess.Popen(["adb", "logcat", "-T", "1", "-s", "E2E:I"], stdout=subprocess.PIPE,
+                               stderr=subprocess.DEVNULL, text=True, encoding="utf-8", errors="replace")
+        last = [time.time()]
+        why = []
+        done = threading.Event()
+
+        def follow_log():
+            for _ in log.stdout:
+                last[0] = time.time()
+
+        def watch():
+            start = time.time()
+            while not done.wait(30):
+                now = time.time()
+                if now - start > timeout:
+                    why.append(f"Killed after {timeout // 60} min")
+                elif now - last[0] > IDLE_TIMEOUT:
+                    why.append(f"Killed: nothing said for {IDLE_TIMEOUT // 60} min (stuck)")
+                else:
+                    continue
+                proc.kill()
+                return
+
+        threading.Thread(target=follow_log, daemon=True).start()
+        threading.Thread(target=watch, daemon=True).start()
         try:
             for line in proc.stdout:
+                last[0] = time.time()
                 out.write(f"{time.time():.3f}\t{line.rstrip()}\n")
                 out.flush()
         finally:
-            timer.cancel()
+            done.set()
+            log.kill()
             proc.wait()
-        if killed.is_set():
-            out.write(f"{time.time():.3f}\tINSTRUMENTATION_RESULT: shortMsg=Killed after {timeout // 60} min\n")
+        if why:
+            print(f"::warning title=E2E::{os.path.basename(raw_path)}: {why[0]}", flush=True)
+            out.write(f"{time.time():.3f}\tINSTRUMENTATION_RESULT: shortMsg={why[0]}\n")
 
 
 def parse(path):
