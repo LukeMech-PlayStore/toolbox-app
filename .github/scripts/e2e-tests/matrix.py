@@ -21,9 +21,10 @@ import urllib.request
 
 ABIS = ["x86_64", "x86"]
 TAGS = ["google_apis", "android"]
-# Among a release's images: Google APIs first (the device a user has), 4 KB pages before 16 KB ones (the newest minors
-# and canaries come in 16 KB alone)
-TARGET_ORDER = ["google_apis", "default", "google_apis_ps16k"]
+# Among a release's images: plain Android first (the app needs no Google APIs, and Android 37's Google APIs image takes
+# its system down right after it boots on the runners), else Google APIs (x86's API 30 and the canary have nothing
+# else); 4 KB pages before 16 KB ones (the newest minors and canaries come in 16 KB alone)
+TARGET_ORDER = ["default", "google_apis", "google_apis_ps16k"]
 CHANNELS = {"channel-0": "stable", "channel-1": "beta", "channel-2": "dev", "channel-3": "canary"}
 # The emulator's renderer: SwiftShader, as the emulator action's default; Android 37's releases' SurfaceFlinger aborts
 # on it ("Assertion failed: !rcEnc->featureInfo()->hasReadColorBufferDma"), taking the system down every 20 s or so
