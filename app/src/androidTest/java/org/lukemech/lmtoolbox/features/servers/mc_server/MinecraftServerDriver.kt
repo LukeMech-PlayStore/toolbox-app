@@ -40,6 +40,9 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         Device.waitFor("port $PORT freed by the server left running (its Java still there)", 2 * Device.MINUTE) {
             runCatching { ServerSocket(PORT).close() }.isSuccess
         }
+        // A server made that failed (or wasn't opened) is kept as a draft the new server's page starts from, its
+        // EULA accepted: the next one's tap would take that back
+        Installer.clear()
         Servers.list(context).forEach { Servers.delete(context, it.id) }
     }
 

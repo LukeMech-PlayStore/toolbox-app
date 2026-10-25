@@ -8,8 +8,10 @@ for mikepenz/action-junit-report (run-tests.sh calls it once the app and the tes
 - a crash ends its class's run: the test it was in fails with it, and those that hadn't run yet run one by one
 - a test that failed is run once more on its own; both tries are in the report (check_retries: one that
   passed the second time counts as flaky, not failed)
+- with [shard] of [shards]: its share of the tests alone, dealt one by one as listed (a long class, as the Minecraft
+  servers', shared among them all)
 
-    instrument.py <runner> <out dir> <suite name>
+    instrument.py <runner> <out dir> <suite name> [<shard> <shards>]
 
 Output: <out>/junit/<Class>.xml, the raw `am instrument -r` output of each run in <out>/raw/, each class's logcat
 in <out>/logcat/.
@@ -127,6 +129,7 @@ def any_of(cls, tests):
 
 def main():
     runner, out, suite_name = sys.argv[1:4]
+    shard, shards = (int(sys.argv[4]), int(sys.argv[5])) if len(sys.argv) > 5 else (0, 1)
     for d in ("raw", "junit", "logcat"):
         os.makedirs(os.path.join(out, d), exist_ok=True)
 
@@ -135,9 +138,10 @@ def main():
     instrument(runner, listing, ["-e", "log", "true", "-e", "notClass", "org.lukemech.lmtoolbox.e2e.DeviceSetup"], 10 * 60)
     listed, run_output = parse(listing)
     tests = {}
-    for cls, test, *_ in listed:
-        tests.setdefault(cls, []).append(test)
-    if not tests:
+    for i, (cls, test, *_) in enumerate(listed):
+        if i % shards == shard:
+            tests.setdefault(cls, []).append(test)
+    if not listed:
         write_junit(os.path.join(out, "junit", "setup.xml"), suite_name,
                     [("e2e.Setup", "listTests", "error", "No tests found:\n" + run_output[-3000:], 0.0)])
         print("::error title=E2E::No tests found")
@@ -149,7 +153,8 @@ def main():
         subprocess.run(["adb", "logcat", "-c"], check=False)
         raw = lambda what: os.path.join(out, "raw", f"{short}{what}.txt")
 
-        instrument(runner, raw(""), ["-e", "class", cls], CLASS_TIMEOUT)
+        # The class whole, or its tests of this shard's
+        instrument(runner, raw(""), ["-e", "class", cls] if shards == 1 else any_of(cls, names), CLASS_TIMEOUT)
         results, _ = parse(raw(""))
 
         # Those a crash kept from running: one by one

@@ -1,8 +1,8 @@
 name: End-to-end tests
 
 # The app on emulators, every tool opened and gone through (app/src/androidTest): on the oldest Android it
-# supports (minSdk), the one it targets (targetSdk) and the newest there is (canary, 16 KB pages), for each ABI it
-# ships. Failures come as annotations on the PR and in the job's summary (JUnit XML, mikepenz/action-junit-report);
+# supports (minSdk), the one it targets (targetSdk) and the newest there is (canary, 16 KB pages), on x86_64 (the
+# emulator GitHub's runners run; ARM translated on it can't run the Linux subsystem), each in shards. Failures come as annotations on the PR and in the job's summary (JUnit XML, mikepenz/action-junit-report);
 # screenshots and logcat as artifacts. Every run tests everything: a Minecraft server on every Java, every loader.
 
 on:
@@ -60,9 +60,8 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
-  # The legs: x86_64 and x86 on the app's oldest Android, its target and the newest canary, as Google's images are
-  # now (x86's newest instead of the last two), and ARM translated on x86_64's: see matrix.py, in the scripts'
-  # e2e-tests folder
+  # The legs: x86_64 on the app's oldest Android, its target and the newest canary, as Google's images are now, each
+  # in shards sharing the tests: see matrix.py, in the scripts' e2e-tests folder
   plan:
     runs-on: ubuntu-latest
     outputs:
@@ -79,8 +78,6 @@ jobs:
     needs: [plan, build]
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
-    # The ARM legs (the app under Google's ARM translator): tried, never failing the run
-    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
@@ -104,7 +101,8 @@ jobs:
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
           E2E_LEG: ${{ matrix.name }}
-          FORCE_ABI: ${{ matrix.force_abi }}
+          E2E_SHARD: ${{ matrix.shard }}
+          E2E_SHARDS: ${{ matrix.shards }}
         with:
           api-level: ${{ matrix.api }}
           system-image-api-level: ${{ matrix.image }}
@@ -117,6 +115,8 @@ jobs:
           disk-size: 16G
           emulator-boot-timeout: 900
           disable-animations: true
+          # The action's own, its renderer the leg's (matrix.py)
+          emulator-options: -no-window -gpu ${{ matrix.gpu }} -no-snapshot -noaudio -no-boot-anim
           script: bash .github/scripts/e2e-tests/run-tests.sh
 
       - name: Report

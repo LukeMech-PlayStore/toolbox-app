@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # The end-to-end tests on the running emulator (e2e-tests.yml, android-emulator-runner's script):
 #  1. the debug app installed as from Play: bundletool's local testing, the core module for real (PRoot is
-#     executed from nativeLibraryDir, see buildSrc's LocalTesting.kt), the other modules downloaded when a tool asks;
-#     FORCE_ABI: as if the device had that ABI alone (armeabi-v7a on a 64-bit image)
-#  2. the tests (app/src/androidTest) run by instrument.py: class by class, carrying on after a crash, failed ones retried
+#     executed from nativeLibraryDir, see buildSrc's LocalTesting.kt), the other modules downloaded when a tool asks
+#  2. the tests (app/src/androidTest) run by instrument.py: class by class, carrying on after a crash, failed ones retried;
+#     with E2E_SHARD of E2E_SHARDS, its share of them alone
 #  3. their results as JUnit XML (e2e-results/junit), screenshots and each class's logcat beside them
 # Always exits 0 once results are written: the report step fails the job on failed tests.
 #
-# Env: E2E_LEG (the matrix leg's name), FORCE_ABI, E2E_DIST (the build job's files)
+# Env: E2E_LEG (the matrix leg's name), E2E_SHARD and E2E_SHARDS (0 of 1: all of them), E2E_DIST (the build job's files)
 set -uo pipefail
 
 DIST=${E2E_DIST:-dist}
@@ -51,7 +51,7 @@ wait_ready() {
 wait_ready
 abis=$(adb shell getprop ro.product.cpu.abilist | tr -d '\r')
 sdk=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
-echo "Device: API $sdk, ABIs $abis${FORCE_ABI:+, installing as $FORCE_ABI}"
+echo "Device: API $sdk, ABIs $abis"
 adb logcat -G 16M || true
 # Awake, located (the compass), as a user's phone
 adb shell svc power stayon true || true
@@ -63,15 +63,6 @@ for try in 1 2 3; do
   [[ $try == 3 ]] && setup_failed "bundletool couldn't read the device"
   sleep 20
 done
-if [[ -n "${FORCE_ABI:-}" ]]; then
-  [[ ",$abis," == *",$FORCE_ABI,"* ]] || setup_failed "This image doesn't run $FORCE_ABI apps (its ABIs: $abis)"
-  python3 - spec.json "$FORCE_ABI" <<'EOF'
-import json, sys
-spec = json.load(open(sys.argv[1]))
-spec["supportedAbis"] = [sys.argv[2]]
-json.dump(spec, open(sys.argv[1], "w"))
-EOF
-fi
 # One key for the app's APKs and the tests' (they can only instrument an app signed as they are): made here, whatever
 # key Gradle signed the build with
 KEY=$(mktemp -d)/e2e.keystore
@@ -83,31 +74,10 @@ APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
   || setup_failed "bundletool couldn't build the APKs"
 "$APKSIGNER" sign --ks "$KEY" --ks-pass pass:android --ks-key-alias e2e --key-pass pass:android \
   --out tests.apk "$DIST/app-debug-androidTest.apk" || setup_failed "apksigner couldn't sign the tests"
-# FORCE_ABI: as bundletool's install-apks does (its InstallApksCommand), but for that ABI, which it'd take from the
-# device again (its first, x86_64), finding none of its APKs: the core's APKs installed with that ABI, the other
-# modules' (but the base's master) put where the app's local testing looks for them, what it emulated of them before
-# gone
-install_forced() {
-  rm -rf apks-core apks-all
-  "${BUNDLETOOL[@]}" extract-apks --apks=app.apks --device-spec=spec.json --modules=core --output-dir=apks-core || return 1
-  "${BUNDLETOOL[@]}" extract-apks --apks=app.apks --device-spec=spec.json --modules=_ALL_ --output-dir=apks-all || return 1
-  adb install-multiple -r -t --no-incremental --abi "$FORCE_ABI" apks-core/*.apk || return 1
-  local dir=/sdcard/Android/data/$APP/files/local_testing
-  find apks-all -name '*.apk' ! -name 'base-master*.apk' > pushed.txt
-  adb shell "rm -rf $dir && mkdir -p $dir" || return 1
-  while read -r apk; do adb push "$apk" "$dir/" > /dev/null || return 1; done < pushed.txt
-  adb shell "chmod 775 $dir" 2>/dev/null
-  adb shell run-as "$APP" rm -rf files/splitcompat 2>/dev/null
-  return 0
-}
 # Installed again once the system is back, when it went away in the middle (the package service restarting)
 install_app() {
   for try in 1 2 3 4 5; do
-    if [[ -n "${FORCE_ABI:-}" ]]; then
-      install_forced && return 0
-    else
-      "${BUNDLETOOL[@]}" install-apks --apks=app.apks --modules=core --allow-test-only && return 0
-    fi
+    "${BUNDLETOOL[@]}" install-apks --apks=app.apks --modules=core --allow-test-only && return 0
     adb shell pm path "$APP" 2>/dev/null | grep -q package: && return 1
     sleep 15; wait_ready
   done
@@ -142,7 +112,7 @@ echo "Installed: $(adb shell dumpsys package $APP | grep -m1 -E 'primaryCpuAbi' 
 # What they say they're doing (each test, each element tried, what's waited for) shown as they go
 adb logcat -v time -s E2E:I &
 LOGCAT=$!
-python3 "$HERE/instrument.py" "$RUNNER" "$OUT" "$LEG"
+python3 "$HERE/instrument.py" "$RUNNER" "$OUT" "$LEG" "${E2E_SHARD:-0}" "${E2E_SHARDS:-1}"
 kill $LOGCAT 2>/dev/null
 
 # 3. Screenshots (the app's external files: the instrumentation runs in its process)
