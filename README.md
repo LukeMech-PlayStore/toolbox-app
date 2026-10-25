@@ -266,8 +266,8 @@ API 30, the oldest and its newest. No ARM: GitHub's runners can't run an ARM emu
 x86_64 images can't run the Linux subsystem.
 
 **How.** Each leg runs in 3 shards. Each test goes to the shard with the least work so far, longest first, by how long
-it took before (`durations.json`, kept in the Actions cache: the report job saves each run's, and the next run restores
-the newest its branch can see, its own or main's; [`cron.yml`](.github/workflows/cron.yml)
+it took before (`durations.json`, kept in the Actions cache: the report job saves each run's, and the next run's plan job restores
+the newest its branch can see, its own or main's, for all its shards alike; [`cron.yml`](.github/workflows/cron.yml)
 restores main's every 3 days, before GitHub drops it unused), so the shards finish at about the same time. A new test counts as
 the median until it's measured. With no cache yet, the tests are dealt by the listing alone. On a shard,
 [`instrument.py`](.github/scripts/tests/e2e/instrument.py) runs the tests class by class, each in a fresh
