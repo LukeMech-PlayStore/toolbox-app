@@ -37,23 +37,29 @@ def names(run):
 
 
 def problems(sarif):
-    """(inspection, severity, path, line, column, message) for each problem, the baseline's own left out."""
+    """
+    (inspection, severity, path, line, column, message) for each problem, the baseline's own left out; the sanity
+    check's too (code Qodana couldn't resolve: a file it skipped the inspections of), kept apart from the results in
+    the run's properties.
+    """
     found = []
     for run in sarif.get("runs", []):
         rules = names(run)
-        for result in run.get("results", []):
+        sanity = (run.get("properties") or {}).get("qodana.sanity.results") or []
+        for result in run.get("results", []) + sanity:
             if result.get("baselineState") == "unchanged":
                 continue
             severity = (result.get("properties") or {}).get("qodanaSeverity") or LEVELS.get(result.get("level", "warning"), "High")
             location = ((result.get("locations") or [{}])[0]).get("physicalLocation") or {}
             region = location.get("region") or {}
+            message = ((result.get("message") or {}).get("text") or "").strip()
             found.append((
                 rules.get(result.get("ruleId"), result.get("ruleId") or "?"),
                 severity if severity in SEVERITIES else "High",
                 (location.get("artifactLocation") or {}).get("uri") or "",
                 region.get("startLine"),
                 region.get("startColumn"),
-                ((result.get("message") or {}).get("text") or "").strip(),
+                f"{message} (sanity check: the file wasn't inspected)" if result in sanity else message,
             ))
     return found
 

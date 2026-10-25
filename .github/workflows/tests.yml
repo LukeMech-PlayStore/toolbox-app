@@ -193,6 +193,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # The code Gradle generates (BuildConfig): Qodana only syncs the project, so the files using it would be unresolved
+      # (its sanity check's problems) and left uninspected. The Linux packages left out: nothing here needs them. Its
+      # Gradle home the one Qodana's sync uses next, so the dependencies are downloaded once
+      - name: Generate BuildConfig
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon :app:generateDebugBuildConfig -x :app:updateLinuxPackages
+
       # The plugins the IDE has next to Android's and the image lacks: Jetpack Compose (without it Kotlin's naming
       # inspection flags every @Composable, named as a type) and Android Design Tools (the profile's Compose and Glance
       # preview inspections). Qodana installs a qodana.yaml's plugins (Marketplace's builds for its IDE) before the
