@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_hdmi">HDMI</string>
+    <string name="fd_hdmi">19 pinów złącza typu A</string>
+    <string name="fk_hdmi">hdmi, typ a, tmds, ddc, edid, cec, hot plug, wideo, obraz, monitor, telewizor, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_hdmi_tmds">Para TMDS: dane jednego kanału koloru</string>
+    <string name="rf_hdmi_shield">Ekran sąsiedniej pary</string>
+    <string name="rf_hdmi_clock">Para zegara pikseli TMDS</string>
+    <string name="rf_hdmi_cec">Consumer Electronics Control: jeden pilot do wszystkich urządzeń</string>
+    <string name="rf_hdmi_utility">Zarezerwowany; HDMI 1.4 używa go dla kanału Ethernet i zwrotnego audio</string>
+    <string name="rf_hdmi_scl">Zegar DDC (I²C): przez niego odczytuje się EDID wyświetlacza</string>
+    <string name="rf_hdmi_sda">Dane DDC (I²C)</string>
+    <string name="rf_hdmi_ground">Masa DDC i CEC</string>
+    <string name="rf_hdmi_5v">+5 V ze źródła, co najmniej 55 mA</string>
+    <string name="rf_hdmi_hpd">Wykrycie podłączenia: wyświetlacz zgłasza źródłu swoją obecność</string>
+    <string name="rf_hdmi_note">Piny nieparzyste w jednym rzędzie, parzyste w drugim, między nimi</string>
+</resources>

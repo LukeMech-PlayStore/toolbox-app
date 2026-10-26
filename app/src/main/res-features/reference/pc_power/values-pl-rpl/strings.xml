@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_pc_power">Złącza zasilania PC</string>
+    <string name="fd_pc_power">ATX 24-pin, EPS i PCIe</string>
+    <string name="fk_pc_power">atx, 24 pin, 20+4, eps, eps12v, zasilanie procesora, pcie, pci-e, 6 pin, 8 pin, zasilacz, psu, ps_on, power good, kolory przewodów, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_pc_pwr_ok">Power good: napięcia zasilacza się ustaliły</string>
+    <string name="rf_pc_5vsb">Czuwanie: obecne, gdy zasilacz jest podłączony do sieci</string>
+    <string name="rf_pc_3v3_sense">W wielu zasilaczach także przewód pomiarowy +3,3 V (brązowy)</string>
+    <string name="rf_pc_ps_on">Zwarty do masy włącza zasilacz</string>
+    <string name="rf_pc_nc">Niepodłączony (−5 V w starszych zasilaczach)</string>
+    <string name="rf_pc_sense">Sense: zwarty do masy mówi karcie, że kabel jest podłączony</string>
+    <string name="rf_pc_atx_note">ATX12V 2.x, według numerów na wtyku: 1–12 w jednym rzędzie, 13–24 w drugim. Wtyk 20-pinowy to ten bez 11, 12, 23 i 24.</string>
+    <string name="rf_pc_eps_note">Złącze EPS12V procesora: masy w jednym rzędzie, +12 V w drugim. Nie mylić z PCIe 8-pin.</string>
+    <string name="rf_pc_pcie_note">Zasilanie karty graficznej: 75 W przez 6 pinów, 150 W przez 8</string>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_audio_jack">Wtyki audio (3,5 mm)</string>
+    <string name="fd_audio_jack">TRS i TRRS słuchawek z mikrofonem</string>
+    <string name="fk_audio_jack">gniazdo audio, wtyk, 3,5 mm, minijack, trs, trrs, ctia, ahj, omtp, słuchawki, zestaw słuchawkowy, mikrofon, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_jack_left">Kanał lewy</string>
+    <string name="rf_jack_right">Kanał prawy</string>
+    <string name="rf_jack_mic">Mikrofon</string>
+    <string name="rf_jack_ground">Masa (wspólna)</string>
+    <string name="rf_jack_note">Końcówka, pierścień, tuleja: od czubka wtyku</string>
+    <string name="rf_jack_ctia_note">CTIA (też AHJ): dziś większość telefonów, laptopów i słuchawek</string>
+    <string name="rf_jack_omtp_note">OMTP: starsze telefony; mikrofon i masa są zamienione</string>
+</resources>

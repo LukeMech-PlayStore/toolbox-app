@@ -1,0 +1,71 @@
+package org.lukemech.lmtoolbox.features.reference.pc_power
+
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ElectricalServices
+import androidx.compose.runtime.Composable
+import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.reference.common.Pin
+import org.lukemech.lmtoolbox.features.reference.common.PinKind.Control
+import org.lukemech.lmtoolbox.features.reference.common.PinKind.Ground
+import org.lukemech.lmtoolbox.features.reference.common.PinKind.Power
+import org.lukemech.lmtoolbox.features.reference.common.PinKind.Unused
+import org.lukemech.lmtoolbox.features.reference.common.PinoutSheet
+import org.lukemech.lmtoolbox.features.reference.common.ReferenceFeature
+import org.lukemech.lmtoolbox.features.reference.common.Wire
+import org.lukemech.lmtoolbox.features.reference.common.inRows
+import org.lukemech.lmtoolbox.features.reference.common.raw
+import org.lukemech.lmtoolbox.features.reference.common.res
+
+/** A PC power supply's connectors: ATX's 24-pin, the CPU's EPS 8-pin and the graphics card's PCIe 6 and 8-pin. */
+object PcPowerFeature : ReferenceFeature() {
+
+    override val route = "pc_power"
+    override val titleStringResId: Int = R.string.fp_pc_power
+    override val keywordsResId: Int = R.string.fk_pc_power
+    override val descriptionResId: Int = R.string.fd_pc_power
+    override val icon @Composable get() = Icons.Default.ElectricalServices
+
+    // ATX's wire colors, the same on every connector
+    private fun v33(n: Int) = Pin(n.toString(), "+3.3V", Power, wire = listOf(Wire.Orange))
+    private fun v5(n: Int) = Pin(n.toString(), "+5V", Power, wire = listOf(Wire.Red))
+    private fun v12(n: Int) = Pin(n.toString(), "+12V", Power, wire = listOf(Wire.Yellow))
+    private fun gnd(n: Int) = Pin(n.toString(), "COM", Ground, wire = listOf(Wire.Black))
+    private fun sense(n: Int, name: String) = Pin(n.toString(), name, Ground, res(R.string.rf_pc_sense), wire = listOf(Wire.Black))
+
+    override val sheets by lazy {
+        listOf(
+            PinoutSheet(
+                raw("ATX 24"),
+                listOf(
+                    v33(1), v33(2), gnd(3), v5(4), gnd(5), v5(6), gnd(7),
+                    Pin("8", "PWR_OK", Control, res(R.string.rf_pc_pwr_ok), wire = listOf(Wire.Grey)),
+                    Pin("9", "+5VSB", Power, res(R.string.rf_pc_5vsb), wire = listOf(Wire.Violet)),
+                    v12(10), v12(11), v33(12),
+                    v33(13).copy(description = res(R.string.rf_pc_3v3_sense)),
+                    Pin("14", "−12V", Power, wire = listOf(Wire.Blue)),
+                    gnd(15),
+                    Pin("16", "PS_ON#", Control, res(R.string.rf_pc_ps_on), wire = listOf(Wire.Green)),
+                    gnd(17), gnd(18), gnd(19),
+                    Pin("20", "NC", Unused, res(R.string.rf_pc_nc)),
+                    v5(21), v5(22), v5(23), gnd(24),
+                ).inRows(12, 12),
+                note = res(R.string.rf_pc_atx_note)
+            ),
+            PinoutSheet(
+                raw("EPS 8"),
+                listOf(gnd(1), gnd(2), gnd(3), gnd(4), v12(5), v12(6), v12(7), v12(8)).inRows(4, 4),
+                note = res(R.string.rf_pc_eps_note)
+            ),
+            PinoutSheet(
+                raw("PCIe 6"),
+                listOf(v12(1), v12(2), v12(3), gnd(4), sense(5, "Sense"), gnd(6)).inRows(3, 3),
+                note = res(R.string.rf_pc_pcie_note)
+            ),
+            PinoutSheet(
+                raw("PCIe 8"),
+                listOf(v12(1), v12(2), v12(3), sense(4, "Sense2"), gnd(5), sense(6, "Sense1"), gnd(7), gnd(8)).inRows(4, 4),
+                note = res(R.string.rf_pc_pcie_note)
+            ),
+        )
+    }
+}

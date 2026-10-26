@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_obd2">OBD-II</string>
+    <string name="fd_obd2">The car\'s diagnostic socket</string>
+    <string name="fk_obd2">obd2, obd-ii, obd, eobd, j1962, car, diagnostic, can bus, k-line, iso 9141, iso 15765, j1850, elm327, scanner, pinout, pins, connector, reference</string>
+    <string name="rf_obd_oem">Left to the car\'s maker</string>
+    <string name="rf_obd_j1850p">SAE J1850 bus + (PWM and VPW)</string>
+    <string name="rf_obd_j1850n">SAE J1850 bus − (PWM only)</string>
+    <string name="rf_obd_chassis">Chassis ground</string>
+    <string name="rf_obd_signal_gnd">Signal ground</string>
+    <string name="rf_obd_can">CAN bus (ISO 15765-4)</string>
+    <string name="rf_obd_k">K-line (ISO 9141-2, ISO 14230-4)</string>
+    <string name="rf_obd_l">L-line (ISO 9141-2, ISO 14230-4)</string>
+    <string name="rf_obd_battery">Battery +12 V, always on</string>
+    <string name="rf_obd_note">A car uses one or two of the buses, not all of them; most newer cars use CAN.</string>
+</resources>

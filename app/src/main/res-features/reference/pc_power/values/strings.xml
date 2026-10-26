@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_pc_power">PC power connectors</string>
+    <string name="fd_pc_power">ATX 24-pin, EPS and PCIe</string>
+    <string name="fk_pc_power">atx, 24 pin, 20+4, eps, eps12v, cpu power, pcie, pci-e, 6 pin, 8 pin, power supply, psu, ps_on, power good, wire colors, pinout, pins, connector, reference</string>
+    <string name="rf_pc_pwr_ok">Power good: the supply\'s voltages are steady</string>
+    <string name="rf_pc_5vsb">Standby: on whenever the supply is plugged in</string>
+    <string name="rf_pc_3v3_sense">Also +3.3 V\'s sense wire (brown) in many supplies</string>
+    <string name="rf_pc_ps_on">Pulled to ground, it switches the supply on</string>
+    <string name="rf_pc_nc">Not connected (−5 V in older supplies)</string>
+    <string name="rf_pc_sense">Sense: grounded, it tells the card the cable is in</string>
+    <string name="rf_pc_atx_note">ATX12V 2.x, as the plug\'s numbers read: 1–12 in one row, 13–24 in the other. The 20-pin plug is this without 11, 12, 23 and 24.</string>
+    <string name="rf_pc_eps_note">The CPU\'s EPS12V connector: grounds in one row, +12 V in the other. Don\'t mix it up with PCIe 8-pin.</string>
+    <string name="rf_pc_pcie_note">A graphics card\'s power: 75 W through 6 pins, 150 W through 8</string>
+</resources>
