@@ -2,6 +2,7 @@ package org.lukemech.lmtoolbox.helpers
 
 import org.lukemech.lmtoolbox.features.electronics.adc.AdcFeature
 import org.lukemech.lmtoolbox.features.electronics.battery_life.BatteryLifeFeature
+import org.lukemech.lmtoolbox.features.electronics.bjt.BjtFeature
 import org.lukemech.lmtoolbox.features.electronics.capacitor_charge.CapacitorChargeFeature
 import org.lukemech.lmtoolbox.features.electronics.coil.CoilFeature
 import org.lukemech.lmtoolbox.features.electronics.color_code.ColorCodeFeature
@@ -15,8 +16,10 @@ import org.lukemech.lmtoolbox.features.electronics.opamp.OpAmpFeature
 import org.lukemech.lmtoolbox.features.electronics.pcb_trace.PcbTraceFeature
 import org.lukemech.lmtoolbox.features.electronics.power.PowerFeature
 import org.lukemech.lmtoolbox.features.electronics.pt100.Pt100Feature
+import org.lukemech.lmtoolbox.features.electronics.range_converter.RangeConverterFeature
 import org.lukemech.lmtoolbox.features.electronics.rc_filter.RcFilterFeature
 import org.lukemech.lmtoolbox.features.electronics.reactance.ReactanceFeature
+import org.lukemech.lmtoolbox.features.electronics.resistor_ratio.ResistorRatioFeature
 import org.lukemech.lmtoolbox.features.electronics.regulator.RegulatorFeature
 import org.lukemech.lmtoolbox.features.electronics.rms.RmsFeature
 import org.lukemech.lmtoolbox.features.electronics.series_parallel.SeriesParallelFeature
@@ -58,9 +61,11 @@ object FeatureRegistry {
         ReactanceFeature,
         RcFilterFeature,
         VoltageDividerFeature,
+        ResistorRatioFeature,
         SeriesParallelFeature,
         CapacitorChargeFeature,
         OpAmpFeature,
+        BjtFeature,
         LedResistorFeature,
         ZenerFeature,
         RegulatorFeature,
@@ -75,6 +80,7 @@ object FeatureRegistry {
         DecibelFeature,
         FrequencyFeature,
         AdcFeature,
+        RangeConverterFeature,
         RmsFeature
     )
 
