@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_stroboscope">Stroboskop</string>
+    <string name="fk_stroboscope">stroboskop, strob, tachometr, obrotomierz, obroty, rpm, obr/min, prędkość obrotowa, obrót, częstotliwość, hz, błysk, latarka, lampa błyskowa, wentylator, silnik, koło, narzędzia</string>
+    <string name="fd_stroboscope">Zatrzymaj to, co się kręci</string>
+    <string name="f_strobe_rate">Błyska z częstotliwością</string>
+    <string name="f_strobe_rate_value">%1$s Hz · %2$s obr/min</string>
+    <string name="f_strobe_measured">Osiągnięta</string>
+    <string name="f_strobe_behind">Latarka nie nadąża za tą częstotliwością: błyska wolniej, jak widać wyżej.</string>
+    <string name="f_strobe_rate_field">Częstotliwość</string>
+    <string name="f_strobe_limited">Ograniczona do %1$s Hz (%2$s obr/min), najwięcej, ile latarka błyska.</string>
+    <string name="f_strobe_tap">Wystukaj tempo</string>
+    <string name="f_strobe_tap_desc">Stukaj z każdym obrotem lub uderzeniem: częstotliwość podąża za stuknięciami</string>
+    <string name="f_strobe_flash">Błyskaj</string>
+    <string name="f_strobe_flash_desc">Gaśnie, gdy opuścisz tę stronę</string>
+    <string name="f_strobe_no_torch">To urządzenie nie ma latarki, którą można błyskać.</string>
+    <string name="f_strobe_torch_busy">Nie można teraz przełączyć latarki: być może inna aplikacja używa aparatu.</string>
+    <string name="f_strobe_note">Oświetl to, co się obraca, i zmieniaj częstotliwość, aż wyda się nieruchome: przy tej częstotliwości obraca się raz na błysk. Latarka telefonu przełącza się powoli, więc częstotliwość jest ograniczona do %1$s Hz (%2$s obr/min), a wiele latarek przestaje nadążać wcześniej (osiągnięta częstotliwość jest widoczna podczas błyskania). Coś szybszego zatrzyma też błysk co drugi lub trzeci obrót: jego prędkość jest wtedy całkowitą wielokrotnością częstotliwości, którą znajdziesz przyciskiem ×2.</string>
+    <string name="f_strobe_warning">Migające światło może wywołać napad u osób z padaczką fotogenną.</string>
+</resources>

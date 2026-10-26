@@ -31,6 +31,7 @@ import org.lukemech.lmtoolbox.features.measure.light_meter.LightMeterFeature
 import org.lukemech.lmtoolbox.features.measure.magnetometer.MagnetometerFeature
 import org.lukemech.lmtoolbox.features.measure.ruler.RulerFeature
 import org.lukemech.lmtoolbox.features.measure.sound_meter.SoundMeterFeature
+import org.lukemech.lmtoolbox.features.measure.stroboscope.StroboscopeFeature
 import org.lukemech.lmtoolbox.features.measure.spirit_level.SpiritLevelFeature
 import org.lukemech.lmtoolbox.features.measure.vibration_meter.VibrationMeterFeature
 import org.lukemech.lmtoolbox.features.media.file_size.FileSizeFeature
@@ -51,6 +52,7 @@ object FeatureRegistry {
         LightMeterFeature,
         MagnetometerFeature,
         VibrationMeterFeature,
+        StroboscopeFeature,
         QrGenFeature,
         MetadataEditorFeature,
         CurrencyConverterFeature,
