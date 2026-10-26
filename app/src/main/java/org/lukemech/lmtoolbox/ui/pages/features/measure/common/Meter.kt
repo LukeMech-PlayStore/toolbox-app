@@ -72,15 +72,19 @@ fun SensorUpdates(
     }
 }
 
-/** A meter's reading, large, in [unit] (smaller beside it); [color] as it's judged (e.g. red when it clips). */
+/**
+ * A meter's reading, large, in [unit] (smaller beside it); [color] as it's judged (e.g. red when it clips), the
+ * primary one while [held] (see [HoldAction]), as in every meter.
+ */
 @Composable
-fun MeterReading(value: String, unit: String, color: Color = MaterialTheme.colorScheme.onBackground) {
+fun MeterReading(value: String, unit: String, held: Boolean, color: Color = MaterialTheme.colorScheme.onBackground) {
+    val shown by animateColorAsState(if (held) MaterialTheme.colorScheme.primary else color)
     Row(
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Text(value, style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.SemiBold), color = color)
+        Text(value, style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.SemiBold), color = shown)
         Text(
             unit,
             style = MaterialTheme.typography.titleLarge,

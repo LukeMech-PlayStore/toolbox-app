@@ -71,7 +71,6 @@ fun SoundMeterPage() {
     val scope = rememberCoroutineScope()
     var allowed by remember { mutableStateOf(SoundMeterFeature.hasMicPermission(context)) }
     var micDialog by remember { mutableStateOf(false) }
-    var calibrating by remember { mutableStateOf(false) }
     var holding by remember { mutableStateOf(false) }
     var aWeighted by remember { mutableStateOf(SoundMeterFeature.aWeighted(context)) }
     var calibration by remember { mutableDoubleStateOf(SoundMeterFeature.calibration(context)) }
@@ -87,11 +86,6 @@ fun SoundMeterPage() {
     val levels = remember { ReadingStats() }
     val meanSquares = remember { ReadingStats() }
 
-    fun calibrate(db: Double) {
-        calibration = db
-        SoundMeterFeature.setCalibration(context, db)
-    }
-
     fun reset() {
         levels.reset()
         meanSquares.reset()
@@ -99,9 +93,10 @@ fun SoundMeterPage() {
         clipped = false
     }
 
-    // Asked for again on return (e.g. from the permission dialog or the settings)
+    // Asked for again on return (e.g. from the permission dialog or the settings, the calibration's there)
     LifecycleResumeEffect(Unit) {
         allowed = SoundMeterFeature.hasMicPermission(context)
+        calibration = SoundMeterFeature.calibration(context)
         onPauseOrDispose {}
     }
     // The microphone only while the page is in sight: let go as it's left or the app goes to the background
@@ -148,7 +143,7 @@ fun SoundMeterPage() {
             )
 
             val current = shown(last?.level)
-            MeterReading(text(current), unit, color = if (clipped) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onBackground)
+            MeterReading(text(current), unit, held = holding, color = if (clipped) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onBackground)
             Note(stringResource(R.string.f_sound_clipped), visible = clipped)
             // Its scale in SPL; the history kept in dBFS, so it follows the calibration too
             LiveGraph(
@@ -173,22 +168,6 @@ fun SoundMeterPage() {
                     reset()
                 }
             )
-            FeatureButton(
-                title = stringResource(R.string.f_sound_calibration, "%+.1f".format(calibration)),
-                subtitle = stringResource(R.string.f_sound_calibration_desc),
-                icon = Icons.Default.Tune,
-                buttonContent = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = { calibrate(calibration - CALIBRATION_STEP) }) {
-                            Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.f_sound_calibration_lower))
-                        }
-                        IconButton(onClick = { calibrate(calibration + CALIBRATION_STEP) }) {
-                            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.f_sound_calibration_raise))
-                        }
-                    }
-                },
-                onClick = { calibrating = true }
-            )
             Note(
                 stringResource(
                     R.string.f_sound_note,
@@ -199,13 +178,50 @@ fun SoundMeterPage() {
     }
 
     if (micDialog) MicDialog(onDismiss = { micDialog = false })
+}
+
+/**
+ * Sound level meter setting: the calibration, a step at a time (− and +) or matched to a sound level meter
+ * (tapped: [CalibrationDialog], the microphone listened to while it's open).
+ */
+@Composable
+fun CalibrationSetting() {
+    val context = LocalContext.current
+    var calibration by remember { mutableDoubleStateOf(SoundMeterFeature.calibration(context)) }
+    var calibrating by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    fun calibrate(db: Double) {
+        calibration = db
+        SoundMeterFeature.setCalibration(context, db)
+    }
+
+    FeatureButton(
+        title = stringResource(R.string.f_sound_calibration, "%+.1f".format(calibration)),
+        subtitle = stringResource(R.string.f_sound_calibration_desc),
+        icon = Icons.Default.Tune,
+        buttonContent = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { calibrate(calibration - CALIBRATION_STEP) }) {
+                    Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.f_sound_calibration_lower))
+                }
+                IconButton(onClick = { calibrate(calibration + CALIBRATION_STEP) }) {
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.f_sound_calibration_raise))
+                }
+            }
+        },
+        onClick = { calibrating = true }
+    )
     if (calibrating) {
-        CalibrationDialog(
-            // What it reads without the calibration, to match the meter's reading
-            uncalibrated = last?.let { spl(it.level, it.fullScaleSpl, 0.0) },
-            onCalibrate = ::calibrate,
-            onDismiss = { calibrating = false }
-        )
+        // What it reads without the calibration, to match the meter's: the microphone only while it's open
+        var uncalibrated by remember { mutableStateOf<Double?>(null) }
+        LifecycleResumeEffect(Unit) {
+            val job = scope.launch {
+                SoundMeterFeature.record(context, SoundMeterFeature.aWeighted(context)) { uncalibrated = spl(it.level, it.fullScaleSpl, 0.0) }
+            }
+            onPauseOrDispose { job.cancel() }
+        }
+        CalibrationDialog(uncalibrated = uncalibrated, onCalibrate = ::calibrate, onDismiss = { calibrating = false })
     }
 }
 

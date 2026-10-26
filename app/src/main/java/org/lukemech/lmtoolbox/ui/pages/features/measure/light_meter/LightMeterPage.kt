@@ -95,9 +95,7 @@ fun LightMeterPage() {
             return@PageHeading
         }
         Column(verticalArrangement = RowArrangement) {
-            val primary = MaterialTheme.colorScheme.primary
-            val readingColor by animateColorAsState(if (holding) primary else MaterialTheme.colorScheme.onBackground)
-            MeterReading(shown?.let(::formatLux) ?: none, unit, color = readingColor)
+            MeterReading(shown?.let(::formatLux) ?: none, unit, held = holding)
             Results {
                 ResultRow(stringResource(R.string.f_light_foot_candles), shown?.let { "%.2f fc".format(footCandles(it)) } ?: none)
                 ResultRow(stringResource(R.string.f_meter_min), text(summary.first))

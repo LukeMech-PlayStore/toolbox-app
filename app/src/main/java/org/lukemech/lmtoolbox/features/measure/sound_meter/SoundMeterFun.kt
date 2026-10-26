@@ -21,6 +21,7 @@ import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.helpers.FeatureCategory
 import org.lukemech.lmtoolbox.helpers.PreferenceHelper
+import org.lukemech.lmtoolbox.ui.pages.features.measure.sound_meter.CalibrationSetting
 import org.lukemech.lmtoolbox.ui.pages.features.measure.sound_meter.SoundMeterPage
 
 /** Sound level meter: the microphone's level as approximate dB SPL. */
@@ -44,6 +45,13 @@ object SoundMeterFeature : AppFeature {
     const val S_MIC_ASKED = "sound_meter_mic_asked"
 
     override val preferenceKeys = listOf(S_CALIBRATION, S_A_WEIGHTING, S_MIC_ASKED)
+
+    override val hasSettingsContent get() = true
+
+    @Composable
+    override fun SettingsContent() {
+        CalibrationSetting()
+    }
 
     /** What the user's microphone reads off by, in dB (added to every reading; 0 until calibrated). */
     fun calibration(context: Context) = PreferenceHelper.get(context, S_CALIBRATION, 0f).toDouble()

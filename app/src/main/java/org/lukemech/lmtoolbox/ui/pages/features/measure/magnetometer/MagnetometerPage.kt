@@ -47,6 +47,7 @@ import org.lukemech.lmtoolbox.ui.components.OptionSetting
 import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.ResultRow
 import org.lukemech.lmtoolbox.ui.components.Results
+import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RevealSection
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SensorWarning
@@ -122,11 +123,34 @@ fun MagnetometerPage() {
                 calibrationIcon = Icons.Default.CompassCalibration,
                 missingMessage = R.string.f_magnet_missing_sensors_message
             )
-            MeterReading(field?.magnitude?.let { "%.1f".format(it) } ?: none, unit)
+            MeterReading(field?.magnitude?.let { "%.1f".format(it) } ?: none, unit, held = holding)
             Results {
                 ResultRow("X", text(field?.x))
                 ResultRow("Y", text(field?.y))
                 ResultRow("Z", text(field?.z))
+                // Detecting: the change from the zero, and its bar, with the other readings
+                Reveal(visible = detecting) {
+                    val shownDeviation = zero?.let { z -> field?.let { deviation(it.magnitude, z) } }
+                    val level by animateFloatAsState(
+                        targetValue = shownDeviation?.let { strength(it).toFloat() } ?: 0f,
+                        animationSpec = tween(150)
+                    )
+                    val error = MaterialTheme.colorScheme.error
+                    val barColor by animateColorAsState(if (level >= 0.5f) error else MaterialTheme.colorScheme.primary)
+                    Column {
+                        MainResult(
+                            stringResource(R.string.f_magnet_deviation),
+                            if (zero == null) stringResource(R.string.f_magnet_zeroing) else text(shownDeviation)
+                        )
+                        LinearProgressIndicator(
+                            progress = { level },
+                            color = barColor,
+                            strokeCap = StrokeCap.Round,
+                            drawStopIndicator = {},
+                            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp).height(8.dp)
+                        )
+                    }
+                }
             }
 
             SwitchButton(
@@ -141,26 +165,6 @@ fun MagnetometerPage() {
                 }
             )
             RevealSection(visible = detecting) {
-                val shownDeviation = zero?.let { z -> field?.let { deviation(it.magnitude, z) } }
-                val level by animateFloatAsState(
-                    targetValue = shownDeviation?.let { strength(it).toFloat() } ?: 0f,
-                    animationSpec = tween(150)
-                )
-                val error = MaterialTheme.colorScheme.error
-                val barColor by animateColorAsState(if (level >= 0.5f) error else MaterialTheme.colorScheme.primary)
-                Results {
-                    MainResult(
-                        stringResource(R.string.f_magnet_deviation),
-                        if (zero == null) stringResource(R.string.f_magnet_zeroing) else text(shownDeviation)
-                    )
-                    LinearProgressIndicator(
-                        progress = { level },
-                        color = barColor,
-                        strokeCap = StrokeCap.Round,
-                        drawStopIndicator = {},
-                        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp).height(8.dp)
-                    )
-                }
                 FeatureButton(
                     title = stringResource(R.string.f_magnet_recalibrate),
                     subtitle = stringResource(R.string.f_magnet_recalibrate_desc),
