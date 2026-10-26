@@ -282,10 +282,16 @@ if a test failed or didn't run (a shard that crashed or was canceled).
 **Inspections.** Alongside them, the `inspect` job inspects the code as Android Studio's Inspect Code does, with the
 project's profile (`.idea/inspectionProfiles`), in Qodana Community for Android's newest image, with the Jetpack
 Compose and Android Design Tools plugins added. It reports as soon as it's done, while the emulators still run
-([`report.py`](.github/scripts/tests/inspections/report.py)): every problem in the run's summary and as an annotation,
-Qodana's HTML report as the `inspections` artifact. Critical and high problems (the IDE's errors and warnings, an
-outdated library among them) fail it. Moderate, low and info problems (weak warnings, typos, grammar) are only
+([`report.py`](.github/scripts/tests/inspections/report.py)): every problem in the run's summary, and on its line
+through code scanning (the SARIF is uploaded, so problems also show in the pull request's changes and the Security
+tab). Qodana's HTML report is the `inspections` artifact. Critical and high problems (the IDE's errors and warnings,
+an outdated library among them) fail it. Moderate, low and info problems (weak warnings, typos, grammar) are only
 reported.
+
+**On a pull request.** The `comment` job ([`comment.py`](.github/scripts/tests/comment.py)) puts both reports in one
+comment: a line for each on top, the whole summaries folded under it. Every run updates the same comment, found by
+its hidden marker, instead of adding a new one. It's skipped for pull requests from forks and Dependabot, whose token
+can't comment.
 
 ```sh
 ./gradlew :app:installLocalTesting :app:installDebugAndroidTest   # on a connected device

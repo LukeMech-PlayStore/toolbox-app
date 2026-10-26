@@ -2,9 +2,9 @@
 """
 Qodana's SARIF as the inspect job's report (tests.yml), as Android Studio's Inspect Code shows its problems:
 
-- the job's summary: how many problems of each severity, a table of the inspections that found any (the worst
-  first), then where each found them, every problem linked to its line
-- an annotation for each problem, on its line (GitHub shows 10 of each kind on a step; the summary has them all)
+- the job's summary (the pull request's comment too, comment.py's): how many problems of each severity, a table of the
+  inspections that found any (the worst first), then where each found them, every problem linked to its line. Each
+  problem on its line is code scanning's (tests.yml uploads the SARIF), not an annotation of this job's
 - exits 1 if there's a problem of a [FAILING] severity (the IDE's errors and warnings, an outdated library's among
   them), or no SARIF (Qodana didn't get to write it); the rest (weak warnings, typos, grammar) only reported
 
@@ -15,13 +15,13 @@ import json
 import os
 import sys
 
-# Qodana's severities (the IDE's: Error, Warning, Weak warning, Typo...), the worst first: an icon and an annotation's kind
+# Qodana's severities (the IDE's: Error, Warning, Weak warning, Typo...), the worst first, and their icons
 SEVERITIES = {
-    "Critical": ("❌", "error"),
-    "High": ("⚠️", "warning"),
-    "Moderate": ("🔸", "warning"),
-    "Low": ("🔹", "notice"),
-    "Info": ("ℹ️", "notice"),
+    "Critical": "❌",
+    "High": "⚠️",
+    "Moderate": "🔸",
+    "Low": "🔹",
+    "Info": "ℹ️",
 }
 # A result without Qodana's severity: by its SARIF level
 LEVELS = {"error": "Critical", "warning": "High", "note": "Moderate", "none": "Info"}
@@ -64,14 +64,6 @@ def problems(sarif):
     return found
 
 
-def escape(value, extra=""):
-    """A workflow command's value: its % and line breaks escaped (and [extra]: a property's , and :)."""
-    value = value.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
-    for c in extra:
-        value = value.replace(c, f"%{ord(c):02X}")
-    return value
-
-
 def main():
     try:
         with open(sys.argv[1], encoding="utf-8") as f:
@@ -92,7 +84,7 @@ def main():
     if len(sys.argv) > 2:
         server, repo, sha = (os.environ.get(k, "") for k in ("GITHUB_SERVER_URL", "GITHUB_REPOSITORY", "GITHUB_SHA"))
         counts = " · ".join(
-            f"{SEVERITIES[s][0]} {n} {s.lower()}" for s in order if (n := sum(1 for p in found if p[1] == s))
+            f"{SEVERITIES[s]} {n} {s.lower()}" for s in order if (n := sum(1 for p in found if p[1] == s))
         )
         with open(sys.argv[2], "a", encoding="utf-8") as f:
             f.write("## Inspections\n\n")
@@ -104,24 +96,15 @@ def main():
                     "Qodana's HTML report (Inspect Code's table) is in the run's `inspections` artifact.\n\n"
                     "| Inspection | Severity | Problems |\n|---|---|---|\n")
             for inspection, its in by_inspection.items():
-                f.write(f"| {html.escape(inspection, quote=False)} | {SEVERITIES[its[0][1]][0]} {its[0][1]} | {len(its)} |\n")
+                f.write(f"| {html.escape(inspection, quote=False)} | {SEVERITIES[its[0][1]]} {its[0][1]} | {len(its)} |\n")
             f.write("\n### Where\n\n")
             for inspection, its in by_inspection.items():
-                f.write(f"<details><summary>{SEVERITIES[its[0][1]][0]} {html.escape(inspection, quote=False)} · {len(its)}</summary>\n\n")
+                f.write(f"<details><summary>{SEVERITIES[its[0][1]]} {html.escape(inspection, quote=False)} · {len(its)}</summary>\n\n")
                 for _, _, path, line, _, message in its:
                     where = f"{path}:{line}" if line else path
                     link = f"{server}/{repo}/blob/{sha}/{path}" + (f"#L{line}" if line else "")
                     f.write(f"- [{html.escape(where, quote=False)}]({link}): {html.escape(message, quote=False)}\n")
                 f.write("\n</details>\n")
-    for inspection, severity, path, line, column, message in found:
-        props = [f"title={escape(inspection, ',:')}"]
-        if path:
-            props.insert(0, f"file={escape(path, ',:')}")
-        if line:
-            props.append(f"line={line}")
-        if column:
-            props.append(f"col={column}")
-        print(f"::{SEVERITIES[severity][1]} {','.join(props)}::{escape(message or inspection)}")
     sys.exit(1 if any(p[1] in FAILING for p in found) else 0)
 
 
