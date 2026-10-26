@@ -57,7 +57,7 @@ import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.LiveGraph
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterReading
-import org.lukemech.lmtoolbox.ui.pages.features.measure.common.ResetAction
+import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
 
 /** The graph's last 30 s, a reading every SoundMeterFeature.BLOCK_MS. */
 private const val HISTORY = 30_000 / SoundMeterFeature.BLOCK_MS
@@ -72,6 +72,7 @@ fun SoundMeterPage() {
     var allowed by remember { mutableStateOf(SoundMeterFeature.hasMicPermission(context)) }
     var micDialog by remember { mutableStateOf(false) }
     var calibrating by remember { mutableStateOf(false) }
+    var holding by remember { mutableStateOf(false) }
     var aWeighted by remember { mutableStateOf(SoundMeterFeature.aWeighted(context)) }
     var calibration by remember { mutableDoubleStateOf(SoundMeterFeature.calibration(context)) }
     // Tried again by a tap on its bar, when the microphone couldn't be had
@@ -108,6 +109,8 @@ fun SoundMeterPage() {
         val job = if (!allowed) null else scope.launch {
             unavailable = false
             val recording = SoundMeterFeature.record(context, aWeighted) { reading ->
+                // Held: what it shows stays as it was
+                if (holding) return@record
                 last = reading
                 clipped = reading.clipped
                 levels.add(reading.level)
@@ -125,7 +128,7 @@ fun SoundMeterPage() {
     fun text(db: Double?) = db?.let { "%.1f".format(it) } ?: none
     val unit = stringResource(if (aWeighted) R.string.f_sound_unit_a else R.string.f_sound_unit_z)
 
-    PageHeading(title = stringResource(R.string.fp_sound_meter), action = { ResetAction(::reset) }) {
+    PageHeading(title = stringResource(R.string.fp_sound_meter), action = { HoldAction(holding) { holding = it } }) {
         Column(verticalArrangement = RowArrangement) {
             PromptBar(
                 visible = !allowed,

@@ -6,15 +6,15 @@
     <string name="f_strobe_rate">Flashing at</string>
     <string name="f_strobe_rate_value">%1$s Hz · %2$s RPM</string>
     <string name="f_strobe_measured">Reached</string>
-    <string name="f_strobe_behind">The torch can\'t keep up with this rate: it flashes more slowly, as shown above.</string>
+    <string name="f_strobe_behind">The torch can\'t keep up</string>
     <string name="f_strobe_rate_field">Rate</string>
-    <string name="f_strobe_limited">Limited to %1$s Hz (%2$s RPM), the most the torch flashes at.</string>
+    <string name="f_strobe_limited">Limited to %1$s Hz (%2$s RPM)</string>
     <string name="f_strobe_tap">Tap tempo</string>
-    <string name="f_strobe_tap_desc">Tap with each turn or beat: the rate follows your taps</string>
+    <string name="f_strobe_tap_desc">Tap with each turn</string>
     <string name="f_strobe_flash">Flash</string>
-    <string name="f_strobe_flash_desc">Off as you leave this page</string>
-    <string name="f_strobe_no_torch">This device has no torch to flash.</string>
-    <string name="f_strobe_torch_busy">The torch can\'t be switched now: another app may be using the camera.</string>
-    <string name="f_strobe_note">Shine it on what turns and change the rate until it seems to stand still: at that rate, it turns once a flash. A phone\'s torch switches slowly, so the rate is capped at %1$s Hz (%2$s RPM), and many torches stop keeping up sooner (the rate reached is shown while it flashes). For something faster, a flash every second or third turn freezes it too: its speed is then a whole multiple of the rate, found with ×2.</string>
+    <string name="f_strobe_flash_desc">Off when you leave</string>
+    <string name="f_strobe_no_torch">This device has no torch.</string>
+    <string name="f_strobe_torch_busy">The torch is busy: another app may be using the camera.</string>
+    <string name="f_strobe_note">Change the rate until what turns seems to stand still. Up to %1$s Hz (%2$s RPM).</string>
     <string name="f_strobe_warning">Flashing light can trigger seizures in people with photosensitive epilepsy.</string>
 </resources>

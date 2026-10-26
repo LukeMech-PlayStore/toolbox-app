@@ -9,7 +9,7 @@
     <string name="f_compass_altitude_value" translatable="false">%1$d m</string>
     <string name="f_compass_altitude_accuracy" translatable="false">±%1$d m</string>
     <string name="f_compass_info_band">The faint part of the shaft above the fill is how far the altitude may be off: it lies somewhere along the shaft between the fill\'s top and the faint part\'s.</string>
-    <string name="f_compass_info_title">Reading</string>
+    <string name="f_compass_info_title">How to read it</string>
     <string name="f_compass_info_heading">Heading: the angle from magnetic north, clockwise.</string>
     <string name="f_compass_info_altitude">Altitude: meters above sea level (m a.s.l.), from GPS.</string>
     <string name="f_compass_info_accuracy">Current GPS accuracy: ±%1$d m</string>
@@ -29,4 +29,7 @@
     <string name="w_compass_desc">A compass that turns live while switched on. Tap it to switch.</string>
     <string name="w_compass_live">Compass widget is on</string>
     <string name="w_compass_live_desc">Open the compass</string>
+    <string name="f_compass_heading">Heading</string>
+    <string name="f_compass_altitude">Altitude</string>
+    <string name="f_compass_accuracy">Accuracy</string>
 </resources>

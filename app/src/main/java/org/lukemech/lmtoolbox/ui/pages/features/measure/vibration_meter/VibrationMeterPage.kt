@@ -36,7 +36,7 @@ import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SensorWarning
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.LiveGraph
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterReading
-import org.lukemech.lmtoolbox.ui.pages.features.measure.common.ResetAction
+import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.SensorUpdates
 
 /** The trace takes a point this often (ms): the largest motion since the last one, so no shake is missed. */
@@ -73,6 +73,7 @@ fun VibrationMeterPage() {
     var analysis by remember { mutableStateOf(Analysis(null, null, null, null)) }
     val peaks = remember { ReadingStats() }
     var maxPeak by remember { mutableStateOf<Double?>(null) }
+    var holding by remember { mutableStateOf(false) }
 
     // As fast as the sensor goes: the frequency it can tell is up to half its rate
     SensorUpdates(sensorType, SensorManager.SENSOR_DELAY_FASTEST) { event ->
@@ -96,6 +97,8 @@ fun VibrationMeterPage() {
                 delay(TRACE_MS)
                 val n = minOf(fresh[0], window.size)
                 fresh[0] = 0
+                // Held: the trace and the numbers stay as they were (the readings go on coming)
+                if (holding) continue
                 if (n > 0) trace = (trace + peak(window.axis(0, n), window.axis(1, n), window.axis(2, n)).toFloat()).takeLast(TRACE)
                 if (++points % ANALYSIS_EVERY == 0) analysis = analyse(window)?.also { result ->
                     result.peak?.let {
@@ -114,12 +117,7 @@ fun VibrationMeterPage() {
 
     PageHeading(
         title = stringResource(R.string.fp_vibration_meter),
-        action = {
-            ResetAction {
-                peaks.reset()
-                maxPeak = null
-            }
-        }
+        action = { HoldAction(holding) { holding = it } }
     ) {
         Column(verticalArrangement = RowArrangement) {
             // Only the missing sensor: the motion's readings have no calibration to ask for (the spirit

@@ -51,6 +51,7 @@ import org.lukemech.lmtoolbox.ui.components.RevealSection
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SensorWarning
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
+import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterReading
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.SensorUpdates
 
@@ -67,6 +68,7 @@ fun MagnetometerPage() {
     var field by remember { mutableStateOf<Field?>(null) }
     var accuracy by remember { mutableIntStateOf(SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) }
     var detecting by remember { mutableStateOf(false) }
+    var holding by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf(Feedback.Tone) }
     val baseline = remember { Baseline() }
     var zero by remember { mutableStateOf<Double?>(null) }
@@ -78,6 +80,8 @@ fun MagnetometerPage() {
     SensorUpdates(Sensor.TYPE_MAGNETIC_FIELD, SensorManager.SENSOR_DELAY_GAME, onAccuracy = { accuracy = it }) { event ->
         // Taken from every reading too: accuracy callbacks come rarely and late (as the compass does)
         accuracy = event.accuracy
+        // Held: the field and its change stay as they were
+        if (holding) return@SensorUpdates
         val now = Field(event.values[0].toDouble(), event.values[1].toDouble(), event.values[2].toDouble())
         if (detecting) {
             baseline.add(now.magnitude)
@@ -93,10 +97,10 @@ fun MagnetometerPage() {
         latestDeviation[0] = 0.0
     }
 
-    // The tone or the buzz only while detecting on a page in sight
+    // The tone or the buzz only while detecting (not held) on a page in sight
     val scope = rememberCoroutineScope()
-    LifecycleResumeEffect(detecting, feedback) {
-        val job = if (!detecting) null else when (feedback) {
+    LifecycleResumeEffect(detecting, feedback, holding) {
+        val job = if (!detecting || holding) null else when (feedback) {
             Feedback.Off -> null
             Feedback.Tone -> scope.launch { MagnetometerFeature.playTone { toneFrequency(latestDeviation[0]) } }
             Feedback.Buzz -> scope.launch { MagnetometerFeature.buzz(context) { buzzInterval(latestDeviation[0]) } }
@@ -108,7 +112,7 @@ fun MagnetometerPage() {
     val unit = stringResource(R.string.f_magnet_unit)
     fun text(value: Double?) = value?.let { "%.1f %s".format(it, unit) } ?: none
 
-    PageHeading(title = stringResource(R.string.fp_magnetometer)) {
+    PageHeading(title = stringResource(R.string.fp_magnetometer), action = { HoldAction(holding) { holding = it } }) {
         Column(verticalArrangement = RowArrangement) {
             SensorWarning(
                 hasSensors = hasSensor,

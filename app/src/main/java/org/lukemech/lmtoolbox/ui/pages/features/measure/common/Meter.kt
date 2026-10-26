@@ -5,6 +5,8 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,7 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -87,11 +90,21 @@ fun MeterReading(value: String, unit: String, color: Color = MaterialTheme.color
     }
 }
 
-/** A PageHeading's action starting a meter's min, max and average over. */
+/**
+ * A PageHeading's action holding a meter's readings where they are ([holding]: everything it shows stays put,
+ * to read it off), and letting them go on; in the primary color while it holds.
+ */
 @Composable
-fun ResetAction(onClick: () -> Unit) {
-    IconButton(onClick = onClick) {
-        Icon(Icons.Default.RestartAlt, contentDescription = stringResource(R.string.f_meter_reset))
+fun HoldAction(holding: Boolean, onHoldingChange: (Boolean) -> Unit) {
+    val tint by animateColorAsState(if (holding) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+    IconButton(onClick = { onHoldingChange(!holding) }) {
+        Crossfade(holding, label = "hold") { held ->
+            Icon(
+                if (held) Icons.Default.PlayArrow else Icons.Default.Pause,
+                contentDescription = stringResource(if (held) R.string.f_meter_resume else R.string.f_meter_hold),
+                tint = tint
+            )
+        }
     }
 }
 

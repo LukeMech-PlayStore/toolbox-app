@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,9 +37,8 @@ import org.lukemech.lmtoolbox.ui.components.ResultRow
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SectionTitle
-import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterReading
-import org.lukemech.lmtoolbox.ui.pages.features.measure.common.ResetAction
+import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.SensorUpdates
 
 /**
@@ -87,9 +84,9 @@ fun LightMeterPage() {
     PageHeading(
         title = stringResource(R.string.fp_light_meter),
         action = {
-            ResetAction {
-                stats.reset()
-                summary = Triple(null, null, null)
+            HoldAction(holding) {
+                holding = it
+                if (!it) shown = lux
             }
         }
     ) {
@@ -107,16 +104,6 @@ fun LightMeterPage() {
                 ResultRow(stringResource(R.string.f_meter_max), text(summary.second))
                 ResultRow(stringResource(R.string.f_meter_avg), text(summary.third))
             }
-            SwitchButton(
-                title = stringResource(R.string.f_light_hold),
-                subtitle = stringResource(R.string.f_light_hold_desc),
-                icon = Icons.Default.PauseCircle,
-                checked = holding,
-                onCheckedChange = {
-                    holding = it
-                    if (!it) shown = lux
-                }
-            )
             SectionTitle(stringResource(R.string.f_light_references))
             References(current = shown?.let { referenceFor(it) })
             Note(stringResource(R.string.f_light_note))

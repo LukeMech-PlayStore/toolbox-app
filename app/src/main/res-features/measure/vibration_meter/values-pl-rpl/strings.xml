@@ -3,11 +3,11 @@
     <string name="fp_vibration_meter">Miernik drgań</string>
     <string name="fk_vibration_meter">miernik drgań, wibrometr, drgania, wibracje, akcelerometr, przyspieszenie, trzęsienie, rms, szczyt, częstotliwość, fft, maszyna, silnik, sejsmometr, g, narzędzia</string>
     <string name="fd_vibration_meter">Jak bardzo drga?</string>
-    <string name="f_vibration_missing_sensors_message">Nie znaleziono akcelerometru wymaganego do działania miernika drgań.</string>
-    <string name="f_vibration_rms">RMS (ostatnia sekunda)</string>
-    <string name="f_vibration_peak">Szczyt (ostatnia sekunda)</string>
+    <string name="f_vibration_missing_sensors_message">Nie znaleziono akcelerometru.</string>
+    <string name="f_vibration_rms">RMS</string>
+    <string name="f_vibration_peak">Szczyt</string>
     <string name="f_vibration_max_peak">Najwyższy szczyt</string>
     <string name="f_vibration_frequency">Główna częstotliwość</string>
     <string name="f_vibration_sample_rate">Częstość czujnika</string>
-    <string name="f_vibration_note">Połóż telefon płasko na tym, co drga; grawitacja jest odejmowana. Główna częstotliwość pochodzi z odczytów akcelerometru, więc nie przekroczy połowy częstości czujnika: do %1$s Hz na tym telefonie; szybsze drgania pokażą się jako niższa częstotliwość albo wcale.</string>
+    <string name="f_vibration_note">Połóż telefon płasko na tym, co drga. Częstotliwości do %1$s Hz.</string>
 </resources>

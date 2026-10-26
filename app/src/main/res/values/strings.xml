@@ -34,7 +34,6 @@
     <!-- Shared by the measuring features and their widgets (the widgets' settings and service); each feature's own are in res-features/<Feature> -->
     <string name="f_missing_sensors_title">Initialization error</string>
     <!-- The meters' readings (sound, light, vibration) -->
-    <string name="f_meter_reset">Start over</string>
     <string name="f_meter_min">Min</string>
     <string name="f_meter_max">Max</string>
     <string name="f_meter_avg">Average</string>
@@ -209,4 +208,6 @@
     <string name="ec_iout">Load current</string>
     <string name="ec_period">Period</string>
     <string name="ec_copper">Copper</string>
+    <string name="f_meter_hold">Hold</string>
+    <string name="f_meter_resume">Resume</string>
 </resources>
