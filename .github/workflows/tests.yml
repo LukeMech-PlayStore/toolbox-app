@@ -230,12 +230,11 @@ jobs:
 
   # The code inspected as Android Studio's Inspect Code does: IntelliJ's and Android's inspections with the project's
   # profile (.idea/inspectionProfiles), in Qodana Community for Android's image (no token, its Cloud not used), its
-  # Gradle sync with the runner's Android SDK (the image's has only android-33). Not waiting for anything, nor
-  # anything waiting for it (the comment job asks how it went): alone at the bottom of the run's graph's first column,
-  # under build. Reported while the emulators still run (report.py): the summary, this job failed if there's any; the
-  # problems that fail it on their lines by code scanning (the SARIF uploaded, those alone); Qodana's HTML report
-  # (Inspect Code's table) and SARIF as an artifact. Its newest release, pulled on every run (Dependabot doesn't
-  # update a job's container image), as the IDE's inspections are kept current
+  # Gradle sync with the runner's Android SDK (the image's has only android-33). Not waiting for anything, it's
+  # reported while the emulators still run (report.py): the summary, this job failed if there's any; the problems that
+  # fail it on their lines by code scanning (the SARIF uploaded, those alone); Qodana's HTML report (Inspect Code's
+  # table) and SARIF as an artifact. Its newest release, pulled on every run (Dependabot doesn't update a job's
+  # container image), as the IDE's inspections are kept current
   inspect:
     runs-on: ubuntu-latest
     # Code scanning's: the SARIF uploaded
@@ -321,39 +320,20 @@ jobs:
           category: qodana
 
   # On a pull request: the E2E tests' and the inspections' summaries in one comment (comment.py), the same one updated
-  # by every run (found by its hidden marker), not a new one each time. Once both are done, whatever they came to: after
-  # the report, the inspections waited for here (they don't hold up the graph: see the inspect job); not when the run's
-  # canceled (a newer one comments instead), nor from a fork or Dependabot (their token can't comment)
+  # by every run (found by its hidden marker), not a new one each time. Once both are done, whatever they came to; not
+  # when the run's canceled (a newer one comments instead), nor from a fork or Dependabot (their token can't comment)
   comment:
-    needs: report
+    needs: [report, inspect]
     if: >-
       !cancelled() && github.event_name == 'pull_request'
       && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
-      actions: read
       contents: read
       pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      # How the inspect job went, once it has: done long before the emulators as a rule, else waited for (half an hour
-      # at most: none then, its line in the comment says it didn't run)
-      - name: Wait for the inspections
-        id: inspect
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          for _ in $(seq 90); do
-            job=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" \
-              --jq '.jobs[] | select(.name == "inspect") | "\(.status) \(.conclusion)"')
-            if [ "${job%% *}" = completed ]; then
-              echo "result=${job#* }" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            sleep 20
-          done
 
       # A job that didn't get to write its summary: none (its line in the comment says so)
       - name: Download the summaries
@@ -371,7 +351,7 @@ jobs:
           COMMIT: ${{ github.event.pull_request.head.sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           E2E_RESULT: ${{ needs.report.result }}
-          INSPECT_RESULT: ${{ steps.inspect.outputs.result }}
+          INSPECT_RESULT: ${{ needs.inspect.result }}
         run: |
           python3 .github/scripts/tests/comment.py summaries/e2e.md summaries/inspections.md comment.md
           id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
