@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_light_meter">Luksomierz</string>
+    <string name="fk_light_meter">luksomierz, miernik światła, luks, lx, natężenie oświetlenia, jasność, światło, oświetlenie, fotometr, czujnik, narzędzia</string>
+    <string name="fd_light_meter">Jak tu jasno?</string>
+    <string name="f_light_foot_candles">Stopoświece</string>
+    <string name="f_light_hold">Zatrzymaj</string>
+    <string name="f_light_hold_desc">Zachowaj odczyt, aby odczytać go z dala od światła</string>
+    <string name="f_light_references">Dla porównania</string>
+    <string name="f_light_ref_moonlight">Pełnia księżyca w pogodną noc</string>
+    <string name="f_light_ref_living_room">Oświetlenie salonu</string>
+    <string name="f_light_ref_office">Oświetlenie biurowe</string>
+    <string name="f_light_ref_overcast">Pochmurny dzień</string>
+    <string name="f_light_ref_shade">Światło dzienne, poza słońcem</string>
+    <string name="f_light_ref_sunlight">Bezpośrednie słońce</string>
+    <string name="f_light_note">Czujnik światła jest z przodu, przy aparacie lub pod ekranem: skieruj ekran ku światłu. Służy do ustawiania jasności ekranu, więc odczyty mogą odbiegać o kilkadziesiąt procent, a niektóre czujniki nie sięgają pełnego słońca.</string>
+    <string name="f_light_missing">To urządzenie nie ma czujnika światła, więc nie ma czym mierzyć światła.</string>
+</resources>

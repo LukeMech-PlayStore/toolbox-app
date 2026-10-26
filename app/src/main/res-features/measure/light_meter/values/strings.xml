@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_light_meter">Light meter</string>
+    <string name="fk_light_meter">light meter, lux, lx, illuminance, brightness, light, luxmeter, foot-candle, lighting, photometer, sensor, tools</string>
+    <string name="fd_light_meter">How bright is it?</string>
+    <string name="f_light_unit" translatable="false">lx</string>
+    <string name="f_light_foot_candles">Foot-candles</string>
+    <string name="f_light_hold">Hold</string>
+    <string name="f_light_hold_desc">Keep the reading, to read it off away from the light</string>
+    <string name="f_light_references">For comparison</string>
+    <string name="f_light_ref_moonlight">Full moon on a clear night</string>
+    <string name="f_light_ref_living_room">Living room lights</string>
+    <string name="f_light_ref_office">Office lighting</string>
+    <string name="f_light_ref_overcast">Overcast day</string>
+    <string name="f_light_ref_shade">Daylight, out of the sun</string>
+    <string name="f_light_ref_sunlight">Direct sunlight</string>
+    <string name="f_light_note">The light sensor is on the front, by the camera or under the screen: face the screen to the light. It\'s made for setting the screen\'s brightness, so readings may be off by tens of percent, and some sensors stop short of full sunlight.</string>
+    <string name="f_light_missing">This device has no light sensor, so there\'s nothing to measure light with.</string>
+</resources>
