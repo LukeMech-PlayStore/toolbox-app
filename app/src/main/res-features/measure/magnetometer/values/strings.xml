@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_magnetometer">Magnetic field</string>
+    <string name="fk_magnetometer">magnetic field, magnetometer, metal detector, metal, magnet, tesla, microtesla, µT, gauss, iron, steel, stud finder, emf, tools</string>
+    <string name="fd_magnetometer">Find metal and magnets</string>
+    <string name="f_magnet_unit" translatable="false">µT</string>
+    <string name="f_magnet_missing_sensors_message">The magnetometer the magnetic field needs was not found.</string>
+    <string name="f_magnet_calibration_title">Magnetometer calibration required</string>
+    <string name="f_magnet_calibration_message">Move your phone in a figure-eight motion, away from metal, until the accuracy improves.</string>
+    <string name="f_magnet_detector">Metal detector</string>
+    <string name="f_magnet_detector_desc">Tells how much iron, steel or a magnet nearby changes the field</string>
+    <string name="f_magnet_deviation">Change</string>
+    <string name="f_magnet_zeroing">Zeroing…</string>
+    <string name="f_magnet_recalibrate">Zero here</string>
+    <string name="f_magnet_recalibrate_desc">Away from metal: the change is counted from the field here</string>
+    <string name="f_magnet_feedback">Signal</string>
+    <string name="f_magnet_feedback_off">None</string>
+    <string name="f_magnet_feedback_tone">Tone, higher as it grows</string>
+    <string name="f_magnet_feedback_buzz">Vibration, faster as it grows</string>
+    <string name="f_magnet_detector_note">Move the phone\'s top slowly over the surface, without turning it. It finds iron and steel (a nail, a pipe, a stud in a wall) a few centimeters away, and magnets farther; aluminum, copper and gold it can\'t. Zero it again when it drifts. The vibration motor has a magnet too, so the tone disturbs the reading less.</string>
+    <string name="f_magnet_note">The Earth\'s own field is 25–65 µT, depending on where you are. X runs to the right of the screen, Y to its top, Z out of it.</string>
+</resources>

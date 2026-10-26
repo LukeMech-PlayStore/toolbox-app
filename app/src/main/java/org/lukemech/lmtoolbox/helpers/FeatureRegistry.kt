@@ -28,6 +28,7 @@ import org.lukemech.lmtoolbox.features.electronics.zener.ZenerFeature
 import org.lukemech.lmtoolbox.features.finance.currencyconv.CurrencyConverterFeature
 import org.lukemech.lmtoolbox.features.measure.compass.CompassFeature
 import org.lukemech.lmtoolbox.features.measure.light_meter.LightMeterFeature
+import org.lukemech.lmtoolbox.features.measure.magnetometer.MagnetometerFeature
 import org.lukemech.lmtoolbox.features.measure.ruler.RulerFeature
 import org.lukemech.lmtoolbox.features.measure.sound_meter.SoundMeterFeature
 import org.lukemech.lmtoolbox.features.measure.spirit_level.SpiritLevelFeature
@@ -47,6 +48,7 @@ object FeatureRegistry {
         CompassFeature,
         SoundMeterFeature,
         LightMeterFeature,
+        MagnetometerFeature,
         QrGenFeature,
         MetadataEditorFeature,
         CurrencyConverterFeature,

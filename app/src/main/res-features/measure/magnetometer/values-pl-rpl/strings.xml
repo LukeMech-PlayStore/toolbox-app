@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_magnetometer">Pole magnetyczne</string>
+    <string name="fk_magnetometer">pole magnetyczne, magnetometr, wykrywacz metalu, wykrywacz metali, metal, magnes, tesla, mikrotesla, µT, gaus, żelazo, stal, wykrywacz profili, narzędzia</string>
+    <string name="fd_magnetometer">Znajdź metal i magnesy</string>
+    <string name="f_magnet_missing_sensors_message">Nie znaleziono magnetometru wymaganego do pomiaru pola magnetycznego.</string>
+    <string name="f_magnet_calibration_title">Magnetometr wymaga kalibracji</string>
+    <string name="f_magnet_calibration_message">Poruszaj telefonem w kształcie ósemki, z dala od metalu, aż dokładność wzrośnie.</string>
+    <string name="f_magnet_detector">Wykrywacz metalu</string>
+    <string name="f_magnet_detector_desc">Pokazuje, jak bardzo żelazo, stal lub magnes w pobliżu zmienia pole</string>
+    <string name="f_magnet_deviation">Zmiana</string>
+    <string name="f_magnet_zeroing">Zerowanie…</string>
+    <string name="f_magnet_recalibrate">Zeruj tutaj</string>
+    <string name="f_magnet_recalibrate_desc">Z dala od metalu: zmiana będzie liczona od pola w tym miejscu</string>
+    <string name="f_magnet_feedback">Sygnał</string>
+    <string name="f_magnet_feedback_off">Brak</string>
+    <string name="f_magnet_feedback_tone">Dźwięk, coraz wyższy</string>
+    <string name="f_magnet_feedback_buzz">Wibracje, coraz szybsze</string>
+    <string name="f_magnet_detector_note">Przesuwaj górę telefonu powoli nad powierzchnią, nie obracając go. Wykrywa żelazo i stal (gwóźdź, rurę, profil w ścianie) z kilku centymetrów, a magnesy z dalszej odległości; aluminium, miedzi ani złota nie wykryje. Wyzeruj go ponownie, gdy odczyt dryfuje. Silniczek wibracji też ma magnes, więc dźwięk mniej zakłóca odczyt.</string>
+    <string name="f_magnet_note">Własne pole Ziemi ma 25–65 µT, zależnie od miejsca. Oś X biegnie w prawo ekranu, Y ku jego górze, a Z na zewnątrz ekranu.</string>
+</resources>
