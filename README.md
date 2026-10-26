@@ -158,7 +158,7 @@ The code is in [`app/…/linux/`](app/src/main/java/org/lukemech/lmtoolbox/linux
 | `LinuxTasks.kt`     | Every command, installation and update as a task: the bottom bar, the notification, cancelling          |
 | `LinuxScripts.kt`   | Installs the tools' scripts (their modules' assets) into the subsystem                                  |
 | `InstallPrompt.kt`  | Asks before installing what a tool needs now                                                            |
-| `parts/`            | `Java`, `Tunnel` and `Bore`: the APIs of the parts a tool picks among or turns on                      |
+| `parts/`            | `Java`, `Tunnel` and `Bore`: the APIs of the parts a tool picks among or turns on                       |
 
 From UI code, use `LinuxTasks.run` or `runInBackground` (and `runService` for what runs until it's stopped,
 e.g. a server). A task carries the tool that started it (`LinuxTask.source`), which titles it and opens its

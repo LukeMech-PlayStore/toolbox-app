@@ -49,7 +49,6 @@ import org.lukemech.lmtoolbox.features.servers.mc_server.MinecraftServerFeature
 import org.lukemech.lmtoolbox.features.servers.mc_server.Network
 import org.lukemech.lmtoolbox.features.servers.mc_server.ServerProfile
 import org.lukemech.lmtoolbox.features.servers.mc_server.ServerRunner
-import org.lukemech.lmtoolbox.features.servers.mc_server.Servers
 import org.lukemech.lmtoolbox.helpers.ResourceScope
 import org.lukemech.lmtoolbox.linux.parts.Bore
 import org.lukemech.lmtoolbox.linux.parts.Tunnel
@@ -80,7 +79,7 @@ internal fun StatusTab(profile: ServerProfile, run: ServerRunner.Run?, onTunnelS
     val lan = remember(run?.phase, networks) { Network.lanAddresses(context) }
     val tailnet = remember(run?.phase, networks) { Network.tailscaleAddresses(context) }
     // MagicDNS's names, as they're looked up (the addresses until then, or without it)
-    val tailnetNames by produceState(emptyMap<String, String>(), tailnet) {
+    val tailnetNames by produceState(emptyMap(), tailnet) {
         value = withContext(Dispatchers.IO) { tailnet.mapNotNull { ip -> Network.tailscaleName(ip)?.let { ip to it } }.toMap() }
     }
     val hasToken = remember(profile.id, run?.phase) { ServerRunner.tunnelOf(context, profile).hasToken }

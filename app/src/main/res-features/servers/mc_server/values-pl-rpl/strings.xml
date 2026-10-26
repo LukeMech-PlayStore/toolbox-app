@@ -69,7 +69,7 @@
     <string name="f_Mc_bore_server">Serwer Bore</string>
     <string name="f_Mc_bore_server_desc">bore.pub albo twój własny (np. bore.example.com)</string>
     <string name="f_Mc_bore_secret">Sekret</string>
-    <string name="f_Mc_bore_secret_desc">Sekret twojego serwera (bore server --secret), jeśli go ma</string>
+    <string name="f_Mc_bore_secret_desc" tools:ignore="TypographyDashes">Sekret twojego serwera (bore server --secret), jeśli go ma</string>
     <string name="f_Mc_tunnel">Tunel Cloudflare</string>
     <string name="f_Mc_tunnel_short">Tunel</string>
     <string name="f_Mc_tunnel_connected">Połączony (%1$d)</string>
