@@ -23,4 +23,6 @@
     <string name="f_Srv_save">Save</string>
     <string name="f_Srv_saved">Saved</string>
     <string name="f_Srv_token_remove">Remove the token</string>
+    <string name="f_Srv_share">Share</string>
+    <string name="f_Srv_qr">QR code</string>
 </resources>

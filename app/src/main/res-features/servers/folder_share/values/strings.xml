@@ -1,0 +1,70 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="f_Fs_phase_running">Sharing</string>
+    <string name="f_Fs_phase_stopped">Not shared</string>
+    <string name="f_Fs_phase_failed">Stopped by an error</string>
+    <string name="f_Fs_start">Share</string>
+    <string name="f_Fs_stop">Stop</string>
+    <string name="f_Fs_folder">Folder</string>
+    <string name="f_Fs_folder_pick">Pick a folder to share</string>
+    <string name="f_Fs_folder_gone">The folder is gone, or the app may no longer read it: pick it again</string>
+    <string name="f_Fs_stop_first">Stop sharing to change it</string>
+    <string name="f_Fs_port">Port</string>
+    <string name="f_Fs_port_desc">From 1024 to 65535</string>
+    <string name="f_Fs_port_taken">Port %1$d is in use by another app: pick another</string>
+    <string name="f_Fs_open_at">Where to open it</string>
+    <string name="f_Fs_open_at_desc">In any browser. On the same network, a QR code is quickest.</string>
+    <string name="f_Fs_tailscale_none">Turn on the Tailscale app: devices on your tailnet open it at its address</string>
+    <string name="f_Fs_tailscale_desc">Only devices on your tailnet with Tailscale on can open it here; not anyone else. The name needs MagicDNS, the IP always works.</string>
+    <string name="f_Fs_internet">From anywhere</string>
+    <string name="f_Fs_internet_none">Turn on Bore or a Cloudflare tunnel</string>
+    <string name="f_Fs_internet_note">Anyone with the address can open it: set a password.</string>
+    <string name="f_Fs_bore_enable">Share it from anywhere with Bore</string>
+    <string name="f_Fs_bore_enable_desc">No account, nothing to set up: starts with the share</string>
+    <!-- bore.pub is a host name, not a sentence ending in "bore." -->
+    <!--suppress GrazieInspection -->
+    <string name="f_Fs_bore_desc">Bore gives the share an address on a public Bore server, e.g. http://bore.pub:41234, over plain HTTP (not encrypted). The public one, bore.pub, is free, but nobody promises it\'s up; your own server (bore server) works too.</string>
+    <string name="f_Fs_cloudflare_enable">Cloudflare quick tunnel</string>
+    <string name="f_Fs_cloudflare_enable_desc">An HTTPS address of its own, no account: starts with the share</string>
+    <string name="f_Fs_cloudflare_desc">A new random address on trycloudflare.com each time it starts, encrypted. Cloudflare offers quick tunnels for trying things out: nobody promises they stay up.</string>
+    <string name="f_Fs_tunnel_with_share">Starts with the share</string>
+    <string name="f_Fs_section_folder">What to share</string>
+    <string name="f_Fs_section_options">Options</string>
+    <string name="f_Fs_uploads">Uploads</string>
+    <string name="f_Fs_uploads_desc">Others can add files to the folder; nothing is replaced</string>
+    <string name="f_Fs_auth">Password</string>
+    <string name="f_Fs_auth_desc">A name and password asked for first, for all of it</string>
+    <string name="f_Fs_auth_unset">Set a password: until then, anyone can open it</string>
+    <string name="f_Fs_user">Name</string>
+    <string name="f_Fs_user_desc">Empty: any name</string>
+    <string name="f_Fs_password">Password</string>
+    <string name="f_Fs_password_unset">Not set</string>
+    <string name="f_Fs_idle">Stop when idle</string>
+    <string name="f_Fs_idle_never">Never</string>
+    <string name="f_Fs_idle_minutes">After %1$d min with no requests</string>
+    <string name="f_Fs_idle_hours">After %1$d h with no requests</string>
+    <string name="f_Fs_stat_connected">Connected</string>
+    <string name="f_Fs_stat_requests">Requests</string>
+    <string name="f_Fs_recent">Lately</string>
+    <string name="f_Fs_recent_none">Nobody has opened it yet</string>
+    <string name="f_Fs_via_bore">Through Bore</string>
+    <string name="f_Fs_via_cloudflare">Through Cloudflare</string>
+    <string name="f_Fs_battery_note">The screen goes off as usual; the phone stays awake while the folder is shared.</string>
+    <string name="f_Fs_notification_title">Sharing %1$s</string>
+    <plurals name="f_Fs_connected">
+        <item quantity="one">%1$d connected</item>
+        <item quantity="other">%1$d connected</item>
+    </plurals>
+    <!-- The folder's web page, in the app's language as the share starts -->
+    <string name="f_Fs_web_empty">Nothing here yet</string>
+    <string name="f_Fs_web_zip">Download all (ZIP)</string>
+    <string name="f_Fs_web_download">Download</string>
+    <string name="f_Fs_web_upload">Upload files</string>
+    <string name="f_Fs_web_uploading">Uploading %1$s…</string>
+    <string name="f_Fs_web_uploaded">Uploaded</string>
+    <string name="f_Fs_web_upload_failed">Couldn\'t upload</string>
+    <string name="f_Fs_web_footer">Shared from a phone with %1$s</string>
+
+    <string name="fp_FolderShare">Folder share</string>
+    <string name="fk_FolderShare">share, folder, files, http, web server, browser, download, upload, lan, wifi, transfer, send files, video, zip, tunnel, bore, cloudflare, tailscale, qr</string>
+    <string name="fd_FolderShare">A folder of yours in any browser</string>
+</resources>

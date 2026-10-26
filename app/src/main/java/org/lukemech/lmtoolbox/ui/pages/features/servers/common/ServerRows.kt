@@ -10,7 +10,11 @@ import android.net.Network as AndroidNetwork
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.widget.Toast
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -18,11 +22,18 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.QrCode2
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -38,6 +49,7 @@ import kotlinx.coroutines.delay
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.servers.common.Reach
 import org.lukemech.lmtoolbox.helpers.AppFeature
+import org.lukemech.lmtoolbox.helpers.QrCode
 import org.lukemech.lmtoolbox.linux.LinuxParts
 import org.lukemech.lmtoolbox.linux.LinuxTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
@@ -119,21 +131,79 @@ internal fun uptime(since: Long): String {
     else stringResource(R.string.f_Srv_uptime_m, minutes)
 }
 
-/** An address to type (or open), copied with a tap. */
+/**
+ * An address to type (or open), copied with a tap; [shareable] (a link, e.g. the folder share's): sent to
+ * another app, or shown as a QR code ([QrDialog]) for another phone to open, by its buttons.
+ */
 @Composable
-internal fun AddressButton(title: String, address: String, icon: ImageVector) {
+internal fun AddressButton(title: String, address: String, icon: ImageVector, shareable: Boolean = false) {
     val context = LocalContext.current
+    var qr by remember { mutableStateOf(false) }
     // The address large, what it's for small above it
     FeatureButton(
         title = title,
         subtitle = address,
         titleSubtitleSwap = true,
         icon = icon,
-        buttonContent = {
-            Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.f_Srv_copy), tint = MaterialTheme.colorScheme.primary)
+        buttonContent = if (shareable) {
+            {
+                IconButton(onClick = { share(context, title, address) }) {
+                    Icon(Icons.Default.Share, contentDescription = stringResource(R.string.f_Srv_share), tint = MaterialTheme.colorScheme.primary)
+                }
+            }
+        } else {
+            { Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.f_Srv_copy), tint = MaterialTheme.colorScheme.primary) }
         },
+        buttonContent2 = if (shareable) {
+            {
+                IconButton(onClick = { qr = true }) {
+                    Icon(Icons.Default.QrCode2, contentDescription = stringResource(R.string.f_Srv_qr), tint = MaterialTheme.colorScheme.primary)
+                }
+            }
+        } else null,
+        buttonsInColumn = !shareable,
         onClick = { copy(context, address) }
     )
+    if (qr) QrDialog(title, address) { qr = false }
+}
+
+/** [text] as a QR code (dark on white, its quiet zone round it, whatever the theme), large; it's copied with a tap too. */
+@Composable
+internal fun QrDialog(title: String, text: String, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val code = remember(text) { runCatching { QrCode.encode(text) }.getOrNull() }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                code?.let { c ->
+                    Canvas(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White)
+                    ) {
+                        // Four modules of quiet zone each side, as readers want
+                        val modules = c.size + 8
+                        val cell = size.width / modules
+                        for (y in 0 until c.size) for (x in 0 until c.size) {
+                            if (c[x, y]) drawRect(Color.Black, Offset((x + 4) * cell, (y + 4) * cell), Size(cell + 0.5f, cell + 0.5f))
+                        }
+                    }
+                }
+                Text(text, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, modifier = Modifier.clickable { copy(context, text) })
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(android.R.string.ok)) } }
+    )
+}
+
+/** [text] sent to another app (the share sheet), [title] what it is. */
+private fun share(context: Context, title: String, text: String) {
+    val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text).putExtra(Intent.EXTRA_SUBJECT, title)
+    runCatching { context.startActivity(Intent.createChooser(send, title).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
 }
 
 /** The Tailscale app, to connect the phone to its tailnet; its page on Play if it isn't installed. */
@@ -176,11 +246,14 @@ internal fun PartPackage(source: AppFeature, part: String) {
     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) { PackageTable(listOf(row)) }
 }
 
-/** A text setting: its value under its title; a tap edits it in a dialog. */
+/**
+ * A text setting: its value under its title; a tap edits it in a dialog ([filter]: what's typed as it's kept,
+ * e.g. a number's digits alone; [valid]: whether it can be saved).
+ */
 @Composable
 internal fun TextSetting(
     title: String, value: String, icon: ImageVector, subtitle: String? = null, keyboard: KeyboardType = KeyboardType.Text,
-    mark: RowColors? = null, onSave: (String) -> Unit
+    mark: RowColors? = null, filter: (String) -> String = { it }, valid: (String) -> Boolean = { true }, onSave: (String) -> Unit
 ) {
     var editing by remember { mutableStateOf(false) }
     val colors = mark ?: RowColors.default
@@ -191,7 +264,7 @@ internal fun TextSetting(
         colors = colors,
         onClick = { editing = true }
     )
-    if (editing) EditDialog(title, value, subtitle, keyboard, onDismiss = { editing = false }) {
+    if (editing) EditDialog(title, value, subtitle, keyboard, filter = filter, valid = valid, onDismiss = { editing = false }) {
         editing = false
         onSave(it)
     }
@@ -200,9 +273,10 @@ internal fun TextSetting(
 @Composable
 internal fun EditDialog(
     title: String, value: String, note: String?, keyboard: KeyboardType,
-    secret: Boolean = false, valid: (String) -> Boolean = { true }, onDismiss: () -> Unit, onSave: (String) -> Unit
+    secret: Boolean = false, filter: (String) -> String = { it }, valid: (String) -> Boolean = { true },
+    onDismiss: () -> Unit, onSave: (String) -> Unit
 ) {
-    var text by remember { mutableStateOf(value) }
+    var text by remember { mutableStateOf(filter(value)) }
     val ok = valid(text)
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -211,7 +285,8 @@ internal fun EditDialog(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 InputField(
                     value = text,
-                    onValueChange = { text = it },
+                    // As it's kept: a number's field never holds letters, pasted or typed on a keyboard
+                    onValueChange = { text = filter(it) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = keyboard, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { if (ok) onSave(text) }),

@@ -1,0 +1,72 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="f_Fs_phase_running">Udostępniany</string>
+    <string name="f_Fs_phase_stopped">Nieudostępniany</string>
+    <string name="f_Fs_phase_failed">Zatrzymany przez błąd</string>
+    <string name="f_Fs_start">Udostępnij</string>
+    <string name="f_Fs_stop">Zatrzymaj</string>
+    <string name="f_Fs_folder">Folder</string>
+    <string name="f_Fs_folder_pick">Wybierz folder do udostępnienia</string>
+    <string name="f_Fs_folder_gone">Folderu już nie ma albo aplikacja nie może go czytać: wybierz go ponownie</string>
+    <string name="f_Fs_stop_first">Zatrzymaj udostępnianie, by to zmienić</string>
+    <string name="f_Fs_port">Port</string>
+    <string name="f_Fs_port_desc">Od 1024 do 65535</string>
+    <string name="f_Fs_port_taken">Port %1$d zajmuje inna aplikacja: wybierz inny</string>
+    <string name="f_Fs_open_at">Gdzie go otworzyć</string>
+    <string name="f_Fs_open_at_desc">W dowolnej przeglądarce. W tej samej sieci najszybciej kodem QR.</string>
+    <string name="f_Fs_tailscale_none">Włącz aplikację Tailscale: urządzenia z twojego tailnetu otworzą go pod jej adresem</string>
+    <string name="f_Fs_tailscale_desc">Tu otworzą go tylko urządzenia z twojego tailnetu z włączonym Tailscale; nikt inny. Nazwa wymaga MagicDNS, IP działa zawsze.</string>
+    <string name="f_Fs_internet">Z dowolnego miejsca</string>
+    <string name="f_Fs_internet_none">Włącz Bore albo tunel Cloudflare</string>
+    <string name="f_Fs_internet_note">Każdy, kto zna adres, może go otworzyć: ustaw hasło.</string>
+    <string name="f_Fs_bore_enable">Udostępniaj wszędzie przez Bore</string>
+    <string name="f_Fs_bore_enable_desc">Bez konta, nic do ustawiania: uruchamia się z udostępnianiem</string>
+    <!-- bore.pub is a host name, not a sentence ending in "bore." -->
+    <!--suppress GrazieInspection -->
+    <string name="f_Fs_bore_desc">Bore daje udostępnianemu folderowi adres na publicznym serwerze Bore, np. http://bore.pub:41234, przez zwykłe HTTP (bez szyfrowania). Publiczny bore.pub jest darmowy, ale nikt nie obiecuje, że działa; twój własny serwer (bore server) też się nada.</string>
+    <string name="f_Fs_cloudflare_enable">Szybki tunel Cloudflare</string>
+    <string name="f_Fs_cloudflare_enable_desc">Własny adres HTTPS, bez konta: uruchamia się z udostępnianiem</string>
+    <string name="f_Fs_cloudflare_desc">Przy każdym uruchomieniu nowy, losowy adres na trycloudflare.com, szyfrowany. Cloudflare daje szybkie tunele do wypróbowania: nikt nie obiecuje, że będą działać.</string>
+    <string name="f_Fs_tunnel_with_share">Uruchomi się z udostępnianiem</string>
+    <string name="f_Fs_section_folder">Co udostępnić</string>
+    <string name="f_Fs_section_options">Opcje</string>
+    <string name="f_Fs_uploads">Przesyłanie</string>
+    <string name="f_Fs_uploads_desc">Inni mogą dodawać pliki do folderu; nic nie zostanie zastąpione</string>
+    <string name="f_Fs_auth">Hasło</string>
+    <string name="f_Fs_auth_desc">Najpierw pytanie o nazwę i hasło, przy wszystkim</string>
+    <string name="f_Fs_auth_unset">Ustaw hasło: do tego czasu każdy może go otworzyć</string>
+    <string name="f_Fs_user">Nazwa</string>
+    <string name="f_Fs_user_desc">Pusta: dowolna nazwa</string>
+    <string name="f_Fs_password">Hasło</string>
+    <string name="f_Fs_password_unset">Nieustawione</string>
+    <string name="f_Fs_idle">Zatrzymaj, gdy nieużywany</string>
+    <string name="f_Fs_idle_never">Nigdy</string>
+    <string name="f_Fs_idle_minutes">Po %1$d min bez żądań</string>
+    <string name="f_Fs_idle_hours">Po %1$d h bez żądań</string>
+    <string name="f_Fs_stat_connected">Połączeni</string>
+    <string name="f_Fs_stat_requests">Żądania</string>
+    <string name="f_Fs_recent">Ostatnio</string>
+    <string name="f_Fs_recent_none">Nikt go jeszcze nie otworzył</string>
+    <string name="f_Fs_via_bore">Przez Bore</string>
+    <string name="f_Fs_via_cloudflare">Przez Cloudflare</string>
+    <string name="f_Fs_battery_note">Ekran wygasa jak zwykle; telefon nie usypia, póki folder jest udostępniany.</string>
+    <string name="f_Fs_notification_title">Udostępniany: %1$s</string>
+    <plurals name="f_Fs_connected">
+        <item quantity="one">%1$d połączony</item>
+        <item quantity="few">%1$d połączonych</item>
+        <item quantity="many">%1$d połączonych</item>
+        <item quantity="other">%1$d połączonych</item>
+    </plurals>
+    <!-- The folder's web page, in the app's language as the share starts -->
+    <string name="f_Fs_web_empty">Na razie nic tu nie ma</string>
+    <string name="f_Fs_web_zip">Pobierz wszystko (ZIP)</string>
+    <string name="f_Fs_web_download">Pobierz</string>
+    <string name="f_Fs_web_upload">Prześlij pliki</string>
+    <string name="f_Fs_web_uploading">Przesyłanie: %1$s…</string>
+    <string name="f_Fs_web_uploaded">Przesłano</string>
+    <string name="f_Fs_web_upload_failed">Nie udało się przesłać</string>
+    <string name="f_Fs_web_footer">Udostępnione z telefonu przez %1$s</string>
+
+    <string name="fp_FolderShare">Udostępnianie folderu</string>
+    <string name="fk_FolderShare">udostępnianie, udostępnij, folder, pliki, http, serwer www, przeglądarka, pobieranie, przesyłanie, lan, wifi, wysyłanie plików, wideo, zip, tunel, bore, cloudflare, tailscale, qr</string>
+    <string name="fd_FolderShare">Twój folder w każdej przeglądarce</string>
+</resources>

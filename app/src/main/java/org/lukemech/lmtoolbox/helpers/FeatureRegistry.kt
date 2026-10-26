@@ -35,6 +35,7 @@ import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaDownloaderFeature
 import org.lukemech.lmtoolbox.features.media.qr_gen.QrGenFeature
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoEncoderFeature
+import org.lukemech.lmtoolbox.features.servers.folder_share.FolderShareFeature
 import org.lukemech.lmtoolbox.features.servers.mc_server.MinecraftServerFeature
 
 /** All the app's tools, in this order wherever they're listed. Add a new one here. */
@@ -51,6 +52,7 @@ object FeatureRegistry {
         ImageResizerFeature,
         FileSizeFeature,
         MinecraftServerFeature,
+        FolderShareFeature,
         ColorCodeFeature,
         SmdCodeFeature,
         OhmFeature,

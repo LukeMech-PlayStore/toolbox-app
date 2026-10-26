@@ -18,8 +18,9 @@
 
 **One app, a drawer full of tools.** Measure with a ruler, a spirit level and a compass; work out a resistor's
 color code or a 555 timer with 25 electronics calculators; convert currencies; download, convert and shrink
-videos, music and images; edit a photo's metadata; or run your own Minecraft server, Vanilla to NeoForge,
-straight from your phone and reachable by your friends through Bore, a Cloudflare tunnel or Tailscale.
+videos, music and images; edit a photo's metadata; share a folder with any browser; or run your own Minecraft
+server, Vanilla to NeoForge, straight from your phone and reachable by your friends through Bore, a Cloudflare
+tunnel or Tailscale.
 
 The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared, bore) inside a
 PRoot-based Linux subsystem. You never set it up: the app installs it part by part, only when a tool you open
@@ -52,6 +53,7 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Media       | Image encoder (resizing, a target file size)                                                   | Android (`ImageDecoder`, `Bitmap`)                                                                                                                                           | `app`               |
 | Media       | File size (a shortcut to the media or the image encoder)                                       | Android                                                                                                                                                                      | `app`               |
 | Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
+| Servers     | Folder share (a folder in any browser: ranges, ZIPs, uploads, a password; Bore, Cloudflare)    | Android (a web server of its own); bore or cloudflared once a tunnel is on (`features:bore`, `cloudflared`)                                                                  | `app`               |
 
 The electronics calculators: color code, SMD resistor code, Ohm's law, electric power, reactance and
 resonance, RC filter, voltage divider, series and parallel, capacitor charging, op-amp amplifier, LED

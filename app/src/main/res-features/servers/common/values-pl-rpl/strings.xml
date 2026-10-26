@@ -22,4 +22,6 @@
     <string name="f_Srv_save">Zapisz</string>
     <string name="f_Srv_saved">Zapisany</string>
     <string name="f_Srv_token_remove">Usuń token</string>
+    <string name="f_Srv_share">Udostępnij</string>
+    <string name="f_Srv_qr">Kod QR</string>
 </resources>
