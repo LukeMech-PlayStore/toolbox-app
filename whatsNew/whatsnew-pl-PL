@@ -1,10 +1,9 @@
 ✨ Nowości
-• 25 kalkulatorów elektronicznych: wpisz dowolne pole, reszta się policzy
-• Serwer Minecraft od 1.2.5: starsze wersje działają na Javie 8
-• Przelicznik walut w menu Udostępnij, czyta kwoty z tekstu
+• Serwer Minecraft: znajomi dołączą z dowolnego miejsca przez Bore, bez konta i konfiguracji
+• Serwer Minecraft: dołączanie przez Tailscale, adres widać w stanie serwera
+• Wyrzucanie i banowanie graczy prosto ze stanu serwera
 
 ⚡ Ulepszenia
-• Każda wersja Minecrafta działa na swojej Javie, bez wybierania
-• Listy opcji przewijają się we własnym okienku, otwarte na wybranej
-• Wpisane w kalkulatorze wartości zostają po obróceniu ekranu
-• Płynniejsze animacje, poprawki kodów QR, przecinków dziesiętnych i inne
+• Tunele same startują i zatrzymują się z serwerem, błędy na czerwono
+• Adresy do dołączenia odświeżają się od razu po zmianie Wi-Fi lub Tailscale
+• Stan pokazuje port, na którym serwer naprawdę działa, poprawki i inne
