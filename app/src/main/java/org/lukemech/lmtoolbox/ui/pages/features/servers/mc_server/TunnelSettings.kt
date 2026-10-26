@@ -31,16 +31,19 @@ import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.linux.parts.Tunnel
 import org.lukemech.lmtoolbox.ui.components.ExpandableButton
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
+import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.PackageTable
 import org.lukemech.lmtoolbox.ui.components.PackageTableRow
 import org.lukemech.lmtoolbox.ui.components.Reveal
+import org.lukemech.lmtoolbox.ui.components.RevealSection
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 
 /**
  * Cloudflare's tunnel, turned on or off: on, cloudflared is installed (its row as the Java's table has
- * them, telling how it installs) and its settings unfold ([TunnelSettings]); off, they fold away, its
- * tunnel stopped (cloudflared uninstalled once no server has it on, see ServerRunner.pruneTunnel).
+ * them, telling how it installs) and its settings unfold ([TunnelSettings]), and it starts if the server
+ * runs (with its token in); off, they fold away, its tunnel stopped (cloudflared uninstalled once no
+ * server has it on, see ServerRunner.pruneTunnel).
  */
 @Composable
 internal fun TunnelSection(profile: ServerProfile, onChanged: () -> Unit) {
@@ -55,20 +58,17 @@ internal fun TunnelSection(profile: ServerProfile, onChanged: () -> Unit) {
     Column(verticalArrangement = RowArrangement) {
         SwitchButton(stringResource(R.string.f_Mc_tunnel_enable), Icons.Default.Cloud, enabled, subtitle = stringResource(R.string.f_Mc_tunnel_enable_desc)) { on ->
             save(on)
-            if (on) {
-                // cloudflared still to get: asked first (InstallPrompt); not wanted, it's off again
-                scope.launch { if (ServerRunner.installTunnel(context) == InstallResult.Declined) save(false) }
-            } else {
-                if (ServerRunner.tunnel.value?.let { it.serverId == profile.id && it.isActive } == true) ServerRunner.stopTunnel()
-                ServerRunner.pruneTunnel(context)
-            }
+            // At once, the server running or not: on, installed (asked first; not wanted, it's off again) and
+            // started if it runs (with its token in); off, stopped and uninstalled
+            if (on) scope.launch { if (ServerRunner.tunnelOn(context, profile.id) == InstallResult.Declined) save(false) }
+            else ServerRunner.tunnelOff(context, profile.id)
         }
-        Reveal(visible = enabled) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                PartPackage(Tunnel.PART)
-                TunnelSettings(profile, onChanged)
-            }
+        RevealSection(enabled) {
+            PartPackage(Tunnel.PART)
+            TunnelSettings(profile, onChanged)
         }
+        // What it's for: under its switch, its settings unfolding above it
+        Note(stringResource(R.string.f_Mc_tunnel_desc))
     }
 }
 
@@ -93,7 +93,7 @@ internal fun PartPackage(part: String) {
     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) { PackageTable(listOf(row)) }
 }
 
-/** The Cloudflare tunnel's: its token, the address players type, whether it starts with the server; checking the domain, and how to set it up. */
+/** The Cloudflare tunnel's: its token, the address players type; checking the domain, and how to set it up. */
 @Composable
 private fun TunnelSettings(profile: ServerProfile, onChanged: () -> Unit) {
     val context = LocalContext.current
@@ -101,7 +101,6 @@ private fun TunnelSettings(profile: ServerProfile, onChanged: () -> Unit) {
     val tunnel = remember(profile.id) { ServerRunner.tunnelOf(context, profile) }
     var hasToken by remember(profile.id) { mutableStateOf(tunnel.hasToken) }
     var hostname by remember(profile.id) { mutableStateOf(profile.tunnelHostname) }
-    var auto by remember(profile.id) { mutableStateOf(profile.tunnelAuto) }
     var check by remember { mutableStateOf<Network.DomainCheck?>(null) }
     var checking by remember { mutableStateOf(false) }
     fun save(change: (ServerProfile) -> ServerProfile) {
@@ -110,7 +109,6 @@ private fun TunnelSettings(profile: ServerProfile, onChanged: () -> Unit) {
     }
 
     Column(verticalArrangement = RowArrangement) {
-        Note(stringResource(R.string.f_Mc_tunnel_desc))
         // As the address under it: a card, edited in a dialog (hidden as it's typed); saved, it can be removed
         var editingToken by remember { mutableStateOf(false) }
         FeatureButton(
@@ -122,6 +120,7 @@ private fun TunnelSettings(profile: ServerProfile, onChanged: () -> Unit) {
                     IconButton(onClick = {
                         tunnel.setToken(null)
                         hasToken = false
+                        if (ServerRunner.tunnel.value?.let { it.serverId == profile.id && it.isActive } == true) ServerRunner.stopTunnel()
                     }) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.f_Mc_token_remove), tint = MaterialTheme.colorScheme.error) }
                 }
             } else null,
@@ -135,42 +134,43 @@ private fun TunnelSettings(profile: ServerProfile, onChanged: () -> Unit) {
             editingToken = false
             tunnel.setToken(Tunnel.tokenIn(it))
             hasToken = tunnel.hasToken
+            // The server running: its tunnel runs with it now
+            scope.launch { ServerRunner.tunnelToken(context, profile.id) }
         }
-        TextSetting(stringResource(R.string.f_Mc_hostname), hostname, Icons.Default.Public, subtitle = stringResource(R.string.f_Mc_hostname_desc)) {
-            hostname = Network.hostnameOf(it)
-            check = null
-            save { p -> p.copy(tunnelHostname = hostname) }
-        }
-        SwitchButton(stringResource(R.string.f_Mc_tunnel_auto), Icons.Default.Cloud, auto) {
-            auto = it
-            save { p -> p.copy(tunnelAuto = it) }
-        }
-        // Whether players' Modflared finds the tunnel at that address
-        FeatureButton(
-            title = stringResource(R.string.f_Mc_check_domain),
-            subtitle = when (val c = check) {
-                null -> if (checking) stringResource(R.string.f_Mc_checking) else stringResource(R.string.f_Mc_check_domain_desc)
-                Network.DomainCheck.NotFound -> stringResource(R.string.f_Mc_check_not_found, hostname)
-                Network.DomainCheck.NoTxt -> stringResource(R.string.f_Mc_check_no_txt)
-                is Network.DomainCheck.Ready -> c.route?.let { stringResource(R.string.f_Mc_check_route, it) } ?: stringResource(R.string.f_Mc_check_ready)
-                // Couldn't be checked: the bottom bar tells (see the check below)
-                is Network.DomainCheck.Failed -> stringResource(R.string.f_Mc_check_domain_desc)
-            },
-            icon = Icons.Default.Dns,
-            onClick = {
-                if (hostname.isNotEmpty() && !checking) {
-                    checking = true
-                    check = null
-                    scope.launch {
-                        check = Network.checkDomain(hostname)
-                        (check as? Network.DomainCheck.Failed)?.let {
-                            LinuxTasks.reportFailure(MinecraftServerFeature, hostname, "Couldn't check the domain: ${it.message}")
+        // The address players type and its check: once there's a token (no tunnel to reach before)
+        RevealSection(hasToken) {
+            TextSetting(stringResource(R.string.f_Mc_hostname), hostname, Icons.Default.Public, subtitle = stringResource(R.string.f_Mc_hostname_desc)) {
+                hostname = Network.hostnameOf(it)
+                check = null
+                save { p -> p.copy(tunnelHostname = hostname) }
+            }
+            // Whether players' Modflared finds the tunnel at that address
+            FeatureButton(
+                title = stringResource(R.string.f_Mc_check_domain),
+                subtitle = when (val c = check) {
+                    null -> if (checking) stringResource(R.string.f_Mc_checking) else stringResource(R.string.f_Mc_check_domain_desc)
+                    Network.DomainCheck.NotFound -> stringResource(R.string.f_Mc_check_not_found, hostname)
+                    Network.DomainCheck.NoTxt -> stringResource(R.string.f_Mc_check_no_txt)
+                    is Network.DomainCheck.Ready -> c.route?.let { stringResource(R.string.f_Mc_check_route, it) } ?: stringResource(R.string.f_Mc_check_ready)
+                    // Couldn't be checked: the bottom bar tells (see the check below)
+                    is Network.DomainCheck.Failed -> stringResource(R.string.f_Mc_check_domain_desc)
+                },
+                icon = Icons.Default.Dns,
+                onClick = {
+                    if (hostname.isNotEmpty() && !checking) {
+                        checking = true
+                        check = null
+                        scope.launch {
+                            check = Network.checkDomain(hostname)
+                            (check as? Network.DomainCheck.Failed)?.let {
+                                LinuxTasks.reportFailure(MinecraftServerFeature, hostname, "Couldn't check the domain: ${it.message}")
+                            }
+                            checking = false
                         }
-                        checking = false
                     }
                 }
-            }
-        )
+            )
+        }
         ExpandableButton(stringResource(R.string.f_Mc_tunnel_guide), Icons.AutoMirrored.Default.HelpOutline) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 listOf(

@@ -187,8 +187,16 @@ object ServerRunner {
         synchronized(liveQueue) { liveQueue.clear() }
         _state.value = Run(profile.id, profile.name, rconPort = port, rconPassword = password, startValues = startValues)
         ServerService.start(app)
-        if (profile.tunnelEnabled && profile.tunnelAuto) startTunnel(app, profile)
-        if (profile.boreEnabled) startBore(app, profile)
+        // The tunnels turned on for it (Cloudflare's once its token is in), each installed first if it's gone
+        // meanwhile (asked, as its Java is); not there after all, it shows as failed
+        if (profile.tunnelEnabled && tunnelOf(app, profile).hasToken) scope.launch {
+            if (!installTunnel(app).ok) _tunnel.value = ServerTunnel(profile.id, Tunnel.State(Tunnel.Phase.Failed, error = "cloudflared isn't installed"))
+            else if (runs(profile.id)) startTunnel(app, profile)
+        }
+        if (profile.boreEnabled) scope.launch {
+            if (!installBore(app).ok) _bore.value = ServerBore(profile.id, Bore.State(Bore.Phase.Failed, error = "bore isn't installed"))
+            else if (runs(profile.id)) startBore(app, profile)
+        }
 
         deleteAfter = null
         runJob = scope.launch {
@@ -199,7 +207,7 @@ object ServerRunner {
             }
             if (!java.ok || jdk == null) {
                 stopTunnel()
-            stopBore()
+                stopBore()
                 // Not wanted: stopped (nothing to tell); failed: Java's installation is a task, the bottom bar tells already
                 _state.update {
                     if (java == InstallResult.Declined) it?.copy(phase = Phase.Stopped)
@@ -589,6 +597,57 @@ object ServerRunner {
 
     fun stopBore() {
         currentBore?.stop()
+    }
+
+    /** Whether server [id] is still on its way up or running (its tunnels started only then). */
+    private fun runs(id: String) = _state.value?.let { it.serverId == id && it.isActive } == true
+
+    /**
+     * Server [id]'s Cloudflare tunnel turned on: installed (asked first, see installTunnel) and, while the
+     * server runs, started at once (with its token in), not on its restart.
+     */
+    suspend fun tunnelOn(context: Context, id: String): InstallResult {
+        val app = context.applicationContext
+        return installTunnel(app).also { if (it.ok && runs(id)) Servers.load(app, id)?.let { p -> startTunnel(app, p) } }
+    }
+
+    /** Server [id]'s tunnel token changed (a new one in): while the server runs, its tunnel runs again with it (the old one's stopped first). */
+    suspend fun tunnelToken(context: Context, id: String) {
+        if (_tunnel.value?.let { it.serverId == id && it.isActive } == true) {
+            stopTunnel()
+            _tunnel.first { it?.isActive != true }
+        }
+        if (Servers.load(context.applicationContext, id)?.tunnelEnabled == true) tunnelOn(context, id)
+    }
+
+    /** Server [id]'s Cloudflare tunnel turned off (or its token removed): stopped at once, then uninstalled once no server has it on. */
+    fun tunnelOff(context: Context, id: String) {
+        val app = context.applicationContext
+        scope.launch {
+            if (_tunnel.value?.let { it.serverId == id && it.isActive } == true) {
+                stopTunnel()
+                _tunnel.first { it?.isActive != true }
+            }
+            pruneTunnel(app)
+        }
+    }
+
+    /** Server [id]'s bore tunnel turned on: installed (asked first, see installBore) and, while the server runs, started at once. */
+    suspend fun boreOn(context: Context, id: String): InstallResult {
+        val app = context.applicationContext
+        return installBore(app).also { if (it.ok && runs(id)) Servers.load(app, id)?.let { p -> startBore(app, p) } }
+    }
+
+    /** Server [id]'s bore tunnel turned off: stopped at once, then uninstalled once no server has it on. */
+    fun boreOff(context: Context, id: String) {
+        val app = context.applicationContext
+        scope.launch {
+            if (_bore.value?.let { it.serverId == id && it.isActive } == true) {
+                stopBore()
+                _bore.first { it?.isActive != true }
+            }
+            pruneBore(app)
+        }
     }
 
     private fun addLog(line: String) = _log.update { (it + line).takeLast(LOG_LINES) }

@@ -39,10 +39,8 @@ data class ServerProfile(
     val created: Long = System.currentTimeMillis(),
     /** The hostname players connect to through the Cloudflare tunnel (with Modflared), e.g. mc.example.com. */
     val tunnelHostname: String = "",
-    /** Its Cloudflare tunnel is turned on (cloudflared installed for it, see `Tunnel.install`): its settings shown, it can start. */
+    /** Its Cloudflare tunnel is turned on (cloudflared installed for it, see `Tunnel.install`): its settings shown, it starts along with the server once its token is in. */
     val tunnelEnabled: Boolean = false,
-    /** The tunnel starts along with the server. */
-    val tunnelAuto: Boolean = true,
     /** Its bore tunnel is turned on (bore installed for it, see `Bore.install`): it starts along with the server. */
     val boreEnabled: Boolean = false,
     /** The bore server it connects to; empty: bore.pub (Bore.SERVER). */
@@ -63,7 +61,7 @@ data class ServerProfile(
     fun toJson(): JSONObject = JSONObject()
         .put("name", name).put("type", type.name).put("version", version).put("loader", loader)
         .put("memoryMb", memoryMb).put("launch", JSONArray(launch)).put("created", created)
-        .put("tunnelHostname", tunnelHostname).put("tunnelEnabled", tunnelEnabled).put("tunnelAuto", tunnelAuto)
+        .put("tunnelHostname", tunnelHostname).put("tunnelEnabled", tunnelEnabled)
         .put("boreEnabled", boreEnabled).put("boreServer", boreServer).put("borePort", borePort)
         .put("jdk", jdk).put("javaNeeds", javaNeeds)
 
@@ -81,7 +79,6 @@ data class ServerProfile(
                 tunnelHostname = o.optString("tunnelHostname"),
                 // Before it could be turned off: on where it was set up
                 tunnelEnabled = o.optBoolean("tunnelEnabled", o.optString("tunnelHostname").isNotEmpty()),
-                tunnelAuto = o.optBoolean("tunnelAuto", true),
                 boreEnabled = o.optBoolean("boreEnabled"),
                 boreServer = o.optString("boreServer"),
                 borePort = o.optInt("borePort"),

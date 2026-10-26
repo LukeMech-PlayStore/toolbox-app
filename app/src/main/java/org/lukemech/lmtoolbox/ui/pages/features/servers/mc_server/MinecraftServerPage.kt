@@ -550,15 +550,3 @@ internal fun stageText(stage: Installer.Stage): String = stringResource(
 internal fun Section(title: String) {
     SectionTitle(title, modifier = Modifier.padding(top = 8.dp))
 }
-
-/** A quieter note under what it's about. */
-@Composable
-internal fun Note(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Start,
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
-    )
-}

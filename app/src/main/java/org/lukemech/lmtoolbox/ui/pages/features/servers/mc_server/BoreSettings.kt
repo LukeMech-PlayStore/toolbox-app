@@ -23,14 +23,16 @@ import org.lukemech.lmtoolbox.features.servers.mc_server.Servers
 import org.lukemech.lmtoolbox.linux.InstallResult
 import org.lukemech.lmtoolbox.linux.parts.Bore
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
+import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.Reveal
+import org.lukemech.lmtoolbox.ui.components.RevealSection
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 
 /**
  * bore's tunnel, turned on or off: on, bore is installed (its row as the Java's table has them) and its
- * settings unfold; off, they fold away, its tunnel stopped (bore uninstalled once no server has it on,
- * see ServerRunner.pruneBore). Nothing to set up: bore.pub, or the user's own bore server (its secret).
+ * settings unfold, and it starts if the server runs; off, they fold away, its tunnel stopped (bore
+ * uninstalled once no server has it on, see ServerRunner.pruneBore). Nothing to set up: bore.pub, or the user's own bore server (its secret).
  */
 @Composable
 internal fun BoreSection(profile: ServerProfile, onChanged: () -> Unit) {
@@ -45,20 +47,17 @@ internal fun BoreSection(profile: ServerProfile, onChanged: () -> Unit) {
     Column(verticalArrangement = RowArrangement) {
         SwitchButton(stringResource(R.string.f_Mc_bore_enable), Icons.Default.SettingsEthernet, enabled, subtitle = stringResource(R.string.f_Mc_bore_enable_desc)) { on ->
             save(on)
-            if (on) {
-                // bore still to get: asked first (InstallPrompt); not wanted, it's off again
-                scope.launch { if (ServerRunner.installBore(context) == InstallResult.Declined) save(false) }
-            } else {
-                if (ServerRunner.bore.value?.let { it.serverId == profile.id && it.isActive } == true) ServerRunner.stopBore()
-                ServerRunner.pruneBore(context)
-            }
+            // At once, the server running or not: on, installed (asked first; not wanted, it's off again) and
+            // started if it runs; off, stopped and uninstalled
+            if (on) scope.launch { if (ServerRunner.boreOn(context, profile.id) == InstallResult.Declined) save(false) }
+            else ServerRunner.boreOff(context, profile.id)
         }
-        Reveal(visible = enabled) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                PartPackage(Bore.PART)
-                BoreSettings(profile, onChanged)
-            }
+        RevealSection(enabled) {
+            PartPackage(Bore.PART)
+            BoreSettings(profile, onChanged)
         }
+        // What it's for: under its switch, its settings unfolding above it
+        Note(stringResource(R.string.f_Mc_bore_desc))
     }
 }
 
@@ -71,7 +70,6 @@ private fun BoreSettings(profile: ServerProfile, onChanged: () -> Unit) {
     var hasSecret by remember(profile.id) { mutableStateOf(bore.hasSecret) }
 
     Column(verticalArrangement = RowArrangement) {
-        Note(stringResource(R.string.f_Mc_bore_desc))
         TextSetting(stringResource(R.string.f_Mc_bore_server), server.ifEmpty { Bore.SERVER }, Icons.Default.Dns, subtitle = stringResource(R.string.f_Mc_bore_server_desc)) {
             // bore.pub typed: as nothing typed
             server = Network.hostnameOf(it).takeIf { h -> h != Bore.SERVER }.orEmpty()

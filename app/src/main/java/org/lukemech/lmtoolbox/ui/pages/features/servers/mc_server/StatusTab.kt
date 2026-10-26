@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SettingsEthernet
 import androidx.compose.material.icons.filled.VpnLock
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.*
@@ -45,12 +46,14 @@ import org.lukemech.lmtoolbox.linux.parts.Bore
 import org.lukemech.lmtoolbox.linux.parts.Tunnel
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.InfoTile
+import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.REVEAL_MS
 import org.lukemech.lmtoolbox.ui.components.ResourceTiles
 import org.lukemech.lmtoolbox.ui.components.Reveal
+import org.lukemech.lmtoolbox.ui.components.RowColors
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 
-/** How it's doing and what it takes, who's on, and the addresses to join it at (the network's, the tailnet's, the tunnel's). */
+/** How it's doing and what it takes, who's on, and the addresses to join it at (the network's, the tunnels', the tailnet's). */
 @Composable
 internal fun StatusTab(profile: ServerProfile, run: ServerRunner.Run?, onTunnelSettings: () -> Unit) {
     val context = LocalContext.current
@@ -120,72 +123,39 @@ internal fun StatusTab(profile: ServerProfile, run: ServerRunner.Run?, onTunnelS
         } else {
             lan.forEach { ip -> AddressButton(stringResource(R.string.f_Mc_lan), "$ip$portSuffix", Icons.Default.Wifi) }
         }
-        if (tailnet.isEmpty()) {
-            // Not connected: to the Tailscale app (or its page on Play)
-            FeatureButton(
-                title = stringResource(R.string.f_Mc_tailscale),
-                subtitle = stringResource(R.string.f_Mc_tailscale_none),
-                icon = Icons.Default.VpnLock,
-                icon2 = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                onClick = { openTailscale(context) }
-            )
-        } else {
-            tailnet.forEach { ip -> AddressButton(stringResource(R.string.f_Mc_tailscale), "${tailnetNames[ip] ?: ip}$portSuffix", Icons.Default.VpnLock) }
-        }
-
         if (profile.boreEnabled) {
-            // Its address once it's connected (bore.pub's port: the same as last time while it's free)
-            bore?.address?.takeIf { bore.phase == Bore.Phase.Connected }?.let { AddressButton(stringResource(R.string.f_Mc_internet_bore), it, Icons.Default.Public) }
-            val (boreText, boreIcon) = when (bore?.phase) {
-                Bore.Phase.Connected -> stringResource(R.string.f_Mc_bore_connected) to Icons.Default.Cloud
-                Bore.Phase.Connecting -> stringResource(R.string.f_Mc_tunnel_connecting) to Icons.Default.Cloud
-                Bore.Phase.Failed -> stringResource(R.string.f_Mc_tunnel_failed) to Icons.Default.CloudOff
-                else -> stringResource(R.string.f_Mc_tunnel_off) to Icons.Default.CloudOff
+            // Starts with the server by itself: its address once it's connected (bore.pub's port: the same as last
+            // time while it's free), else how it's doing; why it failed in red (the bottom bar tells too)
+            val address = bore?.address?.takeIf { bore.phase == Bore.Phase.Connected }
+            Crossfade(address, animationSpec = tween(REVEAL_MS), label = "bore") { a ->
+                if (a != null) AddressButton(stringResource(R.string.f_Mc_internet_bore), a, Icons.Default.Public)
+                else TunnelStatus(
+                    stringResource(R.string.f_Mc_bore),
+                    when (bore?.phase) {
+                        Bore.Phase.Connecting -> TunnelPhase.Connecting
+                        Bore.Phase.Failed -> TunnelPhase.Failed
+                        else -> TunnelPhase.Off
+                    },
+                    bore?.error,
+                    Icons.Default.SettingsEthernet
+                )
             }
-            FeatureButton(
-                title = stringResource(R.string.f_Mc_bore),
-                // Why it failed: the bottom bar tells (see ServerRunner.startBore)
-                subtitle = boreText,
-                icon = boreIcon,
-                buttonContent = {
-                    val stop = if (bore?.isActive == true) true else if (run?.isActive == true) false else null
-                    Crossfade(stop, animationSpec = tween(REVEAL_MS), label = "boreButton") { s ->
-                        when (s) {
-                            true -> TextButton(onClick = { ServerRunner.stopBore() }) { Text(stringResource(R.string.f_Mc_stop)) }
-                            false -> TextButton(onClick = { ServerRunner.startBore(context, profile) }) { Text(stringResource(R.string.f_Mc_start)) }
-                            null -> {}
-                        }
-                    }
-                }
-            )
             Note(stringResource(R.string.f_Mc_internet_bore_desc))
         }
 
         val hostname = profile.tunnelHostname
         if (profile.tunnelEnabled && hasToken && hostname.isNotEmpty()) {
-            AddressButton(stringResource(R.string.f_Mc_internet), hostname, Icons.Default.Public)
-            val (tunnelText, tunnelIcon) = when (tunnel?.phase) {
-                Tunnel.Phase.Connected -> stringResource(R.string.f_Mc_tunnel_connected, tunnel.connections) to Icons.Default.Cloud
-                Tunnel.Phase.Connecting -> stringResource(R.string.f_Mc_tunnel_connecting) to Icons.Default.Cloud
-                Tunnel.Phase.Failed -> stringResource(R.string.f_Mc_tunnel_failed) to Icons.Default.CloudOff
-                else -> stringResource(R.string.f_Mc_tunnel_off) to Icons.Default.CloudOff
-            }
-            FeatureButton(
-                title = stringResource(R.string.f_Mc_tunnel),
-                // Why it failed: the bottom bar tells (see ServerRunner.startTunnel)
-                subtitle = tunnelText,
-                icon = tunnelIcon,
-                buttonContent = {
-                    // Stopping it, or starting it while the server runs: one fading into the other
-                    val stop = if (tunnel?.isActive == true) true else if (run?.isActive == true) false else null
-                    Crossfade(stop, animationSpec = tween(REVEAL_MS), label = "tunnelButton") { s ->
-                        when (s) {
-                            true -> TextButton(onClick = { ServerRunner.stopTunnel() }) { Text(stringResource(R.string.f_Mc_stop)) }
-                            false -> TextButton(onClick = { ServerRunner.startTunnel(context, profile) }) { Text(stringResource(R.string.f_Mc_start)) }
-                            null -> {}
-                        }
-                    }
-                }
+            AddressButton(stringResource(R.string.f_Mc_internet_cloudflare), hostname, Icons.Default.Public)
+            TunnelStatus(
+                stringResource(R.string.f_Mc_tunnel),
+                when (tunnel?.phase) {
+                    Tunnel.Phase.Connected -> TunnelPhase.Connected(stringResource(R.string.f_Mc_tunnel_connected, tunnel.connections))
+                    Tunnel.Phase.Connecting -> TunnelPhase.Connecting
+                    Tunnel.Phase.Failed -> TunnelPhase.Failed
+                    else -> TunnelPhase.Off
+                },
+                tunnel?.error,
+                Icons.Default.Cloud, Icons.Default.CloudOff
             )
             Note(stringResource(R.string.f_Mc_internet_desc))
         } else if (!profile.boreEnabled) {
@@ -199,9 +169,51 @@ internal fun StatusTab(profile: ServerProfile, run: ServerRunner.Run?, onTunnelS
             )
         }
 
+        // After the tunnels: the tailnet's (the Tailscale app's, also from anywhere)
+        if (tailnet.isEmpty()) {
+            // Not connected: to the Tailscale app (or its page on Play)
+            FeatureButton(
+                title = stringResource(R.string.f_Mc_tailscale),
+                subtitle = stringResource(R.string.f_Mc_tailscale_none),
+                icon = Icons.Default.VpnLock,
+                icon2 = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                onClick = { openTailscale(context) }
+            )
+        } else {
+            tailnet.forEach { ip -> AddressButton(stringResource(R.string.f_Mc_tailscale), "${tailnetNames[ip] ?: ip}$portSuffix", Icons.Default.VpnLock) }
+        }
+
         Spacer(modifier = Modifier.height(4.dp))
         Note(stringResource(R.string.f_Mc_battery_note))
     }
+}
+
+/** How a tunnel's doing, as its row says it. */
+private sealed interface TunnelPhase {
+    data object Off : TunnelPhase
+    data object Connecting : TunnelPhase
+    data class Connected(val text: String) : TunnelPhase
+    data object Failed : TunnelPhase
+}
+
+/**
+ * A tunnel's row: how it's doing, nothing to press (it starts and stops with the server); failed, why
+ * (as the tunnel said), in red. [icon] as its switch has it ([offIcon] while it isn't on its way or connected).
+ */
+@Composable
+private fun TunnelStatus(title: String, phase: TunnelPhase, error: String?, icon: ImageVector, offIcon: ImageVector = icon) {
+    val failed = phase == TunnelPhase.Failed
+    FeatureButton(
+        title = title,
+        subtitle = when (phase) {
+            TunnelPhase.Off -> stringResource(R.string.f_Mc_tunnel_with_server)
+            TunnelPhase.Connecting -> stringResource(R.string.f_Mc_tunnel_connecting)
+            is TunnelPhase.Connected -> phase.text
+            TunnelPhase.Failed -> listOfNotNull(stringResource(R.string.f_Mc_tunnel_failed), error?.takeIf { it.isNotBlank() }).joinToString(": ")
+        },
+        colors = if (failed) RowColors.alert else RowColors.default,
+        icon = if (failed || phase == TunnelPhase.Off) offIcon else icon
+    )
 }
 
 /** How long it's been since [since], e.g. "1 h 23 min", "5 min"; again each minute. */
@@ -223,9 +235,10 @@ private fun uptime(since: Long): String {
 @Composable
 private fun AddressButton(title: String, address: String, icon: ImageVector) {
     val context = LocalContext.current
+    // The address large, what it's for small above it
     FeatureButton(
-        title = address,
-        subtitle = title,
+        title = title,
+        subtitle = address,
         titleSubtitleSwap = true,
         icon = icon,
         buttonContent = {

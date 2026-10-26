@@ -19,6 +19,7 @@ import org.lukemech.lmtoolbox.features.servers.mc_server.ServerRunner
 import org.lukemech.lmtoolbox.features.servers.mc_server.ServerType
 import org.lukemech.lmtoolbox.ui.components.ConfirmDialog
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
+import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.OptionSetting
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RowColors
@@ -128,7 +129,7 @@ internal fun VersionSettings(profile: ServerProfile, run: ServerRunner.Run?, onC
             )
         }
         SnapshotsSetting(snapshots, enabled) { snapshots = it }
-        Reveal(visible = running) { Note(stringResource(R.string.f_Mc_version_stop_first)) }
+        Note(stringResource(R.string.f_Mc_version_stop_first), visible = running)
 
         // Its Java: the one its version is made for, installed as it starts (asked first)
         Spacer(modifier = Modifier.height(4.dp))
