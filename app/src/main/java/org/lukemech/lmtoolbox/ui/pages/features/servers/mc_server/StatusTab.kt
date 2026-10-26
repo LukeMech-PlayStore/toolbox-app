@@ -143,7 +143,7 @@ internal fun StatusTab(profile: ServerProfile, run: ServerRunner.Run?, onTunnelS
         }
         if (profile.boreEnabled) {
             // Starts with the server by itself: its address once it's connected (bore.pub's port: the same as last
-            // time while it's free), else how it's doing; why it failed in red (the bottom bar tells too)
+            // time while it's free), else how it's doing; why it failed in red (told here alone)
             val address = bore?.address?.takeIf { bore.phase == Bore.Phase.Connected }
             Crossfade(address, animationSpec = tween(REVEAL_MS), label = "bore") { a ->
                 if (a != null) AddressButton(stringResource(R.string.f_Mc_internet_bore), a, Icons.Default.Public)
