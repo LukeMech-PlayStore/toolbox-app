@@ -234,6 +234,26 @@
             </intent-filter>
         </activity-alias>
 
+        <!-- Share (any files, one or several) to File hash -->
+        <activity-alias
+            android:name="share.File.Hash"
+            android:enabled="false"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:label="@string/fp_FileHash">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity-alias>
+
         <!-- Shares the QR generator's codes (res/xml/file_paths.xml; the debug build's in src/debug, the tests' files too) -->
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_FileHash">Suma kontrolna</string>
+    <string name="fk_FileHash">hash, suma kontrolna, sumy kontrolne, skrót, md5, sha, sha1, sha-1, sha256, sha-256, sha512, sha-512, sha3, crc, crc32, weryfikacja, sprawdź, integralność, pobieranie, iso, odcisk, sha256sum, md5sum, porównaj, uszkodzony, tekst</string>
+    <string name="fd_FileHash">Sumy kontrolne: czy plik jest cały?</string>
+    <string name="f_FileHash_share_desc">Udostępniaj pliki do sum kontrolnych z innych aplikacji</string>
+
+    <string name="f_FileHash_files">Pliki</string>
+    <string name="f_FileHash_text">Tekst</string>
+    <string name="f_FileHash_intro_title">Sumy kontrolne plików</string>
+    <string name="f_FileHash_intro_1">Wybierz jeden plik lub kilka</string>
+    <string name="f_FileHash_intro_2">MD5, SHA-1, SHA-256 i inne za jednym odczytem</string>
+    <string name="f_FileHash_intro_3">Wklej oczekiwany hash lub wczytaj plik sum kontrolnych, aby go sprawdzić</string>
+    <string name="f_FileHash_intro_tip">Pliki można też udostępnić prosto do narzędzia z innych aplikacji. Duże również: są czytane po kawałku.</string>
+    <string name="f_FileHash_pick">Wybierz pliki</string>
+    <string name="f_FileHash_add">Dodaj pliki</string>
+    <string name="f_FileHash_remove">Usuń</string>
+    <string name="f_FileHash_text_label">Tekst do obliczenia</string>
+    <string name="f_FileHash_text_note">Liczony jako UTF-8, dokładnie tak, jak wpisany (bez nowej linii na końcu).</string>
+    <string name="f_FileHash_algorithms">Algorytmy</string>
+    <string name="f_FileHash_sha3_none">SHA-3 nie jest dostępne na tym urządzeniu.</string>
+    <string name="f_FileHash_calculate">Oblicz</string>
+    <string name="f_FileHash_calculating">Obliczanie…</string>
+    <string name="f_FileHash_back_to_results">Wróć do wyników</string>
+
+    <string name="f_FileHash_reading">Czytanie: %1$s</string>
+    <string name="f_FileHash_count">%1$d z %2$d</string>
+    <string name="f_FileHash_hashing">Czytanie…</string>
+    <string name="f_FileHash_waiting">Jeszcze nie obliczono</string>
+    <string name="f_FileHash_failed">Nie udało się go odczytać: %1$s</string>
+    <string name="f_FileHash_verify">Porównaj z</string>
+    <string name="f_FileHash_expected_hint">Wklej hash lub linie sum kontrolnych</string>
+    <string name="f_FileHash_paste">Wklej</string>
+    <string name="f_FileHash_load">Wczytaj plik sum kontrolnych</string>
+    <string name="f_FileHash_loaded">%1$s · hashe: %2$d</string>
+    <string name="f_FileHash_unload">Wyczyść</string>
+    <string name="f_FileHash_detected">Wygląda na %1$s</string>
+    <string name="f_FileHash_hashes">Hashe: %1$d, każdy porównany ze swoim plikiem po nazwie</string>
+    <string name="f_FileHash_not_hash">Nie znaleziono hasha: hash to cyfry szesnastkowe o znanej długości (od 8 do 128) albo linie pliku sum kontrolnych.</string>
+    <string name="f_FileHash_need">Do sprawdzenia potrzebne jest %1$s</string>
+    <string name="f_FileHash_calculate_too">Oblicz %1$s</string>
+    <string name="f_FileHash_match">Zgadza się</string>
+    <string name="f_FileHash_mismatch">Nie zgadza się</string>
+    <string name="f_FileHash_not_listed">Brak w pliku sum kontrolnych</string>
+    <string name="f_FileHash_summary">Zgodne pliki: %1$d z %2$d</string>
+    <string name="f_FileHash_copy_hint">Dotknij hasha, aby go skopiować.</string>
+    <string name="f_FileHash_copied">Skopiowano %1$s</string>
+    <string name="f_FileHash_share">Udostępnij</string>
+    <string name="f_FileHash_export">Zapisz .%1$s</string>
+    <string name="f_FileHash_saved">Zapisano plik %1$s</string>
+    <string name="f_FileHash_other">Inne pliki</string>
+    <string name="f_FileHash_edit_text">Zmień tekst</string>
+</resources>
