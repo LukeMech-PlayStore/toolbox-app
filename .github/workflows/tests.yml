@@ -200,7 +200,7 @@ jobs:
 
       # For the next run's shards (a cache entry can't be overwritten: one per run, the newest restored). A pull
       # request's stay its own; main's every branch reads. Only if merge.py updated them (almost nothing failed) and the
-      # run wasn't cancelled: its shards cut short, what they hadn't run yet missing
+      # run wasn't canceled: its shards cut short, what they hadn't run yet missing
       - name: Save the durations
         if: >-
           always() && !cancelled() && needs.test.result != 'cancelled'
