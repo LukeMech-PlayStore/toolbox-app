@@ -93,7 +93,13 @@ data class LinuxTask(
  * A tool's program running until it's stopped (a server, its tunnel), see [LinuxTasks.runService]: not a
  * task. [source] is the tool running it, [label] what's running (e.g. the server's name).
  */
-data class LinuxService(val id: Long, val source: AppFeature, val label: String) {
+data class LinuxService(
+    val id: Long,
+    val source: AppFeature,
+    val label: String,
+    /** What it's part of, as that one's [label] (e.g. a server's, for its tunnels): one with it in the bottom bar. */
+    val group: String? = null,
+) {
     /** The icon of the tool running it. */
     val featureIcon: ImageVector
         @Composable get() = source.icon
@@ -294,11 +300,13 @@ object LinuxTasks {
      * Refused like [run] while the subsystem is set up; its tool's parts unpacked first, as a task.
      *
      * [onStart] gets its id (for [cancel], which stops it); [onLine] each line it prints. Cancelling
-     * the caller doesn't stop it. Of its output only the last [maxOutput] characters are kept.
+     * the caller doesn't stop it. Of its output only the last [maxOutput] characters are kept. [group]:
+     * the label of the service it's part of (see [LinuxService.group]).
      */
     suspend fun runService(
         context: Context, cmd: List<String>, source: AppFeature, label: String,
         maxOutput: Int = 64 * 1024,
+        group: String? = null,
         onStart: (id: Long) -> Unit = {},
         onLine: ((String) -> Unit)? = null
     ): ExecResult {
@@ -306,7 +314,7 @@ object LinuxTasks {
         notReady(app, leavePage = true)?.let { return it }
         prepareExtension(app, source, install = true)?.let { return it }
 
-        val service = LinuxService(ids.incrementAndGet(), source, label)
+        val service = LinuxService(ids.incrementAndGet(), source, label, group)
         val result = CompletableDeferred<ExecResult>()
         // LAZY: registered before it can end and unregister itself
         val job = scope.launch(start = CoroutineStart.LAZY) {

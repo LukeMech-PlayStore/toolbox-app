@@ -35,7 +35,8 @@ class Explorer(
     extraSkips: List<String> = emptyList(),
     private val check: () -> String? = { null },
 ) {
-    private val skips: List<String> = (DEFAULT_SKIPS + extraSkips).map { it.lowercase() }
+    // As words: "Start" skips the server's Start, not a switch that "starts with the server" (letters of any language)
+    private val skips: List<Regex> = (DEFAULT_SKIPS + extraSkips).map { Regex("(?<![\\p{L}\\p{N}])${Regex.escape(it.lowercase())}(?![\\p{L}\\p{N}])") }
     private val destructive = destructive(ui)
     private val navLabels = setOf(ui.str(R.string.nav_main_page), ui.str(R.string.nav_settings))
     private val cancel = ui.str(android.R.string.cancel)
@@ -149,7 +150,7 @@ class Explorer(
         if (node.config.getOrNull(SemanticsProperties.Role) == Role.Tab && texts(node).isEmpty()) return true
         if (words.any { it.lowercase() in destructive }) return true
         val all = words.joinToString(" ").lowercase()
-        return all == ui.str(R.string.back).lowercase() || skips.any { it in all }
+        return all == ui.str(R.string.back).lowercase() || skips.any { it.containsMatchIn(all) }
     }
 
     private fun texts(node: SemanticsNode): List<String> =

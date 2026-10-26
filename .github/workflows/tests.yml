@@ -143,7 +143,9 @@ jobs:
           arch: ${{ matrix.arch }}
           channel: ${{ matrix.channel }}
           cores: 4
-          ram-size: 4096M
+          # Half the runner's 16 GB: at 4 GB the canary's low-memory killer took the app as the system's own apps started
+          # up. x86 a 32-bit system's 4 GB, all it uses
+          ram-size: ${{ matrix.arch == 'x86' && '4096M' || '8192M' }}
           # The app's Java heap is set by run-tests.sh: heap-size here never reaches it
           # The Java versions and the servers' worlds take room
           disk-size: 16G
@@ -200,7 +202,7 @@ jobs:
 
       # For the next run's shards (a cache entry can't be overwritten: one per run, the newest restored). A pull
       # request's stay its own; main's every branch reads. Only if merge.py updated them (almost nothing failed) and the
-      # run wasn't cancelled: its shards cut short, what they hadn't run yet missing
+      # run wasn't canceled: its shards cut short, what they hadn't run yet missing
       - name: Save the durations
         if: >-
           always() && !cancelled() && needs.test.result != 'cancelled'

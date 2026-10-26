@@ -1,0 +1,158 @@
+package org.lukemech.lmtoolbox.linux.parts
+
+import org.lukemech.lmtoolbox.linux.InstallResult
+import android.content.Context
+import java.io.File
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import org.lukemech.lmtoolbox.linux.LinuxParts
+import org.lukemech.lmtoolbox.linux.LinuxTasks
+import org.lukemech.lmtoolbox.helpers.AppFeature
+
+/**
+ * A bore tunnel (the bore part), for a server on the phone that players reach from anywhere with
+ * nothing to set up: bore connects to a bore server ([SERVER], or one of the user's own, with its
+ * secret in [secretFile]), which gives it a port of its own; players join at <server>:<port>.
+ * It asks for the port it had last ([State.port]): the same address while nobody else has it.
+ *
+ * A tool on it lists [PART] in its extraExtensions and installs it when it's turned on ([install]);
+ * [source] is its title, as its tasks show it.
+ */
+class Bore(
+    private val source: AppFeature,
+    /** A bore server's secret (its own server's, `bore server --secret`), read by bore from there: never in a command line, nor a task's log. */
+    val secretFile: File,
+    /** What the bottom bar shows of it while it runs (a service, see LinuxTasks.runService), e.g. "My server · bore". */
+    private val label: String = "bore",
+    /** The service it's part of, as its label (e.g. its server's name): one with it in the bottom bar. */
+    private val group: String? = null,
+) {
+    enum class Phase { Connecting, Connected, Stopped, Failed }
+
+    data class State(
+        val phase: Phase = Phase.Connecting,
+        /** Its run's (see LinuxTasks.runService), for stopping it. */
+        val taskId: Long? = null,
+        /** Where players join, once it's connected: e.g. bore.pub:41234. */
+        val address: String? = null,
+        /** The bore server's port it has (or had last). */
+        val port: Int = 0,
+        /** Why it couldn't connect, as bore said (e.g. the server's unreachable). */
+        val error: String? = null,
+    ) {
+        val isActive get() = phase == Phase.Connecting || phase == Phase.Connected
+    }
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val _state = MutableStateFlow<State?>(null)
+    /** Null until it's started. */
+    val state: StateFlow<State?> = _state.asStateFlow()
+
+    @Volatile
+    private var stopping = false
+
+    val hasSecret get() = secretFile.let { it.exists() && it.length() > 0 }
+
+    /**
+     * Connects [localPort] to [server] (unless it is), asking for [port] (0: any); [onLine] gets each
+     * line bore prints. Lost once connected, it connects again; the port taken meanwhile, it takes any.
+     */
+    fun start(context: Context, localPort: Int, server: String = SERVER, port: Int = 0, onLine: (String) -> Unit = {}) {
+        if (_state.value?.isActive == true) return
+        val app = context.applicationContext
+        stopping = false
+        _state.value = State(port = port)
+        scope.launch {
+            var want = port
+            var lastError: String? = null
+            while (!stopping) {
+                var connected = false
+                val result = LinuxTasks.runService(
+                    app, command(localPort, server, want), source, label, group = group,
+                    onStart = { id -> _state.update { it?.copy(taskId = id) } },
+                    onLine = { raw ->
+                        val line = raw.replace(ANSI, "")
+                        onLine(line)
+                        LISTENING.find(line)?.let { m ->
+                            connected = true
+                            want = m.groupValues[2].toInt()
+                            _state.update { it?.copy(phase = Phase.Connected, address = "${m.groupValues[1]}:$want", port = want, error = null) }
+                        }
+                        if (" ERROR " in line || line.startsWith("Error: ")) lastError = line.substringAfter("ERROR ").substringAfter("Error: ").trim()
+                    }
+                )
+                if (stopping) break
+                lastError = lastError ?: result.stderr.lineSequence().lastOrNull { it.isNotBlank() }
+                when {
+                    // Lost (the network changed, the server restarted): again, on the same port
+                    connected -> {
+                        _state.update { it?.copy(phase = Phase.Connecting, address = null) }
+                        delay(RETRY)
+                    }
+                    // Its port someone else's now: any other
+                    want != 0 -> want = 0
+                    else -> break
+                }
+            }
+            _state.update {
+                it?.copy(
+                    phase = if (stopping) Phase.Stopped else Phase.Failed,
+                    address = null,
+                    error = if (stopping) null else lastError
+                )
+            }
+        }
+    }
+
+    /** Disconnects (the server frees its port as it's stopped). */
+    fun stop() {
+        val s = _state.value?.takeIf { it.isActive } ?: return
+        stopping = true
+        s.taskId?.let(LinuxTasks::cancel)
+    }
+
+    private fun command(localPort: Int, server: String, port: Int): List<String> {
+        // 127.0.0.1: "localhost" may be IPv6's first, the server listening on IPv4's
+        val bore = listOf("bore", "local", "$localPort", "--local-host", "127.0.0.1", "--to", server, "--port", "$port")
+        // Its secret from its file, in its environment (BORE_SECRET); bore.pub has none (a secret would fail its handshake)
+        return if (!hasSecret || server == SERVER) bore
+        else listOf("sh", "-c", $$"BORE_SECRET=$(cat \"$0\") && export BORE_SECRET && exec \"$@\"", secretFile.absolutePath) + bore
+    }
+
+    /** Saves [secret] to [secretFile], readable by the app alone (null: removes it). */
+    fun setSecret(secret: String?) {
+        if (secret.isNullOrBlank()) {
+            secretFile.delete()
+            return
+        }
+        secretFile.parentFile?.mkdirs()
+        secretFile.writeText(secret.trim())
+        secretFile.setReadable(false, false)
+        secretFile.setReadable(true, true)
+    }
+
+    companion object {
+        /** The part (and its Play module), for a tool's extraExtensions: installed when the tool turns it on ([install]). */
+        const val PART = "bore"
+        /** bore's public server, free, with no account (as it goes: nobody promises it's up). */
+        const val SERVER = "bore.pub"
+
+        fun isInstalled(context: Context) = LinuxParts.isExtensionInstalled(context, PART)
+
+        /** Installs it for the tool behind [source] (asked first; a task in the bottom bar, its table telling how it goes). */
+        suspend fun install(context: Context, source: AppFeature): InstallResult = LinuxTasks.installParts(context, source, listOf(PART))
+
+        private val RETRY = 5.seconds
+        private val ANSI = Regex("""\u001B\[[0-9;?]*[ -/]*[@-~]""")
+        /** "INFO bore_cli::client: listening at bore.pub:41234" */
+        private val LISTENING = Regex("""listening at (\S+):(\d+)""")
+    }
+}

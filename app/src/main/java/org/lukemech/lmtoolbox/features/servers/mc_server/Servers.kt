@@ -39,10 +39,14 @@ data class ServerProfile(
     val created: Long = System.currentTimeMillis(),
     /** The hostname players connect to through the Cloudflare tunnel (with Modflared), e.g. mc.example.com. */
     val tunnelHostname: String = "",
-    /** Its Cloudflare tunnel is turned on (cloudflared installed for it, see `Tunnel.install`): its settings shown, it can start. */
+    /** Its Cloudflare tunnel is turned on (cloudflared installed for it, see `Tunnel.install`): its settings shown, it starts along with the server once its token is in. */
     val tunnelEnabled: Boolean = false,
-    /** The tunnel starts along with the server. */
-    val tunnelAuto: Boolean = true,
+    /** Its bore tunnel is turned on (bore installed for it, see `Bore.install`): it starts along with the server. */
+    val boreEnabled: Boolean = false,
+    /** The bore server it connects to; empty: `bore.pub` (Bore.SERVER). */
+    val boreServer: String = "",
+    /** The bore server's port it had last, asked for again (the same address); 0: any. */
+    val borePort: Int = 0,
     /** The Java it was made with (a part of [Java.JDKS]); it runs on the one its version is made for ([Java.forNeeds]). */
     val jdk: String? = null,
     /** The Java version its Minecraft needs (Mojang's metadata, see Installer.javaNeeds); null: as its version goes. */
@@ -57,7 +61,8 @@ data class ServerProfile(
     fun toJson(): JSONObject = JSONObject()
         .put("name", name).put("type", type.name).put("version", version).put("loader", loader)
         .put("memoryMb", memoryMb).put("launch", JSONArray(launch)).put("created", created)
-        .put("tunnelHostname", tunnelHostname).put("tunnelEnabled", tunnelEnabled).put("tunnelAuto", tunnelAuto)
+        .put("tunnelHostname", tunnelHostname).put("tunnelEnabled", tunnelEnabled)
+        .put("boreEnabled", boreEnabled).put("boreServer", boreServer).put("borePort", borePort)
         .put("jdk", jdk).put("javaNeeds", javaNeeds)
 
     companion object {
@@ -74,7 +79,9 @@ data class ServerProfile(
                 tunnelHostname = o.optString("tunnelHostname"),
                 // Before it could be turned off: on where it was set up
                 tunnelEnabled = o.optBoolean("tunnelEnabled", o.optString("tunnelHostname").isNotEmpty()),
-                tunnelAuto = o.optBoolean("tunnelAuto", true),
+                boreEnabled = o.optBoolean("boreEnabled"),
+                boreServer = o.optString("boreServer"),
+                borePort = o.optInt("borePort"),
                 jdk = o.optString("jdk").takeIf { o.has("jdk") && !o.isNull("jdk") && it.isNotEmpty() },
                 javaNeeds = o.optInt("javaNeeds").takeIf { o.has("javaNeeds") && !o.isNull("javaNeeds") && it > 0 },
             )
@@ -85,13 +92,15 @@ data class ServerProfile(
 /**
  * The servers, each in a folder of its own in the tool's folder of the Linux subsystem (the same
  * path inside it, so Java runs there): its files as the server keeps them, and ours next to them
- * (the profile, the tunnel's token), which aren't exported.
+ * (the profile, the tunnel's token, bore's secret), which aren't exported.
  */
 object Servers {
     /** The profile; a folder without it (an installation that didn't finish) isn't a server. */
     private const val PROFILE = "lmtoolbox.json"
     /** The Cloudflare tunnel's token (see Tunnel.tokenFile). */
     const val TOKEN = ".tunnel-token"
+    /** Its own bore server's secret (see Bore.secretFile). */
+    const val BORE_SECRET = ".bore-secret"
     /** Java's process id while it runs. */
     private const val PID = ".pid"
     /** Its world's seed, as the server told it (see ServerRunner): known while it's stopped too. */
@@ -99,7 +108,7 @@ object Servers {
     /** Its world's copies, made as its Minecraft version changes (see `Installer.change`). */
     const val BACKUPS = "backups"
     /** Ours, left out of exports. */
-    val OWN_FILES = setOf(PROFILE, TOKEN, PID, SEED)
+    val OWN_FILES = setOf(PROFILE, TOKEN, BORE_SECRET, PID, SEED)
 
     private fun root(context: Context) = File(LinuxScripts.scriptDir(context, "Minecraft"), "servers")
 
@@ -135,10 +144,14 @@ object Servers {
         if (PreferenceHelper.get(context, MinecraftServerFeature.S_SELECTED, "") == id) PreferenceHelper.remove(context, MinecraftServerFeature.S_SELECTED)
         ServerRunner.pruneJava(context)
         ServerRunner.pruneTunnel(context)
+        ServerRunner.pruneBore(context)
     }
 
     /** Its Cloudflare tunnel's token, next to its files (see ServerRunner.tunnelOf). */
     fun tokenFile(context: Context, id: String) = File(dir(context, id), TOKEN)
+
+    /** Its bore server's secret, next to its files (see ServerRunner.boreOf). */
+    fun boreSecretFile(context: Context, id: String) = File(dir(context, id), BORE_SECRET)
 
     fun pidFile(context: Context, id: String) = File(dir(context, id), PID)
 

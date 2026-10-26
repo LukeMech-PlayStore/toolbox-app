@@ -29,7 +29,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import kotlin.math.roundToInt
@@ -141,14 +140,17 @@ private fun ServerList(servers: List<ServerProfile>, running: ServerRunner.Run?,
             } else {
                 PageHeading(title = title) {
                     Column(verticalArrangement = RowArrangement) {
-                        // What the servers take in all while one runs: its run's processes and its tunnel's
+                        // What the servers take in all while one runs: its run's processes and its tunnels'
                         // (not the app's others, e.g. an encoding meanwhile)
                         // (the last run's while they fold away)
                         val lastRun = remember { arrayOfNulls<ServerRunner.Run>(1) }
                         if (running?.isActive == true) lastRun[0] = running
                         Reveal(visible = running?.isActive == true) {
                             val tunnel by ServerRunner.tunnel.collectAsState()
-                            val ids = setOfNotNull(lastRun[0]?.taskId, tunnel?.takeIf { it.isActive }?.state?.taskId)
+                            val bore by ServerRunner.bore.collectAsState()
+                            val ids = setOfNotNull(
+                                lastRun[0]?.taskId, tunnel?.takeIf { it.isActive }?.state?.taskId, bore?.takeIf { it.isActive }?.state?.taskId
+                            )
                             ResourceTiles(MinecraftServerFeature, Modifier.padding(horizontal = 16.dp, vertical = 4.dp), ResourceScope.Tasks(ids))
                         }
                         servers.forEach { s ->
@@ -546,16 +548,4 @@ internal fun stageText(stage: Installer.Stage): String = stringResource(
 @Composable
 internal fun Section(title: String) {
     SectionTitle(title, modifier = Modifier.padding(top = 8.dp))
-}
-
-/** A quieter note under what it's about. */
-@Composable
-internal fun Note(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Start,
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
-    )
 }

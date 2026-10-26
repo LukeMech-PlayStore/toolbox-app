@@ -29,6 +29,7 @@ import org.lukemech.lmtoolbox.features.servers.mc_server.Transfers
 import org.lukemech.lmtoolbox.ui.components.ConfirmDialog
 import org.lukemech.lmtoolbox.ui.components.ConfirmedActionButton
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
+import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.listBox

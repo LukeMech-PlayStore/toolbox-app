@@ -192,8 +192,10 @@ fun TaskStatusBar(onOpenSetup: () -> Unit, modifier: Modifier = Modifier) {
 
     // What runs as a service: that it does, no progress (it has none: it runs until it's stopped)
     val services by LinuxTasks.services.collectAsState()
-    // Not on its tool's own page, which shows it
+    // Not on its tool's own page, which shows it; one that's part of another (a server's tunnel) as that one, counted once
     val shown = services.filterNot { onItsPage(it.source) }
+        .map { if (it.group != null) it.copy(label = it.group, group = null) else it }
+        .distinctBy { it.source to it.label }
     val lastService = remember { mutableStateOf<Pair<LinuxService, Int>?>(null) }
     shown.firstOrNull()?.let { lastService.value = it to shown.size }
 
