@@ -17,6 +17,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 
 /** Asks before something that can't be undone: [confirmLabel] (in the error color) does it, Cancel doesn't. */
@@ -25,6 +29,17 @@ fun ConfirmDialog(
     icon: ImageVector,
     title: String,
     text: String,
+    confirmLabel: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) = ConfirmDialog(icon, title, AnnotatedString(text), confirmLabel, onDismiss, onConfirm)
+
+/** As the plain one, its [text] styled in parts (e.g. a command in a terminal's font, see [withCode]). */
+@Composable
+fun ConfirmDialog(
+    icon: ImageVector,
+    title: String,
+    text: AnnotatedString,
     confirmLabel: String,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
@@ -44,6 +59,13 @@ fun ConfirmDialog(
             TextButton(onClick = onDismiss) { Text(stringResource(android.R.string.cancel)) }
         }
     )
+}
+
+/** [text] with [code] in it (e.g. a command to type) in a terminal's font. */
+fun withCode(text: String, code: String): AnnotatedString = buildAnnotatedString {
+    append(text)
+    val at = text.indexOf(code)
+    if (at >= 0) addStyle(SpanStyle(fontFamily = FontFamily.Monospace), at, at + code.length)
 }
 
 /**

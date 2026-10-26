@@ -49,6 +49,12 @@
     <string name="f_Mc_lan">On this network</string>
     <string name="f_Mc_lan_none">Not on Wi-Fi or a hotspot</string>
     <string name="f_Mc_tailscale">Through Tailscale</string>
+    <string name="f_Mc_kick">Kick out</string>
+    <string name="f_Mc_ban">Ban</string>
+    <string name="f_Mc_ban_title">Ban %1$s?</string>
+    <string name="f_Mc_ban_confirm">%1$s is kicked out and can\'t join this server again. To undo it, type in the console:\n%2$s</string>
+    <string name="f_Mc_tailscale_ip">Through Tailscale (IP)</string>
+    <string name="f_Mc_tailscale_desc">Only devices on your tailnet with Tailscale on (or tailnets you share this phone with) can join here; not anyone else. The name needs MagicDNS, the IP always works.</string>
     <string name="f_Mc_tailscale_none">Turn on the Tailscale app: players on your tailnet join at its address</string>
     <string name="f_Mc_internet">From anywhere</string>
     <string name="f_Mc_internet_none">Turn on Bore or a Cloudflare tunnel</string>
@@ -180,7 +186,7 @@
     <string name="f_Mc_installing_java">Installing Java…</string>
     <string name="f_Mc_discard">Discard the changes</string>
     <string name="f_Mc_tunnel_enable">Cloudflare tunnel</string>
-    <string name="f_Mc_tunnel_enable_desc">Players join from anywhere through your domain. Installs cloudflared.</string>
+    <string name="f_Mc_tunnel_enable_desc">Players join from anywhere through your domain.</string>
     <string name="f_Mc_version_stop_first">Stop the server to change its version</string>
     <string name="f_Mc_adding_addons">Adding</string>
 

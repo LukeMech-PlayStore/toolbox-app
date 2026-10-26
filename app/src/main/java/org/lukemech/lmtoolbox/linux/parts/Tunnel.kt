@@ -30,6 +30,8 @@ class Tunnel(
     val tokenFile: File,
     /** What the bottom bar shows of it while it runs (a service, see LinuxTasks.runService), e.g. "My server · tunnel". */
     private val label: String = "cloudflared",
+    /** The service it's part of, as its label (e.g. its server's name): one with it in the bottom bar. */
+    private val group: String? = null,
 ) {
     enum class Phase { Connecting, Connected, Stopped, Failed }
 
@@ -65,7 +67,7 @@ class Tunnel(
             var lastError: String? = null
             // Until it's stopped: a service of its tool's, not a task
             val result = LinuxTasks.runService(
-                app, command(), source, label,
+                app, command(), source, label, group = group,
                 onStart = { id -> _state.update { it?.copy(taskId = id) } },
                 onLine = { line ->
                     onLine(line)

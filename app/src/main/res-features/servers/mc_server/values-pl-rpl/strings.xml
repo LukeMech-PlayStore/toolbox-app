@@ -49,6 +49,12 @@
     <string name="f_Mc_lan">W tej sieci</string>
     <string name="f_Mc_lan_none">Brak Wi-Fi i hotspotu</string>
     <string name="f_Mc_tailscale">Przez Tailscale</string>
+    <string name="f_Mc_kick">Wyrzuć</string>
+    <string name="f_Mc_ban">Zbanuj</string>
+    <string name="f_Mc_ban_title">Zbanować %1$s?</string>
+    <string name="f_Mc_ban_confirm">%1$s zostanie wyrzucony i nie dołączy już do tego serwera. Aby to cofnąć, wpisz w konsoli:\n%2$s</string>
+    <string name="f_Mc_tailscale_ip">Przez Tailscale (IP)</string>
+    <string name="f_Mc_tailscale_desc">Dołączą tu tylko urządzenia z twojego tailnetu z włączonym Tailscale (albo z tailnetów, którym udostępnisz ten telefon), nikt inny. Nazwa wymaga MagicDNS, adres IP działa zawsze.</string>
     <string name="f_Mc_tailscale_none">Włącz aplikację Tailscale: gracze z twojego tailnetu dołączą pod jej adresem</string>
     <string name="f_Mc_internet">Z dowolnego miejsca</string>
     <string name="f_Mc_internet_none">Włącz Bore albo tunel Cloudflare</string>
@@ -184,7 +190,7 @@
     <string name="f_Mc_installing_java">Instalowanie Javy…</string>
     <string name="f_Mc_discard">Odrzuć zmiany</string>
     <string name="f_Mc_tunnel_enable">Tunel Cloudflare</string>
-    <string name="f_Mc_tunnel_enable_desc">Gracze dołączą z dowolnego miejsca przez twoją domenę. Instaluje cloudflared.</string>
+    <string name="f_Mc_tunnel_enable_desc">Gracze dołączą z dowolnego miejsca przez twoją domenę.</string>
     <string name="f_Mc_version_stop_first">Zatrzymaj serwer, aby zmienić wersję</string>
     <string name="f_Mc_adding_addons">Dodawanie</string>
 

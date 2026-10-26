@@ -32,6 +32,8 @@ class Bore(
     val secretFile: File,
     /** What the bottom bar shows of it while it runs (a service, see LinuxTasks.runService), e.g. "My server · bore". */
     private val label: String = "bore",
+    /** The service it's part of, as its label (e.g. its server's name): one with it in the bottom bar. */
+    private val group: String? = null,
 ) {
     enum class Phase { Connecting, Connected, Stopped, Failed }
 
@@ -74,7 +76,7 @@ class Bore(
             while (!stopping) {
                 var connected = false
                 val result = LinuxTasks.runService(
-                    app, command(localPort, server, want), source, label,
+                    app, command(localPort, server, want), source, label, group = group,
                     onStart = { id -> _state.update { it?.copy(taskId = id) } },
                     onLine = { raw ->
                         val line = raw.replace(ANSI, "")

@@ -19,8 +19,10 @@ object Network {
         val fromNetworks = runCatching {
             @Suppress("DEPRECATION") // allNetworks: every network, not just the default one (Wi-Fi with mobile data on)
             cm.allNetworks.filter { n ->
+                // Not a VPN's (Tailscale's): it has the transports of the network under it, Wi-Fi's too
                 cm.getNetworkCapabilities(n)?.let {
-                    it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+                    !it.hasTransport(NetworkCapabilities.TRANSPORT_VPN) &&
+                        (it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))
                 } == true
             }.flatMap { n -> cm.getLinkProperties(n)?.linkAddresses.orEmpty() }.map { it.address }
         }.getOrDefault(emptyList())

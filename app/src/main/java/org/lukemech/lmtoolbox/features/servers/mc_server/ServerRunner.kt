@@ -141,13 +141,16 @@ object ServerRunner {
     /** A server's tunnel, its token next to the server's files (see Servers.tokenFile). */
     fun tunnelOf(context: Context, profile: ServerProfile) = Tunnel(
         MinecraftServerFeature, Servers.tokenFile(context.applicationContext, profile.id),
-        label = "${profile.name} · Cloudflare"
+        label = "${profile.name} · Cloudflare",
+        // One with its server in the bottom bar
+        group = profile.name
     )
 
     /** A server's bore tunnel, its secret (its own bore server's) next to the server's files (see Servers.boreSecretFile). */
     fun boreOf(context: Context, profile: ServerProfile) = Bore(
         MinecraftServerFeature, Servers.boreSecretFile(context.applicationContext, profile.id),
-        label = "${profile.name} · bore"
+        label = "${profile.name} · Bore",
+        group = profile.name
     )
 
     fun isRunning(id: String) = _state.value?.let { it.serverId == id && it.isActive } == true
@@ -577,7 +580,7 @@ object ServerRunner {
         if (!profile.boreEnabled || !Bore.isInstalled(context)) return
         val app = context.applicationContext
         val bore = boreOf(app, profile)
-        val localPort = Servers.properties(app, profile.id).get("server-port")?.toIntOrNull() ?: 25565
+        val localPort = port(app, profile.id)
         currentBore = bore
         boreJob?.cancel()
         boreJob = scope.launch {
@@ -598,6 +601,14 @@ object ServerRunner {
     fun stopBore() {
         currentBore?.stop()
     }
+
+    /**
+     * The port server [id] listens on: while it runs, the one it started with (a new one waits for its
+     * restart, see [changed]), else server.properties'.
+     */
+    fun port(context: Context, id: String): Int =
+        (_state.value?.takeIf { it.serverId == id && it.isActive }?.startValues?.get("server-port")
+            ?: Servers.properties(context.applicationContext, id).get("server-port"))?.toIntOrNull() ?: 25565
 
     /** Whether server [id] is still on its way up or running (its tunnels started only then). */
     private fun runs(id: String) = _state.value?.let { it.serverId == id && it.isActive } == true
