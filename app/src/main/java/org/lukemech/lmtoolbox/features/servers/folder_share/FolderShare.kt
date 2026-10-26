@@ -208,7 +208,7 @@ object FolderShare {
         val run = _state.value?.takeIf { it.isActive } ?: return
         val s = ShareSettings.load(app)
         if (!s.bore) return
-        tunnels.startBore(app, ID, run.name, bore(app), run.port, s.boreServer.ifEmpty { Bore.SERVER }, s.borePort) { port ->
+        tunnels.startBore(app, ID, bore(app), run.port, s.boreServer.ifEmpty { Bore.SERVER }, s.borePort) { port ->
             // Its port, asked for again next time
             if (ShareSettings.load(app).borePort != port) ShareSettings.put(app, FolderShareFeature.S_BORE_PORT, port)
         }

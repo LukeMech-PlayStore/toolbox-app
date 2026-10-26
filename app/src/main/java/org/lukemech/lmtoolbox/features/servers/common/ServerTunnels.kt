@@ -100,7 +100,7 @@ class ServerTunnels(private val source: AppFeature, private val log: (String) ->
      * again next time.
      */
     fun startBore(
-        context: Context, serverId: String, label: String, bore: Bore, localPort: Int, server: String, port: Int,
+        context: Context, serverId: String, bore: Bore, localPort: Int, server: String, port: Int,
         onConnected: (port: Int) -> Unit = {}
     ) {
         if (_bore.value?.isActive == true) return
@@ -111,9 +111,7 @@ class ServerTunnels(private val source: AppFeature, private val log: (String) ->
         boreJob = scope.launch {
             bore.state.collect { state ->
                 state ?: return@collect
-                if (state.phase == Bore.Phase.Failed && _bore.value?.state?.phase != Bore.Phase.Failed) {
-                    LinuxTasks.reportFailure(source, label, "bore: ${state.error ?: "failed"}")
-                }
+                // Failed: told in its status row alone (the server runs on without it), not as the server's failed task
                 if (state.phase == Bore.Phase.Connected) onConnected(state.port)
                 _bore.value = ServerBore(serverId, state)
             }

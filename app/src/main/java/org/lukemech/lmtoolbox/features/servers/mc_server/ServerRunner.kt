@@ -536,7 +536,7 @@ object ServerRunner {
         if (!profile.boreEnabled || tunnels.bore.value?.isActive == true) return
         val app = context.applicationContext
         tunnels.startBore(
-            app, profile.id, profile.name, boreOf(app, profile), port(app, profile.id),
+            app, profile.id, boreOf(app, profile), port(app, profile.id),
             profile.boreServer.ifEmpty { Bore.SERVER }, profile.borePort
         ) { port ->
             // Its port, asked for again next time

@@ -15,6 +15,8 @@
     <string name="f_Srv_bore_server_desc">bore.pub, or your own (e.g. bore.example.com)</string>
     <string name="f_Srv_bore_secret">Secret</string>
     <string name="f_Srv_bore_secret_desc" tools:ignore="TypographyDashes">Your server\'s secret (bore server --secret), if it has one</string>
+    <!-- Why Bore couldn't connect, when a DNS blocker (e.g. AdGuard as Private DNS) answers for the Bore server, its name -->
+    <string name="f_Srv_bore_dns_blocked">Your DNS blocks %1$s</string>
     <string name="f_Srv_stat_uptime">Up</string>
     <string name="f_Srv_uptime_hm">%1$d h %2$d min</string>
     <string name="f_Srv_uptime_m">%1$d min</string>
