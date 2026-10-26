@@ -152,11 +152,12 @@ fun FeatureSettingsPage(feature: AppFeature?) {
                 }
             }
 
-            // Its packages, as the installation page showed them, and the button to all of them
-            if (feat.linuxExtensions.isNotEmpty()) {
+            // Its packages, as the installation page showed them, and the button to all of them: with its extra ones it
+            // unpacked (e.g. a Java version); a native tool's once it got one (e.g. the network tools' iperf3)
+            val packages = remember(tasks, removed) { feat.linuxExtensions + feat.extraExtensions.filter { LinuxParts.isExtensionUnpacked(context, it) } }
+            if (packages.isNotEmpty()) {
                 SectionTitle(stringResource(R.string.s_feature_info))
-                // With its extra ones it unpacked (e.g. a Java version)
-                FeaturePackages(feat.linuxExtensions + feat.extraExtensions.filter { LinuxParts.isExtensionUnpacked(context, it) })
+                FeaturePackages(packages)
             }
         } }
     }

@@ -208,7 +208,9 @@ object LinuxTasks {
         context: Context, cmd: List<String>, source: AppFeature, leavePageIfNotReady: Boolean = true,
         timeoutMs: Long = LinuxEnv.DEFAULT_TIMEOUT_MS,
         /** Off: refused ([ExecResult.isExtensionMissing]) while the feature's tools aren't unpacked. */
-        installExtensions: Boolean = true
+        installExtensions: Boolean = true,
+        /** Each line the command prints, as it comes (e.g. a measurement's every second, for its page). */
+        onLine: ((String) -> Unit)? = null
     ): ExecResult {
         val app = context.applicationContext
         notReady(app, leavePageIfNotReady)?.let { return it }
@@ -223,7 +225,7 @@ object LinuxTasks {
         val result = try {
             envLock.read {
                 set(task.id) { it.copy(state = LinuxTask.State.Running) }
-                LinuxEnv.exec(app, cmd, timeoutMs, task = task.id) { partial = it }
+                LinuxEnv.exec(app, cmd, timeoutMs, onLine, task = task.id) { partial = it }
             }
         } catch (e: CancellationException) {
             finishCancelled(app, task.id, partial)
@@ -566,7 +568,7 @@ object LinuxTasks {
 
     /** Records the tool behind [source] as using its part (see [PartUsers.isUsing]). */
     private fun markUsing(app: Context, source: AppFeature) {
-        if (source.linuxExtensions.isNotEmpty() && LinuxParts.isExtensionUnpacked(app, LinuxParts.CORE)) PartUsers.setUsing(app, source.route, true)
+        if ((source.linuxExtensions.isNotEmpty() || source.extraExtensions.isNotEmpty()) && LinuxParts.isExtensionUnpacked(app, LinuxParts.CORE)) PartUsers.setUsing(app, source.route, true)
     }
 
     /**
@@ -651,10 +653,12 @@ object LinuxTasks {
     /**
      * Whether [feature] uses its tools: unpacked, and it got them or ran on them (its data; a part
      * several tools share stays while any uses it). Just downloaded, its module is Play's to uninstall
-     * (asked for when its data was deleted).
+     * (asked for when its data was deleted). A native tool with a part for some of its work alone (its
+     * extraExtensions, e.g. the network tools' iperf3): while it uses one of them.
      */
     fun hasExtension(context: Context, feature: AppFeature): Boolean =
-        feature.linuxExtensions.isNotEmpty() && feature.linuxExtensions.all { PartUsers.isUsing(context, feature.route, it) }
+        if (feature.linuxExtensions.isNotEmpty()) feature.linuxExtensions.all { PartUsers.isUsing(context, feature.route, it) }
+        else feature.extraExtensions.any { PartUsers.isUsing(context, feature.route, it) }
 
     /**
      * Null when commands can run. Otherwise (other packages shipped with the app than unpacked) the
