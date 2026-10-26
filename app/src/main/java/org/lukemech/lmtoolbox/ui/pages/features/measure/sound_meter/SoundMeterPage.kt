@@ -149,7 +149,8 @@ fun SoundMeterPage() {
             LiveGraph(
                 values = if (fullScale == null) emptyList() else history.map { (it + fullScale + calibration).toFloat() },
                 capacity = HISTORY, min = 30f, max = 110f, step = 20f, unit = unit,
-                intervalMs = SoundMeterFeature.BLOCK_MS.toLong(), label = { "%.1f %s".format(it, unit) }
+                intervalMs = SoundMeterFeature.BLOCK_MS.toLong(), label = { "%.1f %s".format(it, unit) },
+                holding = holding, onHoldingChange = { holding = it }
             )
             Results {
                 ResultRow(stringResource(R.string.f_meter_min), "${text(shown(levels.min))} $unit")

@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -126,13 +127,15 @@ fun HoldAction(holding: Boolean, onHoldingChange: (Boolean) -> Unit) {
  * [max] (widened to hold every value, in [step]s), a line across at every [step] (or every few, widened far),
  * labelled in [unit].
  *
- * Back in time: touched, it stands still, and the point under the finger is marked, its value ([label]) and how
- * long ago it was told at the top; sliding along it goes from one to the next. Let go, it runs on.
+ * Back in time: touched, it holds the meter ([onHoldingChange], as its HoldAction does) and the point under the
+ * finger is marked, its value ([label]) and how long ago it was told at the top; sliding along it goes from one
+ * to the next. Let go, the meter goes on, unless it was [holding] already (its HoldAction): then the mark stays,
+ * gone as it goes on.
  */
 @Composable
 fun LiveGraph(
     values: List<Float>, capacity: Int, min: Float, max: Float, step: Float, unit: String,
-    intervalMs: Long, label: (Float) -> String,
+    intervalMs: Long, label: (Float) -> String, holding: Boolean, onHoldingChange: (Boolean) -> Unit,
 ) {
     val lineColor = MaterialTheme.colorScheme.primary
     val gridColor = MaterialTheme.colorScheme.outlineVariant
@@ -144,10 +147,13 @@ fun LiveGraph(
     val measurer = rememberTextMeasurer()
     val path = remember { Path() }
     val current by rememberUpdatedState(values)
+    val isHolding by rememberUpdatedState(holding)
+    val setHolding by rememberUpdatedState(onHoldingChange)
     // While touched: the values as they were then, and where the finger is (px)
     var held by remember { mutableStateOf<List<Float>?>(null) }
     var finger by remember { mutableStateOf<Float?>(null) }
     val shown = held ?: values
+    LaunchedEffect(holding) { if (!holding) finger = null }
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
@@ -161,6 +167,9 @@ fun LiveGraph(
                     val down = awaitFirstDown()
                     held = current
                     finger = down.position.x
+                    // Held by the touch alone: going on as it's let go
+                    val heldBefore = isHolding
+                    if (!heldBefore) setHolding(true)
                     // Its own while touched: sliding along it doesn't scroll the page
                     down.consume()
                     while (true) {
@@ -170,7 +179,7 @@ fun LiveGraph(
                         change.consume()
                     }
                     held = null
-                    finger = null
+                    if (!heldBefore) setHolding(false)
                 }
             }
     ) {
