@@ -130,7 +130,10 @@ fun VibrationMeterPage() {
                 missingMessage = R.string.f_vibration_missing_sensors_message
             )
             MeterReading(analysis.rms?.let { "%.3f".format(it) } ?: none, unit, held = holding)
-            LiveGraph(values = trace, capacity = TRACE, min = 0f, max = 1f, step = 0.25f, unit = unit)
+            LiveGraph(
+                values = trace, capacity = TRACE, min = 0f, max = 1f, step = 0.25f, unit = unit,
+                intervalMs = TRACE_MS, label = { "%.3f %s".format(it, unit) }
+            )
             Results {
                 ResultRow(stringResource(R.string.f_vibration_rms), text(analysis.rms))
                 ResultRow(stringResource(R.string.f_vibration_peak), text(analysis.peak))

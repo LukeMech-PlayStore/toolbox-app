@@ -110,8 +110,12 @@
         </service>
 
         <!-- Normal app start -->
+        <!-- Turned, resized (split screen, a foldable) or a keyboard plugged in, it stays as it is: Compose lays
+             out again for the new size, so no page loses what it shows (a meter's readings, a form half
+             filled in). A new language or theme still makes it again -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
             android:theme="@style/android:Theme.Material.Light.NoActionBar">
             <intent-filter>

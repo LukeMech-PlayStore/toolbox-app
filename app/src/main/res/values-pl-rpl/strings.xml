@@ -36,6 +36,7 @@
     <string name="f_meter_min">Min</string>
     <string name="f_meter_max">Maks</string>
     <string name="f_meter_avg">Średnia</string>
+    <string name="f_meter_ago">%1$s s temu</string>
     <string name="w_setting_background">Tło widżetu</string>
     <string name="w_setting_background_transparent">Przezroczyste</string>
     <string name="w_setting_background_opacity">Krycie: %1$d%%</string>

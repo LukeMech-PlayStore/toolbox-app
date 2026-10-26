@@ -148,7 +148,8 @@ fun SoundMeterPage() {
             // Its scale in SPL; the history kept in dBFS, so it follows the calibration too
             LiveGraph(
                 values = if (fullScale == null) emptyList() else history.map { (it + fullScale + calibration).toFloat() },
-                capacity = HISTORY, min = 30f, max = 110f, step = 20f, unit = unit
+                capacity = HISTORY, min = 30f, max = 110f, step = 20f, unit = unit,
+                intervalMs = SoundMeterFeature.BLOCK_MS.toLong(), label = { "%.1f %s".format(it, unit) }
             )
             Results {
                 ResultRow(stringResource(R.string.f_meter_min), "${text(shown(levels.min))} $unit")
