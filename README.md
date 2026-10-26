@@ -19,7 +19,7 @@
 **One app, a drawer full of tools.** Measure with a ruler, a spirit level and a compass; work out a resistor's
 color code or a 555 timer with 25 electronics calculators; convert currencies; download, convert and shrink
 videos, music and images; edit a photo's metadata; or run your own Minecraft server, Vanilla to NeoForge,
-straight from your phone and reachable by your friends through bore, a Cloudflare tunnel or Tailscale.
+straight from your phone and reachable by your friends through Bore, a Cloudflare tunnel or Tailscale.
 
 The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared, bore) inside a
 PRoot-based Linux subsystem. You never set it up: the app installs it part by part, only when a tool you open
@@ -51,7 +51,7 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Media       | Media encoder (video, GIF, sound; cut, resize, a target file size)                             | FFmpeg                                                                                                                                                                       | `features:ffmpeg`   |
 | Media       | Image encoder (resizing, a target file size)                                                   | Android (`ImageDecoder`, `Bitmap`)                                                                                                                                           | `app`               |
 | Media       | File size (a shortcut to the media or the image encoder)                                       | Android                                                                                                                                                                      | `app`               |
-| Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
+| Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
 
 The electronics calculators: color code, SMD resistor code, Ohm's law, electric power, reactance and
 resonance, RC filter, voltage divider, series and parallel, capacitor charging, op-amp amplifier, LED
@@ -158,7 +158,7 @@ The code is in [`app/…/linux/`](app/src/main/java/org/lukemech/lmtoolbox/linux
 | `LinuxTasks.kt`     | Every command, installation and update as a task: the bottom bar, the notification, cancelling          |
 | `LinuxScripts.kt`   | Installs the tools' scripts (their modules' assets) into the subsystem                                  |
 | `InstallPrompt.kt`  | Asks before installing what a tool needs now                                                            |
-| `parts/`            | `Java` and `Tunnel`: the APIs of the parts a tool picks among or turns on                               |
+| `parts/`            | `Java`, `Tunnel` and `Bore`: the APIs of the parts a tool picks among or turns on                      |
 
 From UI code, use `LinuxTasks.run` or `runInBackground` (and `runService` for what runs until it's stopped,
 e.g. a server). A task carries the tool that started it (`LinuxTask.source`), which titles it and opens its
