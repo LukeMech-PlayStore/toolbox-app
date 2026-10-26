@@ -163,18 +163,22 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
 
     // The bottom bar's tabs: their icons' descriptions
 
-    fun home() = navTab(str(R.string.nav_main_page))
-    fun settings() = navTab(str(R.string.nav_settings))
-    private fun navTab(label: String) = click(hasContentDescription(label) and hasClickAction(), what = "tab $label")
+    fun home() = navTab(str(R.string.nav_main_page), Screen.Main.route)
+    fun settings() = navTab(str(R.string.nav_settings), Screen.Settings.route)
+    private fun navTab(label: String, route: String) =
+        click(hasContentDescription(label) and hasClickAction(), what = "tab $label") { page == route }
 
     /** Opens [feature] as a user would: home, every tool, then its row. */
     fun openTool(feature: AppFeature) {
         home()
         waitPage(Screen.Main.route)
-        clickText(R.string.all_features)
-        waitPage("category/${Screen.Category.ALL}")
-        clickText(str(feature.titleStringResId))
-        waitPage("feature/${feature.route}")
+        // Tapped again if the tap missed (the page still coming in under it)
+        val all = "category/${Screen.Category.ALL}"
+        clickText(R.string.all_features) { page == all }
+        waitPage(all)
+        val tool = "feature/${feature.route}"
+        clickText(str(feature.titleStringResId)) { page == tool }
+        waitPage(tool)
     }
 
     fun waitPage(route: String, timeoutMs: Long = 20_000) {
@@ -214,7 +218,7 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
                         Screen.Category.RECENT -> str(R.string.recent)
                         else -> str(FeatureCategory.valueOf(id).titleRes)
                     }
-                )
+                ) { page == route }
             }
             route.startsWith("settings/") -> {
                 // A settings page of its own: from the settings

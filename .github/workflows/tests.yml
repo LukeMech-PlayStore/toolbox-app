@@ -192,15 +192,19 @@ jobs:
           name: e2e-durations
 
       - name: Report
+        id: report
         env:
           MATRIX: ${{ needs.plan.outputs.matrix }}
         # The summary (a row per test, opened to every leg's result), the failures as annotations, the job failed with them
         run: python3 .github/scripts/tests/e2e/merge.py "$MATRIX" e2e-results "$GITHUB_STEP_SUMMARY" durations.json
 
       # For the next run's shards (a cache entry can't be overwritten: one per run, the newest restored). A pull
-      # request's stay its own; main's every branch reads
+      # request's stay its own; main's every branch reads. Only if merge.py updated them (almost nothing failed) and the
+      # run wasn't cancelled: its shards cut short, what they hadn't run yet missing
       - name: Save the durations
-        if: always() && hashFiles('durations.json') != ''
+        if: >-
+          always() && !cancelled() && needs.test.result != 'cancelled'
+          && steps.report.outputs.durations == 'updated'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: durations.json
