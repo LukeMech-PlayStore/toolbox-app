@@ -147,6 +147,7 @@ fun VibrationMeterPage() {
             Note(
                 stringResource(
                     R.string.f_vibration_note,
+                    analysis.sampleRate?.let { it.roundToInt().toString() } ?: none,
                     analysis.sampleRate?.let { (it / 2).roundToInt().toString() } ?: none
                 )
             )

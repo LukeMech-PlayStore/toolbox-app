@@ -7,8 +7,8 @@
     <string name="f_strobe_rate_value">%1$s Hz · %2$s obr/min</string>
     <string name="f_strobe_measured">Osiągnięta</string>
     <string name="f_strobe_behind">Latarka nie nadąża</string>
-    <string name="f_strobe_rate_field">Częstotliwość</string>
-    <string name="f_strobe_limited">Ograniczone do %1$s Hz (%2$s obr/min)</string>
+    <string name="f_strobe_rate_field">Częstotliwość · %1$s–%2$s %3$s</string>
+    <string name="f_strobe_limited">Poza zakresem: zostanie %1$s %2$s</string>
     <string name="f_strobe_tap">Wystukaj tempo</string>
     <string name="f_strobe_tap_desc">Stukaj z każdym obrotem</string>
     <string name="f_strobe_flash">Błyskaj</string>

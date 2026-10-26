@@ -80,14 +80,22 @@ fun UnitField(
  * end as a [UnitField]'s prefix is.
  */
 @Composable
-fun UnitChoiceField(label: String, value: String, onValueChange: (String) -> Unit, unit: String, units: List<String>, onUnitChange: (String) -> Unit) =
-    ValueField(
-        label = label,
-        value = value,
-        onValueChange = onValueChange,
-        keyboardType = KeyboardType.Decimal,
-        trailing = { UnitPicker(unit, units, onUnitChange) }
-    )
+fun UnitChoiceField(
+    label: String, value: String, onValueChange: (String) -> Unit, unit: String, units: List<String>,
+    /** Red: what's in it can't be had (e.g. out of range). */
+    isError: Boolean = false,
+    /** Left (Done, or another field tapped): e.g. what's in it brought into range. */
+    onLeave: (() -> Unit)? = null,
+    onUnitChange: (String) -> Unit,
+) = ValueField(
+    label = label,
+    value = value,
+    onValueChange = onValueChange,
+    keyboardType = KeyboardType.Decimal,
+    trailing = { UnitPicker(unit, units, onUnitChange) },
+    isError = isError,
+    onLeave = onLeave
+)
 
 /** A field's unit at its end ([current]), a tap listing [choices] to pick from. */
 @Composable
@@ -128,8 +136,11 @@ private fun ValueField(
     trailing: (@Composable () -> Unit)? = null,
     computed: Boolean = false,
     onFocus: (() -> Unit)? = null,
+    isError: Boolean = false,
+    onLeave: (() -> Unit)? = null,
 ) {
     val primary = MaterialTheme.colorScheme.primary
+    var focused by remember { mutableStateOf(false) }
     // A little more room above and below than rows have: its name and box stand apart from the rows and
     // results around them
     Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
@@ -146,6 +157,7 @@ private fun ValueField(
             singleLine = true,
             suffix = suffix?.let { { Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant) } },
             trailingIcon = trailing,
+            isError = isError,
             // A computed value: tinted, borderless, in the accent color
             colors = if (!computed) OutlinedTextFieldDefaults.colors() else OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = primary.copy(alpha = 0.10f),
@@ -154,7 +166,12 @@ private fun ValueField(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .onFocusChanged { if (it.isFocused) onFocus?.invoke() }
+                .onFocusChanged {
+                    if (it.isFocused) onFocus?.invoke()
+                    // Done clears the focus too (InputField)
+                    if (focused && !it.isFocused) onLeave?.invoke()
+                    focused = it.isFocused
+                }
         )
     }
 }

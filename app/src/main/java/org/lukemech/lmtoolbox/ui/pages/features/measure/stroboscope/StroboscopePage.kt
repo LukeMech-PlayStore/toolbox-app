@@ -65,6 +65,9 @@ fun StroboscopePage() {
 
     val typed = text.replace(',', '.').toDoubleOrNull()?.let { if (unit == RPM) hzOfRpm(it) else it }
     val hz = typed?.takeIf { it > 0 }?.let(::clampRate)
+    // Past what the torch flashes at (either way): it flashes at the nearest it can, the field set to it as it's left
+    val outside = typed != null && (typed < MIN_HZ || typed > MAX_HZ)
+    fun inUnit(value: Double) = fieldText(if (unit == RPM) rpm(value) else value)
     fun setHz(value: Double) {
         val clamped = clampRate(value)
         text = fieldText(if (unit == RPM) rpm(clamped) else clamped)
@@ -121,7 +124,7 @@ fun StroboscopePage() {
                 visible = flashing && hz != null && (measured ?: hz) < hz * (1 - BEHIND)
             )
             UnitChoiceField(
-                label = stringResource(R.string.f_strobe_rate_field),
+                label = stringResource(R.string.f_strobe_rate_field, inUnit(MIN_HZ), inUnit(MAX_HZ), unit),
                 value = text,
                 // Digits alone (and a separator): no letters can get into it
                 onValueChange = { typed -> text = typed.filter { it.isDigit() || it in ".," } },
@@ -133,11 +136,13 @@ fun StroboscopePage() {
                     val value = text.replace(',', '.').toDoubleOrNull()
                     unit = picked
                     text = value?.let { fieldText(if (picked == RPM) rpm(it) else hzOfRpm(it)) }.orEmpty()
-                }
+                },
+                isError = outside,
+                onLeave = { if (outside) typed?.let(::setHz) }
             )
             Note(
-                stringResource(R.string.f_strobe_limited, fieldText(MAX_HZ), fieldText(rpm(MAX_HZ))),
-                visible = typed != null && typed > MAX_HZ
+                stringResource(R.string.f_strobe_limited, inUnit(clampRate(typed ?: MIN_HZ)), unit),
+                visible = outside
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

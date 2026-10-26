@@ -7,8 +7,8 @@
     <string name="f_strobe_rate_value">%1$s Hz · %2$s RPM</string>
     <string name="f_strobe_measured">Reached</string>
     <string name="f_strobe_behind">The torch can\'t keep up</string>
-    <string name="f_strobe_rate_field">Rate</string>
-    <string name="f_strobe_limited">Limited to %1$s Hz (%2$s RPM)</string>
+    <string name="f_strobe_rate_field">Rate · %1$s–%2$s %3$s</string>
+    <string name="f_strobe_limited">Out of range: it\'ll be %1$s %2$s</string>
     <string name="f_strobe_tap">Tap tempo</string>
     <string name="f_strobe_tap_desc">Tap with each turn</string>
     <string name="f_strobe_flash">Flash</string>

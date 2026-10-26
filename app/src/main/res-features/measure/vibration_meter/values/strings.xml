@@ -10,5 +10,5 @@
     <string name="f_vibration_max_peak">Highest peak</string>
     <string name="f_vibration_frequency">Main frequency</string>
     <string name="f_vibration_sample_rate">Sensor rate</string>
-    <string name="f_vibration_note">Lay the phone flat on what vibrates. Frequencies up to %1$s Hz.</string>
+    <string name="f_vibration_note">Lay the phone flat on what vibrates. The sensor measures %1$s times a second, so it tells vibrations up to %2$s Hz.</string>
 </resources>

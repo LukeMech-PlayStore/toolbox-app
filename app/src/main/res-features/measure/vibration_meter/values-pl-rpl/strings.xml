@@ -9,5 +9,5 @@
     <string name="f_vibration_max_peak">Najwyższy szczyt</string>
     <string name="f_vibration_frequency">Główna częstotliwość</string>
     <string name="f_vibration_sample_rate">Częstość czujnika</string>
-    <string name="f_vibration_note">Połóż telefon płasko na tym, co drga. Częstotliwości do %1$s Hz.</string>
+    <string name="f_vibration_note">Połóż telefon płasko na tym, co drga. Czujnik mierzy %1$s razy na sekundę, więc rozpozna drgania do %2$s Hz.</string>
 </resources>
