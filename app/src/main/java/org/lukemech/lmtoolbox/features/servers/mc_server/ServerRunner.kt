@@ -23,6 +23,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import org.lukemech.lmtoolbox.features.servers.common.ServerTunnels
 import org.lukemech.lmtoolbox.linux.parts.Bore
 import org.lukemech.lmtoolbox.linux.parts.Tunnel
 import org.lukemech.lmtoolbox.helpers.deleteTree
@@ -34,7 +35,7 @@ import org.lukemech.lmtoolbox.linux.LinuxTasks
  * The running server (one at a time): Java in the subsystem as a service of the tool's (not a task:
  * see LinuxTasks.runService; kept going by [ServerService]), its console as it prints it ([log]),
  * what it says of itself and what it takes (memory, CPU); commands go to it over RCON. Its Cloudflare
- * tunnel ([tunnel]) and its bore tunnel ([bore]) run next to it.
+ * tunnel ([tunnel]) and its bore tunnel ([bore]) run next to it (see ServerTunnels).
  */
 object ServerRunner {
     private const val TAG = "ServerRunner"
@@ -97,16 +98,6 @@ object ServerRunner {
         val isActive get() = phase == Phase.Starting || phase == Phase.Running || phase == Phase.Stopping
     }
 
-    /** The bore tunnel of a server ([serverId]) as it's doing. */
-    data class ServerBore(val serverId: String, val state: Bore.State) {
-        val isActive get() = state.isActive
-    }
-
-    /** The tunnel of a server ([serverId]) as it's doing. */
-    data class ServerTunnel(val serverId: String, val state: Tunnel.State) {
-        val isActive get() = state.isActive
-    }
-
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val _state = MutableStateFlow<Run?>(null)
@@ -116,13 +107,14 @@ object ServerRunner {
     /** The server's console (and the tunnel's), its last lines. */
     val log: StateFlow<List<String>> = _log.asStateFlow()
 
-    private val _tunnel = MutableStateFlow<ServerTunnel?>(null)
-    /** The tunnel of the server running (or that ran last), as cloudflared's API tells. */
-    val tunnel: StateFlow<ServerTunnel?> = _tunnel.asStateFlow()
+    /** The servers' tunnels (one server's at a time), their lines in its console. */
+    private val tunnels = ServerTunnels(MinecraftServerFeature) { line -> addLog(line) }
 
-    private val _bore = MutableStateFlow<ServerBore?>(null)
+    /** The tunnel of the server running (or that ran last), as cloudflared's API tells. */
+    val tunnel: StateFlow<ServerTunnels.ServerTunnel?> = tunnels.tunnel
+
     /** The bore tunnel of the server running (or that ran last), as bore's API tells. */
-    val bore: StateFlow<ServerBore?> = _bore.asStateFlow()
+    val bore: StateFlow<ServerTunnels.ServerBore?> = tunnels.bore
 
     private var playersJob: Job? = null
     /** The app (the Application, not a Context that may be an activity), for what the server tells of itself (its seed). */
@@ -132,11 +124,6 @@ object ServerRunner {
     /** The server whose files go once it has stopped ([kill]): what it still wrote while dying goes with them. */
     @Volatile
     private var deleteAfter: String? = null
-    /** The tunnel under way (one, with its server), and its state passed on to [tunnel]. */
-    private var currentTunnel: Tunnel? = null
-    private var tunnelJob: Job? = null
-    private var currentBore: Bore? = null
-    private var boreJob: Job? = null
 
     /** A server's tunnel, its token next to the server's files (see Servers.tokenFile). */
     fun tunnelOf(context: Context, profile: ServerProfile) = Tunnel(
@@ -193,11 +180,11 @@ object ServerRunner {
         // The tunnels turned on for it (Cloudflare's once its token is in), each installed first if it's gone
         // meanwhile (asked, as its Java is); not there after all, it shows as failed
         if (profile.tunnelEnabled && tunnelOf(app, profile).hasToken) scope.launch {
-            if (!installTunnel(app).ok) _tunnel.value = ServerTunnel(profile.id, Tunnel.State(Tunnel.Phase.Failed, error = "cloudflared isn't installed"))
+            if (!installTunnel(app).ok) tunnels.tunnelFailed(profile.id, "cloudflared isn't installed")
             else if (runs(profile.id)) startTunnel(app, profile)
         }
         if (profile.boreEnabled) scope.launch {
-            if (!installBore(app).ok) _bore.value = ServerBore(profile.id, Bore.State(Bore.Phase.Failed, error = "bore isn't installed"))
+            if (!installBore(app).ok) tunnels.boreFailed(profile.id, "bore isn't installed")
             else if (runs(profile.id)) startBore(app, profile)
         }
 
@@ -334,33 +321,19 @@ object ServerRunner {
     }
 
     /** Installs cloudflared, a server's tunnel turned on: asked first (InstallPrompt), then its table on the page tells how it goes. */
-    suspend fun installTunnel(context: Context): InstallResult {
-        val app = context.applicationContext
-        if (Tunnel.isInstalled(app)) return InstallResult.Installed
-        // Asked first (InstallPrompt); once accepted, it goes on in the runner's scope whatever the caller does
-        return Tunnel.install(app, MinecraftServerFeature)
-    }
+    suspend fun installTunnel(context: Context): InstallResult = tunnels.install(context, Tunnel.PART)
 
-    /** Uninstalls cloudflared when no server has its tunnel turned on (and none runs). */
-    fun pruneTunnel(context: Context) {
-        val app = context.applicationContext
-        if (_tunnel.value?.isActive == true || Servers.list(app).any { it.tunnelEnabled }) return
-        if (LinuxParts.isExtensionUnpacked(app, Tunnel.PART) || LinuxParts.isExtensionDownloaded(app, Tunnel.PART)) LinuxTasks.removeParts(app, listOf(Tunnel.PART))
-    }
+    /**
+     * Uninstalls cloudflared when no server has its tunnel turned on (nor another tool its own, see
+     * MinecraftServerFeature.usesExtraExtension), and none runs.
+     */
+    fun pruneTunnel(context: Context) = ServerTunnels.prune(context, Tunnel.PART)
 
     /** Installs bore, a server's bore tunnel turned on: asked first (InstallPrompt), then its table on the page tells how it goes. */
-    suspend fun installBore(context: Context): InstallResult {
-        val app = context.applicationContext
-        if (Bore.isInstalled(app)) return InstallResult.Installed
-        return Bore.install(app, MinecraftServerFeature)
-    }
+    suspend fun installBore(context: Context): InstallResult = tunnels.install(context, Bore.PART)
 
-    /** Uninstalls bore when no server has its bore tunnel turned on (and none runs). */
-    fun pruneBore(context: Context) {
-        val app = context.applicationContext
-        if (_bore.value?.isActive == true || Servers.list(app).any { it.boreEnabled }) return
-        if (LinuxParts.isExtensionUnpacked(app, Bore.PART) || LinuxParts.isExtensionDownloaded(app, Bore.PART)) LinuxTasks.removeParts(app, listOf(Bore.PART))
-    }
+    /** Uninstalls bore when no server has its bore tunnel turned on (nor another tool its own), and none runs. */
+    fun pruneBore(context: Context) = ServerTunnels.prune(context, Bore.PART)
 
     /** Its Java, as it starts (a task in the bottom bar, and its table tells how it's doing); whether it's there now. */
     private suspend fun installJava(app: Context, jdk: Java.Jdk): InstallResult = Java.install(app, MinecraftServerFeature, jdk)
@@ -547,60 +520,31 @@ object ServerRunner {
      * hostname gets to the server, as set up in Cloudflare's dashboard; its lines in the console.
      */
     fun startTunnel(context: Context, profile: ServerProfile) {
-        if (_tunnel.value?.isActive == true) return
-        // Turned on for it, and there (see Tunnel.install)
-        if (!profile.tunnelEnabled || !Tunnel.isInstalled(context)) return
-        val tunnel = tunnelOf(context, profile).takeIf { it.hasToken } ?: return
-        currentTunnel = tunnel
-        tunnelJob?.cancel()
-        tunnelJob = scope.launch {
-            tunnel.state.collect { state ->
-                state ?: return@collect
-                // Failed (not stopped): told in the one place errors are, the bottom bar
-                if (state.phase == Tunnel.Phase.Failed && _tunnel.value?.state?.phase != Tunnel.Phase.Failed) {
-                    LinuxTasks.reportFailure(MinecraftServerFeature, profile.name, "Cloudflare tunnel: ${state.error ?: "failed"}")
-                }
-                _tunnel.value = ServerTunnel(profile.id, state)
-            }
-        }
-        tunnel.start(context) { line -> addLog("[cloudflared] $line") }
+        // Turned on for it (and there, with its token: see ServerTunnels.startTunnel)
+        if (!profile.tunnelEnabled) return
+        tunnels.startTunnel(context, profile.id, profile.name, tunnelOf(context, profile))
     }
 
-    fun stopTunnel() {
-        currentTunnel?.stop()
-    }
+    fun stopTunnel() = tunnels.stopTunnel()
 
     /**
      * The server's bore tunnel ([Bore]): its port on the bore server (the one it had last, if it's free),
      * kept for next time; its lines in the console.
      */
     fun startBore(context: Context, profile: ServerProfile) {
-        if (_bore.value?.isActive == true) return
-        // Turned on for it, and there (see Bore.install)
-        if (!profile.boreEnabled || !Bore.isInstalled(context)) return
+        // Turned on for it (and there: see ServerTunnels.startBore)
+        if (!profile.boreEnabled || tunnels.bore.value?.isActive == true) return
         val app = context.applicationContext
-        val bore = boreOf(app, profile)
-        val localPort = port(app, profile.id)
-        currentBore = bore
-        boreJob?.cancel()
-        boreJob = scope.launch {
-            bore.state.collect { state ->
-                state ?: return@collect
-                if (state.phase == Bore.Phase.Failed && _bore.value?.state?.phase != Bore.Phase.Failed) {
-                    LinuxTasks.reportFailure(MinecraftServerFeature, profile.name, "bore: ${state.error ?: "failed"}")
-                }
-                // Its port, asked for again next time
-                if (state.phase == Bore.Phase.Connected) Servers.load(app, profile.id)?.takeIf { it.borePort != state.port }
-                    ?.let { Servers.save(app, it.copy(borePort = state.port)) }
-                _bore.value = ServerBore(profile.id, state)
-            }
+        tunnels.startBore(
+            app, profile.id, profile.name, boreOf(app, profile), port(app, profile.id),
+            profile.boreServer.ifEmpty { Bore.SERVER }, profile.borePort
+        ) { port ->
+            // Its port, asked for again next time
+            Servers.load(app, profile.id)?.takeIf { it.borePort != port }?.let { Servers.save(app, it.copy(borePort = port)) }
         }
-        bore.start(app, localPort, profile.boreServer.ifEmpty { Bore.SERVER }, profile.borePort) { line -> addLog("[bore] $line") }
     }
 
-    fun stopBore() {
-        currentBore?.stop()
-    }
+    fun stopBore() = tunnels.stopBore()
 
     /**
      * The port server [id] listens on: while it runs, the one it started with (a new one waits for its
@@ -624,10 +568,7 @@ object ServerRunner {
 
     /** Server [id]'s tunnel token changed (a new one in): while the server runs, its tunnel runs again with it (the old one's stopped first). */
     suspend fun tunnelToken(context: Context, id: String) {
-        if (_tunnel.value?.let { it.serverId == id && it.isActive } == true) {
-            stopTunnel()
-            _tunnel.first { it?.isActive != true }
-        }
+        tunnels.stopTunnelOf(id)
         if (Servers.load(context.applicationContext, id)?.tunnelEnabled == true) tunnelOn(context, id)
     }
 
@@ -635,10 +576,7 @@ object ServerRunner {
     fun tunnelOff(context: Context, id: String) {
         val app = context.applicationContext
         scope.launch {
-            if (_tunnel.value?.let { it.serverId == id && it.isActive } == true) {
-                stopTunnel()
-                _tunnel.first { it?.isActive != true }
-            }
+            tunnels.stopTunnelOf(id)
             pruneTunnel(app)
         }
     }
@@ -653,10 +591,7 @@ object ServerRunner {
     fun boreOff(context: Context, id: String) {
         val app = context.applicationContext
         scope.launch {
-            if (_bore.value?.let { it.serverId == id && it.isActive } == true) {
-                stopBore()
-                _bore.first { it?.isActive != true }
-            }
+            tunnels.stopBoreOf(id)
             pruneBore(app)
         }
     }

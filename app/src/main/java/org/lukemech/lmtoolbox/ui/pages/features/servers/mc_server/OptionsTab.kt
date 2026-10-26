@@ -47,6 +47,8 @@ import org.lukemech.lmtoolbox.ui.components.OptionSetting
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.listBox
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TextSetting
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.copy
 
 /**
  * Its options: its settings (server.properties, memory, the config file itself), the tunnels, and its
@@ -137,7 +139,7 @@ internal fun OptionsTab(
                 subtitle = seed ?: stringResource(R.string.f_Mc_seed_unknown),
                 icon = Icons.Default.Landscape,
                 buttonContent = if (seed != null) {
-                    { Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.f_Mc_copy), tint = MaterialTheme.colorScheme.primary) }
+                    { Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.f_Srv_copy), tint = MaterialTheme.colorScheme.primary) }
                 } else null,
                 onClick = { seed?.let { copy(context, it) } }
             )
@@ -189,10 +191,10 @@ internal fun OptionsTab(
         }
 
         // From anywhere: bore first (nothing to set up), then Cloudflare's
-        Box(modifier = Modifier.bringIntoViewRequester(tunnelAt)) { Section(stringResource(R.string.f_Mc_bore)) }
+        Box(modifier = Modifier.bringIntoViewRequester(tunnelAt)) { Section(stringResource(R.string.f_Srv_bore)) }
         BoreSection(profile, onChanged)
 
-        Section(stringResource(R.string.f_Mc_tunnel))
+        Section(stringResource(R.string.f_Srv_tunnel))
         TunnelSection(profile, onChanged)
 
         Section(stringResource(R.string.f_Mc_section_files))

@@ -25,18 +25,18 @@ import org.lukemech.lmtoolbox.features.servers.mc_server.ServerProfile
 import org.lukemech.lmtoolbox.features.servers.mc_server.ServerRunner
 import org.lukemech.lmtoolbox.features.servers.mc_server.Servers
 import org.lukemech.lmtoolbox.linux.InstallResult
-import org.lukemech.lmtoolbox.linux.LinuxParts
-import org.lukemech.lmtoolbox.linux.LinuxTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.linux.parts.Tunnel
 import org.lukemech.lmtoolbox.ui.components.ExpandableButton
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.Note
-import org.lukemech.lmtoolbox.ui.components.PackageTable
-import org.lukemech.lmtoolbox.ui.components.PackageTableRow
 import org.lukemech.lmtoolbox.ui.components.RevealSection
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.features.servers.common.Reach
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.EditDialog
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.PartPackage
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TextSetting
 
 /**
  * Cloudflare's tunnel, turned on or off: on, cloudflared is installed (its row as the Java's table has
@@ -63,33 +63,12 @@ internal fun TunnelSection(profile: ServerProfile, onChanged: () -> Unit) {
             else ServerRunner.tunnelOff(context, profile.id)
         }
         RevealSection(enabled) {
-            PartPackage(Tunnel.PART)
+            PartPackage(MinecraftServerFeature, Tunnel.PART)
             TunnelSettings(profile, onChanged)
         }
         // What it's for: under its switch, its settings unfolding above it
         Note(stringResource(R.string.f_Mc_tunnel_desc))
     }
-}
-
-/** A tunnel's part's row (cloudflared's, bore's), as the Java's table has them: on the phone (its version), or what getting it takes, each step as it installs. */
-@Composable
-internal fun PartPackage(part: String) {
-    val context = LocalContext.current
-    // Again once it's installed or removed
-    val tasks by LinuxTasks.tasks.collectAsState()
-    val removed by LinuxTasks.extensionsRemoved.collectAsState()
-    val states by LinuxTasks.packages.collectAsState()
-    val ext = remember(part) { LinuxParts.parts(context)[part] } ?: return
-    val installing = tasks.firstOrNull { it.isActive && it.type == LinuxTask.Type.Extension && it.source == MinecraftServerFeature }
-        ?.takeIf { part in it.packages }
-    val there = remember(tasks, removed) { LinuxParts.installedParts(context).firstOrNull { it.part.name == part }?.takeIf { it.unpacked } }
-    // While it installs, as it was when it started (its download's size too, unpacking), each step as it goes: as the Java's table
-    val row = when {
-        installing != null -> PackageTableRow(ext, archive = part in installing.downloads, state = states[part])
-        there != null -> PackageTableRow(ext, archive = true, unpacked = true, version = there.version)
-        else -> PackageTableRow(ext, archive = !LinuxParts.isExtensionDownloaded(context, part))
-    }
-    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) { PackageTable(listOf(row)) }
 }
 
 /** The Cloudflare tunnel's: its token, the address players type; checking the domain, and how to set it up. */
@@ -112,7 +91,7 @@ private fun TunnelSettings(profile: ServerProfile, onChanged: () -> Unit) {
         var editingToken by remember { mutableStateOf(false) }
         FeatureButton(
             title = stringResource(R.string.f_Mc_token),
-            subtitle = stringResource(if (hasToken) R.string.f_Mc_token_saved else R.string.f_Mc_token_desc),
+            subtitle = stringResource(if (hasToken) R.string.f_Srv_saved else R.string.f_Mc_token_desc),
             icon = Icons.Default.Key,
             buttonContent = if (hasToken) {
                 {
@@ -120,7 +99,7 @@ private fun TunnelSettings(profile: ServerProfile, onChanged: () -> Unit) {
                         tunnel.setToken(null)
                         hasToken = false
                         if (ServerRunner.tunnel.value?.let { it.serverId == profile.id && it.isActive } == true) ServerRunner.stopTunnel()
-                    }) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.f_Mc_token_remove), tint = MaterialTheme.colorScheme.error) }
+                    }) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.f_Srv_token_remove), tint = MaterialTheme.colorScheme.error) }
                 }
             } else null,
             onClick = { editingToken = true }
@@ -139,7 +118,7 @@ private fun TunnelSettings(profile: ServerProfile, onChanged: () -> Unit) {
         // The address players type and its check: once there's a token (no tunnel to reach before)
         RevealSection(hasToken) {
             TextSetting(stringResource(R.string.f_Mc_hostname), hostname, Icons.Default.Public, subtitle = stringResource(R.string.f_Mc_hostname_desc)) {
-                hostname = Network.hostnameOf(it)
+                hostname = Reach.hostnameOf(it)
                 check = null
                 save { p -> p.copy(tunnelHostname = hostname) }
             }
