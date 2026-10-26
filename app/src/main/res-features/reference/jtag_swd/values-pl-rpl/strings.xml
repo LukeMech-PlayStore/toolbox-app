@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_jtag_swd">ARM JTAG i SWD</string>
+    <string name="fd_jtag_swd">Złącza debugowania 20- i 10-pinowe</string>
+    <string name="fk_jtag_swd">jtag, swd, arm, cortex, debugowanie, debugger, j-link, st-link, programator, tdi, tdo, tms, tck, swdio, swclk, swo, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_jtag_vtref">Napięcie zasilania układu, do którego sonda dopasowuje poziomy</string>
+    <string name="rf_jtag_vsupply">Napięcie zasilania, przez większość sond niepodłączone</string>
+    <string name="rf_jtag_ntrst">Reset logiki testowej, aktywny niskim</string>
+    <string name="rf_jtag_tdi">Wejście danych testowych</string>
+    <string name="rf_jtag_tms">Wybór trybu testu; linia danych SWD</string>
+    <string name="rf_jtag_tck">Zegar testu; zegar SWD</string>
+    <string name="rf_jtag_rtck">Zwrotny zegar testu, z układów, które go potrzebują</string>
+    <string name="rf_jtag_tdo">Wyjście danych testowych; wyjście śledzenia SWD (SWO)</string>
+    <string name="rf_jtag_nsrst">Reset układu, aktywny niskim</string>
+    <string name="rf_jtag_dbgrq">Żądanie debugowania (rzadko używane)</string>
+    <string name="rf_jtag_dbgack">Potwierdzenie debugowania (rzadko używane)</string>
+    <string name="rf_jtag_key">Klucz: brak pinu, by wtyk pasował tylko w jeden sposób</string>
+    <string name="rf_jtag_gnddetect">Masa; mówi sondzie, że układ jest podłączony</string>
+    <string name="rf_jtag_note">20-pinowe złącze ARM, raster 2,54 mm. Piny 7, 9 i 13 przenoszą też SWD.</string>
+    <string name="rf_swd_note">ARM Cortex Debug, raster 1,27 mm</string>
+</resources>

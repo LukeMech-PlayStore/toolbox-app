@@ -20,4 +20,18 @@
     <string name="rf_decode">Decode</string>
     <string name="rf_code">Code</string>
     <string name="rf_digit">Digit</string>
+    <string name="rf_color_white">White</string>
+    <string name="rf_color_black">Black</string>
+    <string name="rf_color_red">Red</string>
+    <string name="rf_color_green">Green</string>
+    <string name="rf_color_blue">Blue</string>
+    <string name="rf_color_yellow">Yellow</string>
+    <string name="rf_color_orange">Orange</string>
+    <string name="rf_color_brown">Brown</string>
+    <string name="rf_color_grey">Grey</string>
+    <string name="rf_color_violet">Violet</string>
+    <string name="rf_color_pink">Pink</string>
+    <string name="rf_color_tan">Tan</string>
+    <string name="rf_color_natural">Clear</string>
+    <string name="rf_color_aqua">Blue-green</string>
 </resources>

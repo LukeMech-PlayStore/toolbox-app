@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_arduino">Arduino Uno i Nano</string>
+    <string name="fd_arduino">Każdy pin złącz i co jeszcze potrafi</string>
+    <string name="fk_arduino">arduino, uno, nano, atmega328p, złącze, cyfrowe, analogowe, pwm, i2c, spi, uart, przerwanie, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_ard_int0">przerwanie zewnętrzne INT0</string>
+    <string name="rf_ard_int1">przerwanie zewnętrzne INT1</string>
+    <string name="rf_ard_led">wbudowana dioda LED</string>
+    <string name="rf_ard_analog_only">Tylko wejście analogowe</string>
+    <string name="rf_ard_scl">Zegar I²C, to samo co A5</string>
+    <string name="rf_ard_sda">Dane I²C, to samo co A4</string>
+    <string name="rf_ard_aref">Napięcie odniesienia wejść analogowych</string>
+    <string name="rf_ard_ioref">Napięcie, przy którym pracują piny płytki (5 V)</string>
+    <string name="rf_ard_reset">Zwarty do masy resetuje płytkę</string>
+    <string name="rf_ard_3v3">Wyjście 3,3 V, do 50 mA</string>
+    <string name="rf_ard_vin">Wejście zasilania 7–12 V (napięcie z gniazda, gdy płytka jest z niego zasilana)</string>
+    <string name="rf_ard_vin_nano">Wejście zasilania 7–12 V</string>
+    <string name="rf_ard_uno_note">Widok z góry, gniazdo USB i gniazdo zasilania po lewej. Odstępy między złączami narysowano w przybliżeniu.</string>
+    <string name="rf_ard_nano_note">Widok z góry, USB u góry. Piny są numerowane dookoła płytki, od TX (1).</string>
+</resources>

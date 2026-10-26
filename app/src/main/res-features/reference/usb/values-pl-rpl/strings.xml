@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_usb">Złącza USB</string>
+    <string name="fd_usb">A, B, micro-B i C</string>
+    <string name="fk_usb">usb, usb-a, usb-b, micro usb, micro-b, usb-c, type-c, vbus, d+, d-, cc, superspeed, otg, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_usb_vbus">+5 V (więcej przy USB Power Delivery)</string>
+    <string name="rf_usb_data">Dane USB 2.0, para skręcona</string>
+    <string name="rf_usb_ss_tx">Para nadawcza SuperSpeed</string>
+    <string name="rf_usb_ss_rx">Para odbiorcza SuperSpeed</string>
+    <string name="rf_usb_drain">Masa sygnałowa, odprowadzenie par SuperSpeed</string>
+    <string name="rf_usb_id">OTG: do masy we wtyku hosta (A), rozwarty we wtyku urządzenia (B)</string>
+    <string name="rf_usb_cc">Kanał konfiguracyjny: orientacja wtyku, prąd, Power Delivery</string>
+    <string name="rf_usb_sbu">Kanał pomocniczy (tryby alternatywne, np. AUX DisplayPorta)</string>
+    <string name="rf_usb3_note">Piny 1–4 to USB 2.0; 5–9 to dodatkowy rząd złącza A USB 3.x</string>
+    <string name="rf_usbc_note">Gniazdo widziane od przodu. Rząd B to rząd A obrócony, więc wtyk pasuje w obu położeniach.</string>
+</resources>

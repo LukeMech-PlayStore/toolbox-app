@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_rs232">RS-232 (DB9)</string>
+    <string name="fd_rs232">The serial port\'s nine pins</string>
+    <string name="fk_rs232">rs-232, rs232, serial port, com port, db9, de-9, uart, dte, dce, txd, rxd, rts, cts, null modem, pinout, pins, connector, reference</string>
+    <string name="rf_rs232_dcd">Data carrier detect (in)</string>
+    <string name="rf_rs232_rxd">Received data (in)</string>
+    <string name="rf_rs232_txd">Transmitted data (out)</string>
+    <string name="rf_rs232_dtr">Data terminal ready (out)</string>
+    <string name="rf_rs232_gnd">Signal ground</string>
+    <string name="rf_rs232_dsr">Data set ready (in)</string>
+    <string name="rf_rs232_rts">Request to send (out)</string>
+    <string name="rf_rs232_cts">Clear to send (in)</string>
+    <string name="rf_rs232_ri">Ring indicator (in)</string>
+    <string name="rf_rs232_note">A computer\'s (DTE) male plug seen from the front; a female socket is its mirror image. Directions are the computer\'s: a modem (DCE) has them the other way round.</string>
+</resources>

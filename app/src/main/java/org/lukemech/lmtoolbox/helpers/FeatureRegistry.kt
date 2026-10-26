@@ -40,13 +40,20 @@ import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaDownloaderFeature
 import org.lukemech.lmtoolbox.features.media.qr_gen.QrGenFeature
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoEncoderFeature
+import org.lukemech.lmtoolbox.features.reference.arduino.ArduinoFeature
 import org.lukemech.lmtoolbox.features.reference.capacitor_code.CapacitorCodeFeature
 import org.lukemech.lmtoolbox.features.reference.decibel_table.DecibelTableFeature
+import org.lukemech.lmtoolbox.features.reference.ethernet.EthernetFeature
 import org.lukemech.lmtoolbox.features.reference.ip_code.IpCodeFeature
+import org.lukemech.lmtoolbox.features.reference.isp_icsp.IspIcspFeature
+import org.lukemech.lmtoolbox.features.reference.jtag_swd.JtagSwdFeature
 import org.lukemech.lmtoolbox.features.reference.pt100_table.Pt100TableFeature
+import org.lukemech.lmtoolbox.features.reference.rpi_gpio.RpiGpioFeature
+import org.lukemech.lmtoolbox.features.reference.rs232.Rs232Feature
 import org.lukemech.lmtoolbox.features.reference.si_prefixes.SiPrefixesFeature
 import org.lukemech.lmtoolbox.features.reference.smd_packages.SmdPackagesFeature
 import org.lukemech.lmtoolbox.features.reference.standard_values.StandardValuesFeature
+import org.lukemech.lmtoolbox.features.reference.usb.UsbFeature
 import org.lukemech.lmtoolbox.features.reference.wire_gauge.WireGaugeFeature
 import org.lukemech.lmtoolbox.features.servers.mc_server.MinecraftServerFeature
 
@@ -101,7 +108,14 @@ object FeatureRegistry {
         WireGaugeFeature,
         CapacitorCodeFeature,
         IpCodeFeature,
-        SmdPackagesFeature
+        SmdPackagesFeature,
+        RpiGpioFeature,
+        ArduinoFeature,
+        UsbFeature,
+        EthernetFeature,
+        Rs232Feature,
+        JtagSwdFeature,
+        IspIcspFeature
     )
 
     /** The tool with [route], if there's one. */

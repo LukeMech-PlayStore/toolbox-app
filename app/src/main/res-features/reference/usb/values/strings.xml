@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_usb">USB connectors</string>
+    <string name="fd_usb">A, B, micro-B and C</string>
+    <string name="fk_usb">usb, usb-a, usb-b, micro usb, micro-b, usb-c, type-c, vbus, d+, d-, cc, superspeed, otg, pinout, pins, connector, reference</string>
+    <string name="rf_usb_vbus">+5 V (more with USB Power Delivery)</string>
+    <string name="rf_usb_data">USB 2.0 data, a twisted pair</string>
+    <string name="rf_usb_ss_tx">SuperSpeed transmit pair</string>
+    <string name="rf_usb_ss_rx">SuperSpeed receive pair</string>
+    <string name="rf_usb_drain">Signal ground, the drain of the SuperSpeed pairs</string>
+    <string name="rf_usb_id">OTG: to ground in a host (A) plug, open in a device (B) plug</string>
+    <string name="rf_usb_cc">Configuration channel: the plug\'s orientation, the current, Power Delivery</string>
+    <string name="rf_usb_sbu">Sideband use (alternate modes, e.g. DisplayPort\'s AUX)</string>
+    <string name="rf_usb3_note">Pins 1–4 are USB 2.0\'s; 5–9 are a USB 3.x A connector\'s extra row</string>
+    <string name="rf_usbc_note">The receptacle seen from the front. Row B is row A turned over, so the plug fits either way up.</string>
+</resources>

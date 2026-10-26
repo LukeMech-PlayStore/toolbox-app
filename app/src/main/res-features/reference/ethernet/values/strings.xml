@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_ethernet">Ethernet RJ45</string>
+    <string name="fd_ethernet">T568A, T568B and PoE</string>
+    <string name="fk_ethernet">ethernet, rj45, 8p8c, t568a, t568b, lan, network cable, patch cable, crossover, cat5, cat6, poe, power over ethernet, wire colors, pinout, pins, connector, reference</string>
+    <string name="rf_signals_poe">Signals and PoE</string>
+    <string name="rf_poe_a">PoE mode A</string>
+    <string name="rf_poe_b">PoE mode B</string>
+    <string name="rf_rj45_note">Each pin named by what it carries at 10/100 Mbit/s and 1 Gbit/s, as a computer (MDI) has them; a switch (MDI-X) swaps transmit and receive. A straight cable has the same wiring at both ends; a crossover cable T568A at one and T568B at the other.</string>
+    <string name="rf_poe_note">Mode A puts the power on the data pairs, mode B on the spare ones; 4-pair PoE (802.3bt) uses both. A powered device takes either polarity.</string>
+</resources>

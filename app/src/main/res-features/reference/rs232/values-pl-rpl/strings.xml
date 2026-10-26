@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_rs232">RS-232 (DB9)</string>
+    <string name="fd_rs232">Dziewięć pinów portu szeregowego</string>
+    <string name="fk_rs232">rs-232, rs232, port szeregowy, port com, db9, de-9, uart, dte, dce, txd, rxd, rts, cts, null modem, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_rs232_dcd">Wykrycie nośnej (wejście)</string>
+    <string name="rf_rs232_rxd">Dane odbierane (wejście)</string>
+    <string name="rf_rs232_txd">Dane nadawane (wyjście)</string>
+    <string name="rf_rs232_dtr">Gotowość terminala (wyjście)</string>
+    <string name="rf_rs232_gnd">Masa sygnałowa</string>
+    <string name="rf_rs232_dsr">Gotowość modemu (wejście)</string>
+    <string name="rf_rs232_rts">Żądanie nadawania (wyjście)</string>
+    <string name="rf_rs232_cts">Gotowość do nadawania (wejście)</string>
+    <string name="rf_rs232_ri">Wskaźnik dzwonienia (wejście)</string>
+    <string name="rf_rs232_note">Wtyk męski komputera (DTE) widziany od przodu; gniazdo żeńskie jest jego lustrzanym odbiciem. Kierunki są od strony komputera: modem (DCE) ma je odwrotnie.</string>
+</resources>
