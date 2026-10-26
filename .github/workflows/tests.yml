@@ -1,13 +1,18 @@
 name: Tests
 
-# The end-to-end tests: the app on emulators, every tool opened and gone through (app/src/androidTest): on the oldest
-# Android it supports (minSdk), the one it targets (targetSdk) and the newest there is (canary, 16 KB pages), on x86_64
-# and x86 (the emulators GitHub's runners run; ARM translated on them can't run the Linux subsystem), each in shards. The report job's summary has
-# every test, opened to each leg's result, its failures as annotations on the PR (merge.py, from the shards' JUnit XML);
-# screenshots and logcat as artifacts. Every run tests everything: a Minecraft server on every Java, every loader.
-# Alongside them, the code inspected as Android Studio's Inspect Code does (the inspect job), reported as soon as it's done,
-# its problems on their lines by code scanning. On a pull request, both reports in one comment of its own (the comment job),
-# updated by every run.
+# End-to-end tests: the app on emulators, every tool opened and gone through (app/src/androidTest). Legs: the oldest
+# Android the app supports (minSdk), the one it targets (targetSdk) and the newest canary (16 KB pages), on x86_64 and
+# x86 (ARM translated on GitHub's runners can't run the Linux subsystem), each split into shards. Every run tests
+# everything, e.g. a Minecraft server on every Java and every loader.
+#
+# Alongside them, the code is inspected as Android Studio's Inspect Code does. Results:
+# - the run's summary: every test on every leg (report job), every inspection problem (inspect job)
+# - annotations: failed tests (merge.py); inspection problems that fail the job, through code scanning
+# - artifacts: screenshots, logcat, raw results, Qodana's HTML report
+# - on a pull request: both summaries in one comment, updated by every run (comment job)
+#
+# Jobs: plan, build and inspect start at once; test needs plan and build; report needs test; comment needs report
+# and inspect.
 
 on:
   pull_request:
@@ -23,54 +28,7 @@ permissions:
   contents: read
 
 jobs:
-  # Once for every leg: the debug bundle and the tests' APK (each leg signs both with a key of its own)
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      # No setup-java: the foojay toolchain resolver provisions the JDK (as in build-app.yml). Gradle's own home
-      # cached (its distribution, the dependencies, the libraries already dexed) and its build cache (the tasks'
-      # outputs), as every workflow here sets it up; pull requests' runs write them too, so the next push reuses them.
-      # No Gradle summary: GitHub shows the jobs' summaries in job order, and it'd sit above the report's
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-        with:
-          cache-provider: basic
-          cache-read-only: false
-          add-job-summary: never
-
-      # Named after the commit tested (its short hash, as GitHub shows it: a pull request's head, not the merge
-      # commit), version code 1: not a release (build-app.yml's come from their tags)
-      - name: Build the debug bundle and the tests
-        env:
-          COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          chmod +x ./gradlew
-          ./gradlew --build-cache :app:bundleDebug :app:assembleDebugAndroidTest             -PversionName="${COMMIT::7}" -PgplayCode=1
-
-      - name: Collect
-        run: |
-          mkdir dist
-          cp app/build/outputs/bundle/debug/app-debug.aab dist/
-          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk dist/
-          # The bundletool installLocalTesting uses (buildSrc's LocalTesting.kt): installed as on a developer's phone
-          version=$(sed -n 's/.*BUNDLETOOL_VERSION = "\(.*\)".*/\1/p' buildSrc/src/main/kotlin/LocalTesting.kt)
-          curl -sSfL -o dist/bundletool.jar \
-            "https://github.com/google/bundletool/releases/download/$version/bundletool-all-$version.jar"
-
-      - name: Upload
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: e2e-build
-          path: dist/
-          if-no-files-found: error
-          retention-days: 3
-
-  # The legs: x86_64 and x86 on the app's oldest Android, its target and the newest canary, as Google's images are now
-  # (x86's newest instead of the last two), each in shards sharing the tests: see matrix.py, in the scripts' tests/e2e
-  # folder
+  # The legs and their shards (matrix.py), and how long each test took last time, for dealing tests among shards
   plan:
     runs-on: ubuntu-latest
     outputs:
@@ -83,10 +41,9 @@ jobs:
         id: matrix
         run: echo "matrix=$(python3 .github/scripts/tests/e2e/matrix.py gradle.properties)" >> "$GITHUB_OUTPUT"
 
-      # How long each test took before (the report job's), for the shards to be dealt by: the newest one this branch
-      # can see (its own, else main's), restored once for the whole run. Each shard deals the tests itself, so a leg's
-      # shards must all read the same one (else a newer entry saved meanwhile could deal them differently: tests run
-      # twice or not at all). None yet, they're dealt by the listing alone
+      # The newest durations this branch can see (its own, else main's), restored once for the whole run: every shard
+      # of a leg must deal the tests from the same file, or some would run twice and others not at all. None yet:
+      # tests are dealt by their order alone.
       - name: Restore the durations
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -102,6 +59,139 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
+  # The debug bundle and the tests' APK, built once for every leg
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # No setup-java: the foojay toolchain resolver provides the JDK (as in build-app.yml). Gradle's home and build
+      # cache are cached as in every workflow here; pull requests write them too, so the next push reuses them. No
+      # Gradle job summary: it would sit above the tests' report.
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          cache-provider: basic
+          cache-read-only: false
+          add-job-summary: never
+
+      # Version name: the tested commit's short hash (a pull request's head, not its merge commit). Version code 1:
+      # not a release (build-app.yml's come from tags).
+      - name: Build the debug bundle and the tests
+        env:
+          COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --build-cache :app:bundleDebug :app:assembleDebugAndroidTest \
+            -PversionName="${COMMIT::7}" -PgplayCode=1
+
+      # With the bundletool version installLocalTesting uses (buildSrc's LocalTesting.kt), so each leg installs the
+      # app as a developer's phone does
+      - name: Collect
+        run: |
+          mkdir dist
+          cp app/build/outputs/bundle/debug/app-debug.aab dist/
+          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk dist/
+          version=$(sed -n 's/.*BUNDLETOOL_VERSION = "\(.*\)".*/\1/p' buildSrc/src/main/kotlin/LocalTesting.kt)
+          curl -sSfL -o dist/bundletool.jar \
+            "https://github.com/google/bundletool/releases/download/$version/bundletool-all-$version.jar"
+
+      - name: Upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-build
+          path: dist/
+          if-no-files-found: error
+          retention-days: 3
+
+  # The code inspected as Android Studio's Inspect Code does: IntelliJ's and Android's inspections with the project's
+  # profile (.idea/inspectionProfiles), in Qodana Community for Android (no token, no Qodana Cloud). Reported as soon as
+  # it's done (report.py); fails on critical and high problems, which also go to code scanning. The image is pulled at
+  # :latest on every run (Dependabot doesn't update container images), so the inspections stay as current as the IDE's.
+  inspect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # code scanning
+    container:
+      image: jetbrains/qodana-jvm-android:latest
+      # The runner's Android SDK: the image has only android-33
+      volumes:
+        - /usr/local/lib/android/sdk:/data/android-sdk
+      env:
+        ANDROID_HOME: /data/android-sdk
+        ANDROID_SDK_ROOT: /data/android-sdk
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Qodana only syncs the project, so code using BuildConfig would be unresolved and left uninspected. The Linux
+      # packages aren't needed here. Qodana's sync then reuses this Gradle home, so dependencies download once.
+      - name: Generate BuildConfig
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon :app:generateDebugBuildConfig -x :app:updateLinuxPackages
+
+      # Plugins the IDE has and the image lacks, installed by Qodana from qodana.yaml: Jetpack Compose (without it,
+      # Kotlin's naming inspection flags every @Composable) and Android Design Tools (the profile's preview inspections).
+      # The profile itself is passed on the command line.
+      - name: Inspect
+        run: |
+          cat > qodana.yaml <<'EOF'
+          version: "1.0"
+          plugins:
+            - id: androidx.compose.plugins.idea
+            - id: com.android.tools.design
+          EOF
+          qodana --project-dir "$GITHUB_WORKSPACE" --results-dir /tmp/inspections \
+            --profile-path .idea/inspectionProfiles/Project_Default.xml --save-report
+
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: inspections
+          path: /tmp/inspections/
+          if-no-files-found: warn
+          retention-days: 14
+
+      # The summary (also kept for the pull request's comment) and a SARIF of the failing problems alone, for code
+      # scanning. The image has no Python.
+      - name: Report
+        id: report
+        if: always()
+        run: |
+          apt-get update -qq && apt-get install -y -qq python3 > /dev/null
+          status=0
+          python3 .github/scripts/tests/inspections/report.py /tmp/inspections/qodana.sarif.json inspections.md \
+            /tmp/code-scanning.sarif.json || status=$?
+          if [ -f /tmp/code-scanning.sarif.json ]; then echo "sarif=found" >> "$GITHUB_OUTPUT"; fi
+          cat inspections.md >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+
+      - name: Upload the summary
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: summary-inspections
+          path: inspections.md
+          if-no-files-found: ignore
+          retention-days: 3
+
+      # Critical and high problems on their lines, in the pull request's changes and the Security tab; typos and the
+      # like stay in the summary. Skipped for forks' and Dependabot's pull requests: their token can't write it.
+      - name: Upload to code scanning
+        if: >-
+          always() && steps.report.outputs.sarif == 'found'
+          && (github.event_name != 'pull_request'
+            || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'))
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: /tmp/code-scanning.sarif.json
+          category: qodana
+
+  # One job per shard (matrix.py): the app installed and its tests run on an emulator (run-tests.sh)
   test:
     needs: [plan, build]
     name: ${{ matrix.name }}
@@ -119,7 +209,7 @@ jobs:
           name: e2e-build
           path: dist
 
-      # The plan job's (none yet: nothing to download)
+      # None yet: nothing to download
       - name: Download the durations
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         continue-on-error: true
@@ -145,19 +235,15 @@ jobs:
           arch: ${{ matrix.arch }}
           channel: ${{ matrix.channel }}
           cores: 4
-          # Half the runner's 16 GB: at 4 GB the canary's low-memory killer took the app as the system's own apps started
-          # up. x86 a 32-bit system's 4 GB, all it uses
+          # Half the runner's 16 GB: with 4 GB, the canary's low-memory killer took the app while the system started
+          # up. x86 gets 4 GB, all a 32-bit system uses. The app's Java heap is set by run-tests.sh, not heap-size.
           ram-size: ${{ matrix.arch == 'x86' && '4096M' || '8192M' }}
-          # The app's Java heap is set by run-tests.sh: heap-size here never reaches it
-          # The Java versions and the servers' worlds take room
+          # Room for the Java versions and the servers' worlds
           disk-size: 16G
           emulator-boot-timeout: 900
-          # The action's own, with reading a color buffer by DMA on: Android 37.0's graphics (mapper.ranchu) copies one only
-          # that way and dies without it ("Assertion failed: !rcEnc->featureInfo()->hasReadColorBufferDma", the condition
-          # that held), and the runners' emulator (37.2) offers it only with both these (gfxstream's RenderControl.cpp),
-          # direct memory turned on explicitly (left at its default, 37.0 died again). system_server went down on its
-          # first copy of one (a task's snapshot for Recents, as a test's activity closed), and every test after it with
-          # it; the canary's install with direct memory off
+          # The action's defaults plus reading color buffers by DMA. Android 37.0's graphics (mapper.ranchu) only copies
+          # them that way and crashes without it ("!rcEnc->featureInfo()->hasReadColorBufferDma"), taking system_server
+          # and every test after it down; the runners' emulator (37.2) offers it only with both features on.
           emulator-options: >-
             -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
             -feature GLDirectMem,HasSharedSlotsHostMemoryAllocator
@@ -173,7 +259,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  # Every shard's results in one report (merge.py): the summary, the annotations, and this job failed if a test did
+  # Every shard's results in one report (merge.py): the summary, failed tests as annotations, and the job failed if a
+  # test failed or didn't run
   report:
     needs: [plan, test]
     if: always() && needs.plan.result == 'success'
@@ -188,19 +275,18 @@ jobs:
           pattern: e2e-results-*
           path: e2e-results
 
-      # The durations the shards were dealt by (the plan job's), updated by this run's (merge.py)
+      # The durations the shards used, updated by merge.py with this run's
       - name: Download the durations
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         continue-on-error: true
         with:
           name: e2e-durations
 
+      # The summary also kept for the pull request's comment
       - name: Report
         id: report
         env:
           MATRIX: ${{ needs.plan.outputs.matrix }}
-        # The summary (a row per test, opened to every leg's result), the failures as annotations, the job failed with them.
-        # The summary also kept for the pull request's comment
         run: |
           status=0
           python3 .github/scripts/tests/e2e/merge.py "$MATRIX" e2e-results e2e.md durations.json || status=$?
@@ -216,9 +302,9 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
-      # For the next run's shards (a cache entry can't be overwritten: one per run, the newest restored). A pull
-      # request's stay its own; main's every branch reads. Only if merge.py updated them (almost nothing failed) and the
-      # run wasn't canceled: its shards cut short, what they hadn't run yet missing
+      # For the next run's shards. A cache entry can't be overwritten, so one per run; the newest is restored. A pull
+      # request's stay its own, main's every branch reads. Saved only if merge.py updated them (almost nothing failed)
+      # and the run wasn't canceled (cut-short shards would be missing tests).
       - name: Save the durations
         if: >-
           always() && !cancelled() && needs.test.result != 'cancelled'
@@ -228,100 +314,9 @@ jobs:
           path: durations.json
           key: e2e-durations-${{ github.run_id }}-${{ github.run_attempt }}
 
-  # The code inspected as Android Studio's Inspect Code does: IntelliJ's and Android's inspections with the project's
-  # profile (.idea/inspectionProfiles), in Qodana Community for Android's image (no token, its Cloud not used), its
-  # Gradle sync with the runner's Android SDK (the image's has only android-33). Not waiting for anything, it's
-  # reported while the emulators still run (report.py): the summary, this job failed if there's any; the problems that
-  # fail it on their lines by code scanning (the SARIF uploaded, those alone); Qodana's HTML report (Inspect Code's
-  # table) and SARIF as an artifact. Its newest release, pulled on every run (Dependabot doesn't update a job's
-  # container image), as the IDE's inspections are kept current
-  inspect:
-    runs-on: ubuntu-latest
-    # Code scanning's: the SARIF uploaded
-    permissions:
-      contents: read
-      security-events: write
-    container:
-      image: jetbrains/qodana-jvm-android:latest
-      volumes:
-        - /usr/local/lib/android/sdk:/data/android-sdk
-      env:
-        ANDROID_HOME: /data/android-sdk
-        ANDROID_SDK_ROOT: /data/android-sdk
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      # The code Gradle generates (BuildConfig): Qodana only syncs the project, so the files using it would be unresolved
-      # (its sanity check's problems) and left uninspected. The Linux packages left out: nothing here needs them. Its
-      # Gradle home the one Qodana's sync uses next, so the dependencies are downloaded once
-      - name: Generate BuildConfig
-        run: |
-          chmod +x ./gradlew
-          ./gradlew --no-daemon :app:generateDebugBuildConfig -x :app:updateLinuxPackages
-
-      # The plugins the IDE has next to Android's and the image lacks: Jetpack Compose (without it Kotlin's naming
-      # inspection flags every @Composable, named as a type) and Android Design Tools (the profile's Compose and Glance
-      # preview inspections). Qodana installs a qodana.yaml's plugins (Marketplace's builds for its IDE) before the
-      # run, so one with only them, written here (the profile stays on the command line)
-      - name: Inspect
-        run: |
-          cat > qodana.yaml <<'EOF'
-          version: "1.0"
-          plugins:
-            - id: androidx.compose.plugins.idea
-            - id: com.android.tools.design
-          EOF
-          qodana --project-dir "$GITHUB_WORKSPACE" --results-dir /tmp/inspections \
-            --profile-path .idea/inspectionProfiles/Project_Default.xml --save-report
-
-      - name: Upload the report
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: inspections
-          path: /tmp/inspections/
-          if-no-files-found: warn
-          retention-days: 14
-
-      # The image has no Python. The summary also kept for the pull request's comment
-      - name: Report
-        id: report
-        if: always()
-        run: |
-          apt-get update -qq && apt-get install -y -qq python3 > /dev/null
-          status=0
-          python3 .github/scripts/tests/inspections/report.py /tmp/inspections/qodana.sarif.json inspections.md \
-            /tmp/code-scanning.sarif.json || status=$?
-          if [ -f /tmp/code-scanning.sarif.json ]; then echo "sarif=found" >> "$GITHUB_OUTPUT"; fi
-          cat inspections.md >> "$GITHUB_STEP_SUMMARY"
-          exit $status
-
-      - name: Upload the summary
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: summary-inspections
-          path: inspections.md
-          if-no-files-found: ignore
-          retention-days: 3
-
-      # The problems that fail the job (report.py's critical and high), on their lines: in the pull request's changes and
-      # the repository's Security tab; the rest (typos, grammar...) only in the summary. Not from a fork's pull request
-      # or Dependabot's: their token can't write it
-      - name: Upload to code scanning
-        if: >-
-          always() && steps.report.outputs.sarif == 'found'
-          && (github.event_name != 'pull_request'
-            || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'))
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
-        with:
-          sarif_file: /tmp/code-scanning.sarif.json
-          category: qodana
-
-  # On a pull request: the E2E tests' and the inspections' summaries in one comment (comment.py), the same one updated
-  # by every run (found by its hidden marker), not a new one each time. Once both are done, whatever they came to; not
-  # when the run's canceled (a newer one comments instead), nor from a fork or Dependabot (their token can't comment)
+  # On a pull request: both summaries in one comment (comment.py), whatever the jobs came to. Every run updates the
+  # same comment, found by its hidden marker. Skipped when the run is canceled (a newer one comments instead) and for
+  # forks' and Dependabot's pull requests (their token can't comment).
   comment:
     needs: [report, inspect]
     if: >-
@@ -335,7 +330,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # A job that didn't get to write its summary: none (its line in the comment says so)
+      # A job that didn't get to write its summary has none; its line in the comment says so
       - name: Download the summaries
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         continue-on-error: true
@@ -361,4 +356,3 @@ jobs:
           else
             gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -F body=@comment.md > /dev/null
           fi
-
