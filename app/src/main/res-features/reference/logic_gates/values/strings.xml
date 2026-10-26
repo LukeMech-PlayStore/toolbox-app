@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_logic_gates">Logic gates</string>
+    <string name="fd_logic_gates">Truth tables of AND to XNOR</string>
+    <string name="fk_logic_gates">logic gates, truth table, and, or, not, nand, nor, xor, xnor, boolean, digital, logic, iec 60617, reference, table</string>
+    <string name="rf_truth_table">Truth table</string>
+    <string name="rf_gates">Gates</string>
+    <string name="rf_gate">Gate</string>
+    <string name="rf_expression">Expression</string>
+    <string name="rf_gives_one">Gives 1 when</string>
+    <string name="rf_gate_and">both inputs are 1</string>
+    <string name="rf_gate_or">at least one input is 1</string>
+    <string name="rf_gate_nand">not both inputs are 1</string>
+    <string name="rf_gate_nor">neither input is 1</string>
+    <string name="rf_gate_xor">the inputs differ</string>
+    <string name="rf_gate_xnor">the inputs are the same</string>
+    <string name="rf_gate_not">the input is 0</string>
+    <string name="rf_gates_note">○ is the circle on a negated output</string>
+</resources>

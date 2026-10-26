@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_resistivity">Resistivity of materials</string>
+    <string name="fd_resistivity">Metals and alloys at 20 °C</string>
+    <string name="fk_resistivity">resistivity, specific resistance, conductivity, temperature coefficient, copper, aluminium, silver, nichrome, constantan, manganin, wire, materials, reference, table</string>
+    <string name="rf_material">Material</string>
+    <string name="rf_resistivity_note">At 20 °C, as handbooks give them. Alloys vary with their make-up; α is the change per kelvin near 20 °C.</string>
+    <string name="rf_mat_silver">Silver</string>
+    <string name="rf_mat_copper">Copper</string>
+    <string name="rf_mat_copper_annealed">Copper, annealed</string>
+    <string name="rf_mat_gold">Gold</string>
+    <string name="rf_mat_aluminium">Aluminum</string>
+    <string name="rf_mat_tungsten">Tungsten</string>
+    <string name="rf_mat_zinc">Zinc</string>
+    <string name="rf_mat_nickel">Nickel</string>
+    <string name="rf_mat_iron">Iron</string>
+    <string name="rf_mat_platinum">Platinum</string>
+    <string name="rf_mat_tin">Tin</string>
+    <string name="rf_mat_lead">Lead</string>
+    <string name="rf_mat_titanium">Titanium</string>
+    <string name="rf_mat_manganin">Manganin</string>
+    <string name="rf_mat_constantan">Constantan</string>
+    <string name="rf_mat_stainless">Stainless steel</string>
+    <string name="rf_mat_mercury">Mercury</string>
+    <string name="rf_mat_nichrome">Nichrome</string>
+</resources>

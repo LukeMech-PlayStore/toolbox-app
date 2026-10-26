@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_fuses">Bezpieczniki samochodowe</string>
+    <string name="fd_fuses">Kolor każdej wartości</string>
+    <string name="fk_fuses">bezpiecznik, bezpiecznik płytkowy, bezpiecznik samochodowy, ato, atc, mini, iso 8820, amper, wartość, kolor, ściągawka, tabela</string>
+    <string name="rf_rating">Wartość</string>
+    <string name="rf_fuses_note">ISO 8820-3, dla bezpieczników płytkowych zwykłych (ATO, ATC) i mini</string>
+</resources>

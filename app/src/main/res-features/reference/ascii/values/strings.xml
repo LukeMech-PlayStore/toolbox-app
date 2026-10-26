@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_ascii">ASCII table</string>
+    <string name="fd_ascii">0–127 in dec, hex and binary</string>
+    <string name="fk_ascii">ascii, character codes, control characters, hex, decimal, binary, escape, newline, carriage return, null, text, reference, table</string>
+    <string name="rf_char">Character</string>
+    <string name="rf_ascii_name">Name</string>
+    <string name="rf_ascii_note">C / ^: the escape C writes it with, or how a terminal types it with Ctrl</string>
+    <string name="rf_ascii_nul">Null</string>
+    <string name="rf_ascii_soh">Start of heading</string>
+    <string name="rf_ascii_stx">Start of text</string>
+    <string name="rf_ascii_etx">End of text</string>
+    <string name="rf_ascii_eot">End of transmission</string>
+    <string name="rf_ascii_enq">Enquiry</string>
+    <string name="rf_ascii_ack">Acknowledge</string>
+    <string name="rf_ascii_bel">Bell</string>
+    <string name="rf_ascii_bs">Backspace</string>
+    <string name="rf_ascii_ht">Horizontal tab</string>
+    <string name="rf_ascii_lf">Line feed</string>
+    <string name="rf_ascii_vt">Vertical tab</string>
+    <string name="rf_ascii_ff">Form feed</string>
+    <string name="rf_ascii_cr">Carriage return</string>
+    <string name="rf_ascii_so">Shift out</string>
+    <string name="rf_ascii_si">Shift in</string>
+    <string name="rf_ascii_dle">Data link escape</string>
+    <string name="rf_ascii_dc1">Device control 1 (XON)</string>
+    <string name="rf_ascii_dc2">Device control 2</string>
+    <string name="rf_ascii_dc3">Device control 3 (XOFF)</string>
+    <string name="rf_ascii_dc4">Device control 4</string>
+    <string name="rf_ascii_nak">Negative acknowledge</string>
+    <string name="rf_ascii_syn">Synchronous idle</string>
+    <string name="rf_ascii_etb">End of transmission block</string>
+    <string name="rf_ascii_can">Cancel</string>
+    <string name="rf_ascii_em">End of medium</string>
+    <string name="rf_ascii_sub">Substitute</string>
+    <string name="rf_ascii_esc">Escape</string>
+    <string name="rf_ascii_fs">File separator</string>
+    <string name="rf_ascii_gs">Group separator</string>
+    <string name="rf_ascii_rs">Record separator</string>
+    <string name="rf_ascii_us">Unit separator</string>
+    <string name="rf_ascii_space">Space</string>
+    <string name="rf_ascii_del">Delete</string>
+</resources>

@@ -41,24 +41,30 @@ import org.lukemech.lmtoolbox.features.media.media_dl.MediaDownloaderFeature
 import org.lukemech.lmtoolbox.features.media.qr_gen.QrGenFeature
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoEncoderFeature
 import org.lukemech.lmtoolbox.features.reference.arduino.ArduinoFeature
+import org.lukemech.lmtoolbox.features.reference.ascii.AsciiFeature
 import org.lukemech.lmtoolbox.features.reference.audio_jack.AudioJackFeature
+import org.lukemech.lmtoolbox.features.reference.batteries.BatteriesFeature
 import org.lukemech.lmtoolbox.features.reference.capacitor_code.CapacitorCodeFeature
 import org.lukemech.lmtoolbox.features.reference.car_audio.CarAudioFeature
 import org.lukemech.lmtoolbox.features.reference.decibel_table.DecibelTableFeature
 import org.lukemech.lmtoolbox.features.reference.ethernet.EthernetFeature
+import org.lukemech.lmtoolbox.features.reference.fuses.FusesFeature
 import org.lukemech.lmtoolbox.features.reference.hdmi.HdmiFeature
 import org.lukemech.lmtoolbox.features.reference.ip_code.IpCodeFeature
 import org.lukemech.lmtoolbox.features.reference.isp_icsp.IspIcspFeature
 import org.lukemech.lmtoolbox.features.reference.jtag_swd.JtagSwdFeature
+import org.lukemech.lmtoolbox.features.reference.logic_gates.LogicGatesFeature
 import org.lukemech.lmtoolbox.features.reference.obd2.Obd2Feature
 import org.lukemech.lmtoolbox.features.reference.pc_power.PcPowerFeature
 import org.lukemech.lmtoolbox.features.reference.pt100_table.Pt100TableFeature
+import org.lukemech.lmtoolbox.features.reference.resistivity.ResistivityFeature
 import org.lukemech.lmtoolbox.features.reference.rpi_gpio.RpiGpioFeature
 import org.lukemech.lmtoolbox.features.reference.rs232.Rs232Feature
 import org.lukemech.lmtoolbox.features.reference.sd_card.SdCardFeature
 import org.lukemech.lmtoolbox.features.reference.si_prefixes.SiPrefixesFeature
 import org.lukemech.lmtoolbox.features.reference.smd_packages.SmdPackagesFeature
 import org.lukemech.lmtoolbox.features.reference.standard_values.StandardValuesFeature
+import org.lukemech.lmtoolbox.features.reference.thermocouples.ThermocouplesFeature
 import org.lukemech.lmtoolbox.features.reference.trailer.TrailerFeature
 import org.lukemech.lmtoolbox.features.reference.usb.UsbFeature
 import org.lukemech.lmtoolbox.features.reference.wire_gauge.WireGaugeFeature
@@ -131,7 +137,13 @@ object FeatureRegistry {
         XlrDmxFeature,
         AudioJackFeature,
         CarAudioFeature,
-        TrailerFeature
+        TrailerFeature,
+        AsciiFeature,
+        LogicGatesFeature,
+        ResistivityFeature,
+        ThermocouplesFeature,
+        FusesFeature,
+        BatteriesFeature
     )
 
     /** The tool with [route], if there's one. */
