@@ -17,7 +17,7 @@
 -->
 
 **One app, a drawer full of tools.** Measure with a ruler, a spirit level and a compass; work out a resistor's
-color code or a 555 timer with 25 electronics calculators; convert currencies; download, convert and shrink
+color code or a 555 timer with 30 electronics calculators; look up pinouts and tables; convert currencies; download, convert and shrink
 videos, music and images; edit a photo's metadata; or run your own Minecraft server, Vanilla to NeoForge,
 straight from your phone and reachable by your friends through Bore, a Cloudflare tunnel or Tailscale.
 
@@ -43,7 +43,8 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Measure     | Ruler                                                                                          | Android                                                                                                                                                                      | `app`               |
 | Measure     | Spirit level (with a widget)                                                                   | Android sensors                                                                                                                                                              | `app`               |
 | Measure     | Compass (with a widget, GPS altitude)                                                          | Android sensors                                                                                                                                                              | `app`               |
-| Electronics | 25 calculators (listed below)                                                                  | Android                                                                                                                                                                      | `app`               |
+| Electronics | 30 calculators (listed below)                                                                  | Android                                                                                                                                                                      | `app`               |
+| Reference   | 29 references: tables, pinouts drawn from data, decoders (listed below)                        | Android                                                                                                                                                                      | `app`               |
 | Finance     | Currency converter (ECB rates, amounts shared from other apps)                                 | Python (`CurrencyConverter`)                                                                                                                                                 | `features:pypkgs`   |
 | Media       | QR generator                                                                                   | Python (`qrcode`, Pillow)                                                                                                                                                    | `features:pypkgs`   |
 | Media       | Metadata editor                                                                                | ExifTool                                                                                                                                                                     | `features:exiftool` |
@@ -54,9 +55,17 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
 
 The electronics calculators: color code, SMD resistor code, Ohm's law, electric power, reactance and
-resonance, RC filter, voltage divider, series and parallel, capacitor charging, op-amp amplifier, LED
-resistor, Zener regulator, LM317 regulator, 555 timer, heat sink, battery life, air-core coil, cable voltage
-drop, PCB trace width, star-delta, PT100 sensor, decibels, frequency and wavelength, ADC converter, RMS and peak.
+resonance, RC, RL and RLC filters, voltage divider, resistor ratio, series and parallel, capacitor charging,
+op-amp amplifier, transistor (BJT switch and bias), LED resistor, Zener regulator, LM317 regulator, 555 timer,
+heat sink, battery life, energy converter, air-core coil, cable voltage drop, PCB trace width, star-delta,
+PT100 sensor, decibels, frequency and wavelength, ADC converter, range converter, number bases and bits,
+RMS and peak.
+
+The references: standard values (E-series), PT100 table, decibel table, SI prefixes, wire gauges (AWG, SWG),
+capacitor codes, IP code, SMD package sizes; the pinouts of the Raspberry Pi's GPIO, Arduino Uno and Nano,
+USB, Ethernet RJ45 (with PoE), RS-232, ARM JTAG and SWD, AVR ISP and PIC ICSP, HDMI, OBD-II, PC power
+connectors, SD cards, XLR and DMX, audio jacks, ISO 10487 car radio and trailer sockets; and tables of ASCII,
+logic gates, resistivity, thermocouple types, car fuses and battery sizes.
 
 ### Project layout
 
@@ -137,6 +146,17 @@ inputs, the rest are computed and marked as such, and tapping a computed one mak
 calculator's formula is shown from the button in its corner (`Formula`), and a resistor value can be
 rounded to the nearest value of an E-series (`ESeries`, `ESeriesSetting`). The maths that's more than a
 line lives in the tool's `<Name>Calc.kt`, with tests.
+
+#### The references
+
+Each reference is a `ReferenceFeature` (`features/reference/<route>/<Name>Fun.kt`) holding only data, its
+`sheets`, which one page shows (`ReferencePage`, picked by chips when there are several): a `TableSheet`,
+searched as it's typed, its headings staying put and scrolling sideways with its rows, a cell held down
+copied; a `PinoutSheet`, the connector drawn on a canvas from its `Pin`s (placed by `inRow`, `inRows`,
+`dualRow`, `staggered` or by hand, colored by `PinKind` or by their wires), a pin tapped there or in the list
+marked in both; or a `ToolSheet` for a decoder. Texts are `Txt`: as written, or a string resource. What can
+be worked out is (the E-series, the PT100 and AWG tables, the truth tables); the rest is rebuilt from the
+standards named in each one's notes.
 
 ### The Linux subsystem
 

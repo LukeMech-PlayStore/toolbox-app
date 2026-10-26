@@ -30,6 +30,7 @@ import org.lukemech.lmtoolbox.features.reference.common.TableSheet
 import org.lukemech.lmtoolbox.features.reference.common.ToolSheet
 import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.Reveal
+import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SearchField
 import org.lukemech.lmtoolbox.ui.components.fadeEnter
 import org.lukemech.lmtoolbox.ui.components.fadeExit
@@ -86,7 +87,7 @@ fun ReferencePage(title: String, sheets: List<Sheet>) {
             when (shown) {
                 is TableSheet -> layouts[shown]?.let { TableRows(it, query) }
                 is PinoutSheet -> PinoutView(shown, query)
-                is ToolSheet -> Column { shown.content() }
+                is ToolSheet -> Column(verticalArrangement = RowArrangement) { shown.content() }
             }
         }
     }
