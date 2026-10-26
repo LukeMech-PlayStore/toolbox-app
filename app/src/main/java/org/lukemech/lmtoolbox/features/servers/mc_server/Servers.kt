@@ -43,7 +43,7 @@ data class ServerProfile(
     val tunnelEnabled: Boolean = false,
     /** Its bore tunnel is turned on (bore installed for it, see `Bore.install`): it starts along with the server. */
     val boreEnabled: Boolean = false,
-    /** The bore server it connects to; empty: bore.pub (Bore.SERVER). */
+    /** The bore server it connects to; empty: `bore.pub` (Bore.SERVER). */
     val boreServer: String = "",
     /** The bore server's port it had last, asked for again (the same address); 0: any. */
     val borePort: Int = 0,

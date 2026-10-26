@@ -31,7 +31,7 @@ import org.lukemech.lmtoolbox.ui.components.RowArrangement
 /**
  * bore's tunnel, turned on or off: on, bore is installed (its row as the Java's table has them) and its
  * settings unfold, and it starts if the server runs; off, they fold away, its tunnel stopped (bore
- * uninstalled once no server has it on, see ServerRunner.pruneBore). Nothing to set up: bore.pub, or the user's own bore server (its secret).
+ * uninstalled once no server has it on, see ServerRunner.pruneBore). Nothing to set up: `bore.pub`, or the user's own bore server (its secret).
  */
 @Composable
 internal fun BoreSection(profile: ServerProfile, onChanged: () -> Unit) {
