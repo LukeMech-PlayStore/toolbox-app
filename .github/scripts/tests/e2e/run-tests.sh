@@ -5,7 +5,9 @@
 #  2. the tests (app/src/androidTest) run by instrument.py: class by class, carrying on after a crash, failed ones retried;
 #     with E2E_SHARD of E2E_SHARDS, its share of them alone
 #  3. their results as JUnit XML (e2e-results/junit), screenshots and each class's logcat beside them
-# Always exits 0 once results are written: the report job (tests.yml) fails on failed tests.
+# Exits 0 once results are written: the report job (tests.yml) fails on failed tests. Kept from running them at
+# all (setup_failed: the app not installed, adb not the shell again), 1: that shard failed itself, its results still
+# uploaded and reported.
 #
 # Env: E2E_LEG (the matrix leg's name), E2E_SHARD and E2E_SHARDS (0 of 1: all of them), E2E_DIST (the build job's files)
 set -uo pipefail
@@ -31,7 +33,8 @@ EOF
   # What the system said meanwhile (e.g. its package service restarting), in the artifact
   adb logcat -d > "$OUT/logcat/setup.txt" 2>/dev/null || true
   echo "::error title=E2E setup ($LEG)::$1"
-  exit 0
+  # No test ran: this shard failed, not only the report (it'd show as passed, its leg's tests never run)
+  exit 1
 }
 
 # Booted isn't ready: the package manager answers a while later (bundletool asks it first), and the system may
