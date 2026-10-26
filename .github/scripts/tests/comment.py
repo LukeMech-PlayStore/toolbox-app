@@ -21,7 +21,7 @@ MARKER = "<!-- lmtoolbox-tests -->"
 LIMIT = 65536 - 4000
 RESULTS = {"success": "✅", "failure": "❌", "cancelled": "⏹️", "skipped": "⏭️"}
 # Why a job has no summary, by its result
-WHY_NONE = {"success": "wrote none", "failure": "failed first", "cancelled": "was cancelled", "skipped": "didn't run"}
+WHY_NONE = {"success": "wrote none", "failure": "failed first", "cancelled": "was canceled", "skipped": "didn't run"}
 
 
 def read(path):

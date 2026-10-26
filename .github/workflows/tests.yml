@@ -173,11 +173,15 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  # Every shard's results in one report (merge.py): the summary, the annotations, and this job failed if a test did
+  # Every shard's results in one report (merge.py): the summary, the annotations, and this job failed if a test did.
+  # After the inspections too (done long before the emulators), whose result it hands on to the comment: the run's
+  # graph a line, plan and build, the tests and inspections, this, the comment
   report:
-    needs: [plan, test]
+    needs: [plan, test, inspect]
     if: always() && needs.plan.result == 'success'
     runs-on: ubuntu-latest
+    outputs:
+      inspect: ${{ needs.inspect.result }}
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -230,11 +234,14 @@ jobs:
 
   # The code inspected as Android Studio's Inspect Code does: IntelliJ's and Android's inspections with the project's
   # profile (.idea/inspectionProfiles), in Qodana Community for Android's image (no token, its Cloud not used), its
-  # Gradle sync with the runner's Android SDK (the image's has only android-33). Not waiting for anything, it's reported
-  # while the emulators still run (report.py): the summary, this job failed if there's any; every problem on its line by
-  # code scanning (the SARIF uploaded); Qodana's HTML report (Inspect Code's table) and SARIF as an artifact. Its newest release, pulled on every run
-  # (Dependabot doesn't update a job's container image), as the IDE's inspections are kept current
+  # Gradle sync with the runner's Android SDK (the image's has only android-33). After the plan alone (a few seconds:
+  # it sits by the tests in the run's graph, not before them), whatever it came to; reported while the emulators still
+  # run (report.py): the summary, this job failed if there's any; every problem on its line by code scanning (the
+  # SARIF uploaded); Qodana's HTML report (Inspect Code's table) and SARIF as an artifact. Its newest release, pulled
+  # on every run (Dependabot doesn't update a job's container image), as the IDE's inspections are kept current
   inspect:
+    needs: plan
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     # Code scanning's: the SARIF uploaded
     permissions:
@@ -317,10 +324,11 @@ jobs:
           category: qodana
 
   # On a pull request: the E2E tests' and the inspections' summaries in one comment (comment.py), the same one updated
-  # by every run (found by its hidden marker), not a new one each time. Once both are done, whatever they came to; not
-  # when the run's cancelled (a newer one comments instead), nor from a fork or Dependabot (their token can't comment)
+  # by every run (found by its hidden marker), not a new one each time. Once both are done (the report's after the
+  # inspections), whatever they came to; not when the run's canceled (a newer one comments instead), nor from a fork or
+  # Dependabot (their token can't comment)
   comment:
-    needs: [report, inspect]
+    needs: report
     if: >-
       !cancelled() && github.event_name == 'pull_request'
       && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
@@ -348,7 +356,7 @@ jobs:
           COMMIT: ${{ github.event.pull_request.head.sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           E2E_RESULT: ${{ needs.report.result }}
-          INSPECT_RESULT: ${{ needs.inspect.result }}
+          INSPECT_RESULT: ${{ needs.report.outputs.inspect }}
         run: |
           python3 .github/scripts/tests/comment.py summaries/e2e.md summaries/inspections.md comment.md
           id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate             --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- lmtoolbox-tests -->"))) | .id' | head -n 1)
