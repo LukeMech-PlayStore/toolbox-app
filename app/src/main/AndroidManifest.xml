@@ -30,7 +30,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- The vibration meter: the accelerometer above 200 Hz (Android 12+ caps apps there without it), so faster
          vibrations can be told -->
-    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" tools:ignore="HighSamplingRate" />
     <!-- The stroboscope: the torch (no camera permission needed for it) -->
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
 

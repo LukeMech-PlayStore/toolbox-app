@@ -18,6 +18,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -64,7 +65,7 @@ fun MagnetometerPage() {
     val hasSensor = remember { MagnetometerFeature.hasSensors(context) }
     val canBuzz = remember { MagnetometerFeature.canBuzz(context) }
     var field by remember { mutableStateOf<Field?>(null) }
-    var accuracy by remember { mutableStateOf(SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) }
+    var accuracy by remember { mutableIntStateOf(SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) }
     var detecting by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf(Feedback.Tone) }
     val baseline = remember { Baseline() }
