@@ -11,7 +11,7 @@ import org.junit.Test
 
 /**
  * File hash's own logic, on the device's own providers: the digests (by the standards' test vectors), checksum
- * files read and written, the checking. SHA-3 only where the device has it (HashAlgorithm.isAvailable).
+ * files read and written, the checking. SHA-3 by the app's own (SHA3), as Android has none.
  */
 class ChecksumsTest {
     private val abc = mapOf(
@@ -28,8 +28,23 @@ class ChecksumsTest {
 
     @Test
     fun abcByEveryAlgorithm() {
-        val available = HashAlgorithm.available
-        assertEquals(abc.filterKeys { it in available }, MultiDigest.ofText("abc", available))
+        assertEquals(abc, MultiDigest.ofText("abc", HashAlgorithm.entries))
+    }
+
+    @Test
+    fun ownSHA3ByTheStandardsVectors() {
+        assertEquals(abc[HashAlgorithm.SHA3_256], toHex(SHA3(256).digest("abc".toByteArray())))
+        assertEquals(abc[HashAlgorithm.SHA3_512], toHex(SHA3(512).digest("abc".toByteArray())))
+        assertEquals("a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a", toHex(SHA3(256).digest(ByteArray(0))))
+        assertEquals(
+            "a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26",
+            toHex(SHA3(512).digest(ByteArray(0)))
+        )
+        // A million "a"s, in pieces that don't line up with its blocks
+        val sha3 = SHA3(256)
+        val million = ByteArray(1_000_000) { 'a'.code.toByte() }
+        for (at in million.indices step 4093) sha3.update(million, at, minOf(4093, million.size - at))
+        assertEquals("5c8875ae474a3634ba4fd55ec85bffd661f32aca75c6d699d0cdcb6c115891c1", toHex(sha3.digest()))
     }
 
     @Test
@@ -77,9 +92,9 @@ class ChecksumsTest {
     @Test
     fun biggerThanTheBufferAsAtOnce() {
         val data = ByteArray(MultiDigest.BUFFER * 3 + 7) { (it * 31 + 7).toByte() }
-        val streamed = MultiDigest.digest(ByteArrayInputStream(data), HashAlgorithm.available)
-        HashAlgorithm.available.filter { it.javaName != null }.forEach { alg ->
-            assertEquals(alg.label, toHex(MessageDigest.getInstance(alg.javaName!!).digest(data)), streamed[alg])
+        val streamed = MultiDigest.digest(ByteArrayInputStream(data), HashAlgorithm.entries)
+        HashAlgorithm.entries.filter { it.javaName != null }.forEach { alg ->
+            assertEquals(alg.label, toHex(alg.newDigest()!!.digest(data)), streamed[alg])
         }
         val crc = java.util.zip.CRC32().apply { update(data) }
         assertEquals("%08x".format(crc.value), streamed[HashAlgorithm.CRC32])

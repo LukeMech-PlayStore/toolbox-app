@@ -11,21 +11,17 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.automirrored.filled.TextSnippet
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
@@ -35,13 +31,15 @@ import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -67,27 +65,27 @@ import org.lukemech.lmtoolbox.features.media.file_hash.MultiDigest
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.ui.components.ActionButton
 import org.lukemech.lmtoolbox.ui.components.BigButton
+import org.lukemech.lmtoolbox.ui.components.ErrorText
 import org.lukemech.lmtoolbox.ui.components.Fade
-import org.lukemech.lmtoolbox.ui.components.fadeEnter
-import org.lukemech.lmtoolbox.ui.components.fadeExit
 import org.lukemech.lmtoolbox.ui.components.InputField
 import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.REVEAL_MS
+import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.SecondaryButton
 import org.lukemech.lmtoolbox.ui.components.StepWithButtons
 import org.lukemech.lmtoolbox.ui.components.Steps
 import org.lukemech.lmtoolbox.ui.components.ToolIntro
 
-private enum class Step { Input, Results }
+private enum class Step { File, Options, Results }
 
 /** The "Share to" entry ([FileHashFeature.S_DSHKEY]): what's shared from here doesn't come back to it. */
 private const val ALIAS = "share.File.Hash"
 
 /**
- * File hash in two steps: what to hash (files, or text typed) and by which algorithms, then the hashes, each
- * file read once for all of them, checked against hashes pasted or a checksum file loaded.
+ * File hash in three steps, like the video encoder: the file (or text typed), the algorithms, then its hashes,
+ * read once for all of them and checked against a hash pasted or a checksum file loaded. One file at a time.
  */
 @Composable
 fun FileHashPage(providedInput: String? = "") {
@@ -96,54 +94,58 @@ fun FileHashPage(providedInput: String? = "") {
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
 
-    // What's open stays when the page is left (FileHash.files, ...); a file being read then is read again
+    var step by rememberSaveable { mutableStateOf(Step.File) }
+    // What's open stays when the page is left (FileHash.file, ...); a file being read then is read again
     var mode by remember { mutableStateOf(FileHash.mode) }
-    var files by remember { mutableStateOf(FileHash.files.map { if (it.state == FileHash.State.Hashing) it.copy(state = FileHash.State.Waiting) else it }) }
+    var file by remember { mutableStateOf(FileHash.file?.let { if (it.state == FileHash.State.Hashing) it.copy(state = FileHash.State.Waiting) else it }) }
     var text by remember { mutableStateOf(FileHash.text) }
-    var step by remember { mutableStateOf(if (FileHash.showResults) Step.Results else Step.Input) }
+    // The settings' default ones, changed here for this time only
     var algorithms by remember { mutableStateOf(FileHash.algorithms(context)) }
     var expectedText by remember { mutableStateOf(FileHash.expectedText) }
     var expectedFile by remember { mutableStateOf(FileHash.expectedFile) }
+    // Another file to check against (not a checksum file): its own hashes, by the same algorithms
+    var reference by remember { mutableStateOf(FileHash.reference?.let { if (it.state == FileHash.State.Hashing) it.copy(state = FileHash.State.Waiting) else it }) }
     SideEffect {
         FileHash.mode = mode
-        FileHash.files = files
+        FileHash.file = file
         FileHash.text = text
-        FileHash.showResults = step == Step.Results
         FileHash.expectedText = expectedText
         FileHash.expectedFile = expectedFile
+        FileHash.reference = reference
     }
 
-    // The files' reading: how far of all of them, the one at it
+    // The files' reading: the one at it (the file, or the one it's checked against), and how far
     var job by remember { mutableStateOf<Job?>(null) }
+    var reading by remember { mutableStateOf<FileHash.Item?>(null) }
     var readBytes by remember { mutableLongStateOf(0L) }
-    var totalBytes by remember { mutableLongStateOf(0L) }
     val hashing = job != null
 
+    /** The open file, or the one it's checked against, changed, if it's still [uri] (not another one opened meanwhile). */
     fun update(uri: Uri, change: (FileHash.Item) -> FileHash.Item) {
-        files = files.map { if (it.uri == uri) change(it) else it }
+        file = file?.let { if (it.uri == uri) change(it) else it }
+        reference = reference?.let { if (it.uri == uri) change(it) else it }
     }
 
-    /** Every file's hashes by the [algorithms] it doesn't have yet (none read twice for the same one), one file at a time. */
-    fun calculate() {
-        focusManager.clearFocus()
-        // Shared in with none picked: the usual ones
-        if (algorithms.isEmpty()) algorithms = HashAlgorithm.DEFAULTS
-        FileHash.saveAlgorithms(context, algorithms)
-        step = Step.Results
-        if (mode == HashMode.Text || job != null) return
-        val wanted = algorithms
-        val todo = files.filter { (wanted - it.hashes.keys).isNotEmpty() }
+    /**
+     * What's missing of the [algorithms] read (none read twice): the file's (not the text's: hashed as it's shown), then
+     * the one it's checked against; one at a time, then anything asked for meanwhile. A file that couldn't be read
+     * is left alone (calculate() tries it again).
+     */
+    fun hashMissing() {
+        if (job != null) return
+        val todo = listOfNotNull(file.takeIf { mode == HashMode.Files }, reference)
+            .filter { it.state != FileHash.State.Failed && (algorithms - it.hashes.keys).isNotEmpty() }
         if (todo.isEmpty()) return
-        totalBytes = todo.sumOf { it.size }
-        readBytes = 0
+        val wanted = algorithms
         lateinit var started: Job
         started = coroutineScope.launch(start = CoroutineStart.LAZY) {
             try {
                 for (item in todo) {
-                    val before = readBytes
-                    update(item.uri) { it.copy(state = FileHash.State.Hashing, error = null) }
+                    reading = item
+                    readBytes = 0
                     try {
-                        val hashes = FileHash.hash(context, item.uri, wanted - item.hashes.keys) { read -> readBytes = before + read }
+                        update(item.uri) { it.copy(state = FileHash.State.Hashing, error = null) }
+                        val hashes = FileHash.hash(context, item.uri, wanted - item.hashes.keys) { readBytes = it }
                         update(item.uri) { it.copy(hashes = it.hashes + hashes, state = FileHash.State.Done) }
                     } catch (e: CancellationException) {
                         // What it had before stays
@@ -152,52 +154,68 @@ fun FileHashPage(providedInput: String? = "") {
                     } catch (e: Exception) {
                         update(item.uri) { it.copy(state = FileHash.State.Failed, error = e.message ?: e.javaClass.simpleName) }
                     }
-                    readBytes = before + item.size
                 }
             } finally {
                 // Not another one's, started as this one was cancelled
-                if (job === started) job = null
+                if (job === started) {
+                    job = null
+                    reading = null
+                }
             }
+            hashMissing()
         }
         job = started
         started.start()
     }
 
-    fun addFiles(uris: List<Uri>, replace: Boolean = false) {
+    /** The hashes shown: what's missing of them read, a file that couldn't be read tried again. */
+    fun calculate() {
+        focusManager.clearFocus()
+        step = Step.Results
+        file = file?.let { if (it.state == FileHash.State.Failed) it.copy(state = FileHash.State.Waiting) else it }
+        reference = reference?.let { if (it.state == FileHash.State.Failed) it.copy(state = FileHash.State.Waiting) else it }
+        hashMissing()
+    }
+
+    /** [uri] in place of the open file (its reading stopped), its algorithms next. */
+    fun open(uri: Uri) {
+        job?.cancel()
+        job = null
         coroutineScope.launch {
-            val kept = if (replace) emptyList() else files
-            val new = uris.distinct().filter { uri -> kept.none { it.uri == uri } }.map { FileHash.describe(context, it) }
-            files = kept + new
+            file = FileHash.describe(context, uri)
+            mode = HashMode.Files
+            step = Step.Options
         }
     }
 
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris -> if (uris.isNotEmpty()) addFiles(uris) }
-    // Others, from the results: in place of these, read right away
-    val otherPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
-        if (uris.isEmpty()) return@rememberLauncherForActivityResult
-        coroutineScope.launch {
-            files = uris.distinct().map { FileHash.describe(context, it) }
-            calculate()
-        }
-    }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(::open) }
+    // What to check against: a checksum file (its lines), or any other file (e.g. the same download from elsewhere),
+    // hashed as the file is and compared hash by hash
     val checksumPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri ?: return@rememberLauncherForActivityResult
         coroutineScope.launch {
-            runCatching { FileHash.readChecksumFile(context, uri) }
-                .onSuccess { (content, name) ->
-                    expectedText = content
-                    expectedFile = name ?: ""
-                }
-                .onFailure { LinuxTasks.reportFailure(FileHashFeature, "", "Couldn't read the checksum file", it.stackTraceToString()) }
+            val picked = FileHash.describe(context, uri)
+            val lines = FileHash.readChecksumFile(context, picked)
+            if (lines != null) {
+                reference = null
+                expectedText = lines
+                expectedFile = picked.name
+            } else {
+                expectedText = ""
+                expectedFile = null
+                reference = picked
+                hashMissing()
+            }
         }
     }
 
     // The checksum file saved: by the one algorithm it's for (see exportAlgorithm)
-    val exportAlgorithm = exportAlgorithm(files, algorithms)
+    val exportAlgorithm = file?.let { exportAlgorithm(it, algorithms) }
     val exporter = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
         val alg = exportAlgorithm ?: return@rememberLauncherForActivityResult
+        val item = file ?: return@rememberLauncherForActivityResult
         uri ?: return@rememberLauncherForActivityResult
-        val content = Checksums.format(files.mapNotNull { f -> f.hashes[alg]?.let { f.name to it } })
+        val content = Checksums.format(listOfNotNull(item.hashes[alg]?.let { item.name to it }))
         coroutineScope.launch {
             runCatching { FileHash.write(context, uri, content) }
                 .onSuccess { Toast.makeText(context, resources.getString(R.string.f_FileHash_saved, ".${alg.fileTag}"), Toast.LENGTH_SHORT).show() }
@@ -205,37 +223,37 @@ fun FileHashPage(providedInput: String? = "") {
         }
     }
 
-    // Shared to the tool: files (one, or several at once) read straight away; text, hashed
+    // Shared to the tool: straight to the file (or the text), as the video encoder has it
     LaunchedEffect(providedInput) {
-        val shared = providedInput?.lines()?.filter { it.isNotBlank() }.orEmpty()
+        val shared = providedInput?.trim().orEmpty()
         if (shared.isEmpty()) return@LaunchedEffect
-        if (shared.all { it.startsWith("content://") || it.startsWith("file://") }) {
-            mode = HashMode.Files
-            job?.cancel()
-            job = null
-            files = shared.distinct().map { FileHash.describe(context, it.toUri()) }
-        } else {
+        if (shared.startsWith("content://") || shared.startsWith("file://")) open(shared.toUri())
+        else {
             mode = HashMode.Text
             text = providedInput.orEmpty()
+            step = Step.Options
         }
-        calculate()
     }
 
-    BackHandler(enabled = step == Step.Results) { step = Step.Input }
+    BackHandler(enabled = step != Step.File) {
+        step = if (step == Step.Results) Step.Options else Step.File
+    }
 
     // Typed text: hashed as it's shown, at once
     val textHashes = remember(text, algorithms, mode) {
         if (mode == HashMode.Text) MultiDigest.ofText(text, algorithms) else emptyMap()
     }
-    val expected = remember(expectedText, expectedFile) { Checksums.parse(expectedText, expectedFile) }
+    // The other file's hashes stand for no file in particular, each by its algorithm
+    val expected = remember(expectedText, expectedFile, reference) {
+        reference?.let { r -> r.hashes.map { (alg, hash) -> ExpectedHash(hash, algorithm = alg) } } ?: Checksums.parse(expectedText, expectedFile)
+    }
 
-    val current = files.firstOrNull { it.state == FileHash.State.Hashing }
+    val size = reading?.size ?: 0
     val steps = Steps(
         Step.entries.size, step.ordinal, false,
         working = hashing,
-        progress = if (hashing && totalBytes > 0) (readBytes.toFloat() / totalBytes).coerceIn(0f, 1f) else null,
-        caption = current?.let { stringResource(R.string.f_FileHash_reading, it.name) },
-        detail = if (hashing && files.size > 1) current?.let { stringResource(R.string.f_FileHash_count, files.indexOf(it) + 1, files.size) } else null,
+        progress = if (hashing && size > 0) (readBytes.toFloat() / size).coerceIn(0f, 1f) else null,
+        caption = reading?.takeIf { hashing }?.let { stringResource(R.string.f_FileHash_reading, it.name) },
         onCancel = if (hashing) ({ job?.cancel() }) else null,
     )
     val title = stringResource(R.string.fp_FileHash)
@@ -245,204 +263,173 @@ fun FileHashPage(providedInput: String? = "") {
             .pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }
     ) {
         Box(modifier = Modifier.weight(1f)) {
-            // One heading for both steps (its steps' bar stays put); what's under it fades from one to the other
-            StepWithButtons(
-                content = {
-                    PageHeading(
-                        steps = steps, title = title,
-                        onBack = if (step == Step.Results) ({ step = Step.Input }) else null,
-                        header = {
-                            Reveal(visible = step == Step.Input) {
-                                ModeChoice(mode) {
-                                    mode = it
-                                    focusManager.clearFocus()
-                                }
-                            }
-                        }
-                    ) {
-                        AnimatedContent(step, transitionSpec = { fadeEnter togetherWith fadeExit }, label = "step") { shown ->
-                            Column {
-                                when (shown) {
-                                    Step.Input -> InputStep(
-                                        mode, files, text, { text = it }, algorithms, { algorithms = it },
-                                        onAdd = { picker.launch(arrayOf("*/*")) },
-                                        onRemove = { uri -> files = files.filter { it.uri != uri } }
-                                    )
-                                    Step.Results -> ResultsStep(
-                                        mode, files, text, textHashes, algorithms, expected, expectedText, expectedFile,
-                                        onExpectedText = { expectedText = it },
-                                        onLoad = { checksumPicker.launch(arrayOf("*/*")) },
-                                        onUnload = { expectedText = ""; expectedFile = null },
-                                        onCalculate = {
-                                            algorithms = algorithms + it
-                                            calculate()
-                                        },
-                                        hashing = hashing,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                },
-                buttons = {
-                    AnimatedContent(step, transitionSpec = { fadeEnter togetherWith fadeExit }, label = "buttons") { shown ->
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            when (shown) {
-                                Step.Results -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                                    ActionButton(Icons.Default.Share, stringResource(R.string.f_FileHash_share), enabled = !hashing) {
-                                        shareText(context, shareable(context, mode, files, textHashes, algorithms))
-                                    }
-                                    if (mode == HashMode.Files) {
-                                        ActionButton(
-                                            Icons.Default.Save,
-                                            stringResource(R.string.f_FileHash_export, (exportAlgorithm ?: HashAlgorithm.SHA256).fileTag),
-                                            enabled = !hashing && exportAlgorithm != null
-                                        ) {
-                                            val alg = exportAlgorithm ?: return@ActionButton
-                                            exporter.launch((files.singleOrNull()?.name ?: "checksums") + ".${alg.fileTag}")
-                                        }
-                                        ActionButton(Icons.Default.FolderOpen, stringResource(R.string.f_FileHash_other), enabled = !hashing) {
-                                            otherPicker.launch(arrayOf("*/*"))
-                                        }
-                                    } else {
-                                        ActionButton(Icons.Default.Edit, stringResource(R.string.f_FileHash_edit_text)) { step = Step.Input }
-                                    }
-                                }
-
-                                Step.Input -> {
-                                    Reveal(visible = mode == HashMode.Files && files.any { it.hashes.isNotEmpty() }) {
-                                        SecondaryButton(stringResource(R.string.f_FileHash_back_to_results), !hashing) { step = Step.Results }
-                                    }
-                                    val pick = mode == HashMode.Files && files.isEmpty()
-                                    BigButton(
-                                        if (pick) Icons.Default.FolderOpen else Icons.Default.Fingerprint,
-                                        stringResource(
-                                            when {
-                                                pick -> R.string.f_FileHash_pick
-                                                hashing -> R.string.f_FileHash_calculating
-                                                else -> R.string.f_FileHash_calculate
-                                            }
-                                        ),
-                                        enabled = pick || (!hashing && algorithms.isNotEmpty())
-                                    ) { if (pick) picker.launch(arrayOf("*/*")) else calculate() }
-                                }
-                            }
-                        }
-                    }
-                }
-            )
-        }
-    }
-}
-
-/** Files or text: what's hashed. */
-@Composable
-private fun ModeChoice(mode: HashMode, onSelect: (HashMode) -> Unit) {
-    val modes = listOf(
-        Triple(HashMode.Files, Icons.AutoMirrored.Default.InsertDriveFile, stringResource(R.string.f_FileHash_files)),
-        Triple(HashMode.Text, Icons.AutoMirrored.Default.TextSnippet, stringResource(R.string.f_FileHash_text)),
-    )
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 8.dp)) {
-        modes.forEachIndexed { i, (m, icon, label) ->
-            SegmentedButton(
-                selected = mode == m,
-                onClick = { onSelect(m) },
-                shape = SegmentedButtonDefaults.itemShape(i, modes.size),
-                icon = { Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp)) }
-            ) { Text(label, maxLines = 1) }
-        }
-    }
-}
-
-/** The files picked (or the tool's intro while there are none), or the text; the algorithms under them. */
-@Composable
-private fun InputStep(
-    mode: HashMode,
-    files: List<FileHash.Item>,
-    text: String,
-    onText: (String) -> Unit,
-    algorithms: Set<HashAlgorithm>,
-    onAlgorithms: (Set<HashAlgorithm>) -> Unit,
-    onAdd: () -> Unit,
-    onRemove: (Uri) -> Unit,
-) {
-    val context = LocalContext.current
-    Reveal(visible = mode == HashMode.Files && files.isEmpty()) {
-        Box(modifier = Modifier.padding(top = 32.dp)) {
-            ToolIntro(
-                Icons.Default.Fingerprint, stringResource(R.string.f_FileHash_intro_title),
-                listOf(
-                    Icons.Default.FolderOpen to stringResource(R.string.f_FileHash_intro_1),
-                    Icons.Default.Fingerprint to stringResource(R.string.f_FileHash_intro_2),
-                    Icons.Default.Verified to stringResource(R.string.f_FileHash_intro_3),
-                ),
-                stringResource(R.string.f_FileHash_intro_tip)
-            )
-        }
-    }
-    Reveal(visible = mode == HashMode.Files && files.isNotEmpty()) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(horizontal = 16.dp).animateContentSize()) {
-            files.forEach { file ->
-                key(file.uri) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
-                            .padding(start = 16.dp, top = 4.dp, bottom = 4.dp)
-                    ) {
-                        Icon(Icons.AutoMirrored.Default.InsertDriveFile, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(file.name, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.MiddleEllipsis)
-                            if (file.size > 0) Text(
-                                Formatter.formatShortFileSize(context, file.size),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+            val item = file
+            // What's hashed: the open file, or the text
+            val ready = mode == HashMode.Text || item != null
+            when (step) {
+                Step.Results if ready -> StepWithButtons(
+                    content = {
+                        PageHeading(steps = steps, title = title, onBack = { step = Step.Options }) {
+                            SubjectCard(mode, item, text)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            ResultsStep(
+                                if (mode == HashMode.Text) null else item, if (mode == HashMode.Text) textHashes else item?.hashes.orEmpty(),
+                                algorithms, expected, expectedText, expectedFile, reference,
+                                onExpectedText = { expectedText = it },
+                                onLoad = { checksumPicker.launch(arrayOf("*/*")) },
+                                onUnload = {
+                                    // Not read on for nothing
+                                    if (reading != null && reading?.uri == reference?.uri) job?.cancel()
+                                    reference = null
+                                    expectedText = ""
+                                    expectedFile = null
+                                },
+                                onCalculate = {
+                                    algorithms = algorithms + it
+                                    calculate()
+                                },
+                                hashing = hashing,
                             )
                         }
-                        IconButton(onClick = { onRemove(file.uri) }) {
-                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.f_FileHash_remove))
+                    },
+                    buttons = {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                            ActionButton(Icons.Default.Share, stringResource(R.string.f_FileHash_share), enabled = !hashing) {
+                                shareText(context, shareable(context, mode, item, textHashes, algorithms))
+                            }
+                            if (mode == HashMode.Files) ActionButton(
+                                Icons.Default.Save,
+                                stringResource(R.string.f_FileHash_export, (exportAlgorithm ?: HashAlgorithm.SHA256).fileTag),
+                                enabled = !hashing && exportAlgorithm != null
+                            ) {
+                                val alg = exportAlgorithm ?: return@ActionButton
+                                exporter.launch("${item?.name ?: "checksums"}.${alg.fileTag}")
+                            }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                            ActionButton(Icons.Default.Tune, stringResource(R.string.f_FileHash_change)) { step = Step.Options }
+                            if (mode == HashMode.Files) ActionButton(Icons.Default.FolderOpen, stringResource(R.string.f_FileHash_another)) {
+                                picker.launch(arrayOf("*/*"))
+                            } else ActionButton(Icons.Default.Edit, stringResource(R.string.f_FileHash_edit_text)) { step = Step.File }
                         }
                     }
-                }
+                )
+
+                Step.Options if ready -> StepWithButtons(
+                    content = {
+                        PageHeading(steps = steps, title = title, onBack = { step = Step.File }) {
+                            SubjectCard(mode, item, text)
+                            Note(stringResource(R.string.f_FileHash_text_note), visible = mode == HashMode.Text)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                AlgorithmChoice(algorithms) { algorithms = it }
+                            }
+                        }
+                    },
+                    buttons = {
+                        BigButton(
+                            Icons.Default.Fingerprint,
+                            stringResource(if (hashing) R.string.f_FileHash_calculating else R.string.f_FileHash_calculate),
+                            enabled = !hashing && algorithms.isNotEmpty()
+                        ) { calculate() }
+                    }
+                )
+
+                else -> StepWithButtons(
+                    content = {
+                        PageHeading(steps = steps, title = title, verticalArrangement = Arrangement.Center) {
+                            ToolIntro(
+                                Icons.Default.Fingerprint, stringResource(R.string.f_FileHash_intro_title),
+                                listOf(
+                                    Icons.Default.FolderOpen to stringResource(R.string.f_FileHash_intro_1),
+                                    Icons.Default.Fingerprint to stringResource(R.string.f_FileHash_intro_2),
+                                    Icons.Default.Verified to stringResource(R.string.f_FileHash_intro_3),
+                                ),
+                                stringResource(R.string.f_FileHash_intro_tip)
+                            )
+                        }
+                    },
+                    buttons = {
+                        // The open file stays a tap away (kept while it folds away)
+                        val last = remember { arrayOfNulls<FileHash.Item>(1) }
+                        if (item != null) last[0] = item
+                        Reveal(visible = item != null) {
+                            val open = last[0] ?: return@Reveal
+                            SecondaryButton(stringResource(R.string.f_FileHash_back_to, open.name)) {
+                                mode = HashMode.Files
+                                step = if (open.hashes.isNotEmpty()) Step.Results else Step.Options
+                            }
+                        }
+                        // Text instead of a file: a line, growing up to three; its arrow, once there's some, goes on with it
+                        InputField(
+                            value = text,
+                            onValueChange = { text = it },
+                            // Its hint inside it, not a label over it: a label's room would set it apart from the button above
+                            placeholder = { Text(stringResource(R.string.f_FileHash_text_label)) },
+                            leadingIcon = { Icon(Icons.AutoMirrored.Default.Notes, contentDescription = null) },
+                            trailingIcon = {
+                                Fade(visible = text.isNotEmpty()) {
+                                    IconButton(onClick = {
+                                        focusManager.clearFocus()
+                                        mode = HashMode.Text
+                                        step = Step.Options
+                                    }) {
+                                        Icon(Icons.AutoMirrored.Default.ArrowForward, contentDescription = stringResource(R.string.f_FileHash_next))
+                                    }
+                                }
+                            },
+                            maxLines = 3,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        BigButton(Icons.Default.FolderOpen, stringResource(R.string.f_FileHash_pick), enabled = true) {
+                            picker.launch(arrayOf("*/*"))
+                        }
+                    }
+                )
             }
-            TextButton(onClick = onAdd, contentPadding = PaddingValues(horizontal = 4.dp)) {
-                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.f_FileHash_add))
-            }
-        }
-    }
-    Reveal(visible = mode == HashMode.Text) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(horizontal = 16.dp)) {
-            InputField(
-                value = text,
-                onValueChange = onText,
-                label = { Text(stringResource(R.string.f_FileHash_text_label)) },
-                leadingIcon = { Icon(Icons.AutoMirrored.Default.Notes, contentDescription = null) },
-                minLines = 3,
-                maxLines = 8,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Text(stringResource(R.string.f_FileHash_text_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-    Reveal(visible = mode == HashMode.Text || files.isNotEmpty()) {
-        Box(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)) {
-            AlgorithmChoice(algorithms, onAlgorithms)
         }
     }
 }
 
-/** Which algorithms are computed: those this device has, a chip each (SHA-3 noted when it's missing). */
+/** What's hashed, as the video encoder shows its file: the file's name and size, or the text. */
+@Composable
+private fun SubjectCard(mode: HashMode, file: FileHash.Item?, text: String) {
+    val context = LocalContext.current
+    if (mode == HashMode.Text) SubjectCard(
+        Icons.AutoMirrored.Default.TextSnippet, stringResource(R.string.f_FileHash_text),
+        text.replace('\n', ' ')
+    ) else if (file != null) SubjectCard(
+        Icons.AutoMirrored.Default.InsertDriveFile, file.name,
+        file.size.takeIf { it > 0 }?.let { Formatter.formatShortFileSize(context, it) }
+    )
+}
+
+@Composable
+private fun SubjectCard(icon: ImageVector, title: String, details: String?, action: (@Composable () -> Unit)? = null) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.MiddleEllipsis)
+            if (details != null) Text(
+                details, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1, overflow = TextOverflow.Ellipsis
+            )
+        }
+        action?.invoke()
+    }
+}
+
+/** Which algorithms are computed, a chip each. */
 @Composable
 fun AlgorithmChoice(selected: Set<HashAlgorithm>, onChange: (Set<HashAlgorithm>) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(stringResource(R.string.f_FileHash_algorithms), style = MaterialTheme.typography.labelLarge)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            HashAlgorithm.available.forEach { alg ->
+            HashAlgorithm.entries.forEach { alg ->
                 FilterChip(
                     selected = alg in selected,
                     onClick = { onChange(if (alg in selected) selected - alg else selected + alg) },
@@ -450,26 +437,22 @@ fun AlgorithmChoice(selected: Set<HashAlgorithm>, onChange: (Set<HashAlgorithm>)
                 )
             }
         }
-        if (!HashAlgorithm.SHA3_256.isAvailable) {
-            Text(stringResource(R.string.f_FileHash_sha3_none), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
     }
 }
 
 /**
- * The hashes to check against (pasted, or a checksum file's), then each file's (or the text's) hashes,
- * a row each, marked where they match or don't; what's still to compute to tell, offered.
+ * The hashes to check against (pasted, or a checksum file's), then the file's (no [file]: the text's) [hashes] in
+ * one card, the verdict on top, each row marked where it matches or doesn't; what's still to compute to tell, offered.
  */
 @Composable
 private fun ResultsStep(
-    mode: HashMode,
-    files: List<FileHash.Item>,
-    text: String,
-    textHashes: Map<HashAlgorithm, String>,
+    file: FileHash.Item?,
+    hashes: Map<HashAlgorithm, String>,
     algorithms: Set<HashAlgorithm>,
     expected: List<ExpectedHash>,
     expectedText: String,
     expectedFile: String?,
+    reference: FileHash.Item?,
     onExpectedText: (String) -> Unit,
     onLoad: () -> Unit,
     onUnload: () -> Unit,
@@ -477,199 +460,151 @@ private fun ResultsStep(
     hashing: Boolean,
 ) {
     val context = LocalContext.current
-    // Each one's hashes (those picked now) and what they come to against what's expected
-    val shown = if (mode == HashMode.Text) {
-        val mine = Checksums.forName(expected, null)
-        listOf(Shown(stringResource(R.string.f_FileHash_text), text.takeIf { it.isNotEmpty() }, null, textHashes, mine.isNotEmpty(), Checksums.verify(textHashes, mine)))
-    } else files.map { f ->
-        val hashes = f.hashes.filterKeys { it in algorithms }
-        val mine = Checksums.forName(expected, f.name)
-        Shown(f.name, f.size.takeIf { it > 0 }?.let { Formatter.formatShortFileSize(context, it) }, f, hashes, mine.isNotEmpty(), Checksums.verify(hashes, mine))
-    }
-    val missing = shown.flatMap { it.verdict.missing }.toSet()
+    val shown = hashes.filterKeys { it in algorithms }
+    val mine = Checksums.forName(expected, file?.name)
+    val verdict = Checksums.verify(shown, mine)
+    val state = file?.state
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        VerifyInput(expected, expectedText, expectedFile, onExpectedText, onLoad, onUnload)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        VerifyInput(expected, expectedText, expectedFile, reference, onExpectedText, onLoad, onUnload)
 
-        // What's to compute yet to tell: once, for all
-        Reveal(visible = missing.isNotEmpty() && !hashing) {
-            val names = missing.joinToString(", ") { it.label }
+        // What's to compute yet to tell
+        val missing = remember { arrayOfNulls<String>(1) }
+        if (verdict.missing.isNotEmpty()) missing[0] = verdict.missing.joinToString(", ") { it.label }
+        Reveal(visible = verdict.missing.isNotEmpty() && !hashing) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp)
             ) {
                 Text(
-                    stringResource(R.string.f_FileHash_need, names),
+                    stringResource(R.string.f_FileHash_need, missing[0].orEmpty()),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f)
                 )
-                TextButton(onClick = { onCalculate(missing) }) { Text(stringResource(R.string.f_FileHash_calculate_too, names)) }
+                TextButton(onClick = { onCalculate(verdict.missing) }) { Text(stringResource(R.string.f_FileHash_calculate_too, missing[0].orEmpty())) }
             }
         }
+        Note(
+            stringResource(R.string.f_FileHash_not_listed),
+            visible = expected.isNotEmpty() && mine.isEmpty() && (file == null || state == FileHash.State.Done)
+        )
+        Note(stringResource(R.string.f_FileHash_waiting), visible = state == FileHash.State.Waiting && shown.isEmpty() && !hashing)
+        ErrorText(file?.error?.takeIf { state == FileHash.State.Failed }?.let { stringResource(R.string.f_FileHash_failed, it) })
+        ErrorText(reference?.error?.takeIf { reference.state == FileHash.State.Failed }?.let { stringResource(R.string.f_FileHash_failed, it) })
 
-        // Of several files checked: how many came out right
-        val checked = shown.filter { it.verdict.isMatch || it.verdict.isMismatch }
-        Reveal(visible = shown.size > 1 && checked.isNotEmpty()) {
-            val matching = checked.count { it.verdict.isMatch }
-            Text(
-                stringResource(R.string.f_FileHash_summary, matching, shown.size),
-                style = MaterialTheme.typography.titleMedium,
-                color = if (matching == shown.size) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-            )
-        }
-
-        shown.forEach { s ->
-            key(s.item?.uri ?: "text") {
-                HashCard(s.title, s.details, s.item, s.hashes, s.verdict, notListed = expected.isNotEmpty() && !s.listed && (s.item == null || s.item.state == FileHash.State.Done))
+        Results {
+            VerdictRow(if (verdict.isMismatch) false else if (verdict.isMatch) true else null)
+            HashAlgorithm.entries.forEach { alg ->
+                val hash = shown[alg]
+                // The last one, while it folds away
+                val last = remember { arrayOfNulls<String>(1) }
+                if (hash != null) last[0] = hash
+                Reveal(visible = hash != null) {
+                    HashRow(
+                        alg, last[0].orEmpty(),
+                        when (alg) {
+                            in verdict.matched -> true
+                            in verdict.mismatched -> false
+                            else -> null
+                        }
+                    ) { copy(context, alg.label, last[0].orEmpty()) }
+                }
             }
         }
-        Note(stringResource(R.string.f_FileHash_copy_hint))
+        Note(stringResource(R.string.f_FileHash_copy_hint), visible = shown.isNotEmpty())
     }
 }
 
-/** A file's (no [item]: the text's) [hashes] as they're shown, whether [listed] in what's expected, and its [verdict]. */
-private data class Shown(
-    val title: String,
-    val details: String?,
-    val item: FileHash.Item?,
-    val hashes: Map<HashAlgorithm, String>,
-    val listed: Boolean,
-    val verdict: Checksums.Verdict,
-)
-
-/** A field for a hash (or a checksum file's lines) pasted, or the checksum file loaded in its place; what's understood of it under it. */
+/**
+ * A field for a hash (or a checksum file's lines) pasted, or the file loaded in its place (shown as the file hashed
+ * is): a checksum file, or [reference], another file compared hash by hash; what's understood of it under it.
+ */
 @Composable
 private fun VerifyInput(
     expected: List<ExpectedHash>,
     expectedText: String,
     expectedFile: String?,
+    reference: FileHash.Item?,
     onExpectedText: (String) -> Unit,
     onLoad: () -> Unit,
     onUnload: () -> Unit,
 ) {
     val context = LocalContext.current
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(horizontal = 16.dp)) {
-        Text(stringResource(R.string.f_FileHash_verify), style = MaterialTheme.typography.labelLarge)
-        Reveal(visible = expectedFile == null) {
-            InputField(
-                value = expectedText,
-                onValueChange = onExpectedText,
-                placeholder = { Text(stringResource(R.string.f_FileHash_expected_hint)) },
-                trailingIcon = {
-                    IconButton(onClick = { pasted(context)?.let(onExpectedText) }) {
-                        Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.f_FileHash_paste))
-                    }
-                },
-                textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
-                maxLines = 4,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        // The loaded file, standing for its lines
-        val shownFile = remember { arrayOfNulls<String>(1) }
-        if (expectedFile != null) shownFile[0] = expectedFile
-        Reveal(visible = expectedFile != null) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
-                    .padding(start = 16.dp)
-            ) {
-                Icon(Icons.AutoMirrored.Default.InsertDriveFile, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    stringResource(R.string.f_FileHash_loaded, shownFile[0].orEmpty().ifEmpty { "…" }, expected.size),
-                    style = MaterialTheme.typography.bodyLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.MiddleEllipsis,
-                    modifier = Modifier.weight(1f)
+    val loaded = expectedFile != null || reference != null
+    Column {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(horizontal = 16.dp)) {
+            Text(stringResource(R.string.f_FileHash_verify), style = MaterialTheme.typography.labelLarge)
+            Reveal(visible = !loaded) {
+                InputField(
+                    value = expectedText,
+                    onValueChange = onExpectedText,
+                    placeholder = { Text(stringResource(R.string.f_FileHash_expected_hint)) },
+                    trailingIcon = {
+                        Row {
+                            IconButton(onClick = { pasted(context)?.let(onExpectedText) }) {
+                                Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.f_FileHash_paste))
+                            }
+                            IconButton(onClick = onLoad) {
+                                Icon(Icons.Default.FolderOpen, contentDescription = stringResource(R.string.f_FileHash_load))
+                            }
+                        }
+                    },
+                    textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
+                    maxLines = 3,
+                    modifier = Modifier.fillMaxWidth()
                 )
+            }
+        }
+        // The loaded file in the field's place, as the file hashed is shown: its name and size (kept while it folds away)
+        val lastFile = remember { arrayOfNulls<Pair<String, Long>>(1) }
+        when {
+            reference != null -> lastFile[0] = reference.name to reference.size
+            expectedFile != null -> lastFile[0] = expectedFile.ifEmpty { "…" } to expectedText.toByteArray(Charsets.UTF_8).size.toLong()
+        }
+        Reveal(visible = loaded) {
+            val (name, size) = lastFile[0] ?: return@Reveal
+            SubjectCard(
+                Icons.AutoMirrored.Default.InsertDriveFile, name,
+                size.takeIf { it > 0 }?.let { Formatter.formatShortFileSize(context, it) }
+            ) {
                 IconButton(onClick = onUnload) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.f_FileHash_unload)) }
             }
         }
         // What it is: a hash by which algorithm (or several hashes), or none
         val single = expected.singleOrNull()
-        StatusLine(
-            when {
-                expectedFile != null || expected.isEmpty() -> null
-                single != null -> stringResource(R.string.f_FileHash_detected, single.candidates.joinToString(" / ") { it.label })
-                else -> stringResource(R.string.f_FileHash_hashes, expected.size)
-            },
-            MaterialTheme.colorScheme.onSurfaceVariant, inset = false
-        )
-        StatusLine(
-            stringResource(R.string.f_FileHash_not_hash).takeIf { expectedText.isNotBlank() && expected.isEmpty() },
-            MaterialTheme.colorScheme.error, inset = false
-        )
-        Reveal(visible = expectedFile == null) {
-            TextButton(onClick = onLoad, contentPadding = PaddingValues(horizontal = 4.dp)) {
-                Icon(Icons.Default.FolderOpen, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.f_FileHash_load))
-            }
+        val detected = when {
+            loaded || expected.isEmpty() -> null
+            single != null -> stringResource(R.string.f_FileHash_detected, single.candidates.joinToString(" / ") { it.label })
+            else -> stringResource(R.string.f_FileHash_hashes, expected.size)
         }
+        val last = remember { arrayOfNulls<String>(1) }
+        if (detected != null) last[0] = detected
+        Note(last[0].orEmpty(), visible = detected != null)
+        // Nothing to check against in what was pasted, or in the file loaded
+        ErrorText(stringResource(R.string.f_FileHash_not_hash).takeIf { reference == null && (loaded || expectedText.isNotBlank()) && expected.isEmpty() })
     }
 }
 
-/** One file's (or the text's) hashes: its name and size, how it's going, then a row per hash; a tap copies one. */
+/** On top of the hashes: whether they match what's expected, in its color; nothing without a verdict. */
 @Composable
-private fun HashCard(
-    title: String,
-    details: String?,
-    item: FileHash.Item?,
-    hashes: Map<HashAlgorithm, String>,
-    verdict: Checksums.Verdict,
-    notListed: Boolean,
-) {
-    val context = LocalContext.current
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .animateContentSize()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
-            .padding(vertical = 8.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.MiddleEllipsis)
-                details?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                }
-            }
-            // The whole file's verdict, by its name
-            VerdictBadge(if (verdict.isMismatch) false else if (verdict.isMatch) true else null, showText = true)
-        }
-        val state = item?.state
-        val status = when {
-            state == FileHash.State.Hashing -> stringResource(R.string.f_FileHash_hashing)
-            state == FileHash.State.Waiting && hashes.isEmpty() -> stringResource(R.string.f_FileHash_waiting)
-            notListed -> stringResource(R.string.f_FileHash_not_listed)
-            else -> null
-        }
-        StatusLine(status, MaterialTheme.colorScheme.onSurfaceVariant)
-        StatusLine(item?.error.takeIf { state == FileHash.State.Failed }?.let { stringResource(R.string.f_FileHash_failed, it) }, MaterialTheme.colorScheme.error)
-
-        HashAlgorithm.entries.forEach { alg ->
-            val hash = hashes[alg]
-            // The last one, while it folds away
-            val last = remember { arrayOfNulls<String>(1) }
-            if (hash != null) last[0] = hash
-            Reveal(visible = hash != null) {
-                HashRow(
-                    alg, last[0].orEmpty(),
-                    when (alg) {
-                        in verdict.matched -> true
-                        in verdict.mismatched -> false
-                        else -> null
-                    }
-                ) { copy(context, alg.label, last[0].orEmpty()) }
-            }
+private fun VerdictRow(match: Boolean?) {
+    // The last one, while it folds away
+    val last = remember { booleanArrayOf(true) }
+    if (match != null) last[0] = match
+    Reveal(visible = match != null) {
+        val ok = last[0]
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Text(
+                stringResource(if (ok) R.string.f_FileHash_match else R.string.f_FileHash_mismatch),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = if (ok) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                modifier = Modifier.weight(1f)
+            )
+            VerdictBadge(ok)
         }
     }
 }
@@ -695,70 +630,37 @@ private fun HashRow(alg: HashAlgorithm, hash: String, match: Boolean?, onCopy: (
             Text(alg.label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(hash, style = MaterialTheme.typography.bodyMedium, fontFamily = FontFamily.Monospace)
         }
-        VerdictBadge(match, showText = false)
+        // The last one, while it fades away
+        val last = remember { booleanArrayOf(true) }
+        if (match != null) last[0] = match
+        Fade(visible = match != null) { VerdictBadge(last[0]) }
     }
 }
 
-/** A tick for a match, a cross for a mismatch (with its word: [showText]), fading in and out; nothing without a verdict. */
+/** A tick for a match, a cross for a mismatch. */
 @Composable
-private fun VerdictBadge(match: Boolean?, showText: Boolean) {
-    // The last one, while it fades away
-    val last = remember { booleanArrayOf(true) }
-    if (match != null) last[0] = match
-    Fade(visible = match != null) {
-        val ok = last[0]
-        val color = if (ok) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 8.dp)) {
-            if (showText) {
-                Text(
-                    stringResource(if (ok) R.string.f_FileHash_match else R.string.f_FileHash_mismatch),
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                    color = color
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-            }
-            Icon(
-                if (ok) Icons.Default.CheckCircle else Icons.Default.Cancel,
-                contentDescription = if (showText) null else stringResource(if (ok) R.string.f_FileHash_match else R.string.f_FileHash_mismatch),
-                tint = color
-            )
-        }
-    }
-}
-
-/**
- * A line of what's what in [color] (e.g. why a file couldn't be read), [inset] as a card's rows are; none
- * without [text], the last one kept while it folds away.
- */
-@Composable
-private fun StatusLine(text: String?, color: Color, inset: Boolean = true) {
-    val last = remember { arrayOfNulls<String>(1) }
-    if (text != null) last[0] = text
-    Reveal(visible = text != null) {
-        Text(
-            last[0].orEmpty(),
-            style = MaterialTheme.typography.bodySmall,
-            color = color,
-            modifier = Modifier.padding(horizontal = if (inset) 16.dp else 0.dp, vertical = 2.dp)
-        )
-    }
+private fun VerdictBadge(ok: Boolean) {
+    Icon(
+        if (ok) Icons.Default.CheckCircle else Icons.Default.Cancel,
+        contentDescription = stringResource(if (ok) R.string.f_FileHash_match else R.string.f_FileHash_mismatch),
+        tint = if (ok) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+        modifier = Modifier.padding(start = 8.dp)
+    )
 }
 
 /** The one algorithm an exported checksum file is by: SHA-256 when it's computed, else the first other one there is (CRC32 has no such file). */
-private fun exportAlgorithm(files: List<FileHash.Item>, algorithms: Set<HashAlgorithm>): HashAlgorithm? {
-    val have = files.flatMap { it.hashes.keys }.toSet().intersect(algorithms) - HashAlgorithm.CRC32
+private fun exportAlgorithm(file: FileHash.Item, algorithms: Set<HashAlgorithm>): HashAlgorithm? {
+    val have = file.hashes.keys.intersect(algorithms) - HashAlgorithm.CRC32
     return HashAlgorithm.SHA256.takeIf { it in have } ?: HashAlgorithm.entries.firstOrNull { it in have }
 }
 
-/** All hashes as text to share: each file's name and size, then its hashes, a line each. */
-private fun shareable(context: Context, mode: HashMode, files: List<FileHash.Item>, textHashes: Map<HashAlgorithm, String>, algorithms: Set<HashAlgorithm>): String {
+/** All hashes as text to share: the file's name and size, then its hashes, a line each (the text's: just them). */
+private fun shareable(context: Context, mode: HashMode, file: FileHash.Item?, textHashes: Map<HashAlgorithm, String>, algorithms: Set<HashAlgorithm>): String {
     fun lines(hashes: Map<HashAlgorithm, String>) =
         HashAlgorithm.entries.filter { it in algorithms }.mapNotNull { alg -> hashes[alg]?.let { "${alg.label}: $it" } }
-    return if (mode == HashMode.Text) lines(textHashes).joinToString("\n")
-    else files.filter { it.hashes.isNotEmpty() }.joinToString("\n\n") { f ->
-        val size = f.size.takeIf { it > 0 }?.let { " (${Formatter.formatShortFileSize(context, it)})" }.orEmpty()
-        (listOf(f.name + size) + lines(f.hashes)).joinToString("\n")
-    }
+    if (mode == HashMode.Text || file == null) return lines(textHashes).joinToString("\n")
+    val size = file.size.takeIf { it > 0 }?.let { " (${Formatter.formatShortFileSize(context, it)})" }.orEmpty()
+    return (listOf(file.name + size) + lines(file.hashes)).joinToString("\n")
 }
 
 /** [text] to other apps, but not back here ([ALIAS]). */

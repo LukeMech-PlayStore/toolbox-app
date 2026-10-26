@@ -95,16 +95,6 @@ class MainActivity : ComponentActivity() {
                     }
                     sharedContent = uri?.toString() ?: it.getStringExtra(Intent.EXTRA_TEXT)
                 }
-                // Several files at once (e.g. to File hash): their URIs, a line each
-                Intent.ACTION_SEND_MULTIPLE -> {
-                    val uris = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        it.getParcelableArrayListExtra(Intent.EXTRA_STREAM, Uri::class.java)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        it.getParcelableArrayListExtra(Intent.EXTRA_STREAM)
-                    }
-                    sharedContent = uris?.joinToString("\n")
-                }
                 // Case 3: Opened via "Open With..." (File Handler)
                 Intent.ACTION_VIEW -> {
                     sharedContent = it.data?.toString()

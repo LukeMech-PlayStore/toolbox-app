@@ -31,7 +31,7 @@ object FileHashFeature : AppFeature {
     override val icon @Composable get() = Icons.Default.Fingerprint
 
     const val S_DSHKEY = "FileHash_!ShareTo"
-    /** The algorithms picked last, for the next time (HashAlgorithm names). */
+    /** The algorithms the page starts with, set in the settings (HashAlgorithm names). */
     const val S_ALGORITHMS = "FileHash_algorithms"
 
     override val preferenceKeys = listOf(S_DSHKEY, S_ALGORITHMS)
@@ -43,13 +43,13 @@ object FileHashFeature : AppFeature {
 
     override val hasSettingsContent get() = true
 
-    /** The algorithms computed (as the page has them), and its "Share to" entry. */
+    /** The algorithms the page starts with (those picked there are for that time only), and its "Share to" entry. */
     @Composable
     override fun SettingsContent() {
         val context = LocalContext.current
         var algorithms by remember { mutableStateOf(FileHash.algorithms(context)) }
 
-        ExpandableButton(stringResource(R.string.f_FileHash_algorithms), Icons.Default.Tune) {
+        ExpandableButton(stringResource(R.string.f_FileHash_default_algorithms), Icons.Default.Tune) {
             Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 AlgorithmChoice(algorithms) {
                     algorithms = it

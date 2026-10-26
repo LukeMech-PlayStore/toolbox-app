@@ -5,8 +5,8 @@ import java.security.MessageDigest
 import java.util.zip.CRC32
 
 /**
- * A checksum the tool makes: [label] as people write it, [javaName] the platform's MessageDigest (none: CRC32,
- * java.util.zip's), [hexLength] its hex digits; [fileTag] in checksum files' names (e.g. "sha256" in SHA256SUMS,
+ * A checksum the tool makes: [label] as people write it, [javaName] its MessageDigest name (none: CRC32,
+ * java.util.zip's; see [newDigest]), [hexLength] its hex digits; [fileTag] in checksum files' names (e.g. "sha256" in SHA256SUMS,
  * "file.sha256"). In the order they're offered, the usual ones first.
  */
 enum class HashAlgorithm(val label: String, val javaName: String?, val hexLength: Int, val fileTag: String) {
@@ -20,16 +20,16 @@ enum class HashAlgorithm(val label: String, val javaName: String?, val hexLength
     SHA3_512("SHA3-512", "SHA3-512", 128, "sha3-512"),
     CRC32("CRC32", null, 8, "crc32");
 
-    /** Whether this device makes it: SHA-3 isn't in every Android's providers (it's asked, not assumed). */
-    val isAvailable: Boolean by lazy { javaName?.let { runCatching { MessageDigest.getInstance(it) }.isSuccess } ?: true }
+    /** A new digest of it (none: CRC32): the platform's, but SHA-3's the app's own ([SHA3]): Android's providers don't have it. */
+    fun newDigest(): MessageDigest? = when (this) {
+        SHA3_256, SHA3_512 -> SHA3(hexLength * 4)
+        else -> javaName?.let(MessageDigest::getInstance)
+    }
 
     /** As BSD's and OpenSSL's lines name it, e.g. "SHA256" in "SHA256 (file) = …": [label] without its dashes. */
     private val tag get() = label.replace("-", "").uppercase()
 
     companion object {
-        /** The ones this device makes. */
-        val available get() = entries.filter { it.isAvailable }
-
         /** What's computed when nothing's been picked yet. */
         val DEFAULTS = setOf(MD5, SHA1, SHA256)
 
@@ -69,7 +69,7 @@ fun toHex(bytes: ByteArray): String {
  * of it is kept, so a file of any size goes through in [BUFFER] bytes at a time.
  */
 class MultiDigest(algorithms: Collection<HashAlgorithm>) {
-    private val digests = algorithms.filter { it.javaName != null }.associateWith { MessageDigest.getInstance(it.javaName!!) }
+    private val digests = algorithms.mapNotNull { alg -> alg.newDigest()?.let { alg to it } }.toMap()
     private val crc = if (HashAlgorithm.CRC32 in algorithms) CRC32() else null
 
     fun update(buffer: ByteArray, offset: Int = 0, length: Int = buffer.size) {
@@ -204,7 +204,7 @@ object Checksums {
             when {
                 hit.isNotEmpty() -> matched += hit
                 tried.isNotEmpty() -> mismatched += tried
-                else -> missing += e.candidates.filter { it.isAvailable }.take(1)
+                else -> missing += e.candidates.take(1)
             }
         }
         // A row one hash matched isn't a mismatch for another (e.g. a checksum file with two lines for a name)

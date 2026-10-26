@@ -234,7 +234,7 @@
             </intent-filter>
         </activity-alias>
 
-        <!-- Share (any files, one or several) to File hash -->
+        <!-- Share (any file) to File hash -->
         <activity-alias
             android:name="share.File.Hash"
             android:enabled="false"
@@ -244,11 +244,6 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="*/*" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="*/*" />
             </intent-filter>
