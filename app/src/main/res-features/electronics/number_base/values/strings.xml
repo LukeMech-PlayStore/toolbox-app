@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_number_base">Number bases and bits</string>
+    <string name="fd_number_base">Binary, hex, two\'s complement, IEEE 754</string>
+    <string name="fk_number_base">number base, radix, binary, octal, decimal, hexadecimal, hex, bin, oct, dec, bits, bytes, two\'s complement, signed, unsigned, integer, int8, int16, int32, int64, float, double, float32, float64, ieee 754, floating point, exponent, mantissa, programmer, calculator, calc, compute, electronics</string>
+    <string name="ec_positional">Positional notation</string>
+    <string name="ec_twos_complement">Two\'s complement (n bits)</string>
+    <string name="ec_integer">Integer</string>
+    <string name="ec_floating_point">Floating point (IEEE 754)</string>
+    <string name="ec_word_size">Word size</string>
+    <string name="ec_n_bits">%1$d-bit</string>
+    <string name="ec_signed">Signed (two\'s complement)</string>
+    <string name="ec_binary">Binary</string>
+    <string name="ec_octal">Octal</string>
+    <string name="ec_decimal">Decimal</string>
+    <string name="ec_hexadecimal">Hexadecimal</string>
+    <string name="ec_bit_pattern">Bits</string>
+    <string name="ec_unsigned_value">As unsigned</string>
+    <string name="ec_signed_value">As signed</string>
+    <string name="ec_does_not_fit">Doesn\'t fit in %1$d bits</string>
+    <string name="ec_precision">Precision</string>
+    <string name="ec_hex_bits">Bits in hex</string>
+    <string name="ec_float_class">Kind</string>
+    <string name="ec_float_zero">Zero</string>
+    <string name="ec_float_subnormal">Subnormal</string>
+    <string name="ec_float_normal">Normal</string>
+    <string name="ec_float_infinity">Infinity</string>
+    <string name="ec_float_nan">Not a number (NaN)</string>
+    <string name="ec_sign">Sign</string>
+    <string name="ec_exponent">Exponent</string>
+    <string name="ec_fraction">Fraction (mantissa)</string>
+    <string name="ec_stored_value">Value stored</string>
+    <string name="ec_rounding_error">Rounding error</string>
+    <string name="ec_invalid_number">Enter a valid number</string>
+</resources>

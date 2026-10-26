@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_energy">Przelicznik energii</string>
+    <string name="fd_energy">Dżule na kWh, kalorie, BTU i eV</string>
+    <string name="fk_energy">energia, przelicznik, dżul, j, kj, watogodzina, wh, kwh, kaloria, cal, kcal, btu, elektronowolt, ev, akumulator, bateria, mah, pojemność, jednostki, przeliczanie, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_energy">Energia</string>
+    <string name="ec_cal_thermochemical">Kaloria termochemiczna</string>
+    <string name="ec_btu_it">BTU (International Table)</string>
+    <string name="ec_battery_energy">Energia akumulatora</string>
+    <string name="ec_charge_mah">Pojemność</string>
+    <string name="ec_nominal_voltage">Napięcie nominalne</string>
+</resources>

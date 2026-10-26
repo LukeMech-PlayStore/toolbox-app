@@ -7,10 +7,12 @@ import org.lukemech.lmtoolbox.features.electronics.capacitor_charge.CapacitorCha
 import org.lukemech.lmtoolbox.features.electronics.coil.CoilFeature
 import org.lukemech.lmtoolbox.features.electronics.color_code.ColorCodeFeature
 import org.lukemech.lmtoolbox.features.electronics.decibel.DecibelFeature
+import org.lukemech.lmtoolbox.features.electronics.energy.EnergyFeature
 import org.lukemech.lmtoolbox.features.electronics.frequency.FrequencyFeature
 import org.lukemech.lmtoolbox.features.electronics.heatsink.HeatsinkFeature
 import org.lukemech.lmtoolbox.features.electronics.led_resistor.LedResistorFeature
 import org.lukemech.lmtoolbox.features.electronics.ne555.Ne555Feature
+import org.lukemech.lmtoolbox.features.electronics.number_base.NumberBaseFeature
 import org.lukemech.lmtoolbox.features.electronics.ohm.OhmFeature
 import org.lukemech.lmtoolbox.features.electronics.opamp.OpAmpFeature
 import org.lukemech.lmtoolbox.features.electronics.pcb_trace.PcbTraceFeature
@@ -72,6 +74,7 @@ object FeatureRegistry {
         Ne555Feature,
         HeatsinkFeature,
         BatteryLifeFeature,
+        EnergyFeature,
         CoilFeature,
         VoltageDropFeature,
         PcbTraceFeature,
@@ -81,6 +84,7 @@ object FeatureRegistry {
         FrequencyFeature,
         AdcFeature,
         RangeConverterFeature,
+        NumberBaseFeature,
         RmsFeature
     )
 

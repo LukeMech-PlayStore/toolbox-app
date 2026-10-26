@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_number_base">Systemy liczbowe i bity</string>
+    <string name="fd_number_base">Dwójkowy, szesnastkowy, U2, IEEE 754</string>
+    <string name="fk_number_base">system liczbowy, podstawa, dwójkowy, binarny, ósemkowy, dziesiętny, szesnastkowy, hex, bin, oct, dec, bity, bajty, kod uzupełnień do dwóch, u2, ze znakiem, bez znaku, liczba całkowita, int8, int16, int32, int64, float, double, float32, float64, ieee 754, liczba zmiennoprzecinkowa, wykładnik, mantysa, programista, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_positional">Zapis pozycyjny</string>
+    <string name="ec_twos_complement">Kod uzupełnień do dwóch (n bitów)</string>
+    <string name="ec_integer">Liczba całkowita</string>
+    <string name="ec_floating_point">Zmiennoprzecinkowa (IEEE 754)</string>
+    <string name="ec_word_size">Długość słowa</string>
+    <string name="ec_n_bits">%1$d-bitowe</string>
+    <string name="ec_signed">Ze znakiem (U2)</string>
+    <string name="ec_binary">Dwójkowo</string>
+    <string name="ec_octal">Ósemkowo</string>
+    <string name="ec_decimal">Dziesiętnie</string>
+    <string name="ec_hexadecimal">Szesnastkowo</string>
+    <string name="ec_bit_pattern">Bity</string>
+    <string name="ec_unsigned_value">Bez znaku</string>
+    <string name="ec_signed_value">Ze znakiem</string>
+    <string name="ec_does_not_fit">Nie mieści się w %1$d bitach</string>
+    <string name="ec_precision">Precyzja</string>
+    <string name="ec_hex_bits">Bity szesnastkowo</string>
+    <string name="ec_float_class">Rodzaj</string>
+    <string name="ec_float_zero">Zero</string>
+    <string name="ec_float_subnormal">Zdenormalizowana</string>
+    <string name="ec_float_normal">Znormalizowana</string>
+    <string name="ec_float_infinity">Nieskończoność</string>
+    <string name="ec_float_nan">Nie-liczba (NaN)</string>
+    <string name="ec_sign">Znak</string>
+    <string name="ec_exponent">Wykładnik</string>
+    <string name="ec_fraction">Mantysa</string>
+    <string name="ec_stored_value">Zapisana wartość</string>
+    <string name="ec_rounding_error">Błąd zaokrąglenia</string>
+    <string name="ec_invalid_number">Wpisz poprawną liczbę</string>
+</resources>
