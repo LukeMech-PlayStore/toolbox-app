@@ -3,6 +3,7 @@ package org.lukemech.lmtoolbox.linux.parts
 import org.lukemech.lmtoolbox.linux.InstallResult
 import android.content.Context
 import java.io.File
+import java.net.InetAddress
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +17,7 @@ import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.linux.LinuxParts
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.helpers.AppFeature
+import org.lukemech.lmtoolbox.R
 
 /**
  * A bore tunnel (the bore part), for a server on the phone that players reach from anywhere with
@@ -80,7 +82,8 @@ class Bore(
                     onStart = { id -> _state.update { it?.copy(taskId = id) } },
                     onLine = { raw ->
                         val line = raw.replace(ANSI, "")
-                        onLine(line)
+                        // Why it ended ("Error: ..."): told once, as its state's error (see the end), not in the log
+                        if (!line.startsWith("Error: ")) onLine(line)
                         LISTENING.find(line)?.let { m ->
                             connected = true
                             want = m.groupValues[2].toInt()
@@ -102,6 +105,8 @@ class Bore(
                     else -> break
                 }
             }
+            // bore says only "could not connect": the DNS's doing (a blocker's answer) told as such
+            if (!stopping && lastError?.startsWith("could not connect") == true && dnsBlocks(server)) lastError = app.getString(R.string.f_Mc_bore_dns_blocked, server)
             _state.update {
                 it?.copy(
                     phase = if (stopping) Phase.Stopped else Phase.Failed,
@@ -139,6 +144,20 @@ class Bore(
         secretFile.setReadable(true, true)
     }
 
+    /**
+     * Whether a DNS blocker answers for [server] (Private DNS, e.g. AdGuard's, or a Pi-hole): with nowhere
+     * (0.0.0.0, loopback), its block page or itself instead of the server. bore asks Android as this does,
+     * so it got the same answer.
+     */
+    private fun dnsBlocks(server: String): Boolean {
+        val addresses = runCatching { InetAddress.getAllByName(server).toList() }.getOrNull() ?: return false
+        return addresses.any { a ->
+            a.isAnyLocalAddress || a.isLoopbackAddress || a.hostAddress in BLOCK_PAGES ||
+                // bore.pub on the LAN: a Pi-hole answering with itself (one's own server may well be there)
+                (server == SERVER && (a.isSiteLocalAddress || a.isLinkLocalAddress))
+        }
+    }
+
     companion object {
         /** The part (and its Play module), for a tool's extraExtensions: installed when the tool turns it on ([install]). */
         const val PART = "bore"
@@ -154,5 +173,7 @@ class Bore(
         private val ANSI = Regex("""\u001B\[[0-9;?]*[ -/]*[@-~]""")
         /** "INFO bore_cli::client: listening at bore.pub:41234" */
         private val LISTENING = Regex("""listening at (\S+):(\d+)""")
+        /** DNS blockers' block pages, answered for what they block: AdGuard DNS's. */
+        private val BLOCK_PAGES = setOf("94.140.14.33")
     }
 }
