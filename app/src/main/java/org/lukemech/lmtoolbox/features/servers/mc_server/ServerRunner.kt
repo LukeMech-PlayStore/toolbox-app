@@ -586,9 +586,7 @@ object ServerRunner {
         boreJob = scope.launch {
             bore.state.collect { state ->
                 state ?: return@collect
-                if (state.phase == Bore.Phase.Failed && _bore.value?.state?.phase != Bore.Phase.Failed) {
-                    LinuxTasks.reportFailure(MinecraftServerFeature, profile.name, "bore: ${state.error ?: "failed"}")
-                }
+                // Failed: told in its status row alone (the server runs on without it), not as the server's failed task
                 // Its port, asked for again next time
                 if (state.phase == Bore.Phase.Connected) Servers.load(app, profile.id)?.takeIf { it.borePort != state.port }
                     ?.let { Servers.save(app, it.copy(borePort = state.port)) }
