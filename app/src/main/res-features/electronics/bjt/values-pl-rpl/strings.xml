@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_bjt">Tranzystor (BJT)</string>
+    <string name="fd_bjt">Rezystor bazy i punkt pracy</string>
+    <string name="fk_bjt">tranzystor, bjt, bipolarny, npn, pnp, klucz, przełącznik, rezystor bazy, nasycenie, hfe, beta, wzmocnienie, polaryzacja, dzielnik napięcia, punkt pracy, kolektor, emiter, baza, vbe, vce, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_bjt_switch">Jako klucz</string>
+    <string name="ec_bjt_bias">Polaryzacja dzielnikiem</string>
+    <string name="ec_drive">Napięcie sterujące</string>
+    <string name="ec_hfe">Wzmocnienie prądowe (hFE, minimalne)</string>
+    <string name="ec_overdrive">Współczynnik przesterowania</string>
+    <string name="ec_vbe">Napięcie baza–emiter (VBE)</string>
+    <string name="ec_vce_sat">Napięcie nasycenia (VCE(sat))</string>
+    <string name="ec_base_resistor">Rezystor bazy</string>
+    <string name="ec_rb_standard">Wartość %1$s tuż poniżej</string>
+    <string name="ec_ic">Prąd kolektora</string>
+    <string name="ec_ib">Prąd bazy</string>
+    <string name="ec_transistor_power">Ciepło w tranzystorze</string>
+    <string name="ec_drive_too_low">Napięcie sterujące musi być wyższe niż VBE</string>
+    <string name="ec_rc_collector">Rezystor kolektora (RC)</string>
+    <string name="ec_re">Rezystor emitera (RE)</string>
+    <string name="ec_beta">Wzmocnienie prądowe (β)</string>
+    <string name="ec_vce">Napięcie kolektor–emiter</string>
+    <string name="ec_vb">Napięcie bazy</string>
+    <string name="ec_ve">Napięcie emitera</string>
+    <string name="ec_vc">Napięcie kolektora</string>
+    <string name="ec_region">Obszar pracy</string>
+    <string name="ec_region_cutoff">Odcięcie</string>
+    <string name="ec_region_active">Aktywny</string>
+    <string name="ec_region_saturation">Nasycenie</string>
+    <string name="ec_saturated_note">Nasycony: VCE zostaje na ok. 0,2 V, a prądu nie wyznacza już β. Dla wzmacniacza zmniejsz RC albo zwiększ RE.</string>
+</resources>
