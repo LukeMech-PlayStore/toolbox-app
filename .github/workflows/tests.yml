@@ -144,10 +144,7 @@ jobs:
           channel: ${{ matrix.channel }}
           cores: 4
           ram-size: 4096M
-          # The app's Java heap: left out, the AVD's is 16 MB, which a command's output alone can fill
-          # (OutOfMemoryError in LinuxEnv.drain). A low-end phone's, so the tests still catch what would run out on
-          # one: AOSP's 1 GB phone profile (phone-xhdpi-1024-dalvik-heap.mk, heapgrowthlimit=96m)
-          heap-size: 96M
+          # The app's Java heap is set by run-tests.sh: heap-size here never reaches it
           # The Java versions and the servers' worlds take room
           disk-size: 16G
           emulator-boot-timeout: 900
