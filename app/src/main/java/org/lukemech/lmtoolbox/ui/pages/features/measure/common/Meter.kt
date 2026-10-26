@@ -98,7 +98,7 @@ fun ResetAction(onClick: () -> Unit) {
 /**
  * A reading's last moments as a line, the newest at the right: [values] (oldest first) on a strip of [capacity]
  * of them, so the line grows in from the right as they come. The scale goes from [min] to [max] (widened to
- * hold every value, in [step]s), a line across at every [step], labelled in [unit].
+ * hold every value, in [step]s), a line across at every [step] (or every few, widened far), labelled in [unit].
  */
 @Composable
 fun LiveGraph(values: List<Float>, capacity: Int, min: Float, max: Float, step: Float, unit: String) {
@@ -120,16 +120,19 @@ fun LiveGraph(values: List<Float>, capacity: Int, min: Float, max: Float, step: 
         val low = minOf(min, floor((values.minOrNull() ?: min) / step) * step)
         val high = maxOf(max, ceil((values.maxOrNull() ?: max) / step) * step)
         fun y(value: Float) = size.height * (1 - (value - low) / (high - low))
+        // Widened a lot (a strong vibration), a line every few steps: never more than MAX_LINES
+        var every = step
+        while ((high - low) / every > MAX_LINES) every *= 2
 
         var line = low
-        while (line <= high + step / 2) {
+        while (line <= high + every / 2) {
             val at = y(line)
             drawLine(gridColor, Offset(0f, at), Offset(size.width, at), strokeWidth = 1.dp.toPx())
             val label = measurer.measure("${formatTick(line)} $unit", labelStyle)
             // Above its line, but the lowest's (else off the graph)
             val top = (at - label.size.height).coerceIn(0f, size.height - label.size.height)
             drawText(label, topLeft = Offset(0f, top))
-            line += step
+            line += every
         }
 
         if (values.size < 2) return@Canvas
@@ -142,6 +145,8 @@ fun LiveGraph(values: List<Float>, capacity: Int, min: Float, max: Float, step: 
         drawPath(path, lineColor, style = Stroke(width = 2.dp.toPx(), join = StrokeJoin.Round))
     }
 }
+
+private const val MAX_LINES = 6
 
 /** A grid line's value: whole when it is (40, not 40.0). */
 private fun formatTick(value: Float) = if (value == value.toInt().toFloat()) value.toInt().toString() else "%.1f".format(value)
