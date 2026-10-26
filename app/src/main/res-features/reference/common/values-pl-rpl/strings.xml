@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rf_kind_power">Zasilanie</string>
+    <string name="rf_kind_ground">Masa</string>
+    <string name="rf_kind_signal">Sygnał</string>
+    <string name="rf_kind_data">Dane</string>
+    <string name="rf_kind_clock">Zegar</string>
+    <string name="rf_kind_control">Sterowanie</string>
+    <string name="rf_kind_analog">Analogowy</string>
+    <string name="rf_kind_audio">Audio</string>
+    <string name="rf_kind_shield">Ekran</string>
+    <string name="rf_kind_unused">Niepodłączony</string>
+    <string name="rf_search_table">Szukaj w tabeli</string>
+    <string name="rf_search_pins">Szukaj wyprowadzeń</string>
+    <string name="rf_copied">Skopiowano: %1$s</string>
+    <string name="rf_copy_hint">Przytrzymaj komórkę, aby ją skopiować</string>
+    <string name="rf_drawn_in_order">Narysowane w kolejności numerów, nie tak, jak leżą na złączu</string>
+    <string name="rf_tap_pin">Złącze: dotknij wyprowadzenia, aby zobaczyć, do czego służy</string>
+    <string name="rf_pin">Pin</string>
+</resources>

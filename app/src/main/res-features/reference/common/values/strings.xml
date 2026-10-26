@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rf_kind_power">Power</string>
+    <string name="rf_kind_ground">Ground</string>
+    <string name="rf_kind_signal">Signal</string>
+    <string name="rf_kind_data">Data</string>
+    <string name="rf_kind_clock">Clock</string>
+    <string name="rf_kind_control">Control</string>
+    <string name="rf_kind_analog">Analog</string>
+    <string name="rf_kind_audio">Audio</string>
+    <string name="rf_kind_shield">Shield</string>
+    <string name="rf_kind_unused">Not connected</string>
+    <string name="rf_search_table">Search the table</string>
+    <string name="rf_search_pins">Search the pins</string>
+    <string name="rf_copied">Copied: %1$s</string>
+    <string name="rf_copy_hint">Hold a cell to copy it</string>
+    <string name="rf_drawn_in_order">Drawn in number order, not laid out as on the connector</string>
+    <string name="rf_tap_pin">The connector: tap a pin to see what it does</string>
+    <string name="rf_pin">Pin</string>
+</resources>

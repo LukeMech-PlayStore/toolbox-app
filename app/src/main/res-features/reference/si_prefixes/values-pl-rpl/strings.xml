@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_si_prefixes">Przedrostki SI</string>
+    <string name="fd_si_prefixes">Od kwetta do kwekto</string>
+    <string name="fk_si_prefixes">przedrostki si, przedrostek, metryczny, kilo, mega, giga, tera, mili, mikro, nano, piko, femto, jednostki, potęga dziesięciu, wykładnik, ściągawka, tabela</string>
+    <string name="rf_prefix">Przedrostek</string>
+    <string name="rf_symbol">Symbol</string>
+    <string name="rf_factor">Mnożnik</string>
+    <string name="rf_decimal">Rozpisany</string>
+    <string name="rf_si_quetta">kwetta</string>
+    <string name="rf_si_ronna">ronna</string>
+    <string name="rf_si_yotta">jotta</string>
+    <string name="rf_si_zetta">zetta</string>
+    <string name="rf_si_exa">eksa</string>
+    <string name="rf_si_peta">peta</string>
+    <string name="rf_si_tera">tera</string>
+    <string name="rf_si_giga">giga</string>
+    <string name="rf_si_mega">mega</string>
+    <string name="rf_si_kilo">kilo</string>
+    <string name="rf_si_hecto">hekto</string>
+    <string name="rf_si_deca">deka</string>
+    <string name="rf_si_deci">decy</string>
+    <string name="rf_si_centi">centy</string>
+    <string name="rf_si_milli">mili</string>
+    <string name="rf_si_micro">mikro</string>
+    <string name="rf_si_nano">nano</string>
+    <string name="rf_si_pico">piko</string>
+    <string name="rf_si_femto">femto</string>
+    <string name="rf_si_atto">atto</string>
+    <string name="rf_si_zepto">zepto</string>
+    <string name="rf_si_yocto">jokto</string>
+    <string name="rf_si_ronto">ronto</string>
+    <string name="rf_si_quecto">kwekto</string>
+</resources>

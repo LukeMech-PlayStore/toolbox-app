@@ -20,6 +20,7 @@
     <string name="recent_clear_confirm_msg">Funkcje znikną z ostatnich, a ich ustawienia zostaną.</string>
     <string name="cat_measure">Pomiary</string>
     <string name="cat_electronics">Elektronika</string>
+    <string name="cat_reference">Ściągawki</string>
     <string name="cat_finance">Finanse</string>
     <string name="cat_media">Multimedia</string>
     <string name="cat_servers">Serwery</string>

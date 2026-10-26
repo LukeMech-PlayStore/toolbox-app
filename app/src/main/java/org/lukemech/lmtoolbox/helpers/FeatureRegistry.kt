@@ -21,8 +21,8 @@ import org.lukemech.lmtoolbox.features.electronics.pt100.Pt100Feature
 import org.lukemech.lmtoolbox.features.electronics.range_converter.RangeConverterFeature
 import org.lukemech.lmtoolbox.features.electronics.rc_filter.RcFilterFeature
 import org.lukemech.lmtoolbox.features.electronics.reactance.ReactanceFeature
-import org.lukemech.lmtoolbox.features.electronics.resistor_ratio.ResistorRatioFeature
 import org.lukemech.lmtoolbox.features.electronics.regulator.RegulatorFeature
+import org.lukemech.lmtoolbox.features.electronics.resistor_ratio.ResistorRatioFeature
 import org.lukemech.lmtoolbox.features.electronics.rms.RmsFeature
 import org.lukemech.lmtoolbox.features.electronics.series_parallel.SeriesParallelFeature
 import org.lukemech.lmtoolbox.features.electronics.smd_code.SmdCodeFeature
@@ -40,6 +40,11 @@ import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaDownloaderFeature
 import org.lukemech.lmtoolbox.features.media.qr_gen.QrGenFeature
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoEncoderFeature
+import org.lukemech.lmtoolbox.features.reference.decibel_table.DecibelTableFeature
+import org.lukemech.lmtoolbox.features.reference.pt100_table.Pt100TableFeature
+import org.lukemech.lmtoolbox.features.reference.si_prefixes.SiPrefixesFeature
+import org.lukemech.lmtoolbox.features.reference.standard_values.StandardValuesFeature
+import org.lukemech.lmtoolbox.features.reference.wire_gauge.WireGaugeFeature
 import org.lukemech.lmtoolbox.features.servers.mc_server.MinecraftServerFeature
 
 /** All the app's tools, in this order wherever they're listed. Add a new one here. */
@@ -85,7 +90,12 @@ object FeatureRegistry {
         AdcFeature,
         RangeConverterFeature,
         NumberBaseFeature,
-        RmsFeature
+        RmsFeature,
+        StandardValuesFeature,
+        Pt100TableFeature,
+        DecibelTableFeature,
+        SiPrefixesFeature,
+        WireGaugeFeature
     )
 
     /** The tool with [route], if there's one. */
