@@ -52,6 +52,17 @@ wait_ready
 abis=$(adb shell getprop ro.product.cpu.abilist | tr -d '\r')
 sdk=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
 echo "Device: API $sdk, ABIs $abis"
+# The app's Java heap, a low-end phone's: AOSP's 1 GB phone profile (phone-xhdpi-1024-dalvik-heap.mk,
+# heapgrowthlimit=96m), so the tests still catch what would run out on one. Left to the image, it's its own (16 MB on
+# x86 API 29, where a command's output alone filled it); android-emulator-runner's heap-size doesn't reach it (it
+# writes hw.heapSize, the emulator reads vm.heapSize, and that's the large heap's limit, not an app's). Set as root,
+# zygote restarted to read it, then the shell's own again (the install below as the shell, root only as its fallback)
+if adb root > /dev/null 2>&1; then
+  sleep 3; adb wait-for-device
+  adb shell setprop dalvik.vm.heapgrowthlimit 96m && adb shell stop && adb shell start
+  adb unroot > /dev/null 2>&1; sleep 3; wait_ready
+fi
+echo "Heap growth limit: $(adb shell getprop dalvik.vm.heapgrowthlimit | tr -d '\r')"
 adb logcat -G 16M || true
 # Awake, located (the compass), as a user's phone
 adb shell svc power stayon true || true

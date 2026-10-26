@@ -11,7 +11,9 @@ tests.yml, whose result is the tests':
 - exits 1 if any failed or didn't run
 - with <durations.json>: that file (instrument.py's, how it deals the tests among a leg's shards; kept in the Actions
   cache by tests.yml) updated in place with each test that didn't fail, as long as it took on each ABI (the median of
-  its legs), the tests not seen as they were
+  its legs), the tests not seen as they were. Only if almost nothing failed or went unrun (MAX_FAILED of the legs'
+  results): a run that went wrong (an emulator dying, a shard cut short) times the rest wrong too. Whether it was
+  updated, the step's output durations (updated or kept), for tests.yml to save it or not
 
     merge.py <matrix JSON> <artifacts dir> [<summary.md> [<durations.json>]]
 
@@ -27,6 +29,9 @@ import xml.etree.ElementTree as ET
 
 # A leg's result of a test, and a test's over them all: the worst first
 ICONS = {"failed": "❌", "not run": "⚠️", "flaky": "🔁", "passed": "✅", "skipped": "⏭️"}
+
+# The share of the legs' results (a test on a leg) failed or not run above which the durations aren't updated
+MAX_FAILED = 0.05
 
 
 def outcome(case):
@@ -103,6 +108,8 @@ def main():
     tests = load(legs, sys.argv[2])
 
     rows, totals, failed, why = [], dict.fromkeys(ICONS, 0), [], []
+    # Every leg's result of every test (a shard without results: each of its tests not run)
+    each = dict.fromkeys(ICONS, 0)
     for (cls, name), ran in tests.items():
         title = f"{'Setup' if cls == 'e2e.Setup' else cls.rsplit('.', 1)[-1]} › {name}"
         cells, results = [], []
@@ -127,6 +134,9 @@ def main():
             results.append(status)
             seconds = sum(float(attempt.get("time") or 0) for _, attempt in tries)
             cells.append(f"{ICONS[status]} {seconds:.0f} s" if status != "skipped" else ICONS[status])
+        if cls != "e2e.Setup":
+            for status in results:
+                each[status] += 1
         overall = next((s for s in ICONS if s in results and s != "skipped"), "skipped")
         totals[overall] += 1
         rows.append((list(ICONS).index(overall), title, f"| {html.escape(title, quote=False)} | " + " | ".join(cells) + " |\n"))
@@ -149,7 +159,16 @@ def main():
             for shard in legs[::legs[0]["shards"]] if legs else []:
                 f.write(f"| {shard['name'].rsplit(' · ', 1)[0]} | android-{shard['image']};{shard['target']};{shard['arch']} | {shard['channel']} |\n")
     if len(sys.argv) > 4:
-        durations(legs, tests, sys.argv[4])
+        ran = sum(n for s, n in each.items() if s != "skipped")
+        wrong = (each["failed"] + each["not run"]) / ran if ran else 1
+        updated = wrong <= MAX_FAILED
+        if updated:
+            durations(legs, tests, sys.argv[4])
+        else:
+            print(f"::notice ::Durations kept as they were: {wrong:.0%} of the results failed or didn't run (over {MAX_FAILED:.0%})")
+        if os.environ.get("GITHUB_OUTPUT"):
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+                f.write(f"durations={'updated' if updated else 'kept'}\n")
     for title, message in failed:
         # A workflow command: its message one line, its % and line breaks escaped
         text = brief(message or "failed").replace("%", "%25").replace("\r", "").replace("\n", "%0A")

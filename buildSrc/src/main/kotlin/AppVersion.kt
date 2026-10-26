@@ -58,6 +58,5 @@ fun Project.registerDailyVersionName(): TaskProvider<DailyVersionName> =
     }
 
 /** The name [task] gives the build, once it's run. */
-@Suppress("unused") // app/build.gradle.kts
 fun dailyVersionName(task: TaskProvider<DailyVersionName>): Provider<String> =
     task.flatMap { it.versionName }.map { it.asFile.readText().trim() }

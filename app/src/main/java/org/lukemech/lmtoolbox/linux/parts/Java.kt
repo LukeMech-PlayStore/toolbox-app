@@ -109,11 +109,12 @@ object Java {
         dir: File? = null, heap: Heap? = null, options: List<String> = emptyList(),
         label: String = args.joinToString(" "),
         timeoutMs: Long = LinuxEnv.DEFAULT_TIMEOUT_MS,
+        maxOutput: Int = LinuxEnv.DEFAULT_MAX_OUTPUT,
         onStart: (id: Long) -> Unit = {},
         onLine: ((String) -> Unit)? = null,
     ): ExecResult = LinuxTasks.runInBackground(
         context, command(jdk, args, dir, heap, options), source,
-        label = label, timeoutMs = timeoutMs, onStart = onStart, onLine = onLine
+        label = label, timeoutMs = timeoutMs, maxOutput = maxOutput, onStart = onStart, onLine = onLine
     )
 
     /**

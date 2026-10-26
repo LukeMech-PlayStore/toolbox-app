@@ -503,6 +503,9 @@ object Installer {
             dir = dir,
             label = context.getString(R.string.f_Mc_installing_loader),
             timeoutMs = INSTALLER_TIMEOUT_MS,
+            // Megabytes of stdout (every library it fetches), of which only the end is read (the task's log): kept
+            // whole, it ran a 16 MB heap out of memory
+            maxOutput = 64 * 1024,
             onStart = { id -> _state.update { it?.copy(taskId = id) } }
         )
         if (LinuxTasks.isCancelled(_state.value?.taskId)) throw kotlinx.coroutines.CancellationException()
