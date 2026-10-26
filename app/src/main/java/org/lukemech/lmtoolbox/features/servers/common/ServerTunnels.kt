@@ -65,14 +65,15 @@ class ServerTunnels(private val source: AppFeature, private val log: (String) ->
     fun boreRuns(serverId: String) = _bore.value?.let { it.serverId == serverId && it.isActive } == true
 
     /**
-     * Server [serverId]'s Cloudflare tunnel ([tunnel], once cloudflared is there and its token is in), routing
-     * what its public hostname gets to the server, as set up in Cloudflare's dashboard. Failed, told in the one
+     * Server [serverId]'s Cloudflare tunnel ([tunnel], once cloudflared is there): the one set up in Cloudflare's
+     * dashboard (its token in), routing what its public hostname gets to the server; or with [localUrl], a quick
+     * tunnel to that (an address of its own on trycloudflare.com, nothing to set up). Failed, told in the one
      * place errors are, the bottom bar ([label]: what it's for, e.g. the server's name).
      */
-    fun startTunnel(context: Context, serverId: String, label: String, tunnel: Tunnel) {
+    fun startTunnel(context: Context, serverId: String, label: String, tunnel: Tunnel, localUrl: String? = null) {
         if (_tunnel.value?.isActive == true) return
-        // There (see install), with its token
-        if (!Tunnel.isInstalled(context) || !tunnel.hasToken) return
+        // There (see install), with its token for the dashboard's
+        if (!Tunnel.isInstalled(context) || (localUrl == null && !tunnel.hasToken)) return
         currentTunnel = tunnel
         tunnelJob?.cancel()
         tunnelJob = scope.launch {
@@ -85,7 +86,8 @@ class ServerTunnels(private val source: AppFeature, private val log: (String) ->
                 _tunnel.value = ServerTunnel(serverId, state)
             }
         }
-        tunnel.start(context) { line -> log("[cloudflared] $line") }
+        val onLine = { line: String -> log("[cloudflared] $line") }
+        if (localUrl == null) tunnel.start(context, onLine) else tunnel.startQuick(context, localUrl, onLine)
     }
 
     fun stopTunnel() {

@@ -628,7 +628,8 @@ object LinuxTasks {
      * The parts on the device (downloaded or unpacked) that nothing uses once [gone]'s data is
      * deleted. A feature uses its own extension while that's unpacked (its data; just downloaded, it's
      * a module waiting to be uninstalled), and with it all it builds on ([LinuxExtension.requires],
-     * through and through), the core too; nothing else is used.
+     * through and through), the core too; so does one of a tool's extra ones it uses now (see
+     * AppFeature.usesExtraExtension), with what that builds on; nothing else is used.
      */
     fun unused(context: Context, gone: List<AppFeature>): List<LinuxExtension> {
         val all = LinuxParts.extensions(context)
@@ -640,6 +641,10 @@ object LinuxTasks {
         FeatureRegistry.features.filter { it !in gone && hasExtension(context, it) }
             // Its extra ones it unpacked too (e.g. a Java version a server needed)
             .flatMap { f -> f.linuxExtensions + f.extraExtensions.filter { LinuxParts.isExtensionUnpacked(context, it) } }
+            .forEach(::use)
+        // And those a tool uses now, one on no part of its own too (the folder share's tunnels)
+        FeatureRegistry.features.filter { it !in gone }
+            .flatMap { f -> f.extraExtensions.filter { LinuxParts.isExtensionUnpacked(context, it) && f.usesExtraExtension(context, it) } }
             .forEach(::use)
         // The core, while any extension is used
         val core = LinuxParts.core(context)?.takeIf { used.isEmpty() }
