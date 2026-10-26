@@ -4,13 +4,12 @@ name: Cron
 # - durations: the tests' durations (tests.yml's durations.json, how its shards are dealt) live in the Actions cache,
 #   which GitHub drops after 7 days unused: restored every 3 days, so a quiet week doesn't lose them. Scheduled runs
 #   are main's, so it's main's entry kept, the one every branch reads
-# - daemon-jvm: Dependabot doesn't cover gradle/gradle-daemon-jvm.properties: this regenerates it weekly (the newest
+# - daemon-jvm: Dependabot doesn't cover gradle/gradle-daemon-jvm.properties: this regenerates it (the newest
 #   JDK builds' download links for its toolchainVersion) and opens a PR if it changed
 
 on:
   schedule:
     - cron: "17 4 */3 * *"
-    - cron: "0 6 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -18,7 +17,6 @@ permissions:
 
 jobs:
   durations:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '17 4 */3 * *' }}
     runs-on: ubuntu-latest
     steps:
       - name: Restore the durations
@@ -34,7 +32,6 @@ jobs:
         run: echo "::notice ::No durations cached yet (tests.yml's report job saves them)"
 
   daemon-jvm:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '0 6 * * 1' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
