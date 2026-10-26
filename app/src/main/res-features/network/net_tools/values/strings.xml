@@ -1,0 +1,99 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fp_NetTools">Network tools</string>
+    <string name="fk_NetTools" tools:ignore="Typos">network, ping, traceroute, tracert, route, hops, latency, lag, packet loss, lan, wifi, wi-fi, devices, scanner, scan, ip, ip scanner, port, ports, port scanner, open ports, iperf, iperf3, bandwidth, speed, speed test, throughput, mdns, router</string>
+    <string name="fd_NetTools">Ping, trace, scan, measure</string>
+
+    <string name="f_Net_tab_ping">Ping</string>
+    <string name="f_Net_tab_trace">Route</string>
+    <string name="f_Net_tab_lan">LAN</string>
+    <string name="f_Net_tab_ports">Ports</string>
+    <string name="f_Net_tab_iperf">iperf3</string>
+
+    <string name="f_Net_host">Host</string>
+    <string name="f_Net_host_hint">example.com or 192.168.1.1</string>
+    <string name="f_Net_port">Port</string>
+    <string name="f_Net_stop">Stop</string>
+    <string name="f_Net_failed">Failed</string>
+    <string name="f_Net_address">Address</string>
+    <string name="f_Net_copy">Copy</string>
+    <string name="f_Net_copied">Copied</string>
+
+    <string name="f_Net_local_needed">Allow access to your network\'s devices</string>
+    <string name="f_Net_local_title">Devices on your network</string>
+    <string name="f_Net_local_message">Android asks before an app reaches the devices on your network. The network tools need it to find them, scan their ports, ping them and measure the speed to them; hosts on the internet work without it.</string>
+    <string name="f_Net_local_allow">Allow</string>
+    <string name="f_Net_local_later">Not now</string>
+
+    <string name="f_Net_count">Count</string>
+    <string name="f_Net_interval">Every</string>
+    <string name="f_Net_size">Size</string>
+    <string name="f_Net_ping_start">Ping</string>
+    <string name="f_Net_ping_fallback">This phone\'s ping isn\'t available to apps: Java\'s reachability check is used instead, timed by the app (rougher).</string>
+    <string name="f_Net_avg">Average</string>
+    <string name="f_Net_min">Fastest</string>
+    <string name="f_Net_max">Slowest</string>
+    <string name="f_Net_loss">Lost</string>
+    <string name="f_Net_loss_value">%1$s%% (back: %2$d/%3$d)</string>
+    <string name="f_Net_lost">no reply</string>
+
+    <string name="f_Net_trace_start">Trace route</string>
+    <string name="f_Net_trace_note">Each router on the way, found with the phone\'s ping. Some don\'t answer (*), or answer pings without times.</string>
+    <string name="f_Net_trace_no_ping">Needs the phone\'s ping, which isn\'t available to apps on this phone.</string>
+
+    <string name="f_Net_lan_start">Scan network</string>
+    <string name="f_Net_lan_scanning">Scanning…</string>
+    <string name="f_Net_lan_none">Not on Wi-Fi</string>
+    <string name="f_Net_lan_wifi_off">Wi-Fi is off</string>
+    <string name="f_Net_lan_none_desc">Connect to a Wi-Fi network to scan it</string>
+    <string name="f_Net_lan_self">This phone: %1$s</string>
+    <string name="f_Net_lan_router">router: %1$s</string>
+    <string name="f_Net_lan_devices">Devices: %1$d</string>
+    <string name="f_Net_lan_empty">No other devices answered</string>
+    <string name="f_Net_lan_note">Devices that ignore pings and keep their ports closed stay hidden. Android doesn\'t let apps read devices\' hardware (MAC) addresses, so what a device is, is a guess from its ports and what it announces. Tap one to scan its ports.</string>
+    <string name="f_Net_kind_phone">phone</string>
+    <string name="f_Net_kind_router">router</string>
+    <string name="f_Net_kind_printer">printer</string>
+    <string name="f_Net_kind_cast">TV or speaker</string>
+    <string name="f_Net_kind_apple">Apple device</string>
+    <string name="f_Net_kind_computer">computer</string>
+    <string name="f_Net_kind_storage">network storage</string>
+    <string name="f_Net_kind_camera">camera</string>
+    <string name="f_Net_kind_server">server</string>
+    <string name="f_Net_kind_smart_home">smart home</string>
+
+    <string name="f_Net_ports_start">Scan ports</string>
+    <string name="f_Net_ports_scanning">Scanning…</string>
+    <string name="f_Net_ports_common">Common (%1$d)</string>
+    <string name="f_Net_ports_all">All</string>
+    <string name="f_Net_ports_custom">Custom</string>
+    <string name="f_Net_ports_range">Ports</string>
+    <string name="f_Net_timeout">Wait for each</string>
+    <string name="f_Net_ports_open">Open: %1$d</string>
+    <string name="f_Net_ports_none">No open ports found</string>
+
+    <string name="f_Net_iperf_client">Client</string>
+    <string name="f_Net_iperf_server">Server</string>
+    <string name="f_Net_iperf_server_host">Server</string>
+    <string name="f_Net_iperf_time">Time</string>
+    <string name="f_Net_iperf_streams">Streams</string>
+    <string name="f_Net_iperf_udp_rate">Send at</string>
+    <string name="f_Net_iperf_reverse">Reverse</string>
+    <string name="f_Net_iperf_reverse_desc">The server sends, the phone receives</string>
+    <string name="f_Net_iperf_start">Measure</string>
+    <string name="f_Net_iperf_serve">Start server</string>
+    <string name="f_Net_iperf_unavailable">iperf3 isn\'t available for this device yet.</string>
+    <string name="f_Net_iperf_install">iperf3 is installed the first time you start it.</string>
+    <string name="f_Net_iperf_on_lan">On this network</string>
+    <string name="f_Net_iperf_on_tailnet">On your tailnet (Tailscale)</string>
+    <string name="f_Net_iperf_no_address">Connect to Wi-Fi (or Tailscale) for other devices to reach the server.</string>
+    <string name="f_Net_iperf_now">Now</string>
+    <string name="f_Net_iperf_rate">Speed</string>
+    <string name="f_Net_iperf_waiting">Waiting for a client on port</string>
+    <string name="f_Net_iperf_connecting">Connecting…</string>
+    <string name="f_Net_iperf_client_at">Client</string>
+    <string name="f_Net_iperf_server_at">Server</string>
+    <string name="f_Net_iperf_sent">Sent</string>
+    <string name="f_Net_iperf_received">Received</string>
+    <string name="f_Net_iperf_retransmits">Retransmits</string>
+    <string name="f_Net_iperf_jitter">Jitter</string>
+</resources>

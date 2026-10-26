@@ -68,6 +68,7 @@
       <w>gfxstream</w>
       <w>gfxstream's</w>
       <w>gitleaks</w>
+      <w>googlecast</w>
       <w>gplay</w>
       <w>heapgrowthlimit</w>
       <w>heatsink</w>
@@ -76,6 +77,8 @@
       <w>inodesteal</w>
       <w>intr</w>
       <w>iout</w>
+      <w>iperf</w>
+      <w>iputils</w>
       <w>jline</w>
       <w>kennelly</w>
       <w>khugepaged</w>
@@ -99,6 +102,7 @@
       <w>lstrip</w>
       <w>lukemech</w>
       <w>makedirs</w>
+      <w>mdev</w>
       <w>metadanych</w>
       <w>mikepenz</w>
       <w>mjpeg</w>
@@ -165,11 +169,13 @@
       <w>pythonunbuffered</w>
       <w>qrcode</w>
       <w>quickjs</w>
+      <w>raop</w>
       <w>rcon</w>
       <w>resizer</w>
       <w>resizer's</w>
       <w>resolv</w>
       <w>restorecon</w>
+      <w>retransmits</w>
       <w>rsplit</w>
       <w>rstrip</w>
       <w>selfpromo</w>
@@ -197,7 +203,10 @@
       <w>tailnets</w>
       <w>tempco</w>
       <w>termuxie</w>
+      <w>tracepath</w>
+      <w>tracert</w>
       <w>trunc</w>
+      <w>ttls</w>
       <w>ubble</w>
       <w>udevadm</w>
       <w>uid</w>

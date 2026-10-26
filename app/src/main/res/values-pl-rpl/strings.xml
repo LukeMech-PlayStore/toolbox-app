@@ -23,6 +23,7 @@
     <string name="cat_finance">Finanse</string>
     <string name="cat_media">Multimedia</string>
     <string name="cat_servers">Serwery</string>
+    <string name="cat_network">Sieć</string>
     <string name="search_features">Szukaj funkcji</string>
     <string name="search_settings">Szukaj w ustawieniach</string>
     <string name="search_no_results">Nic nie znaleziono</string>

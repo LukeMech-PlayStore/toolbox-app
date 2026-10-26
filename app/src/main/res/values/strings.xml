@@ -24,6 +24,7 @@
     <string name="cat_finance">Finance</string>
     <string name="cat_media">Media</string>
     <string name="cat_servers">Servers</string>
+    <string name="cat_network">Network</string>
     <string name="search_features">Search features</string>
     <string name="search_settings">Search settings</string>
     <string name="search_no_results">Nothing found</string>

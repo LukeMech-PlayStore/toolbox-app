@@ -1,0 +1,99 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fp_NetTools">Narzędzia sieciowe</string>
+    <string name="fk_NetTools" tools:ignore="Typos">sieć, ping, traceroute, tracert, trasa, przeskoki, opóźnienie, lag, utrata pakietów, lan, wifi, wi-fi, urządzenia, skaner, skanowanie, ip, skaner ip, port, porty, skaner portów, otwarte porty, iperf, iperf3, przepustowość, prędkość, test prędkości, mdns, router</string>
+    <string name="fd_NetTools">Ping, trasa, skan, pomiar</string>
+
+    <string name="f_Net_tab_ping">Ping</string>
+    <string name="f_Net_tab_trace">Trasa</string>
+    <string name="f_Net_tab_lan">LAN</string>
+    <string name="f_Net_tab_ports">Porty</string>
+    <string name="f_Net_tab_iperf">iperf3</string>
+
+    <string name="f_Net_host">Host</string>
+    <string name="f_Net_host_hint">example.com lub 192.168.1.1</string>
+    <string name="f_Net_port">Port</string>
+    <string name="f_Net_stop">Zatrzymaj</string>
+    <string name="f_Net_failed">Nie udało się</string>
+    <string name="f_Net_address">Adres</string>
+    <string name="f_Net_copy">Kopiuj</string>
+    <string name="f_Net_copied">Skopiowano</string>
+
+    <string name="f_Net_local_needed">Zezwól na dostęp do urządzeń w sieci</string>
+    <string name="f_Net_local_title">Urządzenia w Twojej sieci</string>
+    <string name="f_Net_local_message">Android pyta, zanim aplikacja połączy się z urządzeniami w Twojej sieci. Narzędzia sieciowe potrzebują tego, by je znaleźć, skanować ich porty, pingować je i mierzyć prędkość do nich; hosty w internecie działają i bez tego.</string>
+    <string name="f_Net_local_allow">Zezwól</string>
+    <string name="f_Net_local_later">Nie teraz</string>
+
+    <string name="f_Net_count">Liczba</string>
+    <string name="f_Net_interval">Co</string>
+    <string name="f_Net_size">Rozmiar</string>
+    <string name="f_Net_ping_start">Pinguj</string>
+    <string name="f_Net_ping_fallback">Ping tego telefonu jest niedostępny dla aplikacji: zamiast niego osiągalność sprawdza Java, a czas mierzy aplikacja (mniej dokładnie).</string>
+    <string name="f_Net_avg">Średnio</string>
+    <string name="f_Net_min">Najszybciej</string>
+    <string name="f_Net_max">Najwolniej</string>
+    <string name="f_Net_loss">Utracone</string>
+    <string name="f_Net_loss_value">%1$s%% (wróciło: %2$d/%3$d)</string>
+    <string name="f_Net_lost">brak odpowiedzi</string>
+
+    <string name="f_Net_trace_start">Wyznacz trasę</string>
+    <string name="f_Net_trace_note">Każdy router po drodze, znaleziony pingiem telefonu. Niektóre nie odpowiadają (*) albo odpowiadają na pingi bez czasów.</string>
+    <string name="f_Net_trace_no_ping">Wymaga pingu telefonu, który na tym telefonie jest niedostępny dla aplikacji.</string>
+
+    <string name="f_Net_lan_start">Skanuj sieć</string>
+    <string name="f_Net_lan_scanning">Skanowanie…</string>
+    <string name="f_Net_lan_none">Brak połączenia z Wi-Fi</string>
+    <string name="f_Net_lan_wifi_off">Wi-Fi jest wyłączone</string>
+    <string name="f_Net_lan_none_desc">Połącz się z siecią Wi-Fi, by ją przeskanować</string>
+    <string name="f_Net_lan_self">Ten telefon: %1$s</string>
+    <string name="f_Net_lan_router">router: %1$s</string>
+    <string name="f_Net_lan_devices">Urządzenia: %1$d</string>
+    <string name="f_Net_lan_empty">Żadne inne urządzenie nie odpowiedziało</string>
+    <string name="f_Net_lan_note">Urządzenia, które ignorują pingi i mają zamknięte porty, pozostają ukryte. Android nie pozwala aplikacjom odczytać adresów sprzętowych (MAC) urządzeń, więc to, czym jest urządzenie, jest zgadywane z jego portów i tego, co ogłasza. Dotknij urządzenia, by przeskanować jego porty.</string>
+    <string name="f_Net_kind_phone">telefon</string>
+    <string name="f_Net_kind_router">router</string>
+    <string name="f_Net_kind_printer">drukarka</string>
+    <string name="f_Net_kind_cast">telewizor lub głośnik</string>
+    <string name="f_Net_kind_apple">urządzenie Apple</string>
+    <string name="f_Net_kind_computer">komputer</string>
+    <string name="f_Net_kind_storage">dysk sieciowy</string>
+    <string name="f_Net_kind_camera">kamera</string>
+    <string name="f_Net_kind_server">serwer</string>
+    <string name="f_Net_kind_smart_home">inteligentny dom</string>
+
+    <string name="f_Net_ports_start">Skanuj porty</string>
+    <string name="f_Net_ports_scanning">Skanowanie…</string>
+    <string name="f_Net_ports_common">Popularne (%1$d)</string>
+    <string name="f_Net_ports_all">Wszystkie</string>
+    <string name="f_Net_ports_custom">Własne</string>
+    <string name="f_Net_ports_range">Porty</string>
+    <string name="f_Net_timeout">Czekaj na każdy</string>
+    <string name="f_Net_ports_open">Otwarte: %1$d</string>
+    <string name="f_Net_ports_none">Nie znaleziono otwartych portów</string>
+
+    <string name="f_Net_iperf_client">Klient</string>
+    <string name="f_Net_iperf_server">Serwer</string>
+    <string name="f_Net_iperf_server_host">Serwer</string>
+    <string name="f_Net_iperf_time">Czas</string>
+    <string name="f_Net_iperf_streams">Strumienie</string>
+    <string name="f_Net_iperf_udp_rate">Wysyłaj z prędkością</string>
+    <string name="f_Net_iperf_reverse">Odwrotnie</string>
+    <string name="f_Net_iperf_reverse_desc">Serwer wysyła, telefon odbiera</string>
+    <string name="f_Net_iperf_start">Zmierz</string>
+    <string name="f_Net_iperf_serve">Uruchom serwer</string>
+    <string name="f_Net_iperf_unavailable">iperf3 nie jest jeszcze dostępny na tym urządzeniu.</string>
+    <string name="f_Net_iperf_install">iperf3 zostanie zainstalowany przy pierwszym uruchomieniu.</string>
+    <string name="f_Net_iperf_on_lan">W tej sieci</string>
+    <string name="f_Net_iperf_on_tailnet">W Twoim tailnecie (Tailscale)</string>
+    <string name="f_Net_iperf_no_address">Połącz się z Wi-Fi (lub Tailscale), by inne urządzenia mogły połączyć się z serwerem.</string>
+    <string name="f_Net_iperf_now">Teraz</string>
+    <string name="f_Net_iperf_rate">Prędkość</string>
+    <string name="f_Net_iperf_waiting">Czeka na klienta na porcie</string>
+    <string name="f_Net_iperf_connecting">Łączenie…</string>
+    <string name="f_Net_iperf_client_at">Klient</string>
+    <string name="f_Net_iperf_server_at">Serwer</string>
+    <string name="f_Net_iperf_sent">Wysłano</string>
+    <string name="f_Net_iperf_received">Odebrano</string>
+    <string name="f_Net_iperf_retransmits">Retransmisje</string>
+    <string name="f_Net_iperf_jitter">Jitter</string>
+</resources>
