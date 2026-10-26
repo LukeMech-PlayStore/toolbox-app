@@ -143,7 +143,9 @@ jobs:
           arch: ${{ matrix.arch }}
           channel: ${{ matrix.channel }}
           cores: 4
-          ram-size: 4096M
+          # Half the runner's 16 GB: at 4 GB the canary's low-memory killer took the app as the system's own apps started
+          # up. x86 a 32-bit system's 4 GB, all it uses
+          ram-size: ${{ matrix.arch == 'x86' && '4096M' || '8192M' }}
           # The app's Java heap is set by run-tests.sh: heap-size here never reaches it
           # The Java versions and the servers' worlds take room
           disk-size: 16G

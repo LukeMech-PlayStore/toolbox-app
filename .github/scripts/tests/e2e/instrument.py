@@ -40,6 +40,8 @@ IDLE_TIMEOUT = 15 * 60
 DURATIONS = os.environ.get("E2E_DURATIONS", "durations.json")
 # A class's own run besides its tests: the app's process started, its logcat cleared and saved
 CLASS_OVERHEAD = 5
+# Between tries of a test the app's process died before starting: the system's memory left to settle
+START_RETRY_WAIT = 30
 
 
 def instrument(runner, raw_path, args, timeout):
@@ -237,11 +239,22 @@ def main():
         instrument(runner, raw(""), ["-e", "class", cls] if shards == 1 else any_of(cls, names), CLASS_TIMEOUT)
         results, _ = parse(raw(""))
 
-        # Those a crash kept from running: one by one
+        # Those a crash kept from running: one by one. The app's process killed before one started (the canary's
+        # low-memory killer, the system's own apps still starting up): run again once that's over; never started at
+        # all, it fails with what the run said
         done = {test for _, test, *_ in results}
         for i, test in enumerate(t for t in names if t not in done):
-            instrument(runner, raw(f"-rest{i}"), only(cls, test), TEST_TIMEOUT)
-            results += parse(raw(f"-rest{i}"))[0]
+            for attempt in range(3):
+                if attempt:
+                    time.sleep(START_RETRY_WAIT)
+                path = raw(f"-rest{i}" + (f"-{attempt}" if attempt else ""))
+                instrument(runner, path, only(cls, test), TEST_TIMEOUT)
+                ran, run_output = parse(path)
+                if ran:
+                    results += ran
+                    break
+            else:
+                results.append((cls, test, "crashed", "Never started in 3 tries (logcat: lowmemorykiller?):\n" + run_output, 0.0))
 
         # Each failed one, once more on its own
         failed = [test for _, test, status, *_ in results if status in ("failure", "error", "crashed")]
