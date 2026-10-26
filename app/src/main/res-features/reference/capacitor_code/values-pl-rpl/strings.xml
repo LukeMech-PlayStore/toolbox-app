@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_capacitor_code">Kody kondensatorów</string>
+    <string name="fd_capacitor_code">Odczytaj 104, 4n7 czy 223J</string>
+    <string name="fk_capacitor_code">kod kondensatora, oznaczenie kondensatora, kondensator ceramiczny, kondensator foliowy, 104, 103, 4n7, 223j, pf, nf, uf, μf, litera tolerancji, odczyt, ściągawka</string>
+    <string name="rf_marking">Oznaczenie</string>
+    <string name="rf_cap_code_hint">Trzy cyfry: dwie cyfry wartości i liczba zer po nich, w pikofaradach (104 = 100 nF). Litera w miejscu przecinka: p, n, μ (u) albo R (pikofarady). Na końcu może stać litera tolerancji.</string>
+    <string name="rf_codes">Kody</string>
+    <string name="rf_letter">Litera</string>
+    <string name="rf_tolerance_note">IEC 60062: B, C i D dla kondensatorów poniżej 10 pF</string>
+</resources>

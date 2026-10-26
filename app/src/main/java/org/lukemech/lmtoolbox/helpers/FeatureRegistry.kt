@@ -40,9 +40,12 @@ import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaDownloaderFeature
 import org.lukemech.lmtoolbox.features.media.qr_gen.QrGenFeature
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoEncoderFeature
+import org.lukemech.lmtoolbox.features.reference.capacitor_code.CapacitorCodeFeature
 import org.lukemech.lmtoolbox.features.reference.decibel_table.DecibelTableFeature
+import org.lukemech.lmtoolbox.features.reference.ip_code.IpCodeFeature
 import org.lukemech.lmtoolbox.features.reference.pt100_table.Pt100TableFeature
 import org.lukemech.lmtoolbox.features.reference.si_prefixes.SiPrefixesFeature
+import org.lukemech.lmtoolbox.features.reference.smd_packages.SmdPackagesFeature
 import org.lukemech.lmtoolbox.features.reference.standard_values.StandardValuesFeature
 import org.lukemech.lmtoolbox.features.reference.wire_gauge.WireGaugeFeature
 import org.lukemech.lmtoolbox.features.servers.mc_server.MinecraftServerFeature
@@ -95,7 +98,10 @@ object FeatureRegistry {
         Pt100TableFeature,
         DecibelTableFeature,
         SiPrefixesFeature,
-        WireGaugeFeature
+        WireGaugeFeature,
+        CapacitorCodeFeature,
+        IpCodeFeature,
+        SmdPackagesFeature
     )
 
     /** The tool with [route], if there's one. */

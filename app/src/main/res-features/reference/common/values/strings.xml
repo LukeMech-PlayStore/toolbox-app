@@ -17,4 +17,7 @@
     <string name="rf_drawn_in_order">Drawn in number order, not laid out as on the connector</string>
     <string name="rf_tap_pin">The connector: tap a pin to see what it does</string>
     <string name="rf_pin">Pin</string>
+    <string name="rf_decode">Decode</string>
+    <string name="rf_code">Code</string>
+    <string name="rf_digit">Digit</string>
 </resources>

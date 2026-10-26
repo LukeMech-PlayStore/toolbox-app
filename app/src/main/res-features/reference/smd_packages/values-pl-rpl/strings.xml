@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_smd_packages">Rozmiary obudów SMD</string>
+    <string name="fd_smd_packages">0603 calowe czy metryczne, i jego wymiary</string>
+    <string name="fk_smd_packages">smd, smt, obudowa, rozmiar, footprint, 0402, 0603, 0805, 1206, 2512, calowy, metryczny, rezystor, kondensator, moc, wymiary, ściągawka, tabela</string>
+    <string name="rf_chip_sizes">Rozmiary</string>
+    <string name="rf_imperial">Calowy</string>
+    <string name="rf_metric">Metryczny</string>
+    <string name="rf_size_mm">D × S (mm)</string>
+    <string name="rf_size_in">D × S (cal)</string>
+    <string name="rf_power_typical">Moc rezystora</string>
+    <string name="rf_smd_note">Moc: typowa moc grubowarstwowego rezystora chip w 70 °C; każdy producent podaje własną. Kondensatory i inne elementy w tym rozmiarze mają te same wymiary, ale różną wysokość.</string>
+</resources>
