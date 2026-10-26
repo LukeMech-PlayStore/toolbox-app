@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_sound_meter">Sound level meter</string>
+    <string name="fk_sound_meter">sound level meter, decibel, db, dba, spl, noise, loudness, loud, volume, microphone, acoustic, leq, tools</string>
+    <string name="fd_sound_meter">How loud is it?</string>
+    <string name="f_sound_unit_a" translatable="false">dB(A)</string>
+    <string name="f_sound_unit_z" translatable="false">dB</string>
+    <string name="f_sound_leq">Leq (average)</string>
+    <string name="f_sound_clipped">Too loud for the microphone: the sound is louder than the reading.</string>
+    <string name="f_sound_a_weighting">A-weighting</string>
+    <string name="f_sound_a_weighting_desc">As the ear hears it: low and very high sounds count less</string>
+    <string name="f_sound_calibration">Calibration: %1$s dB</string>
+    <string name="f_sound_calibration_desc">Tap to match a sound level meter</string>
+    <string name="f_sound_calibration_lower">Lower the calibration</string>
+    <string name="f_sound_calibration_raise">Raise the calibration</string>
+    <string name="f_sound_calibration_reset">Back to 0</string>
+    <string name="f_sound_calibrate_title">Calibrate</string>
+    <string name="f_sound_calibrate_message">Hold the phone next to a sound level meter while a steady sound plays, and enter what the meter shows. The phone\'s readings are moved to match it.</string>
+    <string name="f_sound_calibrate_field">The meter shows (dB)</string>
+    <string name="f_sound_calibrate_waiting">Waiting for the microphone\'s first reading…</string>
+    <string name="f_sound_note">Approximate dB SPL: a phone\'s microphone isn\'t a measuring instrument, and each hears a little differently. Calibrated against a sound level meter, it\'s within a few dB. Read from %1$s; nothing is recorded or kept.</string>
+    <string name="f_sound_source_unprocessed">the unprocessed microphone</string>
+    <string name="f_sound_source_voice">the microphone as for voice recognition</string>
+    <string name="f_sound_mic_needed">Allow the microphone to measure</string>
+    <string name="f_sound_mic_unavailable">The microphone is unavailable · tap to try again</string>
+    <string name="f_sound_mic_title">Sound from the microphone</string>
+    <string name="f_sound_mic_message">The sound level meter measures what the microphone hears. It listens only while this page is open, and nothing is recorded or kept.</string>
+    <string name="f_sound_mic_allow">Allow</string>
+    <string name="f_sound_mic_later">Not now</string>
+</resources>

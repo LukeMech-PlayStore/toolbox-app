@@ -32,6 +32,11 @@
 
     <!-- Shared by the measuring features and their widgets (the widgets' settings and service); each feature's own are in res-features/<Feature> -->
     <string name="f_missing_sensors_title">Błąd uruchomienia</string>
+    <!-- The meters' readings (sound, light, vibration) -->
+    <string name="f_meter_reset">Od nowa</string>
+    <string name="f_meter_min">Min</string>
+    <string name="f_meter_max">Maks</string>
+    <string name="f_meter_avg">Średnia</string>
     <string name="w_setting_background">Tło widżetu</string>
     <string name="w_setting_background_transparent">Przezroczyste</string>
     <string name="w_setting_background_opacity">Krycie: %1$d%%</string>

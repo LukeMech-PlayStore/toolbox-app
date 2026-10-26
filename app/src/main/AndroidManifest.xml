@@ -23,6 +23,17 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
+    <!-- The sound level meter: the microphone, read only while its page is open. Asked for on that page -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+    <!-- The metal detector's buzz, as the deviation grows -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- The vibration meter: the accelerometer above 200 Hz (Android 12+ caps apps there without it), so faster
+         vibrations can be told -->
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
+    <!-- The stroboscope: the torch (no camera permission needed for it) -->
+    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
+
     <!-- The Minecraft server's join addresses: opening the Tailscale app (its tailnet's address) -->
     <queries>
         <package android:name="com.tailscale.ipn" />

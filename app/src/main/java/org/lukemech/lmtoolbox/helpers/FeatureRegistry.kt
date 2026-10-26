@@ -28,6 +28,7 @@ import org.lukemech.lmtoolbox.features.electronics.zener.ZenerFeature
 import org.lukemech.lmtoolbox.features.finance.currencyconv.CurrencyConverterFeature
 import org.lukemech.lmtoolbox.features.measure.compass.CompassFeature
 import org.lukemech.lmtoolbox.features.measure.ruler.RulerFeature
+import org.lukemech.lmtoolbox.features.measure.sound_meter.SoundMeterFeature
 import org.lukemech.lmtoolbox.features.measure.spirit_level.SpiritLevelFeature
 import org.lukemech.lmtoolbox.features.media.file_size.FileSizeFeature
 import org.lukemech.lmtoolbox.features.media.image_resize.ImageResizerFeature
@@ -43,6 +44,7 @@ object FeatureRegistry {
         RulerFeature,
         SpiritLevelFeature,
         CompassFeature,
+        SoundMeterFeature,
         QrGenFeature,
         MetadataEditorFeature,
         CurrencyConverterFeature,
