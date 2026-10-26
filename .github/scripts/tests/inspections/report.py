@@ -3,12 +3,13 @@
 Qodana's SARIF as the inspect job's report (tests.yml), as Android Studio's Inspect Code shows its problems:
 
 - the job's summary (the pull request's comment too, comment.py's): how many problems of each severity, a table of the
-  inspections that found any (the worst first), then where each found them, every problem linked to its line. Each
-  problem on its line is code scanning's (tests.yml uploads the SARIF), not an annotation of this job's
+  inspections that found any (the worst first), then where each found them, every problem linked to its line
+- with <code-scanning.sarif.json>: the SARIF with only the problems that fail the job, for code scanning (tests.yml
+  uploads it): those on their lines in a pull request's changes, the rest (typos, grammar...) only in the summary
 - exits 1 if there's a problem of a [FAILING] severity (the IDE's errors and warnings, an outdated library's among
   them), or no SARIF (Qodana didn't get to write it); the rest (weak warnings, typos, grammar) only reported
 
-    report.py <qodana.sarif.json> [<summary.md>]
+    report.py <qodana.sarif.json> [<summary.md> [<code-scanning.sarif.json>]]
 """
 import html
 import json
@@ -36,6 +37,19 @@ def names(run):
     return {rule["id"]: (rule.get("shortDescription") or {}).get("text") or rule.get("name") or rule["id"] for rule in rules}
 
 
+def severity(result):
+    """A result's severity: Qodana's, else by its SARIF level (one it doesn't know: High)."""
+    found = (result.get("properties") or {}).get("qodanaSeverity") or LEVELS.get(result.get("level", "warning"), "High")
+    return found if found in SEVERITIES else "High"
+
+
+def failing_only(sarif):
+    """[sarif] with only the results of a [FAILING] severity (none: none, so code scanning closes what was there)."""
+    return {**sarif, "runs": [
+        {**run, "results": [r for r in run.get("results", []) if severity(r) in FAILING]} for run in sarif.get("runs", [])
+    ]}
+
+
 def problems(sarif):
     """
     (inspection, severity, path, line, column, message) for each problem, the baseline's own left out; the sanity
@@ -49,13 +63,12 @@ def problems(sarif):
         for result in run.get("results", []) + sanity:
             if result.get("baselineState") == "unchanged":
                 continue
-            severity = (result.get("properties") or {}).get("qodanaSeverity") or LEVELS.get(result.get("level", "warning"), "High")
             location = ((result.get("locations") or [{}])[0]).get("physicalLocation") or {}
             region = location.get("region") or {}
             message = ((result.get("message") or {}).get("text") or "").strip()
             found.append((
                 rules.get(result.get("ruleId"), result.get("ruleId") or "?"),
-                severity if severity in SEVERITIES else "High",
+                severity(result),
                 (location.get("artifactLocation") or {}).get("uri") or "",
                 region.get("startLine"),
                 region.get("startColumn"),
@@ -67,13 +80,18 @@ def problems(sarif):
 def main():
     try:
         with open(sys.argv[1], encoding="utf-8") as f:
-            found = problems(json.load(f))
+            sarif = json.load(f)
+        found = problems(sarif)
     except (OSError, ValueError) as e:
         print(f"::error title=Inspections::No report from Qodana ({e}): see the Inspect step's log")
         if len(sys.argv) > 2:
             with open(sys.argv[2], "a", encoding="utf-8") as f:
                 f.write("## Inspections\n\n❌ No report from Qodana: see the Inspect step's log\n")
         sys.exit(1)
+
+    if len(sys.argv) > 3:
+        with open(sys.argv[3], "w", encoding="utf-8") as f:
+            json.dump(failing_only(sarif), f)
 
     order = list(SEVERITIES)
     found.sort(key=lambda p: (order.index(p[1]), p[0], p[2], p[3] or 0))

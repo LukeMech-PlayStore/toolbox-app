@@ -282,9 +282,9 @@ if a test failed or didn't run (a shard that crashed or was canceled).
 **Inspections.** Alongside them, the `inspect` job inspects the code as Android Studio's Inspect Code does, with the
 project's profile (`.idea/inspectionProfiles`), in Qodana Community for Android's newest image, with the Jetpack
 Compose and Android Design Tools plugins added. It reports as soon as it's done, while the emulators still run
-([`report.py`](.github/scripts/tests/inspections/report.py)): every problem in the run's summary, and on its line
-through code scanning (the SARIF is uploaded, so problems also show in the pull request's changes and the Security
-tab). Qodana's HTML report is the `inspections` artifact. Critical and high problems (the IDE's errors and warnings,
+([`report.py`](.github/scripts/tests/inspections/report.py)): every problem in the run's summary. The ones that fail
+it (critical and high) also go to code scanning, so they show on their lines in the pull request's changes and in the
+Security tab; typos and the like stay in the summary. Qodana's HTML report is the `inspections` artifact. Critical and high problems (the IDE's errors and warnings,
 an outdated library among them) fail it. Moderate, low and info problems (weak warnings, typos, grammar) are only
 reported.
 

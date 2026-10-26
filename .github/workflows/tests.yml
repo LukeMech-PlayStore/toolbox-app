@@ -236,9 +236,10 @@ jobs:
   # profile (.idea/inspectionProfiles), in Qodana Community for Android's image (no token, its Cloud not used), its
   # Gradle sync with the runner's Android SDK (the image's has only android-33). After the plan alone (a few seconds:
   # it sits by the tests in the run's graph, not before them), whatever it came to; reported while the emulators still
-  # run (report.py): the summary, this job failed if there's any; every problem on its line by code scanning (the
-  # SARIF uploaded); Qodana's HTML report (Inspect Code's table) and SARIF as an artifact. Its newest release, pulled
-  # on every run (Dependabot doesn't update a job's container image), as the IDE's inspections are kept current
+  # run (report.py): the summary, this job failed if there's any; the problems that fail it on their lines by code
+  # scanning (the SARIF uploaded, those alone); Qodana's HTML report (Inspect Code's table) and SARIF as an artifact.
+  # Its newest release, pulled on every run (Dependabot doesn't update a job's container image), as the IDE's
+  # inspections are kept current
   inspect:
     needs: plan
     if: ${{ !cancelled() }}
@@ -296,9 +297,9 @@ jobs:
         if: always()
         run: |
           apt-get update -qq && apt-get install -y -qq python3 > /dev/null
-          if [ -f /tmp/inspections/qodana.sarif.json ]; then echo "sarif=found" >> "$GITHUB_OUTPUT"; fi
           status=0
-          python3 .github/scripts/tests/inspections/report.py /tmp/inspections/qodana.sarif.json inspections.md || status=$?
+          python3 .github/scripts/tests/inspections/report.py /tmp/inspections/qodana.sarif.json inspections.md             /tmp/code-scanning.sarif.json || status=$?
+          if [ -f /tmp/code-scanning.sarif.json ]; then echo "sarif=found" >> "$GITHUB_OUTPUT"; fi
           cat inspections.md >> "$GITHUB_STEP_SUMMARY"
           exit $status
 
@@ -311,8 +312,9 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
-      # Every problem on its line: in the pull request's changes, and in the repository's Security tab. Not from a fork's
-      # pull request or Dependabot's: their token can't write it
+      # The problems that fail the job (report.py's critical and high), on their lines: in the pull request's changes and
+      # the repository's Security tab; the rest (typos, grammar...) only in the summary. Not from a fork's pull request
+      # or Dependabot's: their token can't write it
       - name: Upload to code scanning
         if: >-
           always() && steps.report.outputs.sarif == 'found'
@@ -320,7 +322,7 @@ jobs:
             || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'))
         uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
-          sarif_file: /tmp/inspections/qodana.sarif.json
+          sarif_file: /tmp/code-scanning.sarif.json
           category: qodana
 
   # On a pull request: the E2E tests' and the inspections' summaries in one comment (comment.py), the same one updated
