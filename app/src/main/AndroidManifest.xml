@@ -234,6 +234,22 @@
             </intent-filter>
         </activity-alias>
 
+        <!-- Share (one PDF or several) to PDF tools -->
+        <activity-alias
+            android:name="share.Pdf.Tools"
+            android:enabled="false"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:label="@string/fp_PdfTools">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
+        </activity-alias>
+
         <!-- Shares the QR generator's codes (res/xml/file_paths.xml; the debug build's in src/debug, the tests' files too) -->
         <provider
             android:name="androidx.core.content.FileProvider"

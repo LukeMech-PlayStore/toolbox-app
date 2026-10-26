@@ -13,6 +13,7 @@ import org.lukemech.lmtoolbox.features.finance.currencyconv.CurrencyConverterFea
 import org.lukemech.lmtoolbox.features.media.image_resize.ImageResizerFeature
 import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaDownloaderFeature
+import org.lukemech.lmtoolbox.features.media.pdf_tools.PdfToolsFeature
 import org.lukemech.lmtoolbox.features.media.qr_gen.QrGenFeature
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoEncoderFeature
 
@@ -45,6 +46,7 @@ object SystemEntries {
         MediaDownloaderFeature.route to listOf(shareTo("share.Media.Download", MediaDownloaderFeature.S_DSHKEY, R.string.f_MediaDl_share_desc)),
         VideoEncoderFeature.route to listOf(shareTo("share.Video.Encode", VideoEncoderFeature.S_DSHKEY, R.string.f_VidEnc_share_desc)),
         ImageResizerFeature.route to listOf(shareTo("share.Image.Resize", ImageResizerFeature.S_DSHKEY, R.string.f_ImgRes_share_desc)),
+        PdfToolsFeature.route to listOf(shareTo("share.Pdf.Tools", PdfToolsFeature.S_DSHKEY, R.string.f_Pdf_share_desc)),
     )
 
     /** The tool an entry ([SystemEntry.aliasName]) opens. */

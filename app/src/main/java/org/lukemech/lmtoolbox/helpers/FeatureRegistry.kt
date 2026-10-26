@@ -33,6 +33,7 @@ import org.lukemech.lmtoolbox.features.media.file_size.FileSizeFeature
 import org.lukemech.lmtoolbox.features.media.image_resize.ImageResizerFeature
 import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaDownloaderFeature
+import org.lukemech.lmtoolbox.features.media.pdf_tools.PdfToolsFeature
 import org.lukemech.lmtoolbox.features.media.qr_gen.QrGenFeature
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoEncoderFeature
 import org.lukemech.lmtoolbox.features.servers.mc_server.MinecraftServerFeature
@@ -50,6 +51,7 @@ object FeatureRegistry {
         VideoEncoderFeature,
         ImageResizerFeature,
         FileSizeFeature,
+        PdfToolsFeature,
         MinecraftServerFeature,
         ColorCodeFeature,
         SmdCodeFeature,

@@ -1,0 +1,107 @@
+<resources>
+    <string name="f_Pdf_intro_title">Merge, split and shrink PDFs</string>
+    <string name="f_Pdf_intro_1">Choose one PDF or several</string>
+    <string name="f_Pdf_intro_2">Put them in the order you want</string>
+    <string name="f_Pdf_intro_3">Merge, split or compress them, turn their pages, or add or remove a password</string>
+    <string name="f_Pdf_intro_tip">PDFs can also be shared straight into the tools from other apps, several at once to merge them.</string>
+    <string name="f_Pdf_pick">Choose PDFs</string>
+    <string name="f_Pdf_add">Add PDFs</string>
+    <string name="f_Pdf_busy_open">Wait until the work on the files finishes</string>
+    <string name="f_Pdf_back_to">Back to %1$s</string>
+    <plurals name="f_Pdf_files">
+        <item quantity="one">%d file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
+    <plurals name="f_Pdf_pages">
+        <item quantity="one">%d page</item>
+        <item quantity="other">%d pages</item>
+    </plurals>
+    <string name="f_Pdf_locked">Protected: tap to type its password</string>
+    <string name="f_Pdf_move_up">Move up</string>
+    <string name="f_Pdf_move_down">Move down</string>
+    <string name="f_Pdf_remove">Remove</string>
+    <string name="f_Pdf_order_note">Merged in this order. Anything else is done to them merged.</string>
+    <string name="f_Pdf_password_note">Opened with their passwords: what\'s made of them has none.</string>
+    <string name="f_Pdf_needs_passwords">Type the password of each protected file</string>
+    <string name="f_Pdf_next">Next</string>
+    <string name="f_Pdf_password_title">Protected PDF</string>
+    <string name="f_Pdf_password">Password</string>
+    <string name="f_Pdf_show_password">Show password</string>
+    <string name="f_Pdf_hide_password">Hide password</string>
+    <string name="f_Pdf_wrong_password">That\'s not its password</string>
+    <string name="f_Pdf_unlock_file">Open</string>
+
+    <string name="f_Pdf_action">What to do</string>
+    <string name="f_Pdf_action_merge">Merge</string>
+    <string name="f_Pdf_action_split">Split</string>
+    <string name="f_Pdf_action_compress">Compress</string>
+    <string name="f_Pdf_action_rotate">Rotate</string>
+    <string name="f_Pdf_action_protect">Add password</string>
+    <string name="f_Pdf_action_unlock">Remove password</string>
+    <string name="f_Pdf_merge_note">The files one after another, in their order, without their bookmarks.</string>
+    <string name="f_Pdf_split_pages">Each page</string>
+    <string name="f_Pdf_split_ranges">Ranges</string>
+    <string name="f_Pdf_split_extract">Pick pages</string>
+    <plurals name="f_Pdf_split_pages_note">
+        <item quantity="one">%d file, a page each</item>
+        <item quantity="other">%d files, a page each</item>
+    </plurals>
+    <string name="f_Pdf_split_ranges_note">Each range its own file: 1-3,5,7-z makes pages 1 to 3, page 5, and 7 to the last.</string>
+    <string name="f_Pdf_split_extract_note">The pages typed in one file, in their order: 1-3,5,7-z takes pages 1 to 3, page 5, and 7 to the last.</string>
+    <string name="f_Pdf_pages">Pages</string>
+    <string name="f_Pdf_pages_all">All pages</string>
+    <string name="f_Pdf_pages_error">Pages 1 to %1$d, split by commas (z is the last one, r2 the one before it)</string>
+    <string name="f_Pdf_preset">Quality</string>
+    <string name="f_Pdf_preset_screen">Smallest</string>
+    <string name="f_Pdf_preset_ebook">Small</string>
+    <string name="f_Pdf_preset_printer">Print</string>
+    <string name="f_Pdf_preset_prepress">Best</string>
+    <string name="f_Pdf_preset_lossless">Lossless</string>
+    <string name="f_Pdf_preset_screen_note">Pictures at 72 dpi: for the screen, the smallest file.</string>
+    <string name="f_Pdf_preset_ebook_note">Pictures at 150 dpi: sharp enough to read, a much smaller file.</string>
+    <string name="f_Pdf_preset_printer_note">Pictures at 300 dpi: for printing.</string>
+    <string name="f_Pdf_preset_prepress_note">Pictures at 300 dpi with their colors kept: for professional printing.</string>
+    <string name="f_Pdf_preset_lossless_note">Nothing lost, only packed tighter: often a little smaller.</string>
+    <string name="f_Pdf_angle_90">90° right</string>
+    <string name="f_Pdf_angle_180">180°</string>
+    <string name="f_Pdf_angle_270">90° left</string>
+    <string name="f_Pdf_protect_note">It asks for this password to open. Forgotten, there\'s no opening it.</string>
+    <string name="f_Pdf_unlock_note">Saved without its password and its restrictions (on printing, copying…).</string>
+    <string name="f_Pdf_file_name">File name</string>
+    <string name="f_Pdf_parts_note">Each part gets this name, its pages after it.</string>
+    <string name="f_Pdf_suffix_merged">merged</string>
+    <string name="f_Pdf_suffix_part">part</string>
+    <string name="f_Pdf_suffix_extracted">pages</string>
+    <string name="f_Pdf_suffix_compressed">compressed</string>
+    <string name="f_Pdf_suffix_rotated">rotated</string>
+    <string name="f_Pdf_suffix_protected">protected</string>
+    <string name="f_Pdf_suffix_unlocked">unlocked</string>
+
+    <string name="f_Pdf_busy">Other files are still being worked on</string>
+    <string name="f_Pdf_starting">Getting ready…</string>
+    <string name="f_Pdf_merging">Merging…</string>
+    <string name="f_Pdf_splitting">Splitting…</string>
+    <string name="f_Pdf_compressing">Compressing…</string>
+    <string name="f_Pdf_rotating">Rotating…</string>
+    <string name="f_Pdf_protecting">Adding the password…</string>
+    <string name="f_Pdf_unlocking">Removing the password…</string>
+    <string name="f_Pdf_saving">Saving…</string>
+    <string name="f_Pdf_saved">Saved to %1$s</string>
+    <plurals name="f_Pdf_saved_many">
+        <item quantity="one">%1$d file saved to %2$s</item>
+        <item quantity="other">%1$d files saved to %2$s</item>
+    </plurals>
+    <string name="f_Pdf_failed">That didn\'t work</string>
+    <string name="f_Pdf_cancelled">Cancelled</string>
+    <string name="f_Pdf_size_change">%1$s → %2$s</string>
+    <string name="f_Pdf_smaller">%1$d%% smaller</string>
+    <string name="f_Pdf_not_smaller">No smaller: it was as small as this quality makes it. Try a lower one.</string>
+    <string name="f_Pdf_change">Change options</string>
+    <string name="f_Pdf_another">Other files</string>
+    <string name="f_Pdf_open">Open</string>
+    <string name="f_Pdf_share">Share</string>
+
+    <string name="f_Pdf_downloads">Downloads</string>
+    <string name="f_Pdf_save_to">Save to</string>
+    <string name="f_Pdf_save_to_reset">Back to Downloads</string>
+</resources>
