@@ -90,6 +90,7 @@
       <w>gbit</w>
       <w>getprop</w>
       <w>getroot</w>
+      <w>getsize</w>
       <w>gfxstream</w>
       <w>gfxstream's</w>
       <w>gitleaks</w>
@@ -111,6 +112,7 @@
       <w>intr</w>
       <w>ioref</w>
       <w>iout</w>
+      <w>isfile</w>
       <w>jaźń</w>
       <w>jline</w>
       <w>jtag</w>
@@ -272,6 +274,7 @@
       <w>tailnets</w>
       <w>tempco</w>
       <w>termuxie</w>
+      <w>threadtime</w>
       <w>thévenin</w>
       <w>tmds</w>
       <w>towbar</w>
@@ -301,6 +304,7 @@
       <w>vbus</w>
       <w>vcap</w>
       <w>vcodec</w>
+      <w>vdiwef</w>
       <w>veryfast</w>
       <w>vhpwr</w>
       <w>videoremuxer</w>

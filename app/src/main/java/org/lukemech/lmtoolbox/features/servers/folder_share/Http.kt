@@ -199,7 +199,7 @@ object Http {
     fun contentRange(part: Range.Part, size: Long) = "bytes ${part.start}-${part.end}/$size"
 
     /**
-     * The media type of a file named [name], by its extension (any case), for browsers to show or play it; a text's
+     * [name]'s media type, by its extension (any case), for browsers to show or play the file; a text's
      * says it's UTF-8. One not known: [fallback], else application/octet-stream (downloaded).
      */
     fun mime(name: String, fallback: String? = null): String {

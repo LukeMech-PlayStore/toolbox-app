@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import java.io.File
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.servers.common.ServerTunnels
 import org.lukemech.lmtoolbox.ui.widgets.helpers.FeatureWidget
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 

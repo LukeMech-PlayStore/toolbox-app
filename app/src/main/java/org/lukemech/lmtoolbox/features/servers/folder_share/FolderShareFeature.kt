@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.FolderShared
 import androidx.compose.runtime.Composable
 import java.io.File
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.servers.common.ServerTunnels
 import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.helpers.FeatureCategory
 import org.lukemech.lmtoolbox.helpers.ResourceTile
