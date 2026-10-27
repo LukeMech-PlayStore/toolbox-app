@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_wire_gauge">Wire gauges (AWG, SWG)</string>
+    <string name="fd_wire_gauge">Diameter, mm² and ampacity</string>
+    <string name="fk_wire_gauge">awg, swg, wire gauge, american wire gauge, standard wire gauge, wire size, cross-section, mm2, diameter, ampacity, current rating, cable, nec, reference, table</string>
+    <string name="rf_ampacity_60">Copper, 60 °C</string>
+    <string name="rf_ampacity_75">Copper, 75 °C</string>
+    <string name="rf_awg_note">Ampacity from NEC table 310.16 (US): copper with 60 °C or 75 °C insulation, up to three current-carrying conductors in a raceway or cable, 30 °C ambient. Other installations and other countries\' rules allow other currents.</string>
+    <string name="rf_swg_note">Imperial Standard Wire Gauge (BS 3737)</string>
+</resources>

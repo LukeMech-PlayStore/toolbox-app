@@ -21,42 +21,57 @@
       <w>appname</w>
       <w>atempo</w>
       <w>avif</w>
+      <w>avrisp</w>
       <w>bayer</w>
       <w>bcff</w>
+      <w>berg</w>
       <w>biquads</w>
       <w>btime</w>
       <w>bundletool</w>
       <w>bundletool's</w>
       <w>bwiat</w>
       <w>callendar</w>
+      <w>ckit</w>
       <w>cloudflared</w>
       <w>cloudflared's</w>
       <w>couldn</w>
       <w>craftmine</w>
+      <w>ctia</w>
       <w>ctxt</w>
       <w>currencyconv</w>
       <w>currencyconverter</w>
       <w>dBFS</w>
       <w>dbfs</w>
+      <w>dbgack</w>
+      <w>dbgrq</w>
+      <w>ddc</w>
       <w>defaultgamemode</w>
       <w>devnull</w>
       <w>dexed</w>
       <w>doesn</w>
       <w>domyślne</w>
       <w>dorg</w>
+      <w>dout</w>
       <w>downvtresh</w>
       <w>dshkey</w>
+      <w>dsrs</w>
       <w>dusen</w>
+      <w>dvi</w>
       <w>działa</w>
       <w>działające</w>
+      <w>edid</w>
       <w>edytor</w>
+      <w>electronvolt</w>
       <w>endgroup</w>
       <w>endlocal</w>
+      <w>eobd</w>
       <w>errorlevel</w>
       <w>eseries</w>
       <w>etree</w>
+      <w>etxc</w>
       <w>exiftool</w>
       <w>faststart</w>
+      <w>ffffffffffffffff</w>
       <w>ffmpeg</w>
       <w>ffprobe</w>
       <w>filesize</w>
@@ -68,21 +83,30 @@
       <w>fromkeys</w>
       <w>fullmatch</w>
       <w>gamemode</w>
+      <w>gbit</w>
       <w>getprop</w>
       <w>getroot</w>
       <w>gfxstream</w>
       <w>gfxstream's</w>
       <w>gitleaks</w>
+      <w>gnddetect</w>
       <w>gplay</w>
       <w>hann</w>
       <w>heapgrowthlimit</w>
       <w>heatsink</w>
       <w>heic</w>
       <w>henries</w>
+      <w>hpwr</w>
+      <w>hsync</w>
+      <w>icsp</w>
+      <w>icspclk</w>
+      <w>icspdat</w>
       <w>inodesteal</w>
       <w>intr</w>
+      <w>ioref</w>
       <w>iout</w>
       <w>jline</w>
+      <w>jtag</w>
       <w>kennelly</w>
       <w>khugepaged</w>
       <w>kompasu</w>
@@ -105,8 +129,12 @@
       <w>lstrip</w>
       <w>lukemech</w>
       <w>makedirs</w>
+      <w>mbit</w>
+      <w>mclr</w>
+      <w>mdp</w>
       <w>metadanych</w>
       <w>mikepenz</w>
+      <w>miso</w>
       <w>mjpeg</w>
       <w>mlock</w>
       <w>mniejsza</w>
@@ -116,6 +144,8 @@
       <w>moduledrawers</w>
       <w>mojang</w>
       <w>mojang's</w>
+      <w>molex</w>
+      <w>mosi</w>
       <w>motd</w>
       <w>nachylenie</w>
       <w>najnowsze</w>
@@ -127,8 +157,13 @@
       <w>nopass</w>
       <w>nowości</w>
       <w>nowszymi</w>
+      <w>nSRST</w>
+      <w>nsrst</w>
+      <w>nTRST</w>
+      <w>ntrst</w>
       <w>nxdomain</w>
       <w>okhttp</w>
+      <w>omtp</w>
       <w>opamp</w>
       <w>oparty</w>
       <w>otwartego</w>
@@ -154,6 +189,8 @@
       <w>pgscan</w>
       <w>pgskip</w>
       <w>pgsteal</w>
+      <w>PICkit</w>
+      <w>pickit</w>
       <w>plac</w>
       <w>podsystem</w>
       <w>popen</w>
@@ -172,14 +209,24 @@
       <w>pypkgs</w>
       <w>pythonunbuffered</w>
       <w>qrcode</w>
+      <w>quecto</w>
+      <w>quetta</w>
       <w>quickjs</w>
       <w>rcon</w>
       <w>resizer</w>
       <w>resizer's</w>
       <w>resolv</w>
       <w>restorecon</w>
+      <w>ronna</w>
+      <w>ronto</w>
       <w>rsplit</w>
       <w>rstrip</w>
+      <w>rtck</w>
+      <w>rxc</w>
+      <w>sclk</w>
+      <w>scts</w>
+      <w>sdcd</w>
+      <w>sdio</w>
       <w>selfpromo</w>
       <w>setdefault</w>
       <w>setlocal</w>
@@ -192,11 +239,18 @@
       <w>splitcompat's</w>
       <w>splitlines</w>
       <w>sponsorblock</w>
+      <w>srts</w>
+      <w>srxd</w>
+      <w>ssrx</w>
+      <w>sstx</w>
       <w>startswith</w>
       <w>stillimage</w>
       <w>stime</w>
+      <w>stxd</w>
       <w>styledpil</w>
       <w>swapcached</w>
+      <w>swclk</w>
+      <w>swdio</w>
       <w>swiftshader</w>
       <w>swlan</w>
       <w>swpout</w>
@@ -205,9 +259,15 @@
       <w>tailnets</w>
       <w>tempco</w>
       <w>termuxie</w>
+      <w>thévenin</w>
+      <w>tmds</w>
+      <w>towbar</w>
+      <w>trrs</w>
       <w>trunc</w>
+      <w>txc</w>
       <w>ubble</w>
       <w>udevadm</w>
+      <w>udrive</w>
       <w>uid</w>
       <w>uid's</w>
       <w>układ</w>
@@ -218,16 +278,23 @@
       <w>urlretrieve</w>
       <w>urządzeniach</w>
       <w>urządzeniami</w>
+      <w>usbasp</w>
+      <w>usbc</w>
       <w>ushr</w>
       <w>ustawień</w>
       <w>utime</w>
+      <w>vbus</w>
       <w>vcap</w>
       <w>vcodec</w>
       <w>veryfast</w>
+      <w>vhpwr</w>
       <w>videoremuxer</w>
       <w>vmstat</w>
       <w>vout</w>
       <w>vref</w>
+      <w>vsupply</w>
+      <w>vsync</w>
+      <w>vtref</w>
       <w>vtresh</w>
       <w>walut</w>
       <w>waluta</w>

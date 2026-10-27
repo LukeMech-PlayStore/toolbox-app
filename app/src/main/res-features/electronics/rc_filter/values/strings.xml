@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="fp_rc_filter">RC filter</string>
-    <string name="fd_rc_filter">Cutoff frequency</string>
-    <string name="fk_rc_filter">filter, rc, low-pass, high-pass, cutoff, corner, frequency, bode, rc filter, cutoff frequency, low pass, high pass, calculator, calc, compute, electronics</string>
+    <string name="fp_rc_filter">RC, RL and RLC filters</string>
+    <string name="fd_rc_filter">Cutoff, resonance and response</string>
+    <string name="fk_rc_filter">filter, rc, rl, rlc, low-pass, high-pass, cutoff, corner, frequency, resonance, quality factor, q, bandwidth, damping, bode, rc filter, rl filter, rlc filter, cutoff frequency, low pass, high pass, second order, lc, calculator, calc, compute, electronics</string>
     <string name="ec_cutoff">Cutoff frequency</string>
+    <string name="ec_cutoff_3db">Cutoff frequency (−3 dB)</string>
+    <string name="ec_response">Response</string>
+    <string name="ec_low_pass">Low-pass</string>
+    <string name="ec_high_pass">High-pass</string>
+    <string name="ec_bandwidth">Bandwidth (band-pass, across R)</string>
+    <string name="ec_peaking">Peak at resonance</string>
+    <string name="ec_damping">Damping ratio (ζ)</string>
 </resources>

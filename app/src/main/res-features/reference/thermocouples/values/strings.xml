@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fp_thermocouples">Thermocouple types</string>
+    <string name="fd_thermocouples">K, J, T and the rest: colors, ranges</string>
+    <string name="fk_thermocouples">thermocouple, type k, type j, type t, type n, type e, type r, type s, type b, iec 60584, color code, temperature, sensor, reference, table</string>
+    <string name="rf_type">Type</string>
+    <string name="rf_tc_plus">+ wire</string>
+    <string name="rf_tc_minus">− wire</string>
+    <string name="rf_tc_color">Color</string>
+    <string name="rf_tc_range">Range (°C)</string>
+    <string name="rf_tc_note" tools:ignore="TypographyDashes">Colors of IEC 60584-3: the + wire and the sheath in the type\'s color, the − wire white. Ranges are IEC 60584-1\'s tables: a sensor\'s working range is narrower.</string>
+</resources>

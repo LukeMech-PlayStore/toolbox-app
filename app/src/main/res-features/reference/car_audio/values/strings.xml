@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_car_audio">Car radio (ISO 10487)</string>
+    <string name="fd_car_audio">Power and speaker connectors</string>
+    <string name="fk_car_audio">iso 10487, car radio, car stereo, head unit, iso connector, speakers, acc, permanent, wire colors, harness, pinout, pins, connector, reference</string>
+    <string name="rf_car_varies">Varies by make (speed signal, phone mute…)</string>
+    <string name="rf_car_permanent">+12 V permanent: keeps the memory</string>
+    <string name="rf_car_remote">+12 V out while the radio is on: power antenna, amplifier</string>
+    <string name="rf_car_illumination">Illumination, dimmed with the dashboard</string>
+    <string name="rf_car_switched">+12 V with the ignition key (ACC)</string>
+    <string name="rf_car_rr">Right rear speaker</string>
+    <string name="rf_car_rf">Right front speaker</string>
+    <string name="rf_car_lf">Left front speaker</string>
+    <string name="rf_car_lr">Left rear speaker</string>
+    <string name="rf_car_a_note">Some makes swap A4 and A7: check before connecting.</string>
+    <string name="rf_car_b_note">Wire colors as most aftermarket harnesses have them: + plain, − striped black.</string>
+</resources>

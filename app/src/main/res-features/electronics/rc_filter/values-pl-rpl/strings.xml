@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="fp_rc_filter">Filtr RC</string>
-    <string name="fd_rc_filter">Częstotliwość graniczna</string>
-    <string name="fk_rc_filter">filtr, rc, dolnoprzepustowy, górnoprzepustowy, częstotliwość graniczna, bode, filtr rc, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="fp_rc_filter">Filtry RC, RL i RLC</string>
+    <string name="fd_rc_filter">Częstotliwość graniczna, rezonans i charakterystyka</string>
+    <string name="fk_rc_filter">filtr, rc, rl, rlc, dolnoprzepustowy, górnoprzepustowy, częstotliwość graniczna, rezonans, dobroć, q, pasmo, tłumienie, bode, filtr rc, filtr rl, filtr rlc, drugiego rzędu, lc, kalkulator, oblicz, obliczenia, policz, elektronika</string>
     <string name="ec_cutoff">Częstotliwość graniczna</string>
+    <string name="ec_cutoff_3db">Częstotliwość graniczna (−3 dB)</string>
+    <string name="ec_response">Charakterystyka</string>
+    <string name="ec_low_pass">Dolnoprzepustowy</string>
+    <string name="ec_high_pass">Górnoprzepustowy</string>
+    <string name="ec_bandwidth">Pasmo (pasmowoprzepustowy, na R)</string>
+    <string name="ec_peaking">Wzmocnienie w rezonansie</string>
+    <string name="ec_damping">Współczynnik tłumienia (ζ)</string>
 </resources>
