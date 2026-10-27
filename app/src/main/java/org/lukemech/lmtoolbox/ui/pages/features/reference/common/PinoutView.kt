@@ -68,6 +68,7 @@ import org.lukemech.lmtoolbox.features.reference.common.Outline
 import org.lukemech.lmtoolbox.features.reference.common.Pin
 import org.lukemech.lmtoolbox.features.reference.common.PinKind
 import org.lukemech.lmtoolbox.features.reference.common.PinoutSheet
+import org.lukemech.lmtoolbox.features.reference.common.fitted
 import org.lukemech.lmtoolbox.ui.components.EmptyText
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.Note
@@ -98,7 +99,7 @@ fun PinoutView(sheet: PinoutSheet, query: String) {
         return q.isEmpty() || pin.number.contains(q, true) || pin.name.contains(q, true) || descriptions[i]?.contains(q, true) == true
     }
     val shown = remember(sheet, q, descriptions) { sheet.pins.indices.filter(::matches) }
-    val drawn = remember(sheet) { fitted(sheet.pins) }
+    val drawn = remember(sheet) { sheet.pins.fitted() }
     val scroll = rememberLazyListState()
     fun pick(i: Int) {
         selected = i.takeIf { it != selected }
@@ -127,38 +128,6 @@ fun PinoutView(sheet: PinoutSheet, query: String) {
         }
         if (shown.isEmpty()) item(key = "none") { EmptyText(stringResource(R.string.search_no_results)) }
     }
-}
-
-/** A connector's pins as drawn, and whether they're [turned] for it. */
-private class Drawn(val pins: List<Pin>, val turned: Boolean)
-
-/** Rows a connector has before it's drawn turned (when it's much taller than wide). */
-private const val TURN_FROM_ROWS = 8
-
-/**
- * [pins] laid out to fit a page: a board much taller than wide (a Nano's two long rows) turned on its side, its
- * top on the left, so it's as wide as the page and short, not pages tall.
- */
-private fun fitted(pins: List<Pin>): Drawn {
-    val columns = pins.maxOf { it.x } + 1f
-    val rows = pins.maxOf { it.y } + 1f
-    if (rows <= TURN_FROM_ROWS || rows < columns * 1.5f) return Drawn(closer(pins), false)
-    val right = pins.maxOf { it.x }
-    return Drawn(closer(pins.map { it.copy(x = it.y, y = right - it.x) }), true)
-}
-
-/** The widest a gap between rows of pins is drawn (a board's two sides, a pill's), in pitches: no strip of nothing. */
-private const val MAX_ROW_GAP = 2f
-
-/** [pins] with the gaps between their rows no wider than [MAX_ROW_GAP]. */
-private fun closer(pins: List<Pin>): List<Pin> {
-    val rows = pins.map { it.y }.distinct().sorted()
-    var shift = 0f
-    val moved = rows.mapIndexed { i, y ->
-        if (i > 0) shift += maxOf(0f, y - rows[i - 1] - MAX_ROW_GAP)
-        y to y - shift
-    }.toMap()
-    return pins.map { it.copy(y = moved.getValue(it.y)) }
 }
 
 /**

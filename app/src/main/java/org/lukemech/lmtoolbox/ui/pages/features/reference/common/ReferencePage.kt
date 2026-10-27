@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -21,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -33,6 +35,7 @@ import org.lukemech.lmtoolbox.features.reference.common.PinoutSheet
 import org.lukemech.lmtoolbox.features.reference.common.Sheet
 import org.lukemech.lmtoolbox.features.reference.common.TableSheet
 import org.lukemech.lmtoolbox.features.reference.common.ToolSheet
+import org.lukemech.lmtoolbox.ui.components.Fade
 import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.ROW_SPACING
@@ -71,7 +74,16 @@ fun ReferencePage(
 
     PageHeading(
         title = title,
-        action = action,
+        // A pinout or a table to export as a PDF, before the page's own action (a calculator's formulas)
+        action = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // The last one there was, as it fades away for a calculator's page
+                val printable = remember { arrayOfNulls<Sheet>(1) }
+                if (sheet !is ToolSheet) printable[0] = sheet
+                Fade(sheet !is ToolSheet) { printable[0]?.let { PdfExportAction(title, it) } }
+                action?.invoke()
+            }
+        },
         header = {
             if (sheets.size > 1) {
                 SheetPicker(sheets, sheets.indexOf(sheet), icon, picking, { picking = it }) { index = it }

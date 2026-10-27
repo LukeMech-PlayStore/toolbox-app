@@ -102,6 +102,19 @@ class ReferenceDataTest {
     }
 
     @Test
+    fun everySheetPrints() {
+        // Every pinout and table as a PDF (a calculator's tables too): made whole, a PDF's header first
+        val sheets = references.flatMap { f -> f.sheets.filter { it !is ToolSheet }.map { f.route to it } } +
+            org.lukemech.lmtoolbox.features.electronics.battery_life.BatteryLifeFeature.tables.map { "battery_life" to it }
+        sheets.forEach { (route, sheet) ->
+            val out = java.io.ByteArrayOutputStream()
+            ReferencePdf(resources, route).write(sheet, out)
+            val bytes = out.toByteArray()
+            assertTrue("$route/${sheet.name.resolve(resources)}: no PDF", bytes.size > 500 && String(bytes, 0, 5) == "%PDF-")
+        }
+    }
+
+    @Test
     fun familiesTogether() {
         // The picker heads each family once: its sheets one after another, a family's or none from the start
         references.forEach { feature ->

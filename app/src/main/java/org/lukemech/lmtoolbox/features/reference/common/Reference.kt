@@ -151,6 +151,39 @@ fun List<Pin>.dualRow(vertical: Boolean = false): List<Pin> = mapIndexed { i, pi
 /** Odd pins on top, even ones under and between them (HDMI's 1, 3, 5... over 2, 4, 6...). */
 fun List<Pin>.staggered(): List<Pin> = mapIndexed { i, pin -> pin.copy(x = i * 0.5f, y = (i % 2).toFloat()) }
 
+/** A connector's [pins] as they're drawn (on its page, in its PDF), and whether they're [turned] for it. */
+class Fitted(val pins: List<Pin>, val turned: Boolean)
+
+/** Rows a connector has before it's drawn turned (when it's much taller than wide). */
+private const val TURN_FROM_ROWS = 8
+
+/** The widest a gap between rows of pins is drawn (a board's two sides, a pill's), in pitches: no strip of nothing. */
+private const val MAX_ROW_GAP = 2f
+
+/**
+ * [this] laid out to fit a page: a board much taller than wide (a Nano's two long rows) turned on its side, its top
+ * on the left, so it's as wide as the page and short, not pages tall; the gaps between its rows no wider than
+ * [MAX_ROW_GAP].
+ */
+fun List<Pin>.fitted(): Fitted {
+    val columns = maxOf { it.x } + 1f
+    val rows = maxOf { it.y } + 1f
+    if (rows <= TURN_FROM_ROWS || rows < columns * 1.5f) return Fitted(closer(this), false)
+    val right = maxOf { it.x }
+    return Fitted(closer(map { it.copy(x = it.y, y = right - it.x) }), true)
+}
+
+/** [pins] with the gaps between their rows no wider than [MAX_ROW_GAP]. */
+private fun closer(pins: List<Pin>): List<Pin> {
+    val rows = pins.map { it.y }.distinct().sorted()
+    var shift = 0f
+    val moved = rows.mapIndexed { i, y ->
+        if (i > 0) shift += maxOf(0f, y - rows[i - 1] - MAX_ROW_GAP)
+        y to y - shift
+    }.toMap()
+    return pins.map { it.copy(y = moved.getValue(it.y)) }
+}
+
 /** A reference tool: what it shows is [sheets], the first open, the others picked at the top of its page. */
 abstract class ReferenceFeature : AppFeature {
     override val category = FeatureCategory.Reference
