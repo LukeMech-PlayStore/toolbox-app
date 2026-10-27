@@ -11,6 +11,11 @@ import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.graphics.vector.VectorGroup
+import androidx.compose.ui.graphics.vector.VectorPath
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import java.io.OutputStream
@@ -47,6 +52,7 @@ class ReferencePdf(private val resources: Resources, private val title: String) 
     private val quietPaint = paint(8f, color = QUIET)
     private val cellPaint = paint(8f)
     private val cellBoldPaint = paint(8f, bold = true)
+    private val valuePaint = paint(11f, bold = true)
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
     private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
 
@@ -145,19 +151,49 @@ class ReferencePdf(private val resources: Resources, private val title: String) 
 
     /** The board's specs, two to a line: each one's label, its value bold. */
     private fun specs(specs: List<Spec>) {
-        val half = width / 2
-        specs.chunked(2).forEach { pair ->
-            room(14f)
-            pair.forEachIndexed { i, spec ->
-                val x = MARGIN + i * half
-                val label = resources.getString(spec.kind.label) + ": "
-                canvas.drawText(label, x, y + 9f, textPaint)
-                canvas.drawText(spec.value.resolve(resources), x + textPaint.measureText(label), y + 9f, cellBoldPaint.apply { textSize = 9f })
+        // As the app's tiles: three to a row, each a card with its icon and label over its value, a row as tall as
+        // its tallest
+        val gap = 6f
+        val tileWidth = (width - gap * (SPECS_PER_ROW - 1)) / SPECS_PER_ROW
+        val inner = tileWidth - 2 * TILE_PAD
+        specs.chunked(SPECS_PER_ROW).forEach { row ->
+            val values = row.map { layout(it.value.resolve(resources), valuePaint, inner) }
+            val height = TILE_PAD + 10f + 4f + values.maxOf { it.height } + TILE_PAD
+            room(height + gap)
+            row.forEachIndexed { i, spec ->
+                val left = MARGIN + i * (tileWidth + gap)
+                val box = RectF(left, y, left + tileWidth, y + height)
+                fill.color = BODY
+                canvas.drawRoundRect(box, TILE_CORNER, TILE_CORNER, fill)
+                stroke.color = TILE_EDGE
+                stroke.strokeWidth = 0.75f
+                canvas.drawRoundRect(box, TILE_CORNER, TILE_CORNER, stroke)
+                icon(spec.kind.icon, left + TILE_PAD, y + TILE_PAD, 9f, ACCENT)
+                canvas.drawText(resources.getString(spec.kind.label), left + TILE_PAD + 13f, y + TILE_PAD + 8f, quietPaint)
+                drawLayout(values[i], left + TILE_PAD, y + TILE_PAD + 14f)
             }
-            y += 14f
+            y += height + gap
         }
-        cellBoldPaint.textSize = 8f
-        y += 8f
+        y += 6f
+    }
+
+    /** [vector] (a Material icon) at [x], [y], [size] across, in [color]: drawn as its paths, sharp at any zoom. */
+    private fun icon(vector: ImageVector, x: Float, y: Float, size: Float, color: Int) {
+        val scale = size / vector.viewportWidth
+        fill.color = color
+        canvas.save()
+        canvas.translate(x, y)
+        canvas.scale(scale, scale)
+        fun draw(group: VectorGroup) {
+            group.forEach { node ->
+                when (node) {
+                    is VectorPath -> canvas.drawPath(PathParser().addPathNodes(node.pathData).toPath().asAndroidPath(), fill)
+                    is VectorGroup -> draw(node)
+                }
+            }
+        }
+        draw(vector.root)
+        canvas.restore()
     }
 
     /** The connector: its outline and its pins at their [places], as on its page, scaled to the page's width. */
@@ -337,6 +373,9 @@ class ReferencePdf(private val resources: Resources, private val title: String) 
         const val MAX_PITCH = 30f
         const val MAX_COLUMN = 220f
         const val CELL_PAD = 4f
+        const val SPECS_PER_ROW = 3
+        const val TILE_PAD = 8f
+        const val TILE_CORNER = 8f
 
         // Printed: dark on white, whatever the app's theme
         const val INK = 0xFF212121.toInt()
@@ -345,5 +384,8 @@ class ReferencePdf(private val resources: Resources, private val title: String) 
         const val EDGE = 0xFF9E9E9E.toInt()
         const val HEAD = 0xFFE3E7EA.toInt()
         const val STRIPE = 0xFFF6F7F8.toInt()
+        const val TILE_EDGE = 0xFFD5DADD.toInt()
+        // The app's teal, as its tiles' icons
+        const val ACCENT = 0xFF00897B.toInt()
     }
 }
