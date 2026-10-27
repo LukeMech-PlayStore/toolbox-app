@@ -32,8 +32,14 @@ import org.lukemech.lmtoolbox.features.electronics.y_delta.YDeltaFeature
 import org.lukemech.lmtoolbox.features.electronics.zener.ZenerFeature
 import org.lukemech.lmtoolbox.features.finance.currencyconv.CurrencyConverterFeature
 import org.lukemech.lmtoolbox.features.measure.compass.CompassFeature
+import org.lukemech.lmtoolbox.features.measure.light_meter.LightMeterFeature
+import org.lukemech.lmtoolbox.features.measure.magnetometer.MagnetometerFeature
 import org.lukemech.lmtoolbox.features.measure.ruler.RulerFeature
+import org.lukemech.lmtoolbox.features.measure.sound_meter.SoundMeterFeature
+import org.lukemech.lmtoolbox.features.measure.stroboscope.StroboscopeFeature
 import org.lukemech.lmtoolbox.features.measure.spirit_level.SpiritLevelFeature
+import org.lukemech.lmtoolbox.features.measure.vibration_meter.VibrationMeterFeature
+import org.lukemech.lmtoolbox.features.media.file_hash.FileHashFeature
 import org.lukemech.lmtoolbox.features.media.file_size.FileSizeFeature
 import org.lukemech.lmtoolbox.features.media.image_resize.ImageResizerFeature
 import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
@@ -74,6 +80,11 @@ object FeatureRegistry {
         RulerFeature,
         SpiritLevelFeature,
         CompassFeature,
+        SoundMeterFeature,
+        LightMeterFeature,
+        MagnetometerFeature,
+        VibrationMeterFeature,
+        StroboscopeFeature,
         QrGenFeature,
         MetadataEditorFeature,
         CurrencyConverterFeature,
@@ -81,6 +92,7 @@ object FeatureRegistry {
         VideoEncoderFeature,
         ImageResizerFeature,
         FileSizeFeature,
+        FileHashFeature,
         MinecraftServerFeature,
         ColorCodeFeature,
         SmdCodeFeature,

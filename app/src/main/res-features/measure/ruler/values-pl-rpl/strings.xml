@@ -3,4 +3,8 @@
     <string name="fp_ruler">Linijka</string>
     <string name="fk_ruler">linijka, miarka, długość, mierzyć, pomiar, odległość, wymiar, centymetr, milimetr, cal, taśma miernicza, mierzenie, narzędzia</string>
     <string name="fd_ruler">Mierz na ekranie</string>
+    <string name="f_ruler_length">Długość</string>
+    <string name="f_ruler_millimeters">Milimetry</string>
+    <string name="f_ruler_inches">Cale</string>
+    <string name="f_ruler_note">Przyłóż jeden koniec do 0 i przeciągnij linię do drugiego.</string>
 </resources>

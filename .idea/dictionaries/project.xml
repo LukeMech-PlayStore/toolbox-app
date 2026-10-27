@@ -3,6 +3,7 @@
     <words>
       <w>aarch</w>
       <w>abcd</w>
+      <w>abcdef</w>
       <w>abi</w>
       <w>abis</w>
       <w>abspath</w>
@@ -22,6 +23,7 @@
       <w>avif</w>
       <w>bayer</w>
       <w>bcff</w>
+      <w>biquads</w>
       <w>btime</w>
       <w>bundletool</w>
       <w>bundletool's</w>
@@ -34,9 +36,12 @@
       <w>ctxt</w>
       <w>currencyconv</w>
       <w>currencyconverter</w>
+      <w>dBFS</w>
+      <w>dbfs</w>
       <w>defaultgamemode</w>
       <w>devnull</w>
       <w>dexed</w>
+      <w>doesn</w>
       <w>domyślne</w>
       <w>dorg</w>
       <w>downvtresh</w>
@@ -69,6 +74,7 @@
       <w>gfxstream's</w>
       <w>gitleaks</w>
       <w>gplay</w>
+      <w>hann</w>
       <w>heapgrowthlimit</w>
       <w>heatsink</w>
       <w>heic</w>
@@ -115,6 +121,7 @@
       <w>najnowsze</w>
       <w>narzędzia</w>
       <w>neoforge</w>
+      <w>nline</w>
       <w>nodereclaim</w>
       <w>nogui</w>
       <w>nopass</w>
@@ -154,6 +161,7 @@
       <w>poziomica</w>
       <w>poziomicy</w>
       <w>ppid</w>
+      <w>prewarped</w>
       <w>procs</w>
       <w>proot</w>
       <w>przelicznik</w>
@@ -210,6 +218,7 @@
       <w>urlretrieve</w>
       <w>urządzeniach</w>
       <w>urządzeniami</w>
+      <w>ushr</w>
       <w>ustawień</w>
       <w>utime</w>
       <w>vcap</w>
@@ -232,6 +241,7 @@
       <w>xfffffbfe</w>
       <w>ytdlp</w>
       <w>zamkowy</w>
+      <w>zażółć</w>
       <w>zener</w>
       <w>zgodny</w>
       <w>znów</w>

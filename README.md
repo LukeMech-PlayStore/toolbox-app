@@ -16,9 +16,10 @@
 [![Rating](https://playbadges.pavi2410.com/badge/ratings?id=org.lukemech.lmtoolbox)](https://play.google.com/store/apps/details?id=org.lukemech.lmtoolbox)
 -->
 
-**One app, a drawer full of tools.** Measure with a ruler, a spirit level and a compass; work out a resistor's
-color code or a 555 timer with 30 electronics calculators; look up pinouts and tables; convert currencies; download, convert and shrink
-videos, music and images; edit a photo's metadata; or run your own Minecraft server, Vanilla to NeoForge,
+**One app, a drawer full of tools.** Measure with a ruler, a spirit level, a compass, a sound level meter, a
+light meter, a metal detector, a vibration meter and a stroboscope; work out a resistor's color code or a 555
+timer with 30 electronics calculators; look up pinouts and tables; convert currencies; download, convert and
+shrink videos, music and images; edit a photo's metadata; or run your own Minecraft server, Vanilla to NeoForge,
 straight from your phone and reachable by your friends through Bore, a Cloudflare tunnel or Tailscale.
 
 The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared, bore) inside a
@@ -43,6 +44,11 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Measure     | Ruler                                                                                          | Android                                                                                                                                                                      | `app`               |
 | Measure     | Spirit level (with a widget)                                                                   | Android sensors                                                                                                                                                              | `app`               |
 | Measure     | Compass (with a widget, GPS altitude)                                                          | Android sensors                                                                                                                                                              | `app`               |
+| Measure     | Sound level meter (dB(A), calibration, Leq)                                                    | Android microphone                                                                                                                                                           | `app`               |
+| Measure     | Light meter (lux, min/max/average, hold)                                                       | Android sensors                                                                                                                                                              | `app`               |
+| Measure     | Magnetic field and metal detector (µT, x/y/z, tone or vibration)                               | Android sensors                                                                                                                                                              | `app`               |
+| Measure     | Vibration meter (RMS, peak, main frequency by FFT)                                             | Android sensors                                                                                                                                                              | `app`               |
+| Measure     | Stroboscope / tachometer (Hz or RPM, tap tempo)                                                | Android torch                                                                                                                                                                | `app`               |
 | Electronics | 30 calculators (listed below)                                                                  | Android                                                                                                                                                                      | `app`               |
 | Reference   | 29 references: tables, pinouts drawn from data, decoders (listed below)                        | Android                                                                                                                                                                      | `app`               |
 | Finance     | Currency converter (ECB rates, amounts shared from other apps)                                 | Python (`CurrencyConverter`)                                                                                                                                                 | `features:pypkgs`   |
@@ -52,6 +58,7 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Media       | Media encoder (video, GIF, sound; cut, resize, a target file size)                             | FFmpeg                                                                                                                                                                       | `features:ffmpeg`   |
 | Media       | Image encoder (resizing, a target file size)                                                   | Android (`ImageDecoder`, `Bitmap`)                                                                                                                                           | `app`               |
 | Media       | File size (a shortcut to the media or the image encoder)                                       | Android                                                                                                                                                                      | `app`               |
+| Media       | File hash (MD5, SHA-1, SHA-2, SHA-3, CRC32; checked against a hash or a checksum file)         | Android (`MessageDigest`, `CRC32`); SHA-3 the app's own (Android has none)                                                                                                   | `app`               |
 | Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
 
 The electronics calculators: color code, SMD resistor code, Ohm's law, electric power, reactance and
