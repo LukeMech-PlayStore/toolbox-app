@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_FileHash">File hash</string>
+    <string name="fk_FileHash">hash, checksum, check sum, md5, sha, sha1, sha-1, sha256, sha-256, sha512, sha-512, sha3, crc, crc32, verify, check, integrity, download, iso, digest, fingerprint, sha256sum, md5sum, compare, corrupted, text</string>
+    <string name="fd_FileHash">Checksums: is the file intact?</string>
+    <string name="f_FileHash_share_desc">Share a file to the checksum tool from other apps</string>
+
+    <string name="f_FileHash_text">Text</string>
+    <string name="f_FileHash_intro_title">Checksums of files</string>
+    <string name="f_FileHash_intro_1">Choose a file, or type text below</string>
+    <string name="f_FileHash_intro_2">MD5, SHA-1, SHA-256 and more, in one read</string>
+    <string name="f_FileHash_intro_3">Paste the expected hash, or load a checksum file or another file, to check it</string>
+    <string name="f_FileHash_intro_tip">A file can also be shared straight into the tool from other apps. A big one too: it\'s read a piece at a time.</string>
+    <string name="f_FileHash_pick">Choose a file</string>
+    <string name="f_FileHash_back_to">Back to %1$s</string>
+    <string name="f_FileHash_next">Next</string>
+    <string name="f_FileHash_text_label">Text to hash</string>
+    <string name="f_FileHash_text_note">Hashed as UTF-8, exactly as typed.</string>
+    <string name="f_FileHash_algorithms">Algorithms</string>
+    <string name="f_FileHash_default_algorithms">Default algorithms</string>
+    <string name="f_FileHash_calculate">Calculate</string>
+    <string name="f_FileHash_calculating">Calculating…</string>
+
+    <string name="f_FileHash_reading">Reading %1$s</string>
+    <string name="f_FileHash_waiting">Not calculated yet</string>
+    <string name="f_FileHash_failed">Couldn\'t read it: %1$s</string>
+    <string name="f_FileHash_verify">Check against</string>
+    <string name="f_FileHash_expected_hint">Paste a hash or checksum lines</string>
+    <string name="f_FileHash_paste">Paste</string>
+    <string name="f_FileHash_load">Load a checksum file, or a file to compare</string>
+    <string name="f_FileHash_unload">Clear</string>
+    <string name="f_FileHash_detected">Looks like %1$s</string>
+    <string name="f_FileHash_hashes">Hashes: %1$d, the file\'s found by its name</string>
+    <string name="f_FileHash_not_hash">No hash found: a hash is hex digits of a known length (8 to 128), or a checksum file\'s lines.</string>
+    <string name="f_FileHash_need">To check it, %1$s is needed</string>
+    <string name="f_FileHash_calculate_too">Calculate %1$s</string>
+    <string name="f_FileHash_match">Matches</string>
+    <string name="f_FileHash_mismatch">Doesn\'t match</string>
+    <string name="f_FileHash_not_listed">Not in the checksum file</string>
+    <string name="f_FileHash_copy_hint">Tap a hash to copy it.</string>
+    <string name="f_FileHash_copied">%1$s copied</string>
+    <string name="f_FileHash_share">Share</string>
+    <string name="f_FileHash_export">Save .%1$s</string>
+    <string name="f_FileHash_change">Algorithms</string>
+    <string name="f_FileHash_another">Another file</string>
+    <string name="f_FileHash_saved">%1$s file saved</string>
+    <string name="f_FileHash_edit_text">Change text</string>
+</resources>

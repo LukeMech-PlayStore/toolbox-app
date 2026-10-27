@@ -1,186 +1,122 @@
 package org.lukemech.lmtoolbox.ui.pages.features.measure.ruler
 
-import android.graphics.Paint
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.lerp
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.ui.components.MainResult
+import org.lukemech.lmtoolbox.ui.components.Note
+import org.lukemech.lmtoolbox.ui.components.PageHeading
+import org.lukemech.lmtoolbox.ui.components.ResultRow
+import org.lukemech.lmtoolbox.ui.components.Results
+import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
+
+/** The ruler's part of the window's height: the rest for the title and its readings below. */
+private const val RULER_PART = 0.55f
+
+private const val MM_PER_INCH = 25.4f
 
 @Composable
 fun RulerPage() {
-    // Get the real DPI from the device
-    val displayMetrics = LocalResources.current.displayMetrics
-    val screenWidthPx = displayMetrics.widthPixels.toFloat()
-    val density = LocalDensity.current
-    val rulerWidthDp = 100.dp
-    val rulerWidthPx = with(density) { rulerWidthDp.toPx() }
+    // Along the screen's height: its vertical DPI, the real one
+    val pixelsPerMm = LocalResources.current.displayMetrics.ydpi / MM_PER_INCH
+    // The marker's distance from the ruler's 0 (px)
+    var marker by remember { mutableFloatStateOf(0f) }
+    var holding by remember { mutableStateOf(false) }
+    val mm = marker / pixelsPerMm
 
-    val realDpi = LocalResources.current.displayMetrics.xdpi // Horizontal DPI (or use ydpi for vertical)
-
-    val pixelsPerCm = realDpi / 2.54f  // Convert cm to pixels based on the actual DPI
-    val pixelsPerMm = pixelsPerCm / 10f // Pixels per millimeter
-    var offsetX by remember { mutableFloatStateOf(0f) } // Start on the left side
-    // offsetY is not needed as we only want left-right drag
-
-    val rulerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
-    val lineColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 1f) // Ensure text is fully opaque
-    val horizontalLineColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) // Different color for horizontal line
-
-    // The Scaffold's content padding is not used here, so we can remove it for simplicity if no other Scaffold features (like TopAppBar) are needed.
-    // If Scaffold is kept for future additions (e.g., a TopAppBar), ensure its contentPadding is applied to the direct child of Scaffold.
-    // For now, let's assume Scaffold is not strictly necessary for just displaying the Ruler.
-    // Scaffold {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)  // Apply background to the entire Box
-            .pointerInput(Unit) {                              // Make the entire Box draggable
-
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    val newOffsetX = offsetX + dragAmount.x
-                    // Ensure the ruler stays within the screen boundaries
-                    offsetX = newOffsetX.coerceIn(0f, screenWidthPx - rulerWidthPx)
-                    // offsetY is not updated to restrict vertical dragging
-                }
-            },
-        contentAlignment = Alignment.TopStart // Align to top start for offset calculations
-    ) {
-        Column(
-            modifier = Modifier
-                .offset { IntOffset(offsetX.toInt(), 0) } // Only apply offsetX for horizontal dragging
-        ) {
-            val isRulerOnRightSide = offsetX > screenWidthPx / 2 - rulerWidthPx / 2
-            val animationProgress by animateFloatAsState(
-                targetValue = if (isRulerOnRightSide) 1f else 0f,
-                animationSpec = tween(durationMillis = 200),
-                label = "RulerSideAnimation"
-            )
-            Canvas(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(100.dp) // Arbitrary width for the ruler, will be overridden by fillMaxHeight if width > height
-                    .padding(vertical = 16.dp) // Outer padding for space around the ruler // Removed horizontal padding
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(rulerColor) // Background color
-//                    .pointerInput(Unit) { // Make the ruler itself draggable
-//                        detectDragGestures { change, dragAmount ->
-//                            change.consume()
-//                            val newOffsetX = offsetX + dragAmount.x
-//                            // Ensure the ruler stays within the screen boundaries
-//                            offsetX = newOffsetX.coerceIn(0f, screenWidthPx - rulerWidthPx)
-//                            // offsetY is not updated to restrict vertical dragging
-//
-//                        }
-//                    }
-                    .padding(vertical = 8.dp, horizontal = 2.dp) // Inner padding for the ruler content
-            ) {
-                val canvasWidth = size.width
-
-                val textPaint =
-                    Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                        color = lineColor.hashCode() // Use the color from MaterialTheme
-                        textSize = 12.sp.toPx()
-                        // textAlign will be set dynamically
-                    }
-
-                // Draw horizontal line, respecting internal padding
-                drawLine(
-                    color = horizontalLineColor, // Use theme-based color
-                    start = Offset(canvasWidth / 2, 4.dp.toPx()), // Start from the top edge of inner padding
-                    end = Offset(canvasWidth / 2, size.height - 4.dp.toPx()), // End at the bottom edge of inner padding
-                    strokeWidth = 2f
-                )
-
-                val startOffsetPx = 4.dp.toPx() // Start drawing marks from the beginning of the inner padded area
-
-                // Draw millimeter and centimeter marks
-                val maxMm = ( size.height - 2 * 4.dp.toPx() / pixelsPerMm ).toInt() // Calculate maxMm based on drawable height
-                for (mm in 0..maxMm) {
-                    val yPosOnRuler =
-                        mm.toFloat() * pixelsPerMm // y position relative to the start of marks
-                    val yPosCanvas =
-                        startOffsetPx + yPosOnRuler // y position on the canvas, considering inner padding
-
-                    // Stop drawing if marks go beyond the drawable canvas area (considering inner padding)
-                    if (yPosCanvas > size.height - 4.dp.toPx()) break
-
-                    val isCmMark = mm % 10 == 0
-                    val isHalfCmMark = mm % 5 == 0 && !isCmMark
-
-                    val lineWidth = when {
-                        isCmMark -> canvasWidth / 2 - 2.dp.toPx()
-                        isHalfCmMark -> canvasWidth / 3
-                        else -> canvasWidth / 4
-                    }
-
-                    val stroke = when {
-                        isCmMark -> 2f
-                        isHalfCmMark -> 1.5f
-                        else -> 1f
-                    }
-
-                    // Animate line drawing
-                    val lineStartX = lerp(
-                        canvasWidth / 2, // Start X for left side
-                        canvasWidth / 2, // End X for right side
-                        animationProgress // This will effectively keep it at canvasWidth / 2, but good for consistency
-                    )
-
-                    drawLine(
-                        color = lineColor,
-                        start = Offset(lineStartX, yPosCanvas),
-                        end = Offset(if (isRulerOnRightSide) canvasWidth / 2 + lineWidth * animationProgress else canvasWidth / 2 - lineWidth * (1-animationProgress) , yPosCanvas),
-                        strokeWidth = stroke
-                    )
-
-                    // Draw text for centimeter marks
-                    if (isCmMark) {
-                        val cmValue = mm / 10
-                        val text = cmValue.toString()
-
-                        val textX = lerp(
-                            canvasWidth / 2 + 5.dp.toPx(), // Text X for left side (text on right)
-                            canvasWidth / 2 - 5.dp.toPx(), // Text X for right side (text on left)
-                            animationProgress
-                        )
-                        textPaint.textAlign = if (animationProgress > 0.5f) { // More towards right side
-                            Paint.Align.RIGHT
-                        } else Paint.Align.LEFT
-
-                        drawContext.canvas.nativeCanvas.drawText(
-                            text,
-                            textX,
-                            yPosCanvas + textPaint.textSize / 3, // Vertically align text with the mark
-                            textPaint
-                        )
-                    }
-                }
+    PageHeading(title = stringResource(R.string.fp_ruler), action = { HoldAction(holding) { holding = it } }) {
+        Column(verticalArrangement = RowArrangement) {
+            val height = with(LocalDensity.current) { (LocalWindowInfo.current.containerSize.height * RULER_PART).toDp() }
+            Ruler(height, pixelsPerMm, marker, movable = !holding) { marker = it }
+            Results {
+                MainResult(stringResource(R.string.f_ruler_length), "%.1f cm".format(mm / 10))
+                ResultRow(stringResource(R.string.f_ruler_millimeters), "%.0f mm".format(mm))
+                ResultRow(stringResource(R.string.f_ruler_inches), "%.2f in".format(mm / MM_PER_INCH))
             }
+            Note(stringResource(R.string.f_ruler_note))
         }
     }
 }
 
+/**
+ * The ruler down the screen's left edge, [height] tall: 0 at its top, a line every millimeter, numbered every
+ * centimeter; the [marker] across it (px from 0), set where it's tapped or dragged to while [movable].
+ */
+@Composable
+private fun Ruler(height: Dp, pixelsPerMm: Float, marker: Float, movable: Boolean, onMarker: (Float) -> Unit) {
+    val stripColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+    val lineColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val markerColor = MaterialTheme.colorScheme.primary
+    val labelStyle = MaterialTheme.typography.labelMedium.copy(color = lineColor)
+    val measurer = rememberTextMeasurer()
+    val canMove by rememberUpdatedState(movable)
+    val setMarker by rememberUpdatedState(onMarker)
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height)
+            .pointerInput(Unit) {
+                detectTapGestures { if (canMove) setMarker(it.y.coerceIn(0f, size.height.toFloat())) }
+            }
+            .pointerInput(Unit) {
+                // Its own: the page doesn't scroll under the finger
+                detectDragGestures { change, _ ->
+                    change.consume()
+                    if (canMove) setMarker(change.position.y.coerceIn(0f, size.height.toFloat()))
+                }
+            }
+    ) {
+        val strip = 72.dp.toPx()
+        val corner = CornerRadius(12.dp.toPx())
+        drawRoundRect(stripColor, size = Size(strip, size.height), cornerRadius = corner)
+        // What's measured, up to the marker
+        drawRoundRect(markerColor.copy(alpha = 0.2f), size = Size(strip, marker), cornerRadius = corner)
+
+        var mm = 0
+        while (mm * pixelsPerMm <= size.height) {
+            val y = mm * pixelsPerMm
+            val length = when {
+                mm % 10 == 0 -> strip * 0.5f
+                mm % 5 == 0 -> strip * 0.35f
+                else -> strip * 0.2f
+            }
+            drawLine(lineColor, Offset(0f, y), Offset(length, y), strokeWidth = if (mm % 10 == 0) 2.dp.toPx() else 1.dp.toPx())
+            if (mm % 10 == 0 && mm > 0) {
+                val label = measurer.measure("${mm / 10}", labelStyle)
+                drawText(label, topLeft = Offset(length + 4.dp.toPx(), y - label.size.height / 2f))
+            }
+            mm++
+        }
+
+        // Across the whole width, so it's easy to line up with what's measured
+        drawLine(markerColor, Offset(0f, marker), Offset(size.width, marker), strokeWidth = 2.dp.toPx())
+        drawCircle(markerColor, radius = 8.dp.toPx(), center = Offset(size.width - 24.dp.toPx(), marker))
+    }
+}

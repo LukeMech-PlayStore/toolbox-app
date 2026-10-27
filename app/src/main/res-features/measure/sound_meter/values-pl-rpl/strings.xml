@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_sound_meter">Miernik dźwięku</string>
+    <string name="fk_sound_meter">miernik dźwięku, sonometr, decybel, decybele, db, dba, spl, hałas, głośność, głośno, mikrofon, akustyka, leq, narzędzia</string>
+    <string name="fd_sound_meter">Jak tu głośno?</string>
+    <string name="f_sound_leq">Leq</string>
+    <string name="f_sound_clipped">Za głośno dla mikrofonu</string>
+    <string name="f_sound_a_weighting">Krzywa A</string>
+    <string name="f_sound_a_weighting_desc">Tak, jak słyszy ucho</string>
+    <string name="f_sound_calibration">Kalibracja: %1$s dB</string>
+    <string name="f_sound_calibration_desc">Dotknij, aby dopasować do miernika</string>
+    <string name="f_sound_calibration_lower">Zmniejsz kalibrację</string>
+    <string name="f_sound_calibration_raise">Zwiększ kalibrację</string>
+    <string name="f_sound_calibration_reset">Na 0</string>
+    <string name="f_sound_calibrate_title">Kalibracja</string>
+    <string name="f_sound_calibrate_message">Obok miernika poziomu dźwięku, przy stałym dźwięku, wpisz, co pokazuje.</string>
+    <string name="f_sound_calibrate_field">Miernik pokazuje (dB)</string>
+    <string name="f_sound_calibrate_waiting">Czekam na pierwszy odczyt mikrofonu…</string>
+    <string name="f_sound_note">Odczyt przybliżony: telefon nie jest przyrządem pomiarowym. Mikrofon: %1$s.</string>
+    <string name="f_sound_source_unprocessed">bez przetwarzania</string>
+    <string name="f_sound_source_voice">do mowy</string>
+    <string name="f_sound_mic_needed">Zezwól na mikrofon, aby mierzyć</string>
+    <string name="f_sound_mic_unavailable">Mikrofon jest niedostępny · dotknij, aby spróbować ponownie</string>
+    <string name="f_sound_mic_title">Dźwięk z mikrofonu</string>
+    <string name="f_sound_mic_message">Mierzy to, co słyszy mikrofon, tylko gdy ta strona jest otwarta. Nic nie jest nagrywane.</string>
+    <string name="f_sound_mic_allow">Zezwól</string>
+    <string name="f_sound_mic_later">Nie teraz</string>
+</resources>
