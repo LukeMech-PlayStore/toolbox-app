@@ -34,6 +34,7 @@ import org.lukemech.lmtoolbox.features.measure.sound_meter.SoundMeterFeature
 import org.lukemech.lmtoolbox.features.measure.stroboscope.StroboscopeFeature
 import org.lukemech.lmtoolbox.features.measure.spirit_level.SpiritLevelFeature
 import org.lukemech.lmtoolbox.features.measure.vibration_meter.VibrationMeterFeature
+import org.lukemech.lmtoolbox.features.media.file_hash.FileHashFeature
 import org.lukemech.lmtoolbox.features.media.file_size.FileSizeFeature
 import org.lukemech.lmtoolbox.features.media.image_resize.ImageResizerFeature
 import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
@@ -60,6 +61,7 @@ object FeatureRegistry {
         VideoEncoderFeature,
         ImageResizerFeature,
         FileSizeFeature,
+        FileHashFeature,
         MinecraftServerFeature,
         ColorCodeFeature,
         SmdCodeFeature,

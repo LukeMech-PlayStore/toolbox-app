@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.finance.currencyconv.CurrencyConverterFeature
+import org.lukemech.lmtoolbox.features.media.file_hash.FileHashFeature
 import org.lukemech.lmtoolbox.features.media.image_resize.ImageResizerFeature
 import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaDownloaderFeature
@@ -45,6 +46,7 @@ object SystemEntries {
         MediaDownloaderFeature.route to listOf(shareTo("share.Media.Download", MediaDownloaderFeature.S_DSHKEY, R.string.f_MediaDl_share_desc)),
         VideoEncoderFeature.route to listOf(shareTo("share.Video.Encode", VideoEncoderFeature.S_DSHKEY, R.string.f_VidEnc_share_desc)),
         ImageResizerFeature.route to listOf(shareTo("share.Image.Resize", ImageResizerFeature.S_DSHKEY, R.string.f_ImgRes_share_desc)),
+        FileHashFeature.route to listOf(shareTo("share.File.Hash", FileHashFeature.S_DSHKEY, R.string.f_FileHash_share_desc)),
     )
 
     /** The tool an entry ([SystemEntry.aliasName]) opens. */
