@@ -70,8 +70,10 @@ RMS and peak.
 
 The references: standard values (E-series), PT100 table, decibel table, SI prefixes, wire gauges (AWG, SWG),
 capacitor codes, IP code, SMD package sizes; the pinouts of the Raspberry Pi's GPIO, Arduino Uno and Nano,
-USB, Ethernet RJ45 (with PoE), RS-232, ARM JTAG and SWD, AVR ISP and PIC ICSP, HDMI, OBD-II, PC power
-connectors, SD cards, XLR and DMX, audio jacks, ISO 10487 car radio and trailer sockets; and tables of ASCII,
+USB (A, B, mini-B, micro-B, 2.0 and 3.x, and C), Ethernet RJ45 (with PoE), RS-232 (DB9, DB25), ARM JTAG and
+SWD, AVR ISP and PIC ICSP, display connectors (HDMI full, mini and micro, DisplayPort and Mini DisplayPort, DVI,
+VGA), OBD-II, PC power connectors (ATX, EPS, ATX12V, PCIe, 12V-2x6, SATA, Molex, floppy), SD cards, XLR and
+DMX, audio jacks (TS, TRS, balanced TRS, TRRS), ISO 10487 car radio and trailer sockets; and tables of ASCII,
 logic gates, resistivity, thermocouple types, car fuses and battery sizes.
 
 ### Project layout

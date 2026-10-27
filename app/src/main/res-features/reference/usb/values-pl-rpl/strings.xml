@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_usb">Złącza USB</string>
-    <string name="fd_usb">A, B, micro-B i C</string>
-    <string name="fk_usb">usb, usb-a, usb-b, micro usb, micro-b, usb-c, type-c, vbus, d+, d-, cc, superspeed, otg, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="fd_usb">A, B, mini-B, micro-B (2.0 i 3.x) i C</string>
+    <string name="fk_usb">usb, usb-a, usb-b, mini usb, mini-b, micro usb, micro-b, micro-b 3.0, usb 3.0, usb 3.1, usb 3.2, usb-c, type-c, vbus, d+, d-, cc, superspeed, otg, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
     <string name="rf_usb_vbus">+5 V (więcej przy USB Power Delivery)</string>
     <string name="rf_usb_data">Dane USB 2.0, para skręcona</string>
     <string name="rf_usb_ss_tx">Para nadawcza SuperSpeed</string>
@@ -12,5 +12,9 @@
     <string name="rf_usb_cc">Kanał konfiguracyjny: orientacja wtyku, prąd, Power Delivery</string>
     <string name="rf_usb_sbu">Kanał pomocniczy (tryby alternatywne, np. AUX DisplayPorta)</string>
     <string name="rf_usb3_note">Piny 1–4 to USB 2.0; 5–9 to dodatkowy rząd złącza A USB 3.x</string>
-    <string name="rf_usbc_note">Gniazdo widziane od przodu. Rząd B to rząd A obrócony, więc wtyk pasuje w obu położeniach.</string>
+    <string name="rf_usbc_note">Gniazdo widziane od przodu. Rząd B to rząd A obrócony, więc wtyk pasuje w obu położeniach. Port C tylko z USB 2.0 nie ma pinów TX, RX ani SBU.</string>
+    <string name="rf_usb3b_note">Piny 1–4 to USB 2.0; 5–9 to dodatkowy rząd złącza B USB 3.x, w wypustce nad nimi. Pary są po stronie urządzenia: nadaje na SSTX.</string>
+    <string name="rf_usb_mini_note">Mini-A i mini-AB, dziś przestarzałe, mają te same piny, z ID do masy</string>
+    <string name="rf_usb_micro_note">Micro-A (hosta, dla OTG) ma te same piny, z ID do masy</string>
+    <string name="rf_usb3_micro_note">Piny 1–5 to micro-B 2.0; 6–10 to część SuperSpeed obok, więc kabel 2.0 dalej pasuje do lewej połowy</string>
 </resources>

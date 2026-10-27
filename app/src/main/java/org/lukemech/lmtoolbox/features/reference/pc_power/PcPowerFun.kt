@@ -12,11 +12,15 @@ import org.lukemech.lmtoolbox.features.reference.common.PinKind.Unused
 import org.lukemech.lmtoolbox.features.reference.common.PinoutSheet
 import org.lukemech.lmtoolbox.features.reference.common.ReferenceFeature
 import org.lukemech.lmtoolbox.features.reference.common.Wire
+import org.lukemech.lmtoolbox.features.reference.common.inRow
 import org.lukemech.lmtoolbox.features.reference.common.inRows
 import org.lukemech.lmtoolbox.features.reference.common.raw
 import org.lukemech.lmtoolbox.features.reference.common.res
 
-/** A PC power supply's connectors: ATX's 24-pin, the CPU's EPS 8-pin and the graphics card's PCIe 6 and 8-pin. */
+/**
+ * A PC power supply's connectors: ATX's 24-pin, the CPU's EPS 8-pin and ATX12V 4-pin, the graphics card's PCIe 6
+ * and 8-pin and 12V-2x6, and the drives' SATA, Molex and floppy.
+ */
 object PcPowerFeature : ReferenceFeature() {
 
     override val route = "pc_power"
@@ -66,6 +70,38 @@ object PcPowerFeature : ReferenceFeature() {
                 listOf(v12(1), v12(2), v12(3), sense(4, "Sense2"), gnd(5), sense(6, "Sense1"), gnd(7), gnd(8)).inRows(4, 4),
                 note = res(R.string.rf_pc_pcie_note)
             ),
+            PinoutSheet(raw("12V-2x6"), hpwr(), note = res(R.string.rf_pc_hpwr_note)),
+            PinoutSheet(
+                raw("ATX12V 4"),
+                listOf(gnd(1), gnd(2), v12(3), v12(4)).inRows(2, 2),
+                note = res(R.string.rf_pc_p4_note)
+            ),
+            PinoutSheet(
+                raw("SATA"),
+                listOf(
+                    v33(1), v33(2), v33(3), gnd(4), gnd(5), gnd(6), v5(7), v5(8), v5(9), gnd(10),
+                    Pin("11", "DAS/DSS", Control, res(R.string.rf_pc_sata_11)),
+                    gnd(12), v12(13), v12(14), v12(15),
+                ).inRow(),
+                note = res(R.string.rf_pc_sata_note)
+            ),
+            PinoutSheet(raw("Molex"), listOf(v12(1), gnd(2), gnd(3), v5(4)).inRow(), note = res(R.string.rf_pc_molex_note)),
+            PinoutSheet(raw("Floppy"), listOf(v5(1), gnd(2), gnd(3), v12(4)).inRow(), note = res(R.string.rf_pc_floppy_note)),
         )
+    }
+
+    /**
+     * 12V-2x6 (12VHPWR before it): six +12 V over six grounds, and the four small sideband pins under them, which
+     * tell the card how much it may draw.
+     */
+    private fun hpwr(): List<Pin> {
+        val power = (1..6).map { v12(it) } + (7..12).map { gnd(it) }
+        val sense = res(R.string.rf_pc_hpwr_sense)
+        return power.inRows(6, 6) + listOf(
+            Pin("S1", "CARD_PWR_STABLE", Control, res(R.string.rf_pc_hpwr_stable)),
+            Pin("S2", "CARD_CBL_PRES#", Control, res(R.string.rf_pc_hpwr_present)),
+            Pin("S3", "SENSE0", Control, sense),
+            Pin("S4", "SENSE1", Control, sense),
+        ).mapIndexed { i, pin -> pin.copy(x = i + 1f, y = 2f) }
     }
 }

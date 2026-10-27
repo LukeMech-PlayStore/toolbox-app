@@ -18,7 +18,7 @@ import org.lukemech.lmtoolbox.features.reference.common.inRows
 import org.lukemech.lmtoolbox.features.reference.common.raw
 import org.lukemech.lmtoolbox.features.reference.common.res
 
-/** USB's connectors: A (2.0 and 3.x), B, micro-B and C, as the USB-IF's specifications number them. */
+/** USB's connectors: A, B and micro-B (2.0 and 3.x), mini-B and C, as the USB-IF's specifications number them. */
 object UsbFeature : ReferenceFeature() {
 
     override val route = "usb"
@@ -38,6 +38,24 @@ object UsbFeature : ReferenceFeature() {
     ) + extra
 
     private val GND = Pin("4", "GND", Ground, wire = listOf(Wire.Black))
+
+    /** Mini-B's and micro-B's five: USB 2.0's with the OTG ID pin before ground. */
+    private fun otg() = usb2(Pin("4", "ID", Control, res(R.string.rf_usb_id)), GND.copy(number = "5"))
+
+    /**
+     * USB 3.x's five more, from pin [first]: the pair named [pair1] (SSRX on an A, as the host receives on
+     * it; SSTX on a B), the drain, then [pair2].
+     */
+    private fun superSpeed(first: Int, pair1: String, pair2: String): List<Pin> {
+        fun pair(name: String) = res(if (name == "SSTX") R.string.rf_usb_ss_tx else R.string.rf_usb_ss_rx)
+        return listOf(
+            Pin("$first", "$pair1−", Data, pair(pair1)),
+            Pin("${first + 1}", "$pair1+", Data, pair(pair1)),
+            Pin("${first + 2}", "GND_DRAIN", Ground, res(R.string.rf_usb_drain)),
+            Pin("${first + 3}", "$pair2−", Data, pair(pair2)),
+            Pin("${first + 4}", "$pair2+", Data, pair(pair2)),
+        )
+    }
 
     /** One row of a USB-C receptacle: A1–A12, or B1–B12 (the same, turned over). */
     private fun cRow(row: String, lane: Int, other: Int, cc: String, sbu: String) = listOf(
@@ -60,18 +78,25 @@ object UsbFeature : ReferenceFeature() {
             PinoutSheet(raw("A (2.0)"), usb2(GND).inRow(), inOrder = true),
             PinoutSheet(
                 raw("A (3.x)"),
-                (usb2(GND) + listOf(
-                    Pin("5", "SSRX−", Data, res(R.string.rf_usb_ss_rx)),
-                    Pin("6", "SSRX+", Data, res(R.string.rf_usb_ss_rx)),
-                    Pin("7", "GND_DRAIN", Ground, res(R.string.rf_usb_drain)),
-                    Pin("8", "SSTX−", Data, res(R.string.rf_usb_ss_tx)),
-                    Pin("9", "SSTX+", Data, res(R.string.rf_usb_ss_tx)),
-                )).inRows(4, 5),
+                (usb2(GND) + superSpeed(5, "SSRX", "SSTX")).inRows(4, 5),
                 note = res(R.string.rf_usb3_note),
                 inOrder = true
             ),
-            PinoutSheet(raw("B"), usb2(GND).inRow(), inOrder = true),
-            PinoutSheet(raw("Micro-B"), usb2(Pin("4", "ID", Control, res(R.string.rf_usb_id)), GND.copy(number = "5")).inRow(), inOrder = true),
+            PinoutSheet(raw("B (2.0)"), usb2(GND).inRow(), inOrder = true),
+            PinoutSheet(
+                raw("B (3.x)"),
+                (usb2(GND) + superSpeed(5, "SSTX", "SSRX")).inRows(4, 5),
+                note = res(R.string.rf_usb3b_note),
+                inOrder = true
+            ),
+            PinoutSheet(raw("Mini-B"), otg().inRow(), note = res(R.string.rf_usb_mini_note), inOrder = true),
+            PinoutSheet(raw("Micro-B (2.0)"), otg().inRow(), note = res(R.string.rf_usb_micro_note), inOrder = true),
+            PinoutSheet(
+                raw("Micro-B (3.x)"),
+                (otg() + superSpeed(6, "SSTX", "SSRX")).inRows(5, 5),
+                note = res(R.string.rf_usb3_micro_note),
+                inOrder = true
+            ),
             PinoutSheet(
                 raw("C"),
                 // The receptacle from the front: A1 top left, and B1 under A12 (the plug fits either way up)

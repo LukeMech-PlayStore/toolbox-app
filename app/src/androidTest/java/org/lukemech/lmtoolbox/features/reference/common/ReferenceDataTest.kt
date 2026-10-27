@@ -64,12 +64,27 @@ class ReferenceDataTest {
         val rs232 = org.lukemech.lmtoolbox.features.reference.rs232.Rs232Feature
         assertEquals("TXD", pin(rs232, 0, "3").name)
         assertEquals("GND", pin(rs232, 0, "5").name)
+        assertEquals("TXD", pin(rs232, 1, "2").name)
+        assertEquals("DTR", pin(rs232, 1, "20").name)
         val usb = org.lukemech.lmtoolbox.features.reference.usb.UsbFeature
-        assertEquals("CC1", pin(usb, 4, "A5").name)
+        assertEquals("CC1", pin(usb, 7, "A5").name)
         // USB-C: B1 under A12
-        assertEquals(pin(usb, 4, "A12").x, pin(usb, 4, "B1").x)
+        assertEquals(pin(usb, 7, "A12").x, pin(usb, 7, "B1").x)
+        assertEquals("SSRX−", pin(usb, 1, "5").name)
+        assertEquals("SSTX−", pin(usb, 3, "5").name)
+        assertEquals("ID", pin(usb, 6, "4").name)
+        val display = org.lukemech.lmtoolbox.features.reference.display.DisplayFeature
+        assertEquals("HPD", pin(display, 0, "19").name)
+        assertEquals("HPD", pin(display, 1, "19").name)
+        assertEquals("HPD", pin(display, 2, "1").name)
+        assertEquals("DP_PWR", pin(display, 3, "20").name)
+        assertEquals("DP_PWR", pin(display, 4, "20").name)
+        assertEquals("Analog GND", pin(display, 5, "C5").name)
+        assertEquals("H-Sync", pin(display, 6, "13").name)
         val atx = org.lukemech.lmtoolbox.features.reference.pc_power.PcPowerFeature
         assertEquals("PS_ON#", pin(atx, 0, "16").name)
         assertEquals(pin(atx, 0, "1").x, pin(atx, 0, "13").x)
+        assertEquals("SENSE0", pin(atx, 4, "S3").name)
+        assertEquals("DAS/DSS", pin(atx, 6, "11").name)
     }
 }

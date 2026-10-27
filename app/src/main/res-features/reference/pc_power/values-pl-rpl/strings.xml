@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_pc_power">Złącza zasilania PC</string>
-    <string name="fd_pc_power">ATX 24-pin, EPS i PCIe</string>
-    <string name="fk_pc_power">atx, 24 pin, 20+4, eps, eps12v, zasilanie procesora, pcie, pci-e, 6 pin, 8 pin, zasilacz, psu, ps_on, power good, kolory przewodów, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="fd_pc_power">ATX, procesor, PCIe, 12V-2x6, SATA, Molex i stacja dyskietek</string>
+    <string name="fk_pc_power">atx, 24 pin, 20+4, eps, eps12v, atx12v, p4, 4 pin, zasilanie procesora, pcie, pci-e, 6 pin, 8 pin, 6+2, 12vhpwr, 12v-2x6, 16 pin, zasilanie sata, molex, berg, stacja dyskietek, dyskietka, zasilacz, psu, ps_on, power good, kolory przewodów, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
     <string name="rf_pc_pwr_ok">Power good: napięcia zasilacza się ustaliły</string>
     <string name="rf_pc_5vsb">Czuwanie: obecne, gdy zasilacz jest podłączony do sieci</string>
     <string name="rf_pc_3v3_sense">W wielu zasilaczach także przewód pomiarowy +3,3 V (brązowy)</string>
@@ -12,4 +12,13 @@
     <string name="rf_pc_atx_note">ATX12V 2.x, według numerów na wtyku: 1–12 w jednym rzędzie, 13–24 w drugim. Wtyk 20-pinowy to ten bez 11, 12, 23 i 24.</string>
     <string name="rf_pc_eps_note">Złącze EPS12V procesora: masy w jednym rzędzie, +12 V w drugim. Nie mylić z PCIe 8-pin.</string>
     <string name="rf_pc_pcie_note">Zasilanie karty graficznej: 75 W przez 6 pinów, 150 W przez 8</string>
+    <string name="rf_pc_hpwr_note">16-pinowy wtyk karty graficznej, do 600 W: +12 V w jednym rzędzie, masa w drugim, piny sygnałowe pod nimi. 12V-2x6 to 12VHPWR z krótszymi pinami sense, więc niedociśnięty wtyk odcina zasilanie.</string>
+    <string name="rf_pc_hpwr_stable">Karta zgłasza, że jej zasilanie jest w porządku (opcjonalny)</string>
+    <string name="rf_pc_hpwr_present">Karta widzi, że kabel jest podłączony (opcjonalny)</string>
+    <string name="rf_pc_hpwr_sense">Razem z drugim pinem sense, zwarty do masy lub rozwarty, mówi karcie, ile może pobrać: oba do masy 600 W, tylko SENSE1 450 W, tylko SENSE0 300 W, żaden 150 W</string>
+    <string name="rf_pc_p4_note">Starszy 4-pinowy wtyk procesora (P4): połowa EPS 8-pin, do którego wciąż pasuje</string>
+    <string name="rf_pc_sata_11">Opóźniony rozruch dysku albo dioda jego aktywności</string>
+    <string name="rf_pc_sata_note">15 styków dysku w rzędzie; każdy z pięciu przewodów zasila trzy. Wiele kabli pomija +3,3 V.</string>
+    <string name="rf_pc_molex_note">4-pinowy wtyk peryferyjny (AMP MATE-N-LOK): stare dyski, wentylatory, taśmy LED</string>
+    <string name="rf_pc_floppy_note">Mały 4-pinowy wtyk Berg stacji dyskietek: napięcia Molexa w odwrotnej kolejności</string>
 </resources>

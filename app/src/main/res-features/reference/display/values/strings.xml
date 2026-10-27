@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_display">Display connectors</string>
+    <string name="fd_display">HDMI (full, mini, micro), DisplayPort, Mini DisplayPort, DVI and VGA</string>
+    <string name="fk_display">display, screen, monitor, tv, video, hdmi, mini hdmi, micro hdmi, type a, type c, type d, displayport, dp, mini displayport, mdp, dvi, dvi-i, dvi-d, vga, d-sub, de-15, hd15, tmds, ddc, edid, cec, hot plug, pinout, pins, connector, reference</string>
+    <string name="rf_display_tmds">A TMDS pair: one color channel\'s data</string>
+    <string name="rf_display_shield">The shield of the pair beside it</string>
+    <string name="rf_display_clock">The TMDS pixel clock pair</string>
+    <string name="rf_display_cec">Consumer Electronics Control: one remote for every device</string>
+    <string name="rf_display_utility">Reserved; HDMI 1.4 uses it for the Ethernet and audio return channel</string>
+    <string name="rf_display_scl">DDC clock (I²C): the display\'s EDID is read through it</string>
+    <string name="rf_display_sda">DDC data (I²C)</string>
+    <string name="rf_display_ddc_ground">Ground of DDC and CEC</string>
+    <string name="rf_display_ground">Ground</string>
+    <string name="rf_display_5v">+5 V from the source, at least 55 mA</string>
+    <string name="rf_display_hpd">Hot plug detect: the display tells the source it\'s there</string>
+    <string name="rf_display_staggered_note">The odd pins in one row, the even ones in the other, between them</string>
+    <string name="rf_display_dp_lane">A main link lane: video and audio, one differential pair</string>
+    <string name="rf_display_dp_aux">The auxiliary channel: EDID, link training, USB or touch over it</string>
+    <string name="rf_display_dp_config1">CONFIG1: grounded by a cable that\'s a DisplayPort one; also CAD, a dual-mode (DP++) adapter\'s detect</string>
+    <string name="rf_display_dp_config2">CONFIG2: ground, or a dual-mode (DP++) adapter\'s CEC</string>
+    <string name="rf_display_dp_return">DP_PWR\'s return</string>
+    <string name="rf_display_dp_pwr">3.3 V for an adapter, up to 500 mA</string>
+    <string name="rf_display_dp_note">The source\'s socket; a display\'s has the lanes in the other order. A dual-mode (DP++) port gives HDMI or DVI through a passive adapter.</string>
+    <string name="rf_display_vsync">Vertical sync</string>
+    <string name="rf_display_hsync">Horizontal sync</string>
+    <string name="rf_display_analog_color">An analog color, 0.7 V into 75 Ω</string>
+    <string name="rf_display_analog_return">That color\'s ground (return)</string>
+    <string name="rf_display_analog_ground">The analog colors\' ground: the flat blade</string>
+    <string name="rf_display_reserved">Reserved (once the monitor\'s ID bits)</string>
+    <string name="rf_display_vga_5v">+5 V for the monitor\'s EDID memory</string>
+    <string name="rf_display_dvi_note">DVI-D has no C1–C5. A single-link cable leaves out pins 4, 5, 12, 13, 20 and 21 (the second link); DVI-A has only the analog pins (VGA\'s).</string>
+    <string name="rf_display_vga_note">The computer\'s female socket seen from the front; a cable\'s male plug is its mirror image</string>
+</resources>

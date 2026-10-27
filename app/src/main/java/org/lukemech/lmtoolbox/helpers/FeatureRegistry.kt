@@ -51,9 +51,9 @@ import org.lukemech.lmtoolbox.features.reference.audio_jack.AudioJackFeature
 import org.lukemech.lmtoolbox.features.reference.batteries.BatteriesFeature
 import org.lukemech.lmtoolbox.features.reference.capacitor_code.CapacitorCodeFeature
 import org.lukemech.lmtoolbox.features.reference.car_audio.CarAudioFeature
+import org.lukemech.lmtoolbox.features.reference.display.DisplayFeature
 import org.lukemech.lmtoolbox.features.reference.ethernet.EthernetFeature
 import org.lukemech.lmtoolbox.features.reference.fuses.FusesFeature
-import org.lukemech.lmtoolbox.features.reference.hdmi.HdmiFeature
 import org.lukemech.lmtoolbox.features.reference.ip_code.IpCodeFeature
 import org.lukemech.lmtoolbox.features.reference.isp_icsp.IspIcspFeature
 import org.lukemech.lmtoolbox.features.reference.jtag_swd.JtagSwdFeature
@@ -137,7 +137,7 @@ object FeatureRegistry {
         Rs232Feature,
         JtagSwdFeature,
         IspIcspFeature,
-        HdmiFeature,
+        DisplayFeature,
         Obd2Feature,
         PcPowerFeature,
         SdCardFeature,

@@ -14,7 +14,10 @@ import org.lukemech.lmtoolbox.features.reference.common.inRow
 import org.lukemech.lmtoolbox.features.reference.common.raw
 import org.lukemech.lmtoolbox.features.reference.common.res
 
-/** 3.5 mm jacks: stereo TRS, and the headsets' TRRS in both orders, CTIA (most phones now) and OMTP (older). */
+/**
+ * Audio jacks, 2.5, 3.5 and 6.35 mm alike: mono TS, stereo and balanced TRS, and the headsets' TRRS in both orders,
+ * CTIA (most phones now) and OMTP (older).
+ */
 object AudioJackFeature : ReferenceFeature() {
 
     override val route = "audio_jack"
@@ -33,9 +36,23 @@ object AudioJackFeature : ReferenceFeature() {
     override val sheets by lazy {
         listOf(
             PinoutSheet(
+                raw("TS"),
+                listOf(Pin("T", "SIG", Audio, res(R.string.rf_jack_mono)), ground("S")).inRow(),
+                note = res(R.string.rf_jack_ts_note)
+            ),
+            PinoutSheet(
                 raw("TRS"),
                 listOf(LEFT, RIGHT.copy(number = "R"), ground("S")).inRow(),
                 note = res(R.string.rf_jack_note)
+            ),
+            PinoutSheet(
+                raw("TRS balanced"),
+                listOf(
+                    Pin("T", "+", Audio, res(R.string.rf_jack_hot)),
+                    Pin("R", "−", Audio, res(R.string.rf_jack_cold)),
+                    ground("S"),
+                ).inRow(),
+                note = res(R.string.rf_jack_balanced_note)
             ),
             PinoutSheet(
                 raw("TRRS CTIA"),
