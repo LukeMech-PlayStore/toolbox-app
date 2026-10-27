@@ -19,8 +19,9 @@
 **One app, a drawer full of tools.** Measure with a ruler, a spirit level, a compass, a sound level meter, a
 light meter, a metal detector, a vibration meter and a stroboscope; work out a resistor's color code or a 555
 timer with 30 electronics calculators; look up pinouts and tables; convert currencies; download, convert and
-shrink videos, music and images; edit a photo's metadata; or run your own Minecraft server, Vanilla to NeoForge,
-straight from your phone and reachable by your friends through Bore, a Cloudflare tunnel or Tailscale.
+shrink videos, music and images; edit a photo's metadata; share a folder with any browser; or run your own
+Minecraft server, Vanilla to NeoForge, straight from your phone and reachable by your friends through Bore, a
+Cloudflare tunnel or Tailscale.
 
 The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared, bore) inside a
 PRoot-based Linux subsystem. You never set it up: the app installs it part by part, only when a tool you open
@@ -60,6 +61,7 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Media       | File size (a shortcut to the media or the image encoder)                                       | Android                                                                                                                                                                      | `app`               |
 | Media       | File hash (MD5, SHA-1, SHA-2, SHA-3, CRC32; checked against a hash or a checksum file)         | Android (`MessageDigest`, `CRC32`); SHA-3 the app's own (Android has none)                                                                                                   | `app`               |
 | Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
+| Servers     | Folder share (a folder in any browser: ranges, ZIPs, uploads, a password; Bore, Cloudflare)    | Android (a web server of its own); bore or cloudflared once a tunnel is on (`features:bore`, `cloudflared`)                                                                  | `app`               |
 
 The electronics calculators: color code, SMD resistor code, Ohm's law, electric power, reactance and
 resonance, RC, RL and RLC filters, voltage divider, resistor ratio, series and parallel, capacitor charging,
@@ -318,7 +320,9 @@ an outdated library among them) fail it. Moderate, low and info problems (weak w
 reported.
 
 **On a pull request.** The `comment` job ([`comment.py`](.github/scripts/tests/comment.py)) puts both reports in one
-comment: a line for each on top, the whole summaries folded under it. Every run updates the same comment, found by
+comment: a line for each on top, the whole summaries folded under it, and each failed test with the errors in its logcat.
+Its screenshot and whole logcat are in the `e2e-failures` artifact, linked (GitHub's API can't attach files to a
+comment). Every run updates the same comment, found by
 its hidden marker, instead of adding a new one. It's skipped for pull requests from forks and Dependabot, whose token
 can't comment.
 

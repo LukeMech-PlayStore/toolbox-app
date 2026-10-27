@@ -115,6 +115,12 @@ interface AppFeature {
         get() = emptyList()
 
     /**
+     * Whether it uses [name], one of its [extraExtensions], now (e.g. a server's tunnel turned on): kept while
+     * any tool does (see [org.lukemech.lmtoolbox.features.servers.common.ServerTunnels.prune]).
+     */
+    fun usesExtraExtension(context: Context, name: String): Boolean = false
+
+    /**
      * Its pages' [FeatureUi] (a Kotlin object), when it's on the Linux subsystem: in its part's Play module
      * ([linuxExtensions], features/<name>) or the app's; see [FeatureDelivery.ui].
      */

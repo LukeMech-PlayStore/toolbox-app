@@ -1,6 +1,7 @@
 package org.lukemech.lmtoolbox.features.servers.mc_server
 
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.linux.ExecResult
 import org.lukemech.lmtoolbox.linux.InstallResult
 import android.content.Context
 import java.io.File
@@ -18,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +27,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.seconds
 import org.json.JSONArray
 import org.json.JSONObject
 import org.lukemech.lmtoolbox.BuildConfig
@@ -36,6 +39,10 @@ import org.lukemech.lmtoolbox.linux.LinuxTasks
 internal object Http {
     /** PaperMC's API refuses clients that don't say who they are. */
     private const val USER_AGENT ="LMToolbox/${BuildConfig.VERSION_NAME} (Android)"
+
+    /** How many times a download's tried (a dropped connection, a server's hiccup), the next after a longer wait each. */
+    const val DOWNLOAD_TRIES = 3
+    val RETRY_DELAY = 3.seconds
 
     fun open(url: String): HttpURLConnection = (URI(url).toURL().openConnection() as HttpURLConnection).apply {
         setRequestProperty("User-Agent", USER_AGENT)
@@ -61,12 +68,28 @@ internal object Http {
      * Downloads [url] to [file] (through a .part, so a half one never counts), checked against [sha1]
      * or [sha256] when given; [onProgress] gets 0..1, or null while the size isn't known. Cancellable.
      */
-    suspend fun download(url: String, file: File, sha1: String? = null, sha256: String? = null, onProgress: (Float?) -> Unit = {}) =
+    suspend fun download(url: String, file: File, sha1: String? = null, sha256: String? = null, onProgress: (Float?) -> Unit = {}) {
+        // A connection dropped midway ("unexpected end of stream"), a server's 5xx: tried again, from the start
+        var tries = 0
+        while (true) {
+            try {
+                return downloadOnce(url, file, sha1, sha256, onProgress)
+            } catch (e: IOException) {
+                if (++tries >= DOWNLOAD_TRIES || e is HttpStatus && e.code < 500) throw e
+                delay(RETRY_DELAY * tries)
+            }
+        }
+    }
+
+    /** An answer other than 2xx. */
+    class HttpStatus(val code: Int, url: String) : IOException("HTTP $code: $url")
+
+    private suspend fun downloadOnce(url: String, file: File, sha1: String?, sha256: String?, onProgress: (Float?) -> Unit) =
         withContext(Dispatchers.IO) {
             val part = File(file.parentFile, file.name + ".part")
             val c = open(url)
             try {
-                if (c.responseCode !in 200..299) throw IOException("HTTP ${c.responseCode}: $url")
+                if (c.responseCode !in 200..299) throw HttpStatus(c.responseCode, url)
                 val total = c.contentLengthLong.takeIf { it > 0 }
                 val digest = MessageDigest.getInstance(if (sha1 != null) "SHA-1" else "SHA-256")
                 var done = 0L
@@ -498,18 +521,30 @@ object Installer {
         val installer = File(dir, "installer.jar")
         Http.download(url, installer, onProgress = ::progress)
         _state.update { it?.copy(stage = Stage.Installing, progress = null) }
-        val result = Java.runInBackground(
-            context, MinecraftServerFeature, jdk, listOf("-jar", installer.name, "--installServer"),
-            dir = dir,
-            label = context.getString(R.string.f_Mc_installing_loader),
-            timeoutMs = INSTALLER_TIMEOUT_MS,
-            // Megabytes of stdout (every library it fetches), of which only the end is read (the task's log): kept
-            // whole, it ran a 16 MB heap out of memory
-            maxOutput = 64 * 1024,
-            onStart = { id -> _state.update { it?.copy(taskId = id) } }
-        )
-        if (LinuxTasks.isCancelled(_state.value?.taskId)) throw kotlinx.coroutines.CancellationException()
-        if (!result.isSuccess) throw Reported(result.stderr.lineSequence().lastOrNull { it.isNotBlank() } ?: "The installer failed")
+        // A library it couldn't download (a mirror's hiccup: "These libraries failed to download. Try again."): run
+        // again, what it has already kept (checked, not fetched again)
+        var tries = 0
+        fun retried(r: ExecResult) = tries + 1 < Http.DOWNLOAD_TRIES && "failed to download" in r.stdout + r.stderr
+        while (true) {
+            val result = Java.runInBackground(
+                context, MinecraftServerFeature, jdk, listOf("-jar", installer.name, "--installServer"),
+                dir = dir,
+                label = context.getString(R.string.f_Mc_installing_loader),
+                timeoutMs = INSTALLER_TIMEOUT_MS,
+                // Megabytes of stdout (every library it fetches), of which only the end is read (the task's log): kept
+                // whole, it ran a 16 MB heap out of memory
+                maxOutput = 64 * 1024,
+                onStart = { id -> _state.update { it?.copy(taskId = id) } },
+                retried = ::retried,
+            )
+            if (LinuxTasks.isCancelled(_state.value?.taskId)) throw kotlinx.coroutines.CancellationException()
+            if (result.isSuccess) break
+            if (retried(result)) {
+                delay(Http.RETRY_DELAY * ++tries)
+                continue
+            }
+            throw Reported(result.stderr.lineSequence().lastOrNull { it.isNotBlank() } ?: "The installer failed")
+        }
         installer.delete()
         File(dir, "installer.jar.log").delete()
         // What only a shell (run.sh, run.bat) or a GUI would need

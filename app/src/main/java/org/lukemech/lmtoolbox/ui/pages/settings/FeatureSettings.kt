@@ -58,13 +58,14 @@ fun CurrentFeatureSettingsSection() {
     FeatureSettingsButton(feature)
 }
 
-/** Opens [feature]'s settings. */
+/** Opens [feature]'s settings; [labelled] where it's not among others alone (the settings' page, its search). */
 @Composable
-fun FeatureSettingsButton(feature: AppFeature) {
+fun FeatureSettingsButton(feature: AppFeature, labelled: Boolean = true) {
     val navController = LocalAppNav.current.controller
     FeatureButton(
-        title = stringResource(feature.titleStringResId),
-        subtitle = stringResource(R.string.s_feature_settings),
+        // Its name large, what it opens small above it (in the list of them, what the page says already: its name alone)
+        title = if (labelled) stringResource(R.string.s_feature_settings) else stringResource(feature.titleStringResId),
+        subtitle = if (labelled) stringResource(feature.titleStringResId) else null,
         titleSubtitleSwap = true,
         icon = feature.icon,
         icon2 = Icons.AutoMirrored.Default.KeyboardArrowRight,
@@ -105,7 +106,7 @@ fun ToolSettingsPage() {
         if (features.isEmpty()) {
             EmptyText(stringResource(R.string.s_feature_settings_empty))
         } else {
-            ByCategory(features) { FeatureSettingsButton(it) }
+            ByCategory(features) { FeatureSettingsButton(it, labelled = false) }
         }
     }
 }

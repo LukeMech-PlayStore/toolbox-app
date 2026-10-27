@@ -32,10 +32,12 @@
       <w>bwiat</w>
       <w>callendar</w>
       <w>ckit</w>
+      <w>cloudflare</w>
       <w>cloudflared</w>
       <w>cloudflared's</w>
       <w>couldn</w>
       <w>craftmine</w>
+      <w>cscript</w>
       <w>ctia</w>
       <w>ctxt</w>
       <w>currencyconv</w>
@@ -67,6 +69,7 @@
       <w>eobd</w>
       <w>errorlevel</w>
       <w>eseries</w>
+      <w>etag</w>
       <w>etree</w>
       <w>etxc</w>
       <w>exiftool</w>
@@ -77,6 +80,7 @@
       <w>filesize</w>
       <w>findall</w>
       <w>finditer</w>
+      <w>fixdate</w>
       <w>fixupduplicatemoov</w>
       <w>fmpeg</w>
       <w>foojay</w>
@@ -86,12 +90,15 @@
       <w>gbit</w>
       <w>getprop</w>
       <w>getroot</w>
+      <w>getsize</w>
       <w>gfxstream</w>
       <w>gfxstream's</w>
       <w>gitleaks</w>
       <w>gnddetect</w>
       <w>gplay</w>
+      <w>gęślą</w>
       <w>hann</w>
+      <w>hasło</w>
       <w>heapgrowthlimit</w>
       <w>heatsink</w>
       <w>heic</w>
@@ -105,6 +112,8 @@
       <w>intr</w>
       <w>ioref</w>
       <w>iout</w>
+      <w>isfile</w>
+      <w>jaźń</w>
       <w>jline</w>
       <w>jtag</w>
       <w>kennelly</w>
@@ -150,11 +159,14 @@
       <w>nachylenie</w>
       <w>najnowsze</w>
       <w>narzędzia</w>
+      <w>nayuki</w>
+      <w>nayuki's</w>
       <w>neoforge</w>
       <w>nline</w>
       <w>nodereclaim</w>
       <w>nogui</w>
       <w>nopass</w>
+      <w>nosniff</w>
       <w>nowości</w>
       <w>nowszymi</w>
       <w>nSRST</w>
@@ -209,6 +221,7 @@
       <w>pypkgs</w>
       <w>pythonunbuffered</w>
       <w>qrcode</w>
+      <w>qrcodegen</w>
       <w>quecto</w>
       <w>quetta</w>
       <w>quickjs</w>
@@ -227,6 +240,8 @@
       <w>scts</w>
       <w>sdcd</w>
       <w>sdio</w>
+      <w>segoe</w>
+      <w>sekret</w>
       <w>selfpromo</w>
       <w>setdefault</w>
       <w>setlocal</w>
@@ -259,11 +274,13 @@
       <w>tailnets</w>
       <w>tempco</w>
       <w>termuxie</w>
+      <w>threadtime</w>
       <w>thévenin</w>
       <w>tmds</w>
       <w>towbar</w>
       <w>trrs</w>
       <w>trunc</w>
+      <w>trycloudflare</w>
       <w>txc</w>
       <w>ubble</w>
       <w>udevadm</w>
@@ -272,6 +289,7 @@
       <w>uid's</w>
       <w>układ</w>
       <w>ulepszenia</w>
+      <w>unchunk</w>
       <w>upvtresh</w>
       <w>urllib</w>
       <w>urlopen</w>
@@ -286,6 +304,7 @@
       <w>vbus</w>
       <w>vcap</w>
       <w>vcodec</w>
+      <w>vdiwef</w>
       <w>veryfast</w>
       <w>vhpwr</w>
       <w>videoremuxer</w>
@@ -300,6 +319,7 @@
       <w>waluta</w>
       <w>waluty</w>
       <w>wbudowane</w>
+      <w>weba</w>
       <w>widżety</w>
       <w>workingset</w>
       <w>wybór</w>
@@ -309,6 +329,7 @@
       <w>ytdlp</w>
       <w>zamkowy</w>
       <w>zażółć</w>
+      <w>zdjęcia</w>
       <w>zener</w>
       <w>zgodny</w>
       <w>znów</w>
@@ -322,6 +343,7 @@
       <w>żuraw</w>
       <w>żywo</w>
       <w>żółty</w>
+      <w>żółw</w>
       <w>żądanie</w>
     </words>
   </dictionary>

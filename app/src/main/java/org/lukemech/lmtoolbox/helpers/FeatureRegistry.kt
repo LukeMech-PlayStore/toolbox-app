@@ -72,6 +72,7 @@ import org.lukemech.lmtoolbox.features.reference.trailer.TrailerFeature
 import org.lukemech.lmtoolbox.features.reference.usb.UsbFeature
 import org.lukemech.lmtoolbox.features.reference.wire_gauge.WireGaugeFeature
 import org.lukemech.lmtoolbox.features.reference.xlr_dmx.XlrDmxFeature
+import org.lukemech.lmtoolbox.features.servers.folder_share.FolderShareFeature
 import org.lukemech.lmtoolbox.features.servers.mc_server.MinecraftServerFeature
 
 /** All the app's tools, in this order wherever they're listed. Add a new one here. */
@@ -94,6 +95,7 @@ object FeatureRegistry {
         FileSizeFeature,
         FileHashFeature,
         MinecraftServerFeature,
+        FolderShareFeature,
         ColorCodeFeature,
         SmdCodeFeature,
         OhmFeature,

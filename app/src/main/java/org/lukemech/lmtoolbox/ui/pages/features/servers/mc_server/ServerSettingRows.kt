@@ -12,18 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.lukemech.lmtoolbox.R
-import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.components.InputField
 import org.lukemech.lmtoolbox.ui.components.RowColors
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TextSetting
 
 /** A setting's colors: as any, or marked as changed while the server runs (it takes it on a restart). */
 @Composable
@@ -33,27 +28,6 @@ internal fun mark(changed: Boolean) = if (changed) RowColors.changed else RowCol
 @Composable
 internal fun Toggle(title: String, icon: ImageVector, checked: Boolean, mark: RowColors, subtitle: String? = null, onChange: (Boolean) -> Unit) =
     SwitchButton(title, icon, checked, subtitle = subtitle, colors = mark, onCheckedChange = onChange)
-
-/** A text setting: its value under its title; a tap edits it in a dialog. */
-@Composable
-internal fun TextSetting(
-    title: String, value: String, icon: ImageVector, subtitle: String? = null, keyboard: KeyboardType = KeyboardType.Text,
-    mark: RowColors? = null, onSave: (String) -> Unit
-) {
-    var editing by remember { mutableStateOf(false) }
-    val colors = mark ?: mark(false)
-    FeatureButton(
-        title = title,
-        subtitle = value.ifEmpty { subtitle ?: "–" },
-        icon = icon,
-        colors = colors,
-        onClick = { editing = true }
-    )
-    if (editing) EditDialog(title, value, subtitle, keyboard, onDismiss = { editing = false }) {
-        editing = false
-        onSave(it)
-    }
-}
 
 @Composable
 internal fun NumberSetting(title: String, value: String, icon: ImageVector, range: IntRange, mark: RowColors, onSave: (String) -> Unit) =
@@ -121,34 +95,4 @@ private fun Modifier.onFocusLeft(block: () -> Unit): Modifier = composed {
             block()
         }
     }
-}
-
-@Composable
-internal fun EditDialog(
-    title: String, value: String, note: String?, keyboard: KeyboardType,
-    secret: Boolean = false, valid: (String) -> Boolean = { true }, onDismiss: () -> Unit, onSave: (String) -> Unit
-) {
-    var text by remember { mutableStateOf(value) }
-    val ok = valid(text)
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                InputField(
-                    value = text,
-                    onValueChange = { text = it },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = keyboard, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { if (ok) onSave(text) }),
-                    // Hidden as it's typed: a secret (the tunnel's token)
-                    visualTransformation = if (secret) PasswordVisualTransformation() else VisualTransformation.None,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Start) }
-            }
-        },
-        confirmButton = { TextButton(onClick = { onSave(text) }, enabled = ok) { Text(stringResource(R.string.f_Mc_save)) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(android.R.string.cancel)) } }
-    )
 }
