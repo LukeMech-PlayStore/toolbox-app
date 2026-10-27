@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
@@ -94,7 +95,7 @@ fun VibrationMeterPage() {
         val job = scope.launch {
             var points = 0
             while (true) {
-                delay(TRACE_MS)
+                delay(TRACE_MS.milliseconds)
                 val n = minOf(fresh[0], window.size)
                 fresh[0] = 0
                 // Held: the trace and the numbers stay as they were (the readings go on coming)
@@ -151,7 +152,7 @@ fun VibrationMeterPage() {
             Note(
                 stringResource(
                     R.string.f_vibration_note,
-                    analysis.sampleRate?.let { it.roundToInt().toString() } ?: none,
+                    analysis.sampleRate?.roundToInt()?.toString() ?: none,
                     analysis.sampleRate?.let { (it / 2).roundToInt().toString() } ?: none
                 )
             )

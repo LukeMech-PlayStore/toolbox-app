@@ -125,7 +125,7 @@ fun HoldAction(holding: Boolean, onHoldingChange: (Boolean) -> Unit) {
  * A reading's last moments as a line, the newest at the right: [values] (oldest first, one every [intervalMs]) on a
  * strip of [capacity] of them, so the line grows in from the right as they come. The scale goes from [min] to
  * [max] (widened to hold every value, in [step]s), a line across at every [step] (or every few, widened far),
- * labelled in [unit].
+ * labeled in [unit].
  *
  * Back in time: touched, it holds the meter ([onHoldingChange], as its HoldAction does) and the point under the
  * finger is marked, its value ([label]) and how long ago it was told at the top; sliding along it goes from one

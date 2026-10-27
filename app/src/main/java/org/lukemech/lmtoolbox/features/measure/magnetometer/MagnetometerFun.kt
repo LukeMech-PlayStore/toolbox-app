@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.runtime.Composable
 import kotlin.math.PI
 import kotlin.math.sin
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -47,7 +48,7 @@ object MagnetometerFeature : AppFeature {
     enum class Feedback { Off, Tone, Buzz }
 
     /**
-     * Plays the detector's tone until cancelled: a sine at [frequency] (Hz, read as it plays; null: silent),
+     * Plays the detector's tone until canceled: a sine at [frequency] (Hz, read as it plays; null: silent),
      * gliding to each new one and fading in and out, so it never clicks.
      */
     suspend fun playTone(frequency: () -> Double?) = withContext(Dispatchers.Default) {
@@ -93,14 +94,14 @@ object MagnetometerFeature : AppFeature {
         }
     }
 
-    /** Buzzes until cancelled, [interval] ms apart (read before each; null: still for now). */
+    /** Buzzes until canceled, [interval] ms apart (read before each; null: still for now). */
     suspend fun buzz(context: Context, interval: () -> Long?) {
         val vibrator = vibrator(context)?.takeIf { it.hasVibrator() } ?: return
         try {
             while (currentCoroutineContext().isActive) {
                 val wait = interval()
                 if (wait != null) vibrator.vibrate(VibrationEffect.createOneShot(BUZZ_MS, VibrationEffect.DEFAULT_AMPLITUDE))
-                delay(wait ?: IDLE_MS)
+                delay((wait ?: IDLE_MS).milliseconds)
             }
         } finally {
             vibrator.cancel()

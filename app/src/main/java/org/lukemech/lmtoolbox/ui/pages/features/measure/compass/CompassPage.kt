@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.CompassCalibration
 import androidx.compose.material.icons.filled.Landscape
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text

@@ -137,7 +137,7 @@ fun powerOfTwoBelow(n: Int): Int = if (n < 1) 1 else Integer.highestOneBit(n)
  * The frequency (Hz) the motion has most of, in [axes] (each the same power-of-two count of readings, taken
  * [sampleRate] a second): every axis's spectrum (mean taken out, Hann-windowed) added, so how the phone lies
  * doesn't matter and nothing doubles (as the size of the motion would: |sin| repeats twice as often). The
- * strongest bin, the lowest two left out (drift, the hand holding it), refined between its neighbours; null
+ * strongest bin, the lowest two left out (drift, the hand holding it), refined between its neighbors; null
  * for too few readings. It can't tell what's above half the [sampleRate].
  */
 fun dominantFrequency(axes: List<DoubleArray>, sampleRate: Double): Double? {
@@ -154,7 +154,7 @@ fun dominantFrequency(axes: List<DoubleArray>, sampleRate: Double): Double? {
     }
     var best = 2
     for (k in 3 until power.size) if (power[k] > power[best]) best = k
-    // A parabola through the peak and its neighbours: where between bins it lies
+    // A parabola through the peak and its neighbors: where between bins it lies
     val offset = if (best < power.size - 1) {
         val a = power[best - 1]
         val b = power[best]

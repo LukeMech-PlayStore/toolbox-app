@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.measure.stroboscope.MAX_HZ
@@ -66,7 +67,7 @@ fun StroboscopePage() {
     val typed = text.replace(',', '.').toDoubleOrNull()?.let { if (unit == RPM) hzOfRpm(it) else it }
     val hz = typed?.takeIf { it > 0 }?.let(::clampRate)
     // Past what the torch flashes at (either way): it flashes at the nearest it can, the field set to it as it's left
-    val outside = typed != null && (typed < MIN_HZ || typed > MAX_HZ)
+    val outside = typed != null && typed !in MIN_HZ..MAX_HZ
     fun inUnit(value: Double) = fieldText(if (unit == RPM) rpm(value) else value)
     fun setHz(value: Double) {
         val clamped = clampRate(value)
@@ -98,7 +99,7 @@ fun StroboscopePage() {
         LaunchedEffect(strobe) {
             while (true) {
                 measured = strobe.measuredHz
-                delay(500)
+                delay(500.milliseconds)
             }
         }
     }
@@ -138,7 +139,7 @@ fun StroboscopePage() {
                     text = value?.let { fieldText(if (picked == RPM) rpm(it) else hzOfRpm(it)) }.orEmpty()
                 },
                 isError = outside,
-                onLeave = { if (outside) typed?.let(::setHz) }
+                onLeave = { if (outside) setHz(typed) }
             )
             Note(
                 stringResource(R.string.f_strobe_limited, inUnit(clampRate(typed ?: MIN_HZ)), unit),

@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
@@ -71,7 +72,7 @@ fun LightMeterPage() {
                     stats.add(it)
                     summary = Triple(stats.min, stats.max, stats.mean)
                 }
-                delay(TICK_MS)
+                delay(TICK_MS.milliseconds)
             }
         }
         onPauseOrDispose { job?.cancel() }

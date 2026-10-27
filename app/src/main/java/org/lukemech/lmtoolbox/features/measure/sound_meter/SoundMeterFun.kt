@@ -82,7 +82,7 @@ object SoundMeterFeature : AppFeature {
     class Reading(val level: Double, val meanSquare: Double, val clipped: Boolean, val fullScaleSpl: Double)
 
     /**
-     * Reads the microphone until cancelled, every [BLOCK_MS] giving [onReading] the block's reading (on the main
+     * Reads the microphone until canceled, every [BLOCK_MS] giving [onReading] the block's reading (on the main
      * thread), [aWeighted] or not. False at once if the microphone can't be had (no permission, another app's
      * using it); it never ends by itself otherwise.
      */

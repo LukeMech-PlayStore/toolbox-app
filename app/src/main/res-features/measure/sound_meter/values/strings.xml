@@ -18,7 +18,7 @@
     <string name="f_sound_calibrate_message">Next to a sound level meter, with a steady sound, enter what it shows.</string>
     <string name="f_sound_calibrate_field">The meter shows (dB)</string>
     <string name="f_sound_calibrate_waiting">Waiting for the microphone\'s first reading…</string>
-    <string name="f_sound_note">Approximate: a phone isn\'t a measuring instrument. Microphone: %1$s.</string>
+    <string name="f_sound_note">Approximate: a phone is not a measuring instrument. Microphone: %1$s.</string>
     <string name="f_sound_source_unprocessed">unprocessed</string>
     <string name="f_sound_source_voice">voice</string>
     <string name="f_sound_mic_needed">Allow the microphone to measure</string>
