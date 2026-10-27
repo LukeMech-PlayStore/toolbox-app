@@ -55,7 +55,7 @@
     <string name="f_Fs_web_footer">Shared from a phone with %1$s</string>
 
     <string name="fp_FolderShare">Folder share</string>
-    <!-- Keywords as people type them in the search, so "wifi" too -->
+    <!-- Keywords as people type them in the search, so Wi-Fi without its hyphen too -->
     <!--suppress GrazieInspection -->
     <string name="fk_FolderShare">share, folder, files, http, web server, browser, download, upload, lan, wifi, transfer, send files, video, zip, tunnel, bore, cloudflare, tailscale, qr</string>
     <string name="fd_FolderShare">A folder of yours in any browser</string>

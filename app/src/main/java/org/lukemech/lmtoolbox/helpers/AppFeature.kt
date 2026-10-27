@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import java.io.File
 import org.lukemech.lmtoolbox.R
-import org.lukemech.lmtoolbox.features.servers.common.ServerTunnels
 import org.lukemech.lmtoolbox.ui.widgets.helpers.FeatureWidget
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 
@@ -117,7 +116,7 @@ interface AppFeature {
 
     /**
      * Whether it uses [name], one of its [extraExtensions], now (e.g. a server's tunnel turned on): kept while
-     * any tool does (see [ServerTunnels.prune]).
+     * any tool does (see [org.lukemech.lmtoolbox.features.servers.common.ServerTunnels.prune]).
      */
     fun usesExtraExtension(context: Context, name: String): Boolean = false
 

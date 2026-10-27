@@ -6,14 +6,15 @@ run's summary has them (merge.py's, report.py's), in one comment updated on ever
 - on top, a line for each: how its job went and its tally (the first line of its summary under the heading)
 - under it, each summary whole, folded away; cut short if they'd take more than a comment can hold (GitHub's 65536
   characters), the rest in the run's summary
-- with <failures dir> (merge.py's) and where tests.yml published it: each failed (or flaky) test on its leg, unfolded,
-  with the screen when it failed, its logcat's errors and the whole logcat linked
+- with <failures dir> (merge.py's): each failed (or flaky) test on its leg, unfolded, with its logcat's errors; the
+  screen when it failed and the whole logcat are in its artifact (a comment can't hold files), FAILURES_URL linked
 - the hidden [MARKER] first: what tells the comment apart from the others (tests.yml finds it by it)
 
-    comment.py <e2e.md> <inspections.md> <comment.md> [<failures dir> <its URL>]
+    comment.py <e2e.md> <inspections.md> <comment.md> [<failures dir>]
 
 A summary missing (its job didn't get to write it): its line says so. The environment's E2E_RESULT and INSPECT_RESULT are
-the jobs' results (success, failure, cancelled, skipped), RUN_URL the run's page, COMMIT what was tested.
+the jobs' results (success, failure, cancelled, skipped), RUN_URL the run's page, COMMIT what was tested, FAILURES_URL
+the failures' artifact (the run's page without it).
 """
 import html
 import json
@@ -32,8 +33,6 @@ FAILURE_ICONS = {"failed": "❌", "flaky": "🔁"}
 LOGCAT_LINE = re.compile(r"^\S+ \S+\s+(\d+)\s+\d+ ([VDIWEF]) (.*?)\s*:")
 # A failure's logcat errors shown: its last ones
 LOGCAT_ERRORS = 30
-# A screenshot's width in the comment: a phone's screen, small enough for a few side by side
-SCREENSHOT_WIDTH = 270
 
 
 def read(path):
@@ -64,8 +63,9 @@ def app_errors(lines):
 
 def failures(folder, url):
     """
-    The failures section's lines, from [folder]'s failures.json (merge.py's), its files at [url]: each test that failed
-    on a leg (or was flaky there), its screenshot and its logcat's last errors; none without failures.json.
+    The failures section's lines, from [folder]'s failures.json (merge.py's): each test that failed on a leg (or was
+    flaky there) and its logcat's last errors, its screenshot and whole logcat in the artifact at [url]; none without
+    failures.json.
     """
     try:
         with open(os.path.join(folder, "failures.json"), encoding="utf-8") as f:
@@ -76,8 +76,6 @@ def failures(folder, url):
     for failure in listed:
         title = html.escape(f"{failure['title']} · {failure['shard']}", quote=False)
         lines += [f"<details><summary>{FAILURE_ICONS.get(failure['status'], '❔')} {title}</summary>", ""]
-        if failure.get("screenshot"):
-            lines += [f'<img src="{url}/{failure["screenshot"]}" width="{SCREENSHOT_WIDTH}" alt="The screen when it failed">', ""]
         if failure.get("logcat"):
             try:
                 with open(os.path.join(folder, failure["logcat"]), encoding="utf-8", errors="replace") as f:
@@ -85,11 +83,15 @@ def failures(folder, url):
             except OSError:
                 errors = []
             if errors:
-                lines += [f"The app's last errors in logcat ([the whole of it]({url}/{failure['logcat']})):", "",
+                lines += ["The app's last errors in logcat:", "",
                           "```", *(e.replace("```", "` ` `") for e in errors), "```", ""]
             else:
-                lines += [f"[Logcat]({url}/{failure['logcat']}): no errors in it", ""]
-        if not failure.get("screenshot") and not failure.get("logcat"):
+                lines += ["No errors in its logcat", ""]
+        kept = [f"`{failure[key]}`" for key in ("screenshot", "logcat") if failure.get(key)]
+        if kept:
+            lines += [f"In [the failures' artifact]({url}) (the screen when it failed, the whole logcat): "
+                      f"{', '.join(kept)}", ""]
+        else:
             lines += ["No screenshot or logcat: see the run's artifacts", ""]
         lines.append("</details>")
     return lines
@@ -114,7 +116,7 @@ def cut(lines, room, run_url):
 
 def main():
     run_url = os.environ.get("RUN_URL", "")
-    failed = failures(sys.argv[4], sys.argv[5]) if len(sys.argv) > 5 else None
+    failed = failures(sys.argv[4], os.environ.get("FAILURES_URL") or run_url) if len(sys.argv) > 4 else None
     commit = os.environ.get("COMMIT", "")[:7]
     parts = [
         ("E2E tests", read(sys.argv[1]), os.environ.get("E2E_RESULT", "")),

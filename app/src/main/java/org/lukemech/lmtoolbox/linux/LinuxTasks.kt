@@ -243,7 +243,8 @@ object LinuxTasks {
      *
      * [onStart] gets the task's id (for [cancel], [detach], [setProgress]); [onLine] each line
      * the command prints, as it comes. [label] is what the UI shows of it (e.g. a file's name).
-     * [maxOutput]: how much of its output is kept (see [LinuxEnv.exec]).
+     * [maxOutput]: how much of its output is kept (see [LinuxEnv.exec]). [retried]: whether the caller runs it
+     * again after this result (a download it couldn't make): then it's done, not failed, the next run the one to tell.
      */
     suspend fun runInBackground(
         context: Context, cmd: List<String>, source: AppFeature,
@@ -251,7 +252,8 @@ object LinuxTasks {
         timeoutMs: Long = LinuxEnv.DEFAULT_TIMEOUT_MS,
         maxOutput: Int = LinuxEnv.DEFAULT_MAX_OUTPUT,
         onStart: (id: Long) -> Unit = {},
-        onLine: ((String) -> Unit)? = null
+        onLine: ((String) -> Unit)? = null,
+        retried: (ExecResult) -> Boolean = { false },
     ): ExecResult {
         val app = context.applicationContext
         notReady(app, leavePage = true)?.let { return it }
@@ -272,8 +274,8 @@ object LinuxTasks {
                 LinuxEnv.exec(app, cmd, timeoutMs, onLine, maxOutput, task = task.id) { partial = it }
             }
             result.complete(r)
-            val state = if (r.isSuccess) LinuxTask.State.Done else LinuxTask.State.Failed
-            finish(task.id, state, if (r.isSuccess) null else summary(r), log(r), r.exitCode)
+            val ok = r.isSuccess || retried(r)
+            finish(task.id, if (ok) LinuxTask.State.Done else LinuxTask.State.Failed, if (ok) null else summary(r), log(r), r.exitCode)
         }.invokeOnCompletion { e ->
             // No-op if the command produced a result; otherwise it failed or was canceled
             val message = _tasks.value.firstOrNull { it.id == task.id }?.message

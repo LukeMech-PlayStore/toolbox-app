@@ -208,7 +208,9 @@ object ServerRunner {
             }
             // Stopped while its Java installed (an installation goes on to its end): not started after all
             ensureActive()
-            var lastError: String? = null
+            // An error line and when it came: one from its start (e.g. Minecraft's harmless JNA one) isn't why it
+            // ended once it was running
+            var lastError: Pair<String, Long>? = null
             val result = Java.runService(
                 // Paper without its console: commands go by RCON, and old ones' console (1.7.10's jline) reads its
                 // stdin as endless empty lines, each an "Unknown command" (a million a minute, the seed unanswered)
@@ -226,7 +228,7 @@ object ServerRunner {
                     val line = clean(raw)
                     // The app's own RCON connections (its console, the players' polling) aren't the user's to read
                     if (!RCON_CLIENT.containsMatchIn(line)) addLog(line)
-                    if (ERROR.containsMatchIn(line)) lastError = line
+                    if (ERROR.containsMatchIn(line)) lastError = line to System.currentTimeMillis()
                     onServerLine(line)
                 }
             )
@@ -251,7 +253,9 @@ object ServerRunner {
                     result.isSuccess && run.readyAt != null -> ended.copy(phase = Phase.Stopped)
                     else -> ended.copy(
                         phase = Phase.Crashed,
-                        error = run.error ?: lastError ?: result.stderr.lineSequence().lastOrNull { it.isNotBlank() }
+                        error = run.error
+                            ?: lastError?.takeIf { (_, at) -> run.readyAt == null || at >= run.readyAt }?.first
+                            ?: result.stderr.lineSequence().lastOrNull { it.isNotBlank() }?.let { "$it (exit code ${result.exitCode})" }
                             ?: "Exit code ${result.exitCode}"
                     )
                 }

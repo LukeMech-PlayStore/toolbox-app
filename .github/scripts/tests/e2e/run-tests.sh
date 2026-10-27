@@ -52,14 +52,20 @@ wait_ready() {
   done
 }
 # adb as root or as the shell again: adbd restarts, and until it has, wait-for-device may still find the old one (or
-# none: "device offline"), the commands after it lost; done once the shell answers as that user. Left root, the app's
-# Play modules would be put on the device as root's, unreadable to it (Play's error -13)
+# none: "device offline"), the commands after it lost; done once the shell answers as that user. The command itself
+# can be lost that way too (adbd still restarting from the last one: "device offline", nothing changed), so it's
+# asked again while the user isn't the one asked for. Left root, the app's Play modules would be put on the device as
+# root's, unreadable to it (Play's error -13)
 adb_as() {
   local cmd=root uid=0
   [[ $1 == shell ]] && cmd=unroot uid=2000
-  # unroot fails where adbd never was root (production images): the shell already, as the uid says
-  adb $cmd > /dev/null 2>&1 || [[ $uid == 2000 ]] || return 1
-  for _ in $(seq 1 60); do
+  for try in $(seq 1 60); do
+    if (( try % 10 == 1 )); then
+      adb wait-for-device
+      # unroot fails where adbd never was root (production images): the shell already, as the uid says. Asked again,
+      # either may fail as adbd restarts from the first
+      adb $cmd > /dev/null 2>&1 || [[ $uid == 2000 || $try -gt 1 ]] || return 1
+    fi
     [[ $(adb shell id -u 2>/dev/null | tr -d '\r') == "$uid" ]] && { wait_ready; return 0; }
     sleep 2
   done

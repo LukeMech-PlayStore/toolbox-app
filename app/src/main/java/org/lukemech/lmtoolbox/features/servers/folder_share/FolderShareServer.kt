@@ -16,7 +16,7 @@ import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
-import java.util.zip.Deflater
+import java.util.zip.CRC32
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.concurrent.thread
@@ -128,8 +128,29 @@ class FolderShareServer(
         } catch (e: Exception) {
             Log.w(TAG, "A connection failed", e)
         } finally {
+            if (!closed) linger(socket)
             runCatching { socket.close() }
             open -= socket
+        }
+    }
+
+    /**
+     * Before [socket]'s closed: the answer sent on, what the client's still sending (a body left unread, e.g. a PUT
+     * turned down) read and dropped, up to [LINGER_BYTES] or [LINGER_MS]. Closed with it unread, the system resets the
+     * connection, and the client can lose the answer it hadn't read yet.
+     */
+    private fun linger(socket: Socket) = runCatching {
+        if (socket.isClosed || socket.isInputShutdown) return@runCatching
+        socket.shutdownOutput()
+        socket.soTimeout = LINGER_MS
+        val input = socket.getInputStream()
+        val buffer = ByteArray(BUFFER)
+        var left = LINGER_BYTES
+        val until = System.currentTimeMillis() + LINGER_MS
+        while (left > 0 && System.currentTimeMillis() < until) {
+            val n = input.read(buffer)
+            if (n < 0) break
+            left -= n
         }
     }
 
@@ -239,11 +260,33 @@ class FolderShareServer(
                         add(child, prefix + child.name + "/")
                         continue
                     }
+                    val entry = ZipEntry(prefix + child.name).apply { if (child.modified > 0) time = child.modified }
+                    // Stored as it is: its size and CRC first, read once before (a STORED entry's are in its header).
+                    // Not a deflate level of none: changing the level between entries (deflateParams) makes broken
+                    // data on some Android versions' zlib (x86 API 30's: "invalid block type").
+                    if (!Http.isCompressible(Http.mime(child.name, child.mime))) {
+                        val crc = CRC32()
+                        val size = tree.open(child)?.stream?.use { stream ->
+                            val buffer = ByteArray(BUFFER)
+                            var total = 0L
+                            while (true) {
+                                val n = stream.read(buffer)
+                                if (n < 0) break
+                                crc.update(buffer, 0, n)
+                                total += n
+                            }
+                            total
+                        } ?: continue
+                        entry.method = ZipEntry.STORED
+                        entry.size = size
+                        entry.compressedSize = size
+                        entry.crc = crc.value
+                    }
                     val opened = tree.open(child) ?: continue
                     opened.stream.use { stream ->
-                        zip.setLevel(if (Http.isCompressible(Http.mime(child.name, child.mime))) Deflater.DEFAULT_COMPRESSION else Deflater.NO_COMPRESSION)
-                        zip.putNextEntry(ZipEntry(prefix + child.name).apply { if (child.modified > 0) time = child.modified })
-                        stream.copyTo(zip, BUFFER)
+                        zip.putNextEntry(entry)
+                        // Changed since: closeEntry throws, its size or CRC another, the ZIP cut short
+                        if (entry.method == ZipEntry.STORED) copy(stream, zip, entry.size) else stream.copyTo(zip, BUFFER)
                         zip.closeEntry()
                     }
                 }
@@ -383,6 +426,8 @@ class FolderShareServer(
         const val MAX_CONNECTIONS = 32
         const val IDLE_TIMEOUT_MS = 30_000
         const val BUFFER = 64 * 1024
+        const val LINGER_MS = 2_000
+        const val LINGER_BYTES = 1024 * 1024
 
         /** Every answer's: nothing sniffed, no referrer passed on, not for search engines. */
         val COMMON = listOf(

@@ -6,7 +6,6 @@ import androidx.compose.material.icons.filled.FolderShared
 import androidx.compose.runtime.Composable
 import java.io.File
 import org.lukemech.lmtoolbox.R
-import org.lukemech.lmtoolbox.features.servers.common.ServerTunnels
 import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.helpers.FeatureCategory
 import org.lukemech.lmtoolbox.helpers.ResourceTile
@@ -75,7 +74,7 @@ object FolderShareFeature : AppFeature {
         FolderShareSettings()
     }
 
-    /** A tunnel's part while its tunnel is turned on (see [ServerTunnels.prune]). */
+    /** A tunnel's part while its tunnel is turned on (see [org.lukemech.lmtoolbox.features.servers.common.ServerTunnels.prune]). */
     override fun usesExtraExtension(context: Context, name: String) = when (name) {
         Tunnel.PART -> ShareSettings.load(context).cloudflare
         Bore.PART -> ShareSettings.load(context).bore
