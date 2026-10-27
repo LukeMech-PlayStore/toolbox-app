@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="f_Fs_phase_running">Udostępniany</string>
     <string name="f_Fs_phase_stopped">Nieudostępniany</string>
     <string name="f_Fs_phase_failed">Zatrzymany przez błąd</string>

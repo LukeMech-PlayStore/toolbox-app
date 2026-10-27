@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * What FolderShareServer serves: a folder's files and folders, found by the names of a path (only ever down from
- * the folder shared: the names come from Http.segments, which has no ".."), read and written. The app's is
+ * the folder shared: the names come from [Http.segments], none of them two dots), read and written. The app's is
  * [ShareTree], the folder the system's picker gave.
  */
 interface ShareFiles {

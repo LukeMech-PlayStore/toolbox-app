@@ -74,7 +74,7 @@ object FolderShareFeature : AppFeature {
         FolderShareSettings()
     }
 
-    /** A tunnel's part while its tunnel is turned on (see ServerTunnels.prune). */
+    /** A tunnel's part while its tunnel is turned on (see [ServerTunnels.prune]). */
     override fun usesExtraExtension(context: Context, name: String) = when (name) {
         Tunnel.PART -> ShareSettings.load(context).cloudflare
         Bore.PART -> ShareSettings.load(context).bore

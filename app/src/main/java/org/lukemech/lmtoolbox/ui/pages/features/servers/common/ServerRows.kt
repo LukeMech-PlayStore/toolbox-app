@@ -305,8 +305,8 @@ internal fun EditDialog(
 }
 
 /**
- * A bore tunnel's: the bore server ([server]: bore.pub, or one's own; empty: bore.pub), [onServer] getting it as
- * typed (bore.pub typed: empty), and its secret ([bore]'s).
+ * A bore tunnel's: the bore server ([server]: `bore.pub`, or one's own; empty: `bore.pub`), [onServer] getting it as
+ * typed (`bore.pub` typed: empty), and its secret ([bore]'s).
  */
 @Composable
 internal fun BoreServerSettings(bore: Bore, server: String, onServer: (String) -> Unit) {

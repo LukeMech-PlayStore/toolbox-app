@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.milliseconds
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.servers.folder_share.FolderShare
 import org.lukemech.lmtoolbox.features.servers.folder_share.FolderShareFeature
@@ -249,7 +250,7 @@ private fun Stats(run: FolderShare.Run) {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(run.seen) {
         now = System.currentTimeMillis()
-        kotlinx.coroutines.delay(FolderShare.CONNECTED_MS)
+        kotlinx.coroutines.delay(FolderShare.CONNECTED_MS.milliseconds)
         now = System.currentTimeMillis()
     }
     ResourceTiles(

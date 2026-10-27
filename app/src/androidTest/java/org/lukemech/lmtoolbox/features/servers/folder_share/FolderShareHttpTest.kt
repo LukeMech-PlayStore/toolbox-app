@@ -38,7 +38,7 @@ class FolderShareHttpTest {
     }
 
     @Test
-    fun refusesWhatIsntARequest() {
+    fun refusesWhatIsNotARequest() {
         assertThrows(BadRequest::class.java) { request("GET /\r\n\r\n") }
         assertThrows(BadRequest::class.java) { request("GET / HTTP/1.1\r\nNoColon\r\n\r\n") }
         assertThrows(BadRequest::class.java) { request("GET / HTTP/1.1\r\nHost: x\r\n") }
@@ -47,6 +47,7 @@ class FolderShareHttpTest {
     }
 
     @Test
+    @Suppress("MisorderedAssertEqualsArguments") // expected first: it takes the calls for what's tested
     fun pathsStayInTheFolder() {
         assertEquals(emptyList<String>(), Http.segments("/"))
         assertEquals(listOf("Movies", "a b.mp4"), Http.segments("/Movies/a%20b.mp4"))
@@ -76,6 +77,7 @@ class FolderShareHttpTest {
     }
 
     @Test
+    @Suppress("MisorderedAssertEqualsArguments") // expected first: it takes the calls for what's tested
     fun ranges() {
         assertEquals(Http.Range.Whole, Http.range(null, 1000))
         assertEquals(Http.Range.Part(0, 499), Http.range("bytes=0-499", 1000))

@@ -22,7 +22,7 @@ data class Request(val method: String, val target: String, val version: String, 
 
     fun header(name: String): String? = headers[name.lowercase()]
 
-    /** Whether the client keeps its connection for the next request: HTTP/1.1's unless it says close, 1.0's if it asks to. */
+    /** Whether the client keeps its connection for the next request: HTTP/1.1's unless it says close, 1.0's if it asks for keep-alive. */
     val keepAlive: Boolean
         get() {
             val connection = header("connection").orEmpty()
@@ -69,7 +69,7 @@ object Http {
         return Request(parts[0], parts[1], parts[2], headers)
     }
 
-    /** A line up to CRLF (or LF), as ISO-8859-1 (HTTP's own); null at the end of the stream before any of it. */
+    /** A line, ending at CRLF (or LF), as ISO-8859-1 (HTTP's own); null at the end of the stream before any of it. */
     private fun readLine(input: InputStream): String? {
         val line = StringBuilder()
         while (true) {
@@ -88,7 +88,7 @@ object Http {
 
     /**
      * The names [path] goes down through from the folder shared, decoded ("/" is the folder itself: none); null
-     * if it isn't one of its paths: not absolute, an empty name ("//"), "." or "..", a name with a slash, a
+     * if it isn't one of its paths: not absolute, an empty name ("//"), a name of one dot or two, a name with a slash, a
      * backslash or a NUL in it once decoded, or an escape that's broken (or not UTF-8). A path ending in "/"
      * is a folder's; that's left to the caller (see [isFolderPath]).
      */
@@ -199,7 +199,7 @@ object Http {
     fun contentRange(part: Range.Part, size: Long) = "bytes ${part.start}-${part.end}/$size"
 
     /**
-     * The type of a file named [name], by its extension (any case), for browsers to show or play it; a text's
+     * The media type of a file named [name], by its extension (any case), for browsers to show or play it; a text's
      * says it's UTF-8. One not known: [fallback], else application/octet-stream (downloaded).
      */
     fun mime(name: String, fallback: String? = null): String {

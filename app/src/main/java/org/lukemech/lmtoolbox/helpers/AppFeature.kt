@@ -116,7 +116,7 @@ interface AppFeature {
 
     /**
      * Whether it uses [name], one of its [extraExtensions], now (e.g. a server's tunnel turned on): kept while
-     * any tool does (see ServerTunnels.prune).
+     * any tool does (see [ServerTunnels.prune]).
      */
     fun usesExtraExtension(context: Context, name: String): Boolean = false
 

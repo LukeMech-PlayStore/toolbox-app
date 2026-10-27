@@ -87,7 +87,7 @@ class QrCode private constructor(val version: Int, val mask: Int, private val mo
                 val block = data.copyOfRange(k, k + dataLength)
                 k += dataLength
                 val ecc = reedSolomonRemainder(block, divisor)
-                // A short block gets a place holder, where the long ones have their last data codeword
+                // A short block gets a placeholder, where the long ones have their last data codeword
                 (if (i < shortBlocks) block + 0 else block) + ecc
             }
             val result = ByteArray(raw)

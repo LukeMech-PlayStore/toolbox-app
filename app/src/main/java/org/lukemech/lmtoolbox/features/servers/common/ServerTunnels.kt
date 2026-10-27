@@ -147,7 +147,7 @@ class ServerTunnels(private val source: AppFeature, private val log: (String) ->
     }
 
     /**
-     * Installs a tunnel's [part] (Tunnel.PART, Bore.PART), one turned on: asked first (InstallPrompt), then its
+     * Installs a tunnel's [part] ([Tunnel.PART], [Bore.PART]), one turned on: asked first (InstallPrompt), then its
      * table on the page tells how it goes; once accepted, it goes on whatever the caller does.
      */
     suspend fun install(context: Context, part: String): InstallResult {
