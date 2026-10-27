@@ -16,7 +16,10 @@
     <string name="ec_bit_pattern">Bits</string>
     <string name="ec_unsigned_value">As unsigned</string>
     <string name="ec_signed_value">As signed</string>
-    <string name="ec_does_not_fit">Doesn\'t fit in %1$d bits</string>
+    <plurals name="ec_does_not_fit">
+        <item quantity="one">Doesn\'t fit in %1$d bit</item>
+        <item quantity="other">Doesn\'t fit in %1$d bits</item>
+    </plurals>
     <string name="ec_precision">Precision</string>
     <string name="ec_hex_bits">Bits in hex</string>
     <string name="ec_float_class">Kind</string>

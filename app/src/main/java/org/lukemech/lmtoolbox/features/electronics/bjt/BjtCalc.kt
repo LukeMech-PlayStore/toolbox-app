@@ -4,7 +4,7 @@ package org.lukemech.lmtoolbox.features.electronics.bjt
 internal data class Switch(
     /** Collector current: the load's. */
     val ic: Double,
-    /** Base current, [overdrive] times what the gain alone needs. */
+    /** Base current, the overdrive factor times what the gain alone needs. */
     val ib: Double,
     /** Base resistor. */
     val rb: Double,
@@ -41,7 +41,7 @@ internal const val VCE_SAT = 0.2
 /**
  * Voltage-divider bias: the divider's Thévenin equivalent (UTh = Vcc·R2 / (R1 + R2), RTh = R1 ∥ R2) drives the
  * base, IB = (UTh − VBE) / (RTh + (β + 1)·RE). Saturated (VCE under [VCE_SAT]), the collector current is what
- * RC and RE let through instead; with UTh under VBE, nothing flows.
+ * RC and RE let through instead; with UTh below VBE, nothing flows.
  */
 internal fun dividerBias(vcc: Double, r1: Double, r2: Double, rc: Double, re: Double, beta: Double, vbe: Double): QPoint {
     val vth = vcc * r2 / (r1 + r2)

@@ -159,7 +159,7 @@ line lives in the tool's `<Name>Calc.kt`, with tests.
 #### The references
 
 Each reference is a `ReferenceFeature` (`features/reference/<route>/<Name>Fun.kt`) holding only data, its
-`sheets`, which one page shows (`ReferencePage`, picked by chips when there are several): a `TableSheet`,
+`sheets`, which a single page shows (`ReferencePage`, picked by chips when there are several): a `TableSheet`,
 searched as it's typed, its headings staying put and scrolling sideways with its rows, a cell held down
 copied; a `PinoutSheet`, the connector drawn on a canvas from its `Pin`s (placed by `inRow`, `inRows`,
 `dualRow`, `staggered` or by hand, colored by `PinKind` or by their wires), a pin tapped there or in the list

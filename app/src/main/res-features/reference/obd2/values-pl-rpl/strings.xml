@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="fp_obd2">OBD-II</string>
     <string name="fd_obd2">Gniazdo diagnostyczne auta</string>
     <string name="fk_obd2">obd2, obd-ii, obd, eobd, j1962, samochód, diagnostyka, magistrala can, k-line, iso 9141, iso 15765, j1850, elm327, skaner, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
@@ -8,9 +8,9 @@
     <string name="rf_obd_j1850n">Magistrala SAE J1850 − (tylko PWM)</string>
     <string name="rf_obd_chassis">Masa nadwozia</string>
     <string name="rf_obd_signal_gnd">Masa sygnałowa</string>
-    <string name="rf_obd_can">Magistrala CAN (ISO 15765-4)</string>
-    <string name="rf_obd_k">Linia K (ISO 9141-2, ISO 14230-4)</string>
-    <string name="rf_obd_l">Linia L (ISO 9141-2, ISO 14230-4)</string>
+    <string name="rf_obd_can" tools:ignore="TypographyDashes">Magistrala CAN (ISO 15765-4)</string>
+    <string name="rf_obd_k" tools:ignore="TypographyDashes">Linia K (ISO 9141-2, ISO 14230-4)</string>
+    <string name="rf_obd_l" tools:ignore="TypographyDashes">Linia L (ISO 9141-2, ISO 14230-4)</string>
     <string name="rf_obd_battery">Akumulator +12 V, zawsze pod napięciem</string>
     <string name="rf_obd_note">Auto używa jednej lub dwóch magistral, nie wszystkich; większość nowszych aut używa CAN.</string>
 </resources>

@@ -32,8 +32,8 @@ private enum class Signal { In, Out }
 /** A range as picked ([preset]) and typed ([lo], [hi]): a preset's numbers, or Custom once they're changed. */
 private class RangeState(preset: RangePreset) {
     var preset by mutableStateOf(preset)
-    var lo by mutableStateOf(plain(preset.range!!.lo))
-    var hi by mutableStateOf(plain(preset.range!!.hi))
+    var lo: String by mutableStateOf(plain(preset.range!!.lo))
+    var hi: String by mutableStateOf(plain(preset.range!!.hi))
     /** The last preset's: a custom range is most often one changed a little (3.8–20.5 mA). */
     var unit by mutableStateOf(preset.range!!.unit)
 
@@ -80,7 +80,7 @@ fun RangeConverterPage() {
         Results {
             if (span != null) ResultRow(stringResource(R.string.ec_span), formatPercent(span))
         }
-        Note(stringResource(R.string.ec_out_of_range), visible = span != null && (span < 0 || span > 100))
+        Note(stringResource(R.string.ec_out_of_range), visible = span != null && span !in 0.0..100.0)
     }
 }
 

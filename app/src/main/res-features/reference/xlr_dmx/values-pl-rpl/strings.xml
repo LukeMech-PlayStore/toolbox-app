@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="fp_xlr_dmx">XLR i DMX</string>
     <string name="fd_xlr_dmx">Symetryczne audio i oświetlenie sceniczne</string>
     <string name="fk_xlr_dmx">xlr, xlr3, xlr5, dmx, dmx512, mikrofon, symetryczny, gorący, zimny, oświetlenie sceniczne, aes14, e1.11, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
     <string name="rf_xlr_ground">Ekran i masa</string>
     <string name="rf_xlr_hot">Gorący: sygnał w fazie</string>
     <string name="rf_xlr_cold">Zimny: sygnał odwrócony</string>
-    <string name="rf_xlr_note">AES14 / IEC 61076-2-103; numery są oznaczone na złączu</string>
+    <string name="rf_xlr_note" tools:ignore="TypographyDashes">AES14 / IEC 61076-2-103; numery są oznaczone na złączu</string>
     <string name="rf_dmx_common">Wspólny: ekran i masa sygnałowa</string>
     <string name="rf_dmx_data1">Łącze danych (RS-485)</string>
     <string name="rf_dmx_data2">Drugie, opcjonalne łącze; większość urządzeń go nie ma</string>

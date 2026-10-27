@@ -16,7 +16,12 @@
     <string name="ec_bit_pattern">Bity</string>
     <string name="ec_unsigned_value">Bez znaku</string>
     <string name="ec_signed_value">Ze znakiem</string>
-    <string name="ec_does_not_fit">Nie mieści się w %1$d bitach</string>
+    <plurals name="ec_does_not_fit">
+        <item quantity="one">Nie mieści się w %1$d bicie</item>
+        <item quantity="few">Nie mieści się w %1$d bitach</item>
+        <item quantity="many">Nie mieści się w %1$d bitach</item>
+        <item quantity="other">Nie mieści się w %1$d bitach</item>
+    </plurals>
     <string name="ec_precision">Precyzja</string>
     <string name="ec_hex_bits">Bity szesnastkowo</string>
     <string name="ec_float_class">Rodzaj</string>

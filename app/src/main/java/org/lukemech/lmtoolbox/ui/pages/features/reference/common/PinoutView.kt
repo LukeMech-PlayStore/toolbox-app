@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -107,7 +105,6 @@ fun PinoutView(sheet: PinoutSheet, query: String) {
 }
 
 /** What the colors stand for: the kinds of pins there are (but where wires color them). */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Legend(pins: List<Pin>) {
     val kinds = pins.filter { it.wire == null }.map { it.kind }.distinct().sortedBy { it.ordinal }
@@ -247,7 +244,7 @@ private fun PinRow(pin: Pin, selected: Boolean, onClick: () -> Unit) {
     )
 }
 
-/** A pin as the app's rows are ([FeatureButton]'s card, margins and type), its badge where their icon is. */
+/** A pin as the app's rows are ([org.lukemech.lmtoolbox.ui.components.FeatureButton]'s card, margins and type), its badge where their icon is. */
 @Composable
 private fun PinCard(pin: Pin, title: String, subtitle: String?, colors: RowColors, onClick: (() -> Unit)? = null) {
     val background by animateColorAsState(colors.background, label = "pinBackground")

@@ -47,7 +47,7 @@ class NumberBaseCalcTest {
         val fields = floatFields(f, FloatFormat.Float32)
         assertEquals(123, fields.exponent)
         assertEquals(FloatClass.Normal, fields.kind)
-        assertEquals(0.100000001490116119384765625, floatValue(f, FloatFormat.Float32), 0.0)
+        assertEquals(0.1f.toDouble(), floatValue(f, FloatFormat.Float32), 0.0)
         // 1.0 in float64: 0x3FF0000000000000; −0, ∞, a subnormal, NaN
         assertEquals(BigInteger("3FF0000000000000", 16), floatPattern(1.0, FloatFormat.Float64))
         assertEquals(1, floatFields(floatPattern(-0.0, FloatFormat.Float64), FloatFormat.Float64).sign)

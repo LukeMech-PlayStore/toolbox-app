@@ -1,5 +1,6 @@
 package org.lukemech.lmtoolbox.features.reference.capacitor_code
 
+import kotlin.math.roundToLong
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -31,7 +32,7 @@ class CapacitorCodeCalcTest {
 
     @Test
     fun tolerances() {
-        assertEquals(CapacitorCode(22e-9, "±5 %"), parseCapacitorCode("223J")!!.let { it.copy(farads = Math.round(it.farads * 1e12) * 1e-12) })
+        assertEquals(CapacitorCode(22e-9, "±5 %"), parseCapacitorCode("223J")!!.let { it.copy(farads = (it.farads * 1e12).roundToLong() * 1e-12) })
         assertEquals("±10 %", parseCapacitorCode("104K")!!.tolerance)
         assertEquals("+80 / −20 %", parseCapacitorCode("4N7Z")!!.tolerance)
         assertNull(parseCapacitorCode("104Q"))

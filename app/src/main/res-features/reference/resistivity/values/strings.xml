@@ -2,9 +2,9 @@
 <resources>
     <string name="fp_resistivity">Resistivity of materials</string>
     <string name="fd_resistivity">Metals and alloys at 20 °C</string>
-    <string name="fk_resistivity">resistivity, specific resistance, conductivity, temperature coefficient, copper, aluminium, silver, nichrome, constantan, manganin, wire, materials, reference, table</string>
+    <string name="fk_resistivity">resistivity, specific resistance, conductivity, temperature coefficient, copper, aluminum, silver, nichrome, constantan, manganin, wire, materials, reference, table</string>
     <string name="rf_material">Material</string>
-    <string name="rf_resistivity_note">At 20 °C, as handbooks give them. Alloys vary with their make-up; α is the change per kelvin near 20 °C.</string>
+    <string name="rf_resistivity_note">At 20 °C, as handbooks give them. Alloys vary with their composition; α is the change per kelvin near 20 °C.</string>
     <string name="rf_mat_silver">Silver</string>
     <string name="rf_mat_copper">Copper</string>
     <string name="rf_mat_copper_annealed">Copper, annealed</string>

@@ -27,7 +27,7 @@ internal fun parsePattern(text: String, base: Base, width: Int): BigInteger? {
     // Signed down to −2^(width−1), unsigned up to 2^width − 1: both of what the bits can be read as
     val min = bits(width - 1).negate()
     val max = bits(width) - BigInteger.ONE
-    if (value < min || value > max) return null
+    if (value !in min..max) return null
     return if (value.signum() < 0) value + bits(width) else value
 }
 
@@ -73,11 +73,10 @@ internal fun floatFields(pattern: BigInteger, format: FloatFormat): FloatFields 
     val exponent = pattern.shiftRight(format.fractionBits).toInt() and ((1 shl format.exponentBits) - 1)
     val sign = if (pattern.testBit(format.width - 1)) 1 else 0
     val maxExponent = (1 shl format.exponentBits) - 1
-    val kind = when {
-        exponent == 0 && fraction.signum() == 0 -> FloatClass.Zero
-        exponent == 0 -> FloatClass.Subnormal
-        exponent == maxExponent && fraction.signum() == 0 -> FloatClass.Infinity
-        exponent == maxExponent -> FloatClass.NaN
+    val zero = fraction.signum() == 0
+    val kind = when (exponent) {
+        0 -> if (zero) FloatClass.Zero else FloatClass.Subnormal
+        maxExponent -> if (zero) FloatClass.Infinity else FloatClass.NaN
         else -> FloatClass.Normal
     }
     return FloatFields(sign, exponent, fraction, kind)

@@ -42,7 +42,7 @@ private fun around(series: ESeries.Series, value: Double): List<Double> {
  */
 internal fun bestPairs(target: Double, kind: RatioKind, series: ESeries.Series, count: Int = 5): List<RatioPair> {
     val r2ToR1 = convertRatio(target, kind, RatioKind.R2ToR1)?.takeIf { it > 0 && it.isFinite() } ?: return emptyList()
-    return series.values.map { it * 1000 }
+    return series.values.asSequence().map { it * 1000 }
         .flatMap { r1 -> around(series, r1 * r2ToR1).map { r2 -> r1 to r2 } }
         .map { (r1, r2) ->
             val ratio = ratioOf(r1, r2, kind)
@@ -51,4 +51,5 @@ internal fun bestPairs(target: Double, kind: RatioKind, series: ESeries.Series, 
         // Equally near (to rounding), the smaller R1 first
         .sortedWith(compareBy({ (abs(it.error) * 1e9).roundToLong() }, { it.r1 }))
         .take(count)
+        .toList()
 }

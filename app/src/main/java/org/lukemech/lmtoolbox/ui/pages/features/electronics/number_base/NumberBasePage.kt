@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import java.math.BigDecimal
@@ -101,7 +102,7 @@ private fun IntegerSection() {
             ResultRow(stringResource(R.string.ec_signed_value), formatPattern(pattern, Base.Dec, width, signed = true))
         }
     }
-    Note(stringResource(R.string.ec_does_not_fit, width), visible = pattern == null && text.isNotEmpty() && text != "-")
+    Note(pluralStringResource(R.plurals.ec_does_not_fit, width, width), visible = pattern == null && text.isNotEmpty() && text != "-")
 }
 
 /** A floating-point number and its IEEE 754 bits, either typed. */

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="fp_range_converter">Przelicznik zakresów</string>
     <string name="fd_range_converter">4–20 mA, 0–10 V i procenty, w obie strony</string>
-    <string name="fk_range_converter">zakres, skalowanie, 4-20 ma, 4–20 ma, 0-10 v, 0–10 v, 0-5 v, pętla prądowa, sygnał analogowy, przetwornik, czujnik, procent, zakres pomiarowy, liniowe, przeliczanie, jednostki, plc, automatyka, aparatura, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="fk_range_converter" tools:ignore="TypographyDashes">zakres, skalowanie, 4-20 ma, 4–20 ma, 0-10 v, 0–10 v, 0-5 v, pętla prądowa, sygnał analogowy, przetwornik, czujnik, procent, zakres pomiarowy, liniowe, przeliczanie, jednostki, plc, automatyka, aparatura, kalkulator, oblicz, obliczenia, policz, elektronika</string>
     <string name="ec_input_range">Zakres wejścia</string>
     <string name="ec_output_range">Zakres wyjścia</string>
     <string name="ec_input_start">Początek zakresu wejścia</string>

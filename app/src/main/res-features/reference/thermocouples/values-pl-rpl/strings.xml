@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="fp_thermocouples">Typy termopar</string>
     <string name="fd_thermocouples">K, J, T i reszta: kolory, zakresy</string>
     <string name="fk_thermocouples">termopara, termoelement, typ k, typ j, typ t, typ n, typ e, typ r, typ s, typ b, iec 60584, kod kolorów, temperatura, czujnik, ściągawka, tabela</string>
@@ -8,5 +8,5 @@
     <string name="rf_tc_minus">Przewód −</string>
     <string name="rf_tc_color">Kolor</string>
     <string name="rf_tc_range">Zakres (°C)</string>
-    <string name="rf_tc_note">Kolory według IEC 60584-3: przewód + i powłoka w kolorze typu, przewód − biały. Zakresy to tabele IEC 60584-1: zakres pracy czujnika jest węższy.</string>
+    <string name="rf_tc_note" tools:ignore="TypographyDashes">Kolory według IEC 60584-3: przewód + i powłoka w kolorze typu, przewód − biały. Zakresy to tabele IEC 60584-1: zakres pracy czujnika jest węższy.</string>
 </resources>

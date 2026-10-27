@@ -24,5 +24,5 @@
     <string name="rf_ip_water_7">Immersion up to 1 m, for 30 minutes</string>
     <string name="rf_ip_water_8">Continuous immersion beyond 1 m, as the maker states</string>
     <string name="rf_ip_water_9">High-pressure, high-temperature water jets</string>
-    <string name="rf_ip_note">IEC 60529. A higher water digit doesn\'t include the lower ones: 7 and 8 are tested under water, not with jets.</string>
+    <string name="rf_ip_note">IEC 60529. A higher water digit doesn\'t include the lower ones: 7 and 8 are tested by immersion, not with jets.</string>
 </resources>

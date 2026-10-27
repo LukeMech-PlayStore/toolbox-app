@@ -49,7 +49,7 @@ fun PageHeading(
      */
     onRefresh: (() -> Unit)? = null,
     refreshing: Boolean = false,
-    /** False: [content] fills the rest of the page and scrolls itself (a lazy list's, only what's seen built). */
+    /** False: [content] takes up the rest of the page and scrolls itself (a lazy list's, only what's seen built). */
     scrolls: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {

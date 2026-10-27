@@ -71,7 +71,7 @@ fun formatNumber(value: Double, sigFigs: Int = 5): String {
     if (!value.isFinite()) return "—"
     if (value == 0.0) return "0"
     val rounded = BigDecimal(value).round(MathContext(sigFigs))
-    if (abs(value) >= 1e-3 && abs(value) < 1e6) return rounded.stripTrailingZeros().toPlainString()
+    if (abs(value) in 1e-3..<1e6) return rounded.stripTrailingZeros().toPlainString()
     val exponent = rounded.precision() - rounded.scale() - 1
     val mantissa = rounded.movePointLeft(exponent).stripTrailingZeros().toPlainString()
     val power = exponent.toString().map { if (it == '-') '⁻' else SUPERSCRIPTS[it - '0'] }.joinToString("")
