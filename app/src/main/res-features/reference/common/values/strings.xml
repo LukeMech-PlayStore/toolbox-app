@@ -38,4 +38,13 @@
     <string name="rf_color_tan">Tan</string>
     <string name="rf_color_natural">Clear</string>
     <string name="rf_color_aqua">Blue-green</string>
+    <string name="rf_spec_chip">Chip</string>
+    <string name="rf_spec_clock">Clock</string>
+    <string name="rf_spec_flash">Flash</string>
+    <string name="rf_spec_ram">RAM</string>
+    <string name="rf_spec_logic">Logic</string>
+    <string name="rf_spec_supply">Supply</string>
+    <string name="rf_spec_wireless">Wireless</string>
+    <string name="rf_drawn_turned">Drawn turned sideways, to fit: its top is on the left</string>
+    <string name="rf_legend">Colors</string>
 </resources>

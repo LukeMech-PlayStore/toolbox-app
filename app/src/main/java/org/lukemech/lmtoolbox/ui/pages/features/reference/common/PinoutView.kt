@@ -1,5 +1,12 @@
 package org.lukemech.lmtoolbox.ui.pages.features.reference.common
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.text.font.FontStyle
+import org.lukemech.lmtoolbox.ui.components.InfoTile
+import org.lukemech.lmtoolbox.ui.components.InfoTiles
+import org.lukemech.lmtoolbox.ui.components.resultCard
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -69,14 +76,14 @@ import org.lukemech.lmtoolbox.ui.components.ROW_SPACING
 import org.lukemech.lmtoolbox.ui.components.RowColors
 
 /** How far apart pins are drawn: as much as the page has, between these. */
-private val MIN_PITCH = 30.dp
-private val MAX_PITCH = 48.dp
+private val MIN_PITCH = 18.dp
+private val MAX_PITCH = 40.dp
 
 /**
- * A connector drawn from its pins (colored by what they do, or by their wires), what the colors mean, the
- * pins listed under it, scrolling as a page does. A pin tapped, there or in the list, is marked in both and told
- * about between them. Lazy: only the pins in sight built (a Mega's some 90), the ones [query] leaves out going
- * as it's typed.
+ * A connector drawn from its pins (colored by what they do, or by their wires), a board's specs over it, and under
+ * it one card telling about it: what the colors mean, the pin tapped, its notes. The pins are listed under that,
+ * all of it scrolling as a page does. A pin tapped, in the drawing or the list, is marked in both and told about in
+ * the card. Lazy: only the pins in sight built (a Mega's some 90), the ones [query] leaves out going as it's typed.
  */
 @Composable
 fun PinoutView(sheet: PinoutSheet, query: String) {
@@ -90,8 +97,11 @@ fun PinoutView(sheet: PinoutSheet, query: String) {
         return q.isEmpty() || pin.number.contains(q, true) || pin.name.contains(q, true) || descriptions[i]?.contains(q, true) == true
     }
     val shown = remember(sheet, q, descriptions) { sheet.pins.indices.filter(::matches) }
-    val pin = selected?.let { sheet.pins.getOrNull(it) }
+    val drawn = remember(sheet) { fitted(sheet.pins) }
     val scroll = rememberLazyListState()
+    fun pick(i: Int) {
+        selected = i.takeIf { it != selected }
+    }
 
     LazyColumn(
         state = scroll,
@@ -99,26 +109,86 @@ fun PinoutView(sheet: PinoutSheet, query: String) {
         contentPadding = PaddingValues(bottom = 16.dp),
         modifier = Modifier.fillMaxSize().edgeFade(scroll)
     ) {
-        // Over the connector, seen as it opens
         item(key = "top") {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 4.dp)) {
-                sheet.note?.let { Note(it.resolve(resources)) }
-                Note(stringResource(R.string.rf_drawn_in_order), visible = sheet.inOrder)
-                Legend(sheet.pins)
-                PinoutDrawing(sheet, selected, q, ::matches) { tapped -> selected = tapped.takeIf { it != selected } }
-            }
-        }
-        item(key = "details") {
-            Reveal(pin != null) {
-                // The last one tapped stays in it as it folds away
-                val last = pin ?: return@Reveal
-                PinDetails(last) { selected = null }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 8.dp)) {
+                if (sheet.specs.isNotEmpty()) {
+                    InfoTiles(
+                        sheet.specs.map { InfoTile(stringResource(it.kind.label), it.value.resolve(resources), it.kind.icon) },
+                        Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+                PinoutDrawing(sheet, drawn.pins, selected, q, ::matches, ::pick)
+                PinoutCard(sheet, drawn.turned, selected?.let { sheet.pins.getOrNull(it) }) { selected = null }
             }
         }
         items(shown, key = { it }) { i ->
-            PinRow(sheet.pins[i], i == selected, Modifier.animateItem()) { selected = i.takeIf { it != selected } }
+            PinRow(sheet.pins[i], i == selected, Modifier.animateItem()) { pick(i) }
         }
         if (shown.isEmpty()) item(key = "none") { EmptyText(stringResource(R.string.search_no_results)) }
+    }
+}
+
+/** A connector's pins as drawn, and whether they're [turned] for it. */
+private class Drawn(val pins: List<Pin>, val turned: Boolean)
+
+/** Rows a connector has before it's drawn turned (when it's much taller than wide). */
+private const val TURN_FROM_ROWS = 8
+
+/**
+ * [pins] laid out to fit a page: a board much taller than wide (a Nano's two long rows) turned on its side, its
+ * top on the left, so it's as wide as the page and short, not pages tall.
+ */
+private fun fitted(pins: List<Pin>): Drawn {
+    val columns = pins.maxOf { it.x } + 1f
+    val rows = pins.maxOf { it.y } + 1f
+    if (rows <= TURN_FROM_ROWS || rows < columns * 1.5f) return Drawn(pins, false)
+    val right = pins.maxOf { it.x }
+    return Drawn(pins.map { it.copy(x = it.y, y = right - it.x) }, true)
+}
+
+/**
+ * The one card about a connector, under its drawing: what its colors mean, the pin tapped ([pin]: tapped again, it
+ * goes, [onClose]) and its notes, the drawing's own ([turned], [PinoutSheet.inOrder]) last.
+ */
+@Composable
+private fun PinoutCard(sheet: PinoutSheet, turned: Boolean, pin: Pin?, onClose: () -> Unit) {
+    val resources = LocalResources.current
+    Column(Modifier.fillMaxWidth().resultCard().animateContentSize().padding(vertical = 8.dp)) {
+        Legend(sheet.pins)
+        // The last one tapped stays in it as it folds away
+        val last = remember { arrayOfNulls<Pin>(1) }
+        if (pin != null) last[0] = pin
+        Reveal(pin != null) {
+            val shown = last[0] ?: return@Reveal
+            Column {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(vertical = 8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth().clickable(onClick = onClose).padding(horizontal = 16.dp, vertical = 4.dp)
+                ) {
+                    PinBadge(shown, 40.dp)
+                    Column(Modifier.weight(1f)) {
+                        Text("${stringResource(R.string.rf_pin)} ${shown.number} · ${shown.name}", style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            listOfNotNull(stringResource(shown.kind.label), shown.description?.resolve(resources)).joinToString(" · "),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontStyle = FontStyle.Italic,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+        val notes = listOfNotNull(
+            sheet.note?.resolve(resources),
+            stringResource(R.string.rf_drawn_in_order).takeIf { sheet.inOrder },
+            stringResource(R.string.rf_drawn_turned).takeIf { turned },
+        )
+        if (notes.isNotEmpty()) {
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(vertical = 8.dp))
+            notes.forEach { Note(it) }
+        }
     }
 }
 
@@ -130,7 +200,7 @@ private fun Legend(pins: List<Pin>) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.padding(horizontal = 16.dp)
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
         kinds.forEach { kind ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -141,10 +211,13 @@ private fun Legend(pins: List<Pin>) {
     }
 }
 
-/** The connector: its outline, its pins at their places, numbered; tapping one picks it ([onTap]). */
+/**
+ * The connector: its outline, its pins at their places ([places]: [sheet]'s, maybe turned), numbered; tapping
+ * one picks it ([onTap]). As wide as the page, its pins as far apart as that leaves; wider (a Mega's), it scrolls.
+ */
 @Composable
-private fun PinoutDrawing(sheet: PinoutSheet, selected: Int?, query: String, matches: (Int) -> Boolean, onTap: (Int) -> Unit) {
-    val pins = sheet.pins
+private fun PinoutDrawing(sheet: PinoutSheet, places: List<Pin>, selected: Int?, query: String, matches: (Int) -> Boolean, onTap: (Int) -> Unit) {
+    val pins = places
     val columns = (pins.maxOf { it.x } + 1f)
     val rows = (pins.maxOf { it.y } + 1f)
     val measurer = rememberTextMeasurer()
@@ -236,19 +309,6 @@ private fun DrawScope.drawPin(pin: Pin, center: Offset, radius: Float) {
         clipPath(half) { drawCircle(wire[1], radius, center) }
     }
     drawCircle(Color.Black.copy(alpha = 0.25f), radius, center, style = Stroke(1.dp.toPx()))
-}
-
-/** The pin tapped: its number and name, what it is, what it does; tapped again, it folds away ([onClose]). */
-@Composable
-private fun PinDetails(pin: Pin, onClose: () -> Unit) {
-    val resources = LocalResources.current
-    FeatureButton(
-        title = "${stringResource(R.string.rf_pin)} ${pin.number} · ${pin.name}",
-        subtitle = listOfNotNull(stringResource(pin.kind.label), pin.description?.resolve(resources)).joinToString(" · "),
-        leading = { PinBadge(pin, 40.dp) },
-        colors = RowColors.highlighted,
-        onClick = onClose
-    )
 }
 
 /** A pin in the list, as the app's rows are: its badge where their icon is, its name and what it does; marked while it's the one picked. */

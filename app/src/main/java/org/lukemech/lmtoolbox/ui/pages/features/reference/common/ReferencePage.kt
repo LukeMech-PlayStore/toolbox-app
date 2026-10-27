@@ -19,7 +19,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -60,17 +65,24 @@ fun ReferencePage(
         layouts[it.sheet] = it
     }
 
+    // The sheets' list, open: it folds away as the page under it is used (a pin tapped, the search)
+    var picking by rememberSaveable { mutableStateOf(false) }
+
     PageHeading(
         title = title,
         action = action,
         header = {
-            if (sheets.size > 1) SheetPicker(sheets, sheets.indexOf(sheet), icon) { index = it }
+            if (sheets.size > 1) {
+                SheetPicker(sheets, sheets.indexOf(sheet), icon, picking, { picking = it }) { index = it }
+            }
             Reveal(sheet !is ToolSheet) {
+                // As far from what's over and under it as the home page's search
                 Column {
-                    Spacer(Modifier.height(8.dp))
+                    if (sheets.size > 1) Spacer(Modifier.height(12.dp))
                     SearchField(
-                        query, { query = it },
-                        stringResource(if (sheet is PinoutSheet) R.string.rf_search_pins else R.string.rf_search_table)
+                        query, { query = it; picking = false },
+                        stringResource(if (sheet is PinoutSheet) R.string.rf_search_pins else R.string.rf_search_table),
+                        modifier = Modifier.onFocusChanged { if (it.isFocused) picking = false }
                     )
                 }
             }
@@ -78,13 +90,13 @@ fun ReferencePage(
             Reveal(table != null) {
                 (table ?: layouts.values.lastOrNull())?.let {
                     Column {
-                        TableNotes(it, Modifier.padding(top = 4.dp))
+                        TableNotes(it, Modifier.padding(top = 8.dp))
                         TableHeadings(it, Modifier.padding(top = 4.dp))
                     }
                 }
             }
             // Under a search or a pinout's, but none under a table's headings: its rows start right there
-            val gap by animateDpAsState(if (table != null) 0.dp else 8.dp, label = "headerGap")
+            val gap by animateDpAsState(if (table != null) 0.dp else 16.dp, label = "headerGap")
             Spacer(Modifier.height(gap))
         },
         // Each sheet scrolls itself: a table's a lazy list, only its rows in sight built
@@ -94,7 +106,15 @@ fun ReferencePage(
             targetState = sheet,
             transitionSpec = { fadeEnter togetherWith fadeExit },
             label = "sheet",
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                // Any touch on the sheet folds the list away; the touch goes on to what's under it
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        picking = false
+                    }
+                }
         ) { shown ->
             when (shown) {
                 is TableSheet -> layouts[shown]?.let { TableRows(it, query) }

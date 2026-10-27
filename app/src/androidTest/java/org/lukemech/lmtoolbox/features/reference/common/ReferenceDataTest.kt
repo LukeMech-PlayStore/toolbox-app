@@ -97,8 +97,8 @@ class ReferenceDataTest {
         assertEquals("D13", pin(arduino, 4, "16").name)
         val esp = org.lukemech.lmtoolbox.features.reference.esp_boards.EspBoardsFeature
         assertEquals("GPIO1", pin(esp, 0, "TX").name)
-        assertEquals("GPIO16", pin(esp, 5, "D0").name)
-        assertEquals("GPIO4", pin(esp, 6, "D2").name)
+        assertEquals("GPIO16", pin(esp, 6, "D0").name)
+        assertEquals("GPIO4", pin(esp, 7, "D2").name)
     }
 
     @Test

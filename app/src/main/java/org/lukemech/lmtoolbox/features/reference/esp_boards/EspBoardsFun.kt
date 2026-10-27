@@ -15,6 +15,8 @@ import org.lukemech.lmtoolbox.features.reference.common.PinKind.Signal
 import org.lukemech.lmtoolbox.features.reference.common.PinKind.Unused
 import org.lukemech.lmtoolbox.features.reference.common.PinoutSheet
 import org.lukemech.lmtoolbox.features.reference.common.ReferenceFeature
+import org.lukemech.lmtoolbox.features.reference.common.spec
+import org.lukemech.lmtoolbox.features.reference.common.SpecKind
 import org.lukemech.lmtoolbox.features.reference.common.Txt
 import org.lukemech.lmtoolbox.features.reference.common.raw
 import org.lukemech.lmtoolbox.features.reference.common.res
@@ -260,17 +262,109 @@ object EspBoardsFeature : ReferenceFeature() {
         )
     }
 
+    /** Waveshare's ESP32-C3-Zero, 18 pins, seen from above, USB-C at the top, 5V's side on the left. */
+    private val C3_ZERO: List<Pin> by lazy {
+        fun adc(n: Int) = io(n, Analog, raw("ADC1_CH$n"), *(if (n == 2) arrayOf(STRAP) else emptyArray()), label = n.toString())
+        sides(
+            listOf(v5(), gnd(), v33()) + (0..4).map(::adc) + io(5, Signal, raw("ADC2_CH0"), label = "5"),
+            listOf(
+                io(21, Data, raw("UART0 TX"), label = "21"),
+                io(20, Data, raw("UART0 RX"), label = "20"),
+                io(19, Data, raw("USB D+"), label = "19"),
+                io(18, Data, raw("USB D−"), label = "18"),
+                io(10, Signal, res(R.string.rf_esp_rgb_10), label = "10"),
+                io(9, Control, BOOT, label = "9"),
+                io(8, Signal, STRAP, label = "8"),
+                io(7, Signal, label = "7"),
+                io(6, Signal, label = "6"),
+            )
+        )
+    }
+
+    /** The ESP-01 (ESP8266, 8 pins) as most of its diagrams draw it: two rows of four, from the chip's side. */
+    private val ESP01: List<Pin> by lazy {
+        listOf(
+            gnd(),
+            io(2, Signal, raw("UART1 TX"), res(R.string.rf_esp8266_high), label = "IO2"),
+            io(0, Control, res(R.string.rf_esp8266_flash), label = "IO0"),
+            io(3, Data, raw("UART0 RX"), label = "RX"),
+            io(1, Data, raw("UART0 TX"), label = "TX"),
+            en("EN"),
+            Pin("RST", "RST", Control, res(R.string.rf_esp_rst)),
+            Pin("VCC", "VCC", Power, res(R.string.rf_esp_vcc_33)),
+        ).mapIndexed { i, pin -> pin.copy(x = (i % 4).toFloat(), y = (i / 4).toFloat()) }
+    }
+
+    /** The ESP-12F module (ESP8266) seen from above, its antenna at the top: down both sides, the flash's along the bottom. */
+    private val ESP12F: List<Pin> by lazy {
+        val left = listOf(
+            Pin("RST", "RST", Control, res(R.string.rf_esp_rst)),
+            Pin("ADC", "ADC (TOUT)", Analog, res(R.string.rf_esp8266_adc)),
+            en(),
+            io(16, Signal, res(R.string.rf_esp8266_wake), label = "16"),
+            io(14, Data, raw("SPI SCK"), label = "14"),
+            io(12, Data, raw("SPI MISO"), label = "12"),
+            io(13, Data, raw("SPI MOSI"), label = "13"),
+            Pin("VCC", "VCC", Power, res(R.string.rf_esp_vcc_33)),
+        )
+        val right = listOf(
+            io(1, Data, raw("UART0 TX"), label = "TX"),
+            io(3, Data, raw("UART0 RX"), label = "RX"),
+            io(5, Data, raw("I²C SCL"), label = "5"),
+            io(4, Data, raw("I²C SDA"), label = "4"),
+            io(0, Control, res(R.string.rf_esp8266_flash), label = "0"),
+            io(2, Signal, raw("UART1 TX"), res(R.string.rf_esp8266_high), LED, label = "2"),
+            io(15, Data, raw("SPI CS"), res(R.string.rf_esp8266_low), label = "15"),
+            gnd(),
+        )
+        val bottom = listOf("CS0", "MISO", "9", "10", "MOSI", "SCLK").map { Pin(it, it, Unused, FLASH) }
+        sides(left, right, apart = 7f) + bottom.mapIndexed { i, pin -> pin.copy(x = i + 0.5f, y = 8f) }
+    }
+
+    // What every ESP32's (WROOM) board has
+    private fun esp32Specs(flash: String = "4 MB", ram: String = "520 KB") = listOf(
+        spec(SpecKind.Chip, "ESP32"), spec(SpecKind.Clock, "2 × 240 MHz"), spec(SpecKind.Flash, flash),
+        spec(SpecKind.Ram, ram), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, "5 V (USB)"),
+        spec(SpecKind.Wireless, "Wi-Fi, BT 4.2"),
+    )
+
+    private val C3_SPECS = listOf(
+        spec(SpecKind.Chip, "ESP32-C3 (RISC-V)"), spec(SpecKind.Clock, "160 MHz"), spec(SpecKind.Flash, "4 MB"),
+        spec(SpecKind.Ram, "400 KB"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, "5 V (USB-C)"),
+        spec(SpecKind.Wireless, "Wi-Fi, BLE 5"),
+    )
+
+    private fun esp8266Specs(flash: String, supply: String) = listOf(
+        spec(SpecKind.Chip, "ESP8266"), spec(SpecKind.Clock, "80 / 160 MHz"), spec(SpecKind.Flash, flash),
+        spec(SpecKind.Ram, "80 KB"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, supply),
+        spec(SpecKind.Wireless, "Wi-Fi"),
+    )
+
     override val sheets by lazy {
         val esp32 = raw("ESP32")
+        val c3 = raw("ESP32-C3")
         val esp8266 = raw("ESP8266")
         listOf(
-            PinoutSheet(raw("ESP32-DevKitC"), DEVKITC, note = res(R.string.rf_esp_devkitc_note), group = esp32),
-            PinoutSheet(raw("ESP32 DevKit V1 (DOIT)"), DEVKIT_V1, note = res(R.string.rf_esp_devkit_v1_note), group = esp32),
-            PinoutSheet(raw("ESP32-CAM"), CAM, note = res(R.string.rf_esp_cam_note), group = esp32),
-            PinoutSheet(raw("ESP32-S3-DevKitC-1"), S3_DEVKITC, note = res(R.string.rf_esp_s3_note), group = raw("ESP32-S3")),
-            PinoutSheet(raw("ESP32-C3 SuperMini"), C3_SUPERMINI, note = res(R.string.rf_esp_c3_note), group = raw("ESP32-C3")),
-            PinoutSheet(raw("NodeMCU"), NODEMCU, note = res(R.string.rf_esp_nodemcu_note), group = esp8266),
-            PinoutSheet(raw("D1 mini"), D1_MINI, note = res(R.string.rf_esp_d1_note), group = esp8266),
+            PinoutSheet(raw("ESP32-DevKitC"), DEVKITC, note = res(R.string.rf_esp_devkitc_note), group = esp32, specs = esp32Specs()),
+            PinoutSheet(raw("ESP32 DevKit V1 (DOIT)"), DEVKIT_V1, note = res(R.string.rf_esp_devkit_v1_note), group = esp32, specs = esp32Specs()),
+            PinoutSheet(
+                raw("ESP32-CAM"), CAM, note = res(R.string.rf_esp_cam_note), group = esp32,
+                specs = esp32Specs(ram = "520 KB + 4 MB")
+            ),
+            PinoutSheet(
+                raw("ESP32-S3-DevKitC-1"), S3_DEVKITC, note = res(R.string.rf_esp_s3_note), group = raw("ESP32-S3"),
+                specs = listOf(
+                    spec(SpecKind.Chip, "ESP32-S3"), spec(SpecKind.Clock, "2 × 240 MHz"), spec(SpecKind.Flash, "8 / 16 MB"),
+                    spec(SpecKind.Ram, "512 KB (+ 2–8 MB)"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, "5 V (USB)"),
+                    spec(SpecKind.Wireless, "Wi-Fi, BLE 5"),
+                )
+            ),
+            PinoutSheet(raw("ESP32-C3 SuperMini"), C3_SUPERMINI, note = res(R.string.rf_esp_c3_note), group = c3, specs = C3_SPECS),
+            PinoutSheet(raw("ESP32-C3-Zero"), C3_ZERO, note = res(R.string.rf_esp_c3_zero_note), group = c3, specs = C3_SPECS),
+            PinoutSheet(raw("NodeMCU"), NODEMCU, note = res(R.string.rf_esp_nodemcu_note), group = esp8266, specs = esp8266Specs("4 MB", "5 V (USB, VIN)")),
+            PinoutSheet(raw("D1 mini"), D1_MINI, note = res(R.string.rf_esp_d1_note), group = esp8266, specs = esp8266Specs("4 MB", "5 V (USB)")),
+            PinoutSheet(raw("ESP-01"), ESP01, note = res(R.string.rf_esp01_note), group = esp8266, specs = esp8266Specs("1 MB", "3.0–3.6 V")),
+            PinoutSheet(raw("ESP-12F"), ESP12F, note = res(R.string.rf_esp12f_note), group = esp8266, specs = esp8266Specs("4 MB", "3.0–3.6 V")),
         )
     }
 }

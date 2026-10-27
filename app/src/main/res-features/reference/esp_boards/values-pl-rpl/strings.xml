@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_esp_boards">Płytki ESP32 i ESP8266</string>
-    <string name="fd_esp_boards">DevKity, ESP32-CAM, C3 SuperMini, NodeMCU, D1 mini: każdy pin</string>
-    <string name="fk_esp_boards">esp, esp32, esp8266, espressif, devkit, devkitc, devkit v1, doit, wroom, s3, esp32-s3, c3, esp32-c3, supermini, cam, esp32-cam, nodemcu, d1 mini, wemos, lolin, esp-12, wifi, gpio, adc, dac, touch, dotyk, i2c, spi, uart, strapping, boot, pinout, wyprowadzenia, piny, płytka, ściągawka</string>
+    <string name="fd_esp_boards">DevKity, ESP32-CAM, płytki C3, NodeMCU, D1 mini, ESP-01, ESP-12F: każdy pin, układ i pamięć</string>
+    <string name="fk_esp_boards">esp, esp32, esp8266, espressif, devkit, devkitc, devkit v1, doit, wroom, s3, esp32-s3, c3, esp32-c3, supermini, c3 zero, waveshare, cam, esp32-cam, nodemcu, d1 mini, wemos, lolin, esp-01, esp-01s, esp-12, esp-12f, wifi, bluetooth, gpio, adc, dac, touch, dotyk, i2c, spi, uart, strapping, boot, flash, ram, psram, pinout, wyprowadzenia, piny, płytka, ściągawka</string>
     <string name="rf_esp_input_only">tylko wejście, bez podciągania</string>
     <string name="rf_esp_flash">Zajęty przez pamięć flash: nic nie podłączaj</string>
     <string name="rf_esp_strap">pin konfiguracyjny: jego stan przy resecie ustala, jak układ startuje</string>
@@ -33,4 +33,10 @@
     <string name="rf_esp_c3_note">Widok z góry, USB u góry, strona z 5V po lewej. GPIO pracują przy 3,3 V; przycisk BOOT jest na GPIO9. Niektóre klony mają piny w innej kolejności: sprawdź opis na płytce.</string>
     <string name="rf_esp_nodemcu_note">ESP8266 (ESP-12), widok z góry, antena u góry, strona z A0 po lewej. Numery D są nadrukowane na płytce, numerów GPIO używa kod; pracują przy 3,3 V.</string>
     <string name="rf_esp_d1_note">ESP8266, widok z góry, antena u góry, strona z RST po lewej. Numery D jak w NodeMCU; GPIO pracują przy 3,3 V.</string>
+    <string name="rf_esp_rgb_10">dioda RGB (WS2812)</string>
+    <string name="rf_esp_vcc_33">Zasilanie tylko 3,3 V: 5 V go uszkadza</string>
+    <string name="rf_esp8266_adc">Wejście analogowe, 0–1 V (samego układu, bez dzielnika)</string>
+    <string name="rf_esp_c3_zero_note">ESP32-C3-Zero od Waveshare, widok z góry, USB-C u góry, strona z 5V po lewej. GPIO18 i 19 to własne USB układu.</string>
+    <string name="rf_esp01_note">ESP-01 i ESP-01S, jak na większości schematów, od strony układu. EN (CH_PD) i RST muszą być w stanie wysokim, by działał. Sprawdź opis od spodu: producenci się różnią.</string>
+    <string name="rf_esp12f_note">Sam moduł, widok z góry, antena u góry. EN w stanie wysokim, GPIO15 niskim, GPIO0 i 2 wysokim, by wystartował z flash; dolne pola należą do pamięci flash.</string>
 </resources>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_esp_boards">ESP32 and ESP8266 boards</string>
-    <string name="fd_esp_boards">DevKits, ESP32-CAM, C3 SuperMini, NodeMCU, D1 mini: every pin</string>
-    <string name="fk_esp_boards">esp, esp32, esp8266, espressif, devkit, devkitc, devkit v1, doit, wroom, s3, esp32-s3, c3, esp32-c3, supermini, cam, esp32-cam, nodemcu, d1 mini, wemos, lolin, esp-12, wifi, gpio, adc, dac, touch, i2c, spi, uart, strapping, boot, pinout, pins, board, reference</string>
+    <string name="fd_esp_boards">DevKits, ESP32-CAM, C3 boards, NodeMCU, D1 mini, ESP-01, ESP-12F: every pin, chip and memory</string>
+    <string name="fk_esp_boards">esp, esp32, esp8266, espressif, devkit, devkitc, devkit v1, doit, wroom, s3, esp32-s3, c3, esp32-c3, supermini, c3 zero, waveshare, cam, esp32-cam, nodemcu, d1 mini, wemos, lolin, esp-01, esp-01s, esp-12, esp-12f, wifi, bluetooth, gpio, adc, dac, touch, i2c, spi, uart, strapping, boot, flash, ram, psram, pinout, pins, board, reference</string>
     <string name="rf_esp_input_only">input only, no pull-ups</string>
     <string name="rf_esp_flash">Used by the flash: don\'t connect anything</string>
     <string name="rf_esp_strap">strapping pin: its level at reset sets how the chip starts</string>
@@ -33,4 +33,10 @@
     <string name="rf_esp_c3_note">Seen from above, USB at the top, 5V\'s side on the left. The GPIOs work at 3.3 V; the BOOT button is on GPIO9. Some clones have their pins in another order: check the board\'s printing.</string>
     <string name="rf_esp_nodemcu_note">ESP8266 (ESP-12), seen from above, the antenna at the top, A0\'s side on the left. The D numbers are printed on the board, the GPIOs\' are what the code uses; they work at 3.3 V.</string>
     <string name="rf_esp_d1_note">ESP8266, seen from above, the antenna at the top, RST\'s side on the left. The D numbers as on the NodeMCU; the GPIOs work at 3.3 V.</string>
+    <string name="rf_esp_rgb_10">the RGB LED (WS2812)</string>
+    <string name="rf_esp_vcc_33">Supply in, 3.3 V only: 5 V damages it</string>
+    <string name="rf_esp8266_adc">Analog in, 0–1 V (the chip\'s own, no divider)</string>
+    <string name="rf_esp_c3_zero_note">Waveshare\'s ESP32-C3-Zero, seen from above, USB-C at the top, 5V\'s side on the left. GPIO18 and 19 are the chip\'s own USB.</string>
+    <string name="rf_esp01_note">ESP-01 and ESP-01S, as most diagrams show them, from the chip\'s side. EN (CH_PD) and RST have to be high to run. Check the printing on the back: makers differ.</string>
+    <string name="rf_esp12f_note">The bare module, seen from above, its antenna at the top. EN high, GPIO15 low and GPIO0 and 2 high to start from the flash; the bottom pads belong to the flash.</string>
 </resources>

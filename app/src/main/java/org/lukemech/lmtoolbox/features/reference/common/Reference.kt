@@ -3,7 +3,16 @@ package org.lukemech.lmtoolbox.features.reference.common
 import android.content.res.Resources
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ElectricBolt
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.Power
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.ViewModule
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.AppFeature
@@ -85,9 +94,26 @@ class TableSheet(
     override val group: Txt? = null,
 ) : Sheet
 
+/** What a board's [Spec] tells, its tile's label and icon. */
+enum class SpecKind(@param:StringRes val label: Int, val icon: ImageVector) {
+    Chip(R.string.rf_spec_chip, Icons.Default.Memory),
+    Clock(R.string.rf_spec_clock, Icons.Default.Speed),
+    Flash(R.string.rf_spec_flash, Icons.Default.Storage),
+    Ram(R.string.rf_spec_ram, Icons.Default.ViewModule),
+    Logic(R.string.rf_spec_logic, Icons.Default.ElectricBolt),
+    Supply(R.string.rf_spec_supply, Icons.Default.Power),
+    Wireless(R.string.rf_spec_wireless, Icons.Default.Wifi),
+}
+
+/** A board's chip, memory or voltage, a tile over its pinout: [value] as short as it reads ("32 KB", "7–12 V"). */
+class Spec(val kind: SpecKind, val value: Txt)
+
+/** [kind]'s [Spec] of [value], as it's written. */
+fun spec(kind: SpecKind, value: String) = Spec(kind, raw(value))
+
 /**
  * A connector drawn from its [pins], each tapped for what it does, listed under it. [inOrder]: drawn in number
- * order where the face's own layout isn't (round connectors), said so under it.
+ * order where the face's own layout isn't (round connectors), said so under it. [specs]: a board's, as tiles over it.
  */
 class PinoutSheet(
     override val name: Txt,
@@ -96,6 +122,7 @@ class PinoutSheet(
     override val note: Txt? = null,
     val inOrder: Boolean = false,
     override val group: Txt? = null,
+    val specs: List<Spec> = emptyList(),
 ) : Sheet
 
 /** A page of its own (a decoder: a capacitor's code, an IP rating). */

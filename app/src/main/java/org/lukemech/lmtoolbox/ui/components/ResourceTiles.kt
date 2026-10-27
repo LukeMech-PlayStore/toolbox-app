@@ -173,6 +173,14 @@ fun ResourceTiles(
     ResourceTileGrid(specs, modifier)
 }
 
+/**
+ * [tiles] alone, nothing measured (a board's chip, memory and voltages), laid out and drawn as the measured ones:
+ * three to a row, their icons in [color].
+ */
+@Composable
+fun InfoTiles(tiles: List<InfoTile>, modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.primary) =
+    ResourceTileGrid(tiles.map { TileSpec(it.label, it.icon, it.value, null, null, null, color) }, modifier)
+
 /** A tile as [ChartTile] draws it. */
 private data class TileSpec(
     val label: String, val icon: ImageVector, val value: String,
@@ -221,7 +229,11 @@ private fun ChartTile(spec: TileSpec, modifier: Modifier) {
                 )
             }
             Spacer(modifier = Modifier.height(6.dp))
-            Text(value, style = MaterialTheme.typography.titleMedium, fontFamily = FontFamily.Monospace, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            // Alone in its tile (a board's chip), it may wrap; a measured one keeps to its line over its chart
+            Text(
+                value, style = MaterialTheme.typography.titleMedium, fontFamily = FontFamily.Monospace,
+                maxLines = if (samples == null && detail == null) 2 else 1, overflow = TextOverflow.Ellipsis
+            )
             detail?.forEach {
                 Text(
                     it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,

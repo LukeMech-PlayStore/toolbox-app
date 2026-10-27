@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_rpi_gpio">Raspberry Pi GPIO</string>
-    <string name="fd_rpi_gpio">Złącza 40- i 26-pinowe oraz Pico, pin po pinie</string>
-    <string name="fk_rpi_gpio">raspberry pi, rpi, gpio, 40 pin, 26 pin, złącze, i2c, spi, uart, pwm, adc, pi 3, pi 4, pi 5, pi zero, model b, rev 1, rev 2, pico, pico w, pico 2, rp2040, rp2350, pinout, wyprowadzenia, piny, ściągawka</string>
+    <string name="fd_rpi_gpio">Złącza 40- i 26-pinowe, Pico i RP2040-Zero, pin po pinie</string>
+    <string name="fk_rpi_gpio">raspberry pi, rpi, gpio, 40 pin, 26 pin, złącze, i2c, spi, uart, pwm, adc, pi 3, pi 4, pi 5, pi zero, model b, rev 1, rev 2, pico, pico w, pico 2, rp2040, rp2350, rp2040-zero, waveshare, pinout, wyprowadzenia, piny, ściągawka</string>
     <string name="rf_rpi_id_sd">Dane I²C pamięci EEPROM nakładki HAT (ID_SD)</string>
     <string name="rf_rpi_id_sc">Zegar I²C pamięci EEPROM nakładki HAT (ID_SC)</string>
     <string name="rf_rpi_note">Każdy model z 40 pinami (A+, B+, 2, 3, 4, 5, Zero). GPIO pracują przy 3,3 V i nie znoszą 5 V. Pin 1 ma kwadratowe pole lutownicze.</string>
@@ -16,4 +16,7 @@
     <string name="rf_pico_3v3_en">Zwarty do masy wyłącza stabilizator 3,3 V</string>
     <string name="rf_pico_vsys">Wejście zasilania 1,8–5,5 V</string>
     <string name="rf_pico_vbus">5 V z USB</string>
+    <string name="rf_rpi_supply">5 V (USB albo piny 2 i 4)</string>
+    <string name="rf_pico_wireless">W: Wi-Fi, Bluetooth</string>
+    <string name="rf_rp2040_zero_note">Płytka Waveshare, widok z góry, USB-C u góry. Piny GP przy 3,3 V, opisane numerami GPIO; GP16 steruje diodą RGB w środku. Dodatkowe pola od spodu nie są narysowane.</string>
 </resources>

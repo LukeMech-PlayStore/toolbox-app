@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.SettingsInputComponent
 import androidx.compose.runtime.Composable
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.reference.common.Pin
+import org.lukemech.lmtoolbox.features.reference.common.PinKind
 import org.lukemech.lmtoolbox.features.reference.common.PinKind.Analog
 import org.lukemech.lmtoolbox.features.reference.common.PinKind.Control
 import org.lukemech.lmtoolbox.features.reference.common.PinKind.Data
@@ -14,13 +15,17 @@ import org.lukemech.lmtoolbox.features.reference.common.PinKind.Signal
 import org.lukemech.lmtoolbox.features.reference.common.PinKind.Unused
 import org.lukemech.lmtoolbox.features.reference.common.PinoutSheet
 import org.lukemech.lmtoolbox.features.reference.common.ReferenceFeature
+import org.lukemech.lmtoolbox.features.reference.common.Spec
+import org.lukemech.lmtoolbox.features.reference.common.SpecKind
+import org.lukemech.lmtoolbox.features.reference.common.spec
 import org.lukemech.lmtoolbox.features.reference.common.Txt
 import org.lukemech.lmtoolbox.features.reference.common.raw
 import org.lukemech.lmtoolbox.features.reference.common.res
 
 /**
  * Arduino boards' headers, each pin with what else it does: the Uno-sized ones (Uno R3 and R4, Leonardo), the Mega
- * 2560, the Nano-sized ones (Nano, Nano Every, Nano 33) and the Pro Mini.
+ * 2560, the Nano-sized ones (Nano, Nano Every, Nano 33, Nano ESP32), the Pro Mini and Pro Micro; each one's chip,
+ * memory and voltages.
  */
 object ArduinoFeature : ReferenceFeature() {
 
@@ -257,8 +262,12 @@ object ArduinoFeature : ReferenceFeature() {
                 Pin("29", "GND", Ground),
                 Pin("30", "VIN", Power, vin),
             )
-        return (right.mapIndexed { i, pin -> pin.copy(x = 1f, y = 14f - i) } + left.mapIndexed { i, pin -> pin.copy(x = 0f, y = i.toFloat()) })
-            .sortedBy { it.number.toInt() }
+        return aroundNano((right + left).sortedBy { it.number.toInt() })
+    }
+
+    /** A Nano-sized board's [pins] (1 to 30, in order) at their places: 1–15 up the right side, 16–30 down the left. */
+    private fun aroundNano(pins: List<Pin>) = pins.mapIndexed { i, pin ->
+        if (i < 15) pin.copy(x = 1f, y = 14f - i) else pin.copy(x = 0f, y = i - 15f)
     }
 
     private fun nanoAnalog(n: Int) = analog(n, when (n) {
@@ -296,33 +305,150 @@ object ArduinoFeature : ReferenceFeature() {
             inside.mapIndexed { i, pin -> pin.copy(x = 3.8f, y = i + 5.5f) }
     }
 
+    /** The Nano ESP32 (ESP32-S3): the Nano's pins and their numbers, each one's GPIO besides its Arduino name. */
+    private val NANO_ESP32: List<Pin> by lazy {
+        fun d(label: String, name: String, kind: PinKind, vararg also: String) = Pin(label, name, kind, raw(also.joinToString(", ")))
+        listOf(
+            d("1", "TX0", Data, "GPIO43", "UART0 TX"),
+            d("2", "RX0", Data, "GPIO44", "UART0 RX"),
+            Pin("3", "RESET", Control, res(R.string.rf_ard_reset)),
+            Pin("4", "GND", Ground),
+            d("5", "D2", Signal, "GPIO5", "ADC1_CH4"),
+            d("6", "D3", Signal, "GPIO6", "ADC1_CH5"),
+            d("7", "D4", Signal, "GPIO7", "ADC1_CH6"),
+            d("8", "D5", Signal, "GPIO8", "ADC1_CH7"),
+            d("9", "D6", Signal, "GPIO9", "ADC1_CH8"),
+            d("10", "D7", Signal, "GPIO10", "ADC1_CH9"),
+            d("11", "D8", Signal, "GPIO17", "ADC2_CH6", "UART1 TX"),
+            d("12", "D9", Signal, "GPIO18", "ADC2_CH7", "UART1 RX"),
+            d("13", "D10", Data, "GPIO21", "SPI SS"),
+            d("14", "D11", Data, "GPIO38", "SPI MOSI"),
+            d("15", "D12", Data, "GPIO47", "SPI MISO"),
+            Pin("16", "D13", Data, Txt.Join(listOf(raw("GPIO48, SPI SCK"), res(R.string.rf_ard_led)), ", ")),
+            Pin("17", "3V3", Power),
+            d("18", "B0", Signal, "GPIO46", "RGB LED (R)"),
+            d("19", "A0", Analog, "GPIO1", "ADC1_CH0"),
+            d("20", "A1", Analog, "GPIO2", "ADC1_CH1"),
+            d("21", "A2", Analog, "GPIO3", "ADC1_CH2"),
+            d("22", "A3", Analog, "GPIO4", "ADC1_CH3"),
+            d("23", "A4", Analog, "GPIO11", "ADC2_CH0", "I²C SDA"),
+            d("24", "A5", Analog, "GPIO12", "ADC2_CH1", "I²C SCL"),
+            d("25", "A6", Analog, "GPIO13", "ADC2_CH2"),
+            d("26", "A7", Analog, "GPIO14", "ADC2_CH3"),
+            Pin("27", "VBUS", Power, res(R.string.rf_ard_vbus)),
+            Pin("28", "B1", Control, Txt.Join(listOf(raw("GPIO0, RGB LED (G)"), res(R.string.rf_ard_boot)), ", ")),
+            Pin("29", "GND", Ground),
+            Pin("30", "VIN", Power, res(R.string.rf_ard_vin_every)),
+        ).let(::aroundNano)
+    }
+
+    /** The Pro Micro (ATmega32U4) seen from above, USB at the top: TXO's side on the left, RAW's on the right. */
+    private val PRO_MICRO: List<Pin> by lazy {
+        val left = listOf(
+            LEONARDO.pin(1, "TXO"), LEONARDO.pin(0, "RXI"), gnd(), gnd(),
+        ) + (2..9).map { LEONARDO.pin(it) }
+        val right = listOf(
+            Pin("RAW", "RAW", Power, res(R.string.rf_ard_raw)), gnd(),
+            Pin("RST", "RESET", Control, res(R.string.rf_ard_reset)),
+            Pin("VCC", "VCC", Power, res(R.string.rf_ard_vcc)),
+        ) + (3 downTo 0).map { analog(it) } + listOf(
+            Pin("15", "D15", Data, raw("SPI SCK")),
+            Pin("14", "D14", Data, raw("SPI MISO")),
+            Pin("16", "D16", Data, raw("SPI MOSI")),
+            Pin("10", "D10", Signal, and(PWM, raw("A10"))),
+        )
+        left.mapIndexed { i, pin -> pin.copy(x = 0f, y = i.toFloat()) } + right.mapIndexed { i, pin -> pin.copy(x = 5f, y = i.toFloat()) }
+    }
+
+    // Each board's chip, memory and voltages, as tiles over its pins
+    private val SPECS_328 = listOf(
+        spec(SpecKind.Chip, "ATmega328P"), spec(SpecKind.Clock, "16 MHz"), spec(SpecKind.Flash, "32 KB"),
+        spec(SpecKind.Ram, "2 KB"), spec(SpecKind.Logic, "5 V"),
+    )
+
     override val sheets by lazy {
         val unoSized = res(R.string.rf_ard_uno_sized)
         val nanoSized = res(R.string.rf_ard_nano_sized)
+        val pro = raw("Pro")
         listOf(
-            PinoutSheet(raw("Uno R3"), UNO_R3, note = res(R.string.rf_ard_uno_note), group = unoSized),
-            PinoutSheet(raw("Uno R4 (Minima, WiFi)"), UNO_R4_PINS, note = res(R.string.rf_ard_r4_note), group = unoSized),
-            PinoutSheet(raw("Leonardo"), LEONARDO_PINS, note = res(R.string.rf_ard_leonardo_note), group = unoSized),
-            PinoutSheet(raw("Mega 2560"), MEGA_PINS, note = res(R.string.rf_ard_mega_note), group = raw("Mega")),
+            PinoutSheet(
+                raw("Uno R3"), UNO_R3, note = res(R.string.rf_ard_uno_note), group = unoSized,
+                specs = SPECS_328 + spec(SpecKind.Supply, "7–12 V")
+            ),
+            PinoutSheet(
+                raw("Uno R4 (Minima, WiFi)"), UNO_R4_PINS, note = res(R.string.rf_ard_r4_note), group = unoSized,
+                specs = listOf(
+                    spec(SpecKind.Chip, "RA4M1 (Cortex-M4)"), spec(SpecKind.Clock, "48 MHz"), spec(SpecKind.Flash, "256 KB"),
+                    spec(SpecKind.Ram, "32 KB"), spec(SpecKind.Logic, "5 V"), spec(SpecKind.Supply, "6–24 V"),
+                    Spec(SpecKind.Wireless, res(R.string.rf_ard_r4_wireless)),
+                )
+            ),
+            PinoutSheet(
+                raw("Leonardo"), LEONARDO_PINS, note = res(R.string.rf_ard_leonardo_note), group = unoSized,
+                specs = listOf(
+                    spec(SpecKind.Chip, "ATmega32U4"), spec(SpecKind.Clock, "16 MHz"), spec(SpecKind.Flash, "32 KB"),
+                    spec(SpecKind.Ram, "2.5 KB"), spec(SpecKind.Logic, "5 V"), spec(SpecKind.Supply, "7–12 V"),
+                )
+            ),
+            PinoutSheet(
+                raw("Mega 2560"), MEGA_PINS, note = res(R.string.rf_ard_mega_note), group = raw("Mega"),
+                specs = listOf(
+                    spec(SpecKind.Chip, "ATmega2560"), spec(SpecKind.Clock, "16 MHz"), spec(SpecKind.Flash, "256 KB"),
+                    spec(SpecKind.Ram, "8 KB"), spec(SpecKind.Logic, "5 V"), spec(SpecKind.Supply, "7–12 V"),
+                )
+            ),
             PinoutSheet(
                 raw("Nano"),
                 nanoShape(ATMEGA328, ::uno328Analog, res(R.string.rf_ard_vin_nano)),
                 note = res(R.string.rf_ard_nano_note),
-                group = nanoSized
+                group = nanoSized,
+                specs = SPECS_328 + spec(SpecKind.Supply, "7–12 V")
             ),
             PinoutSheet(
                 raw("Nano Every"),
                 nanoShape(NANO_EVERY, ::nanoAnalog, res(R.string.rf_ard_vin_every)),
                 note = res(R.string.rf_ard_every_note),
-                group = nanoSized
+                group = nanoSized,
+                specs = listOf(
+                    spec(SpecKind.Chip, "ATmega4809"), spec(SpecKind.Clock, "20 MHz"), spec(SpecKind.Flash, "48 KB"),
+                    spec(SpecKind.Ram, "6 KB"), spec(SpecKind.Logic, "5 V"), spec(SpecKind.Supply, "7–21 V"),
+                )
             ),
             PinoutSheet(
                 raw("Nano 33 (IoT, BLE)"),
                 nanoShape(NANO_33, ::nanoAnalog, res(R.string.rf_ard_supply), v5 = "+5V (VUSB)" to res(R.string.rf_ard_vusb)),
                 note = res(R.string.rf_ard_nano33_note),
-                group = nanoSized
+                group = nanoSized,
+                specs = listOf(
+                    spec(SpecKind.Chip, "SAMD21 / nRF52840"), spec(SpecKind.Clock, "48 / 64 MHz"), spec(SpecKind.Flash, "256 KB / 1 MB"),
+                    spec(SpecKind.Ram, "32 / 256 KB"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Wireless, "Wi-Fi, BLE / BLE"),
+                )
             ),
-            PinoutSheet(raw("Pro Mini"), PRO_MINI, note = res(R.string.rf_ard_pro_mini_note), group = raw("Pro")),
+            PinoutSheet(
+                raw("Nano ESP32"),
+                NANO_ESP32,
+                note = res(R.string.rf_ard_nano_esp32_note),
+                group = nanoSized,
+                specs = listOf(
+                    spec(SpecKind.Chip, "ESP32-S3"), spec(SpecKind.Clock, "240 MHz"), spec(SpecKind.Flash, "16 MB"),
+                    spec(SpecKind.Ram, "512 KB + 8 MB"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, "6–21 V"),
+                    spec(SpecKind.Wireless, "Wi-Fi, BLE"),
+                )
+            ),
+            PinoutSheet(
+                raw("Pro Mini"), PRO_MINI, note = res(R.string.rf_ard_pro_mini_note), group = pro,
+                specs = listOf(
+                    spec(SpecKind.Chip, "ATmega328P"), spec(SpecKind.Clock, "16 / 8 MHz"), spec(SpecKind.Flash, "32 KB"),
+                    spec(SpecKind.Ram, "2 KB"), spec(SpecKind.Logic, "5 / 3.3 V"), spec(SpecKind.Supply, "RAW ≤ 12 V"),
+                )
+            ),
+            PinoutSheet(
+                raw("Pro Micro"), PRO_MICRO, note = res(R.string.rf_ard_pro_micro_note), group = pro,
+                specs = listOf(
+                    spec(SpecKind.Chip, "ATmega32U4"), spec(SpecKind.Clock, "16 / 8 MHz"), spec(SpecKind.Flash, "32 KB"),
+                    spec(SpecKind.Ram, "2.5 KB"), spec(SpecKind.Logic, "5 / 3.3 V"), spec(SpecKind.Supply, "RAW ≤ 12 V"),
+                )
+            ),
         )
     }
 }

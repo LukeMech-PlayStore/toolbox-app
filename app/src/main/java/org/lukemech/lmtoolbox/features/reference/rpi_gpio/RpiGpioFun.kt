@@ -13,9 +13,12 @@ import org.lukemech.lmtoolbox.features.reference.common.PinKind.Power
 import org.lukemech.lmtoolbox.features.reference.common.PinKind.Signal
 import org.lukemech.lmtoolbox.features.reference.common.PinoutSheet
 import org.lukemech.lmtoolbox.features.reference.common.ReferenceFeature
+import org.lukemech.lmtoolbox.features.reference.common.Spec
+import org.lukemech.lmtoolbox.features.reference.common.SpecKind
 import org.lukemech.lmtoolbox.features.reference.common.dualRow
 import org.lukemech.lmtoolbox.features.reference.common.raw
 import org.lukemech.lmtoolbox.features.reference.common.res
+import org.lukemech.lmtoolbox.features.reference.common.spec
 
 /**
  * The Raspberry Pi's GPIO headers, with each pin's other functions: the 40-pin one (the B+ and every model since),
@@ -88,7 +91,10 @@ object RpiGpioFeature : ReferenceFeature() {
     }
 
     /** A Pico's GPn: what else it can be (a UART's, I²C's, SPI's, the ADC's), as its pinout prints them. */
-    private fun gp(number: Int, n: Int): Pin {
+    private fun gp(number: Int, n: Int) = gp(number.toString(), n)
+
+    /** GP[n], [label]ed by its number on the board (the Pico's 1–40) or its GPIO's (a Zero's). */
+    private fun gp(label: String, n: Int): Pin {
         val uart = when (n) {
             0, 12, 16 -> "UART0 TX"
             1, 13, 17 -> "UART0 RX"
@@ -98,9 +104,9 @@ object RpiGpioFeature : ReferenceFeature() {
         }
         val i2c = if (n <= 21 || n in 26..27) "I²C${(n / 2) % 2} ${if (n % 2 == 0) "SDA" else "SCL"}" else null
         val spi = if (n <= 19) "SPI${if (n < 8 || n >= 16) 0 else 1} ${listOf("RX", "CSn", "SCK", "TX")[n % 4]}" else null
-        val adc = if (n in 26..28) "ADC${n - 26}" else null
+        val adc = if (n in 26..29) "ADC${n - 26}" else null
         val functions = listOfNotNull(adc, uart, i2c, spi)
-        return Pin(number.toString(), "GP$n", if (adc != null) Analog else Signal, functions.takeIf { it.isNotEmpty() }?.let { raw(it.joinToString(", ")) })
+        return Pin(label, "GP$n", if (adc != null) Analog else Signal, functions.takeIf { it.isNotEmpty() }?.let { raw(it.joinToString(", ")) })
     }
 
     /** The Pico seen from above, USB at the top: pins 1–20 down the left side, 21–40 up the right. */
@@ -126,13 +132,40 @@ object RpiGpioFeature : ReferenceFeature() {
         left.mapIndexed { i, pin -> pin.copy(x = 0f, y = i.toFloat()) } + right.mapIndexed { i, pin -> pin.copy(x = 3f, y = 19f - i) }
     }
 
+    /** Waveshare's RP2040-Zero seen from above, USB at the top: down its left side, along its bottom, down its right. */
+    private val RP2040_ZERO: List<Pin> by lazy {
+        val left = listOf(Pin("5V", "5V", Power, res(R.string.rf_pico_vbus)), Pin("GND", "GND", Ground), Pin("3V3", "3V3", Power, res(R.string.rf_pico_3v3))) +
+            listOf(29, 28, 27, 26, 15, 14).map { gp(it.toString(), it) }
+        val bottom = listOf(13, 12, 11, 10, 9).map { gp(it.toString(), it) }
+        val right = (0..8).map { gp(it.toString(), it) }
+        left.mapIndexed { i, pin -> pin.copy(x = 0f, y = i.toFloat()) } +
+            bottom.mapIndexed { i, pin -> pin.copy(x = i + 1f, y = 8f) } +
+            right.mapIndexed { i, pin -> pin.copy(x = 6f, y = i.toFloat()) }
+    }
+
     override val sheets by lazy {
         val pi = raw("Raspberry Pi")
+        val rp = raw("RP2040, RP2350")
+        val header = listOf(spec(SpecKind.Logic, "3.3 V"), Spec(SpecKind.Supply, res(R.string.rf_rpi_supply)))
         listOf(
-            PinoutSheet(raw("40-pin (B+, 2–5, Zero)"), FORTY, note = res(R.string.rf_rpi_note), group = pi),
-            PinoutSheet(raw("26-pin (A, B rev. 2)"), FORTY.take(26), note = res(R.string.rf_rpi_26_note), group = pi),
-            PinoutSheet(raw("26-pin (B rev. 1)"), REV1, note = res(R.string.rf_rpi_rev1_note), group = pi),
-            PinoutSheet(raw("Pico, Pico W, Pico 2"), PICO, note = res(R.string.rf_pico_note), group = raw("Pico")),
+            PinoutSheet(raw("40-pin (B+, 2–5, Zero)"), FORTY, note = res(R.string.rf_rpi_note), group = pi, specs = header),
+            PinoutSheet(raw("26-pin (A, B rev. 2)"), FORTY.take(26), note = res(R.string.rf_rpi_26_note), group = pi, specs = header),
+            PinoutSheet(raw("26-pin (B rev. 1)"), REV1, note = res(R.string.rf_rpi_rev1_note), group = pi, specs = header),
+            PinoutSheet(
+                raw("Pico, Pico W, Pico 2"), PICO, note = res(R.string.rf_pico_note), group = rp,
+                specs = listOf(
+                    spec(SpecKind.Chip, "RP2040 / RP2350"), spec(SpecKind.Clock, "133 / 150 MHz"), spec(SpecKind.Flash, "2 / 4 MB"),
+                    spec(SpecKind.Ram, "264 / 520 KB"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, "1.8–5.5 V"),
+                    Spec(SpecKind.Wireless, res(R.string.rf_pico_wireless)),
+                )
+            ),
+            PinoutSheet(
+                raw("RP2040-Zero"), RP2040_ZERO, note = res(R.string.rf_rp2040_zero_note), group = rp,
+                specs = listOf(
+                    spec(SpecKind.Chip, "RP2040"), spec(SpecKind.Clock, "133 MHz"), spec(SpecKind.Flash, "2 MB"),
+                    spec(SpecKind.Ram, "264 KB"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, "5 V (USB-C)"),
+                )
+            ),
         )
     }
 }

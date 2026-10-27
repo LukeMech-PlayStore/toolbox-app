@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_arduino">Arduino boards</string>
-    <string name="fd_arduino">Uno, Leonardo, Mega, Nano, Pro Mini: every header pin, and what else it does</string>
-    <string name="fk_arduino">arduino, uno, uno r3, uno r4, minima, wifi, leonardo, mega, mega 2560, nano, nano every, nano 33, iot, ble, pro mini, atmega328p, atmega32u4, atmega2560, atmega4809, ra4m1, board, header, digital, analog, pwm, i2c, spi, uart, can, dac, interrupt, pinout, pins, connector, reference</string>
+    <string name="fd_arduino">Uno, Leonardo, Mega, Nano, Pro Mini, Pro Micro: every pin, chip and voltage</string>
+    <string name="fk_arduino">arduino, uno, uno r3, uno r4, minima, wifi, leonardo, mega, mega 2560, nano, nano every, nano 33, iot, ble, nano esp32, pro mini, pro micro, atmega328p, atmega32u4, atmega2560, atmega4809, ra4m1, esp32-s3, board, header, digital, analog, pwm, i2c, spi, uart, can, dac, interrupt, flash, ram, pinout, pins, connector, reference</string>
     <string name="rf_ard_int0">external interrupt INT0</string>
     <string name="rf_ard_int1">external interrupt INT1</string>
     <string name="rf_ard_int">external interrupt</string>
@@ -41,4 +41,9 @@
     <string name="rf_ard_every_note">ATmega4809, the Nano\'s pins at 5 V. Every digital pin takes an interrupt; A6 and A7 work as digital pins too. Seen as the Nano.</string>
     <string name="rf_ard_nano33_note">The Nano\'s pins, but at 3.3 V: 5 V on them damages the board. I²C on A4 and A5. Seen as the Nano.</string>
     <string name="rf_ard_pro_mini_note">ATmega328P, at 5 V (16 MHz) or 3.3 V (8 MHz). Seen from above, the programming (FTDI) header at the top. A4–A7 are pads inside the board, placed roughly here: they differ between makers.</string>
+    <string name="rf_ard_vbus">USB\'s 5 V out</string>
+    <string name="rf_ard_boot">held low at reset, it starts the bootloader</string>
+    <string name="rf_ard_r4_wireless">WiFi: Wi-Fi, BLE (ESP32-S3)</string>
+    <string name="rf_ard_nano_esp32_note">ESP32-S3, the Nano\'s pins at 3.3 V: 5 V on them damages the board. Seen as the Nano; each pin\'s GPIO is what ESP-IDF calls it.</string>
+    <string name="rf_ard_pro_micro_note">ATmega32U4 (as the Leonardo), at 5 V (16 MHz) or 3.3 V (8 MHz). Seen from above, USB at the top.</string>
 </resources>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_arduino">Płytki Arduino</string>
-    <string name="fd_arduino">Uno, Leonardo, Mega, Nano, Pro Mini: każdy pin złącz i co jeszcze potrafi</string>
-    <string name="fk_arduino">arduino, uno, uno r3, uno r4, minima, wifi, leonardo, mega, mega 2560, nano, nano every, nano 33, iot, ble, pro mini, atmega328p, atmega32u4, atmega2560, atmega4809, ra4m1, płytka, złącze, cyfrowe, analogowe, pwm, i2c, spi, uart, can, dac, przerwanie, pinout, wyprowadzenia, piny, ściągawka</string>
+    <string name="fd_arduino">Uno, Leonardo, Mega, Nano, Pro Mini, Pro Micro: każdy pin, układ i napięcie</string>
+    <string name="fk_arduino">arduino, uno, uno r3, uno r4, minima, wifi, leonardo, mega, mega 2560, nano, nano every, nano 33, iot, ble, nano esp32, pro mini, pro micro, atmega328p, atmega32u4, atmega2560, atmega4809, ra4m1, esp32-s3, płytka, złącze, cyfrowe, analogowe, pwm, i2c, spi, uart, can, dac, przerwanie, flash, ram, pinout, wyprowadzenia, piny, ściągawka</string>
     <string name="rf_ard_int0">przerwanie zewnętrzne INT0</string>
     <string name="rf_ard_int1">przerwanie zewnętrzne INT1</string>
     <string name="rf_ard_int">przerwanie zewnętrzne</string>
@@ -41,4 +41,9 @@
     <string name="rf_ard_every_note">ATmega4809, piny jak w Nano, przy 5 V. Każdy pin cyfrowy obsługuje przerwanie; A6 i A7 działają też jako cyfrowe. Widok jak Nano.</string>
     <string name="rf_ard_nano33_note">Piny jak w Nano, ale przy 3,3 V: 5 V na nich uszkadza płytkę. I²C na A4 i A5. Widok jak Nano.</string>
     <string name="rf_ard_pro_mini_note">ATmega328P, przy 5 V (16 MHz) lub 3,3 V (8 MHz). Widok z góry, złącze programowania (FTDI) u góry. A4–A7 to pola wewnątrz płytki, tu w przybliżeniu: różnią się u różnych producentów.</string>
+    <string name="rf_ard_vbus">Wyjście 5 V z USB</string>
+    <string name="rf_ard_boot">zwarty do masy przy resecie uruchamia bootloader</string>
+    <string name="rf_ard_r4_wireless">WiFi: Wi-Fi, BLE (ESP32-S3)</string>
+    <string name="rf_ard_nano_esp32_note">ESP32-S3, piny jak w Nano, przy 3,3 V: 5 V na nich uszkadza płytkę. Widok jak Nano; GPIO każdego pinu to jego nazwa w ESP-IDF.</string>
+    <string name="rf_ard_pro_micro_note">ATmega32U4 (jak Leonardo), przy 5 V (16 MHz) lub 3,3 V (8 MHz). Widok z góry, USB u góry.</string>
 </resources>
