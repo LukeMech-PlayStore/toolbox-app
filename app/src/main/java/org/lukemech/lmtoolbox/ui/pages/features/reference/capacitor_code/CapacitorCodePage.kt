@@ -22,6 +22,7 @@ fun CapacitorCodeDecoder() {
     var code by rememberSaveable { mutableStateOf("104K") }
     val result = parseCapacitorCode(code)
 
+    Note(stringResource(R.string.rf_cap_code_hint))
     CodeField(stringResource(R.string.rf_marking), code) { code = it }
     Results {
         if (result != null) {
@@ -33,5 +34,4 @@ fun CapacitorCodeDecoder() {
         }
     }
     Note(stringResource(R.string.ec_invalid_code), visible = result == null && code.isNotBlank())
-    Note(stringResource(R.string.rf_cap_code_hint))
 }

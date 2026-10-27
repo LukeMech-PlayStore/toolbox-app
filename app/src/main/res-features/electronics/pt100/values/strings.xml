@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_pt100">PT100 sensor</string>
-    <string name="fd_pt100">Resistance to temperature</string>
-    <string name="fk_pt100">pt100, pt1000, rtd, platinum, temperature, sensor, resistance, pt100 sensor, thermometer, temperature sensor, calculator, calc, compute, electronics, converter, convert, conversion</string>
+    <string name="fd_pt100">Resistance to temperature, and a table</string>
+    <string name="fk_pt100">pt100, pt500, pt1000, rtd, platinum, resistance thermometer, iec 60751, callendar-van dusen, table, reference, temperature, sensor, resistance, pt100 sensor, thermometer, temperature sensor, calculator, calc, compute, electronics, converter, convert, conversion</string>
     <string name="ec_sensor">Sensor</string>
     <string name="ec_temp">Temperature</string>
+    <string name="rf_pt100_note">IEC 60751, α = 0.00385: the Callendar–Van Dusen equation the calculator uses</string>
 </resources>

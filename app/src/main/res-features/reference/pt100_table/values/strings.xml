@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="fp_pt100_table">PT100 table</string>
-    <string name="fd_pt100_table">Resistance every 10 °C, PT100 to PT1000</string>
-    <string name="fk_pt100_table">pt100, pt500, pt1000, rtd, platinum, resistance thermometer, temperature, resistance, iec 60751, callendar-van dusen, sensor, reference, table</string>
-    <string name="rf_pt100_note">IEC 60751, α = 0.00385: the Callendar–Van Dusen equation the PT100 calculator uses</string>
-</resources>

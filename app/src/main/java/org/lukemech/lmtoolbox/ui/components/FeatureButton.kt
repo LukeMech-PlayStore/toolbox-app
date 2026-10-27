@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -176,16 +177,23 @@ fun FeatureButton(
 
                 if (buttonContent != null || buttonContent2 != null) {
                     Spacer(modifier = Modifier.width(12.dp))
+                    // Measured before the title: at most half the room, so a long value there wraps instead of
+                    // squeezing the title to a letter a line, and the title still takes all the rest
+                    val buttonsWidth = Modifier.layout { measurable, constraints ->
+                        val placeable = measurable.measure(constraints.copy(minWidth = 0, maxWidth = constraints.maxWidth / 2))
+                        layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+                    }
                     if (buttonsInColumn) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(4.dp),
-                            horizontalAlignment = Alignment.End
+                            horizontalAlignment = Alignment.End,
+                            modifier = buttonsWidth
                         ) {
                             buttonContent?.invoke()
                             buttonContent2?.invoke()
                         }
                     } else {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = buttonsWidth) {
                             buttonContent?.invoke()
                             buttonContent2?.invoke()
                         }

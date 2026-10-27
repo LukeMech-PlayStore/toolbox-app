@@ -18,6 +18,8 @@
     <string name="rf_tap_pin">Złącze: dotknij wyprowadzenia, aby zobaczyć, do czego służy</string>
     <string name="rf_pin">Pin</string>
     <string name="rf_decode">Odczytaj</string>
+    <string name="rf_calculate">Oblicz</string>
+    <string name="rf_table">Tabela</string>
     <string name="rf_code">Kod</string>
     <string name="rf_digit">Cyfra</string>
     <string name="rf_color_white">Biały</string>

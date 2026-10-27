@@ -18,14 +18,15 @@ private fun bits(width: Int): BigInteger = BigInteger.ONE.shiftLeft(width)
 
 /**
  * [text] in [base] as a [width]-bit pattern (0 to 2^width − 1): bin, oct and hex as the bits themselves, a
- * decimal as the number they stand for, [signed] in two's complement. Null when it isn't one or doesn't fit.
+ * decimal as the number they stand for, a negative one in two's complement. Null when it isn't one or doesn't fit.
  */
-internal fun parsePattern(text: String, base: Base, width: Int, signed: Boolean): BigInteger? {
+internal fun parsePattern(text: String, base: Base, width: Int): BigInteger? {
     if (text.isEmpty() || text == "-") return null
     val value = runCatching { BigInteger(text, base.radix) }.getOrNull() ?: return null
     if (base != Base.Dec) return value.takeIf { it < bits(width) }
-    val min = if (signed) bits(width - 1).negate() else BigInteger.ZERO
-    val max = (if (signed) bits(width - 1) else bits(width)) - BigInteger.ONE
+    // Signed down to −2^(width−1), unsigned up to 2^width − 1: both of what the bits can be read as
+    val min = bits(width - 1).negate()
+    val max = bits(width) - BigInteger.ONE
     if (value < min || value > max) return null
     return if (value.signum() < 0) value + bits(width) else value
 }

@@ -9,7 +9,7 @@ import org.junit.Test
 class NumberBaseCalcTest {
     @Test
     fun basesOfTheSameBits() {
-        val p = parsePattern("42", Base.Dec, 8, signed = false)!!
+        val p = parsePattern("42", Base.Dec, 8)!!
         assertEquals("101010", formatPattern(p, Base.Bin, 8, false))
         assertEquals("52", formatPattern(p, Base.Oct, 8, false))
         assertEquals("2A", formatPattern(p, Base.Hex, 8, false))
@@ -18,21 +18,22 @@ class NumberBaseCalcTest {
 
     @Test
     fun twosComplement() {
-        val minusOne = parsePattern("-1", Base.Dec, 8, signed = true)!!
+        val minusOne = parsePattern("-1", Base.Dec, 8)!!
         assertEquals("FF", formatPattern(minusOne, Base.Hex, 8, true))
         assertEquals("-1", formatPattern(minusOne, Base.Dec, 8, true))
         assertEquals("255", formatPattern(minusOne, Base.Dec, 8, false))
-        assertEquals("-128", formatPattern(parsePattern("80", Base.Hex, 8, true)!!, Base.Dec, 8, true))
-        assertEquals("-9223372036854775808", formatPattern(parsePattern("8000000000000000", Base.Hex, 64, true)!!, Base.Dec, 64, true))
-        assertEquals("FFFFFFFFFFFFFFFF", formatPattern(parsePattern("18446744073709551615", Base.Dec, 64, false)!!, Base.Hex, 64, false))
+        // A negative decimal and the unsigned one of the same bits are the same pattern
+        assertEquals(parsePattern("255", Base.Dec, 8), minusOne)
+        assertEquals("-128", formatPattern(parsePattern("80", Base.Hex, 8)!!, Base.Dec, 8, true))
+        assertEquals("-9223372036854775808", formatPattern(parsePattern("8000000000000000", Base.Hex, 64)!!, Base.Dec, 64, true))
+        assertEquals("FFFFFFFFFFFFFFFF", formatPattern(parsePattern("18446744073709551615", Base.Dec, 64)!!, Base.Hex, 64, false))
     }
 
     @Test
     fun whatDoesNotFit() {
-        assertNull(parsePattern("128", Base.Dec, 8, signed = true))
-        assertNull(parsePattern("-129", Base.Dec, 8, signed = true))
-        assertNull(parsePattern("-1", Base.Dec, 8, signed = false))
-        assertNull(parsePattern("100", Base.Hex, 8, signed = false))
+        assertNull(parsePattern("256", Base.Dec, 8))
+        assertNull(parsePattern("-129", Base.Dec, 8))
+        assertNull(parsePattern("100", Base.Hex, 8))
         assertEquals("1F", digitsOnly("1fg-", Base.Hex))
         assertEquals("-12", digitsOnly("-1a2", Base.Dec))
     }

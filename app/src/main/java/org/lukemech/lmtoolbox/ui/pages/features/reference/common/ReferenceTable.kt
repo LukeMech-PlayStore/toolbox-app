@@ -3,6 +3,8 @@ package org.lukemech.lmtoolbox.ui.pages.features.reference.common
 import android.content.ClipData
 import android.os.Build
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,12 +13,15 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboard
@@ -53,9 +59,15 @@ import org.lukemech.lmtoolbox.features.reference.common.Txt
 import org.lukemech.lmtoolbox.ui.components.EmptyText
 import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.Reveal
+import org.lukemech.lmtoolbox.ui.components.edgeFade
+import org.lukemech.lmtoolbox.ui.components.fadeEnter
+import org.lukemech.lmtoolbox.ui.components.fadeExit
 
 /** The widest a column gets: a longer cell (a description) wraps. */
 private val MAX_COLUMN = 240.dp
+
+/** How many of a column's longest texts are measured for its width. */
+private const val MEASURED_PER_COLUMN = 8
 
 private val CELL_PADDING_H = 8.dp
 private val CELL_PADDING_V = 6.dp
@@ -84,8 +96,11 @@ fun rememberTableLayout(sheet: TableSheet): TableLayout {
         val texts = sheet.rows.map { row -> row.map { it.resolve(resources) } }
         val natural = sheet.columns.indices.map { col ->
             val swatch = sheet.rows.any { (it.getOrNull(col) as? Txt.Swatch) != null }
+            // Only the longest few measured, not every cell (ASCII's 128 rows): a text's width goes with its length,
+            // and a few of them make up for narrow and wide letters
+            val longest = texts.mapNotNull { it.getOrNull(col) }.distinct().sortedByDescending { it.length }.take(MEASURED_PER_COLUMN)
             val widest = (listOf(measurer.measure(headings[col], headingStyle).size.width) +
-                texts.map { row -> row.getOrNull(col)?.let { measurer.measure(it, cellStyle).size.width } ?: 0 }).max()
+                longest.map { measurer.measure(it, cellStyle).size.width }).max()
             with(density) { widest.toDp() }.coerceAtMost(MAX_COLUMN) + CELL_PADDING_H * 2 + (if (swatch) SWATCH + 6.dp else 0.dp) + 1.dp
         }
         val total = natural.fold(0.dp) { sum, w -> sum + w }
@@ -101,7 +116,7 @@ fun TableHeadings(table: TableLayout, modifier: Modifier = Modifier) {
         modifier = modifier
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-            .horizontalScroll(table.scroll)
+            .horizontalScroll(table.scroll, overscrollEffect = null)
             .background(MaterialTheme.colorScheme.primaryContainer)
     ) {
         table.headings.forEachIndexed { col, heading ->
@@ -116,45 +131,58 @@ fun TableHeadings(table: TableLayout, modifier: Modifier = Modifier) {
 }
 
 /**
- * A table's rows, those with [query] in a cell (any case); rows come and go as it's typed. A cell held down is
- * copied.
+ * A table's rows, those with [query] in a cell (any case), filling the page and scrolling: only the rows in
+ * sight are built (ASCII's 128 aren't, all at once). Rows come and go as it's typed; a cell held down is copied.
  */
 @Composable
 fun TableRows(table: TableLayout, query: String) {
     val copy = rememberCopy()
     val q = query.trim()
-    val matches = table.texts.map { row -> q.isEmpty() || row.any { it.contains(q, ignoreCase = true) } }
+    val shown = remember(table, q) {
+        table.texts.indices.filter { r -> q.isEmpty() || table.texts[r].any { it.contains(q, ignoreCase = true) } }
+    }
     val stripe = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+    val list = rememberLazyListState()
 
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
-            .horizontalScroll(table.scroll)
-    ) {
-        table.sheet.rows.forEachIndexed { r, row ->
-            Reveal(matches[r]) {
-                Row(modifier = Modifier.background(if (r % 2 == 1) stripe else Color.Transparent)) {
-                    row.forEachIndexed { col, cell ->
-                        val text = table.texts[r][col]
-                        Box(
-                            modifier = Modifier
-                                .width(table.widths.getOrElse(col) { MAX_COLUMN })
-                                .pointerInput(text) { detectTapGestures(onLongPress = { copy(text) }) }
-                                .semantics { onLongClick { copy(text); true } }
-                                .padding(horizontal = CELL_PADDING_H, vertical = CELL_PADDING_V)
-                        ) {
-                            Cell(cell, text)
-                        }
+    LazyColumn(state = list, contentPadding = PaddingValues(bottom = 16.dp), modifier = Modifier.fillMaxSize().edgeFade(list)) {
+        items(shown, key = { it }) { r ->
+            // Each row scrolls sideways with the others and the headings (one state); the last one's corners round the table off
+            Row(
+                modifier = Modifier
+                    .animateItem()
+                    .padding(horizontal = 16.dp)
+                    .clip(if (r == shown.last()) RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp) else RectangleShape)
+                    .horizontalScroll(table.scroll, overscrollEffect = null)
+                    .background(if (r % 2 == 1) stripe else Color.Transparent)
+            ) {
+                table.sheet.rows[r].forEachIndexed { col, cell ->
+                    val text = table.texts[r][col]
+                    Box(
+                        modifier = Modifier
+                            .width(table.widths.getOrElse(col) { MAX_COLUMN })
+                            .pointerInput(text) { detectTapGestures(onLongPress = { copy(text) }) }
+                            .semantics { onLongClick { copy(text); true } }
+                            .padding(horizontal = CELL_PADDING_H, vertical = CELL_PADDING_V)
+                    ) {
+                        Cell(cell, text)
                     }
                 }
             }
         }
+        item(key = "empty") { Reveal(shown.isEmpty()) { EmptyText(stringResource(R.string.search_no_results)) } }
     }
-    Reveal(matches.none { it }) { EmptyText(stringResource(R.string.search_no_results)) }
-    Spacer(Modifier.height(4.dp))
-    table.sheet.note?.let { Note(it.resolve(LocalResources.current)) }
-    Note(stringResource(R.string.rf_copy_hint))
+}
+
+/** What's said about a table ([TableSheet.note]) and how to copy its cells: over it, seen as it opens. */
+@Composable
+fun TableNotes(table: TableLayout, modifier: Modifier = Modifier) {
+    val resources = LocalResources.current
+    Column(modifier) {
+        AnimatedContent(targetState = table.sheet.note, transitionSpec = { fadeEnter togetherWith fadeExit }, label = "note") { note ->
+            note?.let { Note(it.resolve(resources)) }
+        }
+        Note(stringResource(R.string.rf_copy_hint))
+    }
 }
 
 /** A cell's [text], after its swatch if it has one. */
@@ -194,7 +222,9 @@ fun rememberCopy(): (String) -> Unit {
     val scope = rememberCoroutineScope()
     val copied = stringResource(R.string.rf_copied)
     return remember(clipboard, context) {
-        { text ->
+        copy@{ text ->
+            // An empty cell (ASCII's names past the controls): nothing to copy
+            if (text.isBlank()) return@copy
             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
             scope.launch { clipboard.setClipEntry(ClipData.newPlainText(text, text).toClipEntry()) }
             if (Build.VERSION.SDK_INT < 33) Toast.makeText(context, copied.format(text), Toast.LENGTH_SHORT).show()

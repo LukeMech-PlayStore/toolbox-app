@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -47,6 +48,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
@@ -61,6 +63,8 @@ import org.lukemech.lmtoolbox.features.reference.common.PinoutSheet
 import org.lukemech.lmtoolbox.ui.components.EmptyText
 import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.Reveal
+import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.ui.components.RowColors
 
 /** How far apart pins are drawn: as much as the page has, between these. */
 private val MIN_PITCH = 30.dp
@@ -81,16 +85,17 @@ fun PinoutView(sheet: PinoutSheet, query: String) {
     val pin = selected?.let { sheet.pins.getOrNull(it) }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Over the connector, seen as it opens
+        sheet.note?.let { Note(it.resolve(resources)) }
+        Note(stringResource(R.string.rf_drawn_in_order), visible = sheet.inOrder)
         Legend(sheet.pins)
         PinoutDrawing(sheet, selected, q, ::matches) { tapped -> selected = tapped.takeIf { it != selected } }
-        Note(stringResource(R.string.rf_drawn_in_order), visible = sheet.inOrder)
-        sheet.note?.let { Note(it.resolve(resources)) }
         Reveal(pin != null) {
             // The last one tapped stays in it as it folds away
             val shown = pin ?: return@Reveal
             PinDetails(shown)
         }
-        Column {
+        Column(verticalArrangement = RowArrangement) {
             sheet.pins.forEachIndexed { i, p ->
                 Reveal(matches(p)) {
                     PinRow(p, i == selected) { selected = i.takeIf { it != selected } }
@@ -222,55 +227,48 @@ private fun DrawScope.drawPin(pin: Pin, center: Offset, radius: Float) {
 @Composable
 private fun PinDetails(pin: Pin) {
     val resources = LocalResources.current
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .padding(12.dp)
-    ) {
-        PinBadge(pin, 40.dp)
-        Column {
-            Text(
-                "${stringResource(R.string.rf_pin)} ${pin.number} · ${pin.name}",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            Text(
-                listOfNotNull(stringResource(pin.kind.label), pin.description?.resolve(resources)).joinToString(" · "),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        }
-    }
+    PinCard(
+        pin,
+        title = "${stringResource(R.string.rf_pin)} ${pin.number} · ${pin.name}",
+        subtitle = listOfNotNull(stringResource(pin.kind.label), pin.description?.resolve(resources)).joinToString(" · "),
+        colors = RowColors.highlighted
+    )
 }
 
 /** A pin in the list: its badge, name and what it does; marked while it's the one picked. */
 @Composable
 private fun PinRow(pin: Pin, selected: Boolean, onClick: () -> Unit) {
-    val resources = LocalResources.current
-    val background by animateColorAsState(
-        if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent, label = "pin"
+    PinCard(
+        pin,
+        title = pin.name,
+        subtitle = pin.description?.resolve(LocalResources.current),
+        colors = if (selected) RowColors.highlighted else RowColors.default,
+        onClick = onClick
     )
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+}
+
+/** A pin as the app's rows are ([FeatureButton]'s card, margins and type), its badge where their icon is. */
+@Composable
+private fun PinCard(pin: Pin, title: String, subtitle: String?, colors: RowColors, onClick: (() -> Unit)? = null) {
+    val background by animateColorAsState(colors.background, label = "pinBackground")
+    val content by animateColorAsState(colors.content, label = "pinContent")
+    Surface(
+        shape = MaterialTheme.shapes.medium,
+        color = background,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(background)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 6.dp)
+            .padding(horizontal = 16.dp)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
     ) {
-        PinBadge(pin, 32.dp)
-        Column(Modifier.weight(1f)) {
-            Text(pin.name, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
-            pin.description?.let {
-                Text(it.resolve(resources), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp)) { PinBadge(pin, 40.dp) }
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.bodyLarge, color = content)
+                subtitle?.let { Text(it, style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic, color = content) }
             }
         }
     }

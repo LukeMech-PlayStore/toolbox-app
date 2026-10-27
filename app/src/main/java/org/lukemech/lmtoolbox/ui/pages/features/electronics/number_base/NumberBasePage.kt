@@ -2,7 +2,6 @@ package org.lukemech.lmtoolbox.ui.pages.features.electronics.number_base
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DataObject
-import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.ViewWeek
 import androidx.compose.runtime.Composable
@@ -35,7 +34,7 @@ import org.lukemech.lmtoolbox.ui.components.OptionSetting
 import org.lukemech.lmtoolbox.ui.components.ResultRow
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.RevealSection
-import org.lukemech.lmtoolbox.ui.components.SwitchButton
+import org.lukemech.lmtoolbox.features.electronics.number_base.NumberBaseFeature
 import org.lukemech.lmtoolbox.ui.pages.features.electronics.common.CalculatorPage
 import org.lukemech.lmtoolbox.ui.pages.features.electronics.common.CodeField
 import org.lukemech.lmtoolbox.ui.pages.features.electronics.common.Formula
@@ -51,7 +50,8 @@ fun NumberBasePage() {
             Formula("""−x = 2^{n} − x""", stringResource(R.string.ec_twos_complement)),
             Formula("""x = (−1)^{s} · 1.f · 2^{e − bias}""", "IEEE 754"),
             Formula("""bias = 127 \text{ (float32)},  1023 \text{ (float64)}"""),
-        )
+        ),
+        table = NumberBaseFeature.table
     ) {
         OptionSetting(
             title = stringResource(R.string.ec_mode),
@@ -69,11 +69,10 @@ fun NumberBasePage() {
 @Composable
 private fun IntegerSection() {
     var width by rememberSaveable { mutableIntStateOf(8) }
-    var signed by rememberSaveable { mutableStateOf(false) }
     var source by rememberSaveable { mutableStateOf(Base.Dec) }
     var text by rememberSaveable { mutableStateOf("42") }
 
-    val pattern = parsePattern(text, source, width, signed)
+    val pattern = parsePattern(text, source, width)
 
     OptionSetting(
         title = stringResource(R.string.ec_word_size),
@@ -82,14 +81,14 @@ private fun IntegerSection() {
         options = listOf(8, 16, 32, 64).map { it to stringResource(R.string.ec_n_bits, it) },
         onSelect = { width = it }
     )
-    SwitchButton(stringResource(R.string.ec_signed), Icons.Default.SwapVert, signed) { signed = it }
+    // The decimal field takes a negative number too (as two's complement); the results read the bits both ways
     listOf(
         Base.Bin to R.string.ec_binary,
         Base.Oct to R.string.ec_octal,
         Base.Dec to R.string.ec_decimal,
         Base.Hex to R.string.ec_hexadecimal,
     ).forEach { (base, label) ->
-        val shown = if (base == source) text else pattern?.let { formatPattern(it, base, width, signed) }.orEmpty()
+        val shown = if (base == source) text else pattern?.let { formatPattern(it, base, width, signed = false) }.orEmpty()
         CodeField(stringResource(label), shown, if (base == Base.Hex) KeyboardType.Ascii else KeyboardType.Number) {
             source = base
             text = digitsOnly(it, base)
@@ -97,7 +96,7 @@ private fun IntegerSection() {
     }
     Results {
         if (pattern != null) {
-            ResultRow(stringResource(R.string.ec_bit_pattern), groupedBits(pattern, width))
+            MainResult(stringResource(R.string.ec_bit_pattern), groupedBits(pattern, width))
             ResultRow(stringResource(R.string.ec_unsigned_value), formatPattern(pattern, Base.Dec, width, signed = false))
             ResultRow(stringResource(R.string.ec_signed_value), formatPattern(pattern, Base.Dec, width, signed = true))
         }

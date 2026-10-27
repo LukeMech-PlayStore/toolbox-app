@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="fp_decibel_table">Decibel table</string>
-    <string name="fd_decibel_table">Power and voltage ratios, dBm</string>
-    <string name="fk_decibel_table">decibel, db, dbm, gain, attenuation, power ratio, voltage ratio, amplitude, level, logarithm, reference, table</string>
-    <string name="rf_power_ratio">Power ratio</string>
-    <string name="rf_voltage_ratio">Voltage ratio</string>
-</resources>
