@@ -7,7 +7,7 @@
     <string name="f_compass_calibration_title">Kompas wymaga kalibracji</string>
     <string name="f_compass_calibration_message">Poruszaj telefonem w kształcie ósemki, aż dokładność wzrośnie.</string>
     <string name="f_compass_info_band">Jaśniejsza część trzonu nad wypełnieniem to dokładność: wysokość leży gdzieś na jej odcinku.</string>
-    <string name="f_compass_info_title">Odczyt</string>
+    <string name="f_compass_info_title">Jak to czytać</string>
     <string name="f_compass_info_heading">Kierunek: kąt od północy magnetycznej, zgodnie z ruchem wskazówek zegara.</string>
     <string name="f_compass_info_altitude">Wysokość: metry nad poziomem morza (m n.p.m.), z GPS.</string>
     <string name="f_compass_info_accuracy">Obecna dokładność GPS: ±%1$d m</string>
@@ -25,4 +25,7 @@
     <string name="w_compass_desc">Kompas obracający się na żywo po włączeniu. Dotknij, aby przełączyć.</string>
     <string name="w_compass_live">Widżet kompasu jest włączony</string>
     <string name="w_compass_live_desc">Otwórz kompas</string>
+    <string name="f_compass_heading">Kierunek</string>
+    <string name="f_compass_altitude">Wysokość</string>
+    <string name="f_compass_accuracy">Dokładność</string>
 </resources>

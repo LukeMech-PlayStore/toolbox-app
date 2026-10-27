@@ -23,6 +23,17 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
+    <!-- The sound level meter: the microphone, read only while its page is open. Asked for on that page -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+    <!-- The metal detector's buzz, as the deviation grows -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- The vibration meter: the accelerometer above 200 Hz (Android 12+ caps apps there without it), so faster
+         vibrations can be told -->
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" tools:ignore="HighSamplingRate" />
+    <!-- The stroboscope: the torch (no camera permission needed for it) -->
+    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
+
     <!-- The Minecraft server's join addresses: opening the Tailscale app (its tailnet's address) -->
     <queries>
         <package android:name="com.tailscale.ipn" />
@@ -99,8 +110,12 @@
         </service>
 
         <!-- Normal app start -->
+        <!-- Turned, resized (split screen, a foldable) or a keyboard plugged in, it stays as it is: Compose lays
+             out again for the new size, so no page loses what it shows (a meter's readings, a form half
+             filled in). A new language or theme still makes it again -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
             android:theme="@style/android:Theme.Material.Light.NoActionBar">
             <intent-filter>

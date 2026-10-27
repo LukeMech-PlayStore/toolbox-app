@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_magnetometer">Magnetic field</string>
+    <string name="fk_magnetometer">magnetic field, magnetometer, metal detector, metal, magnet, tesla, microtesla, µT, gauss, iron, steel, stud finder, emf, tools</string>
+    <string name="fd_magnetometer">Find metal and magnets</string>
+    <string name="f_magnet_unit" translatable="false">µT</string>
+    <string name="f_magnet_missing_sensors_message">No magnetometer was found.</string>
+    <string name="f_magnet_calibration_title">Magnetometer calibration required</string>
+    <string name="f_magnet_calibration_message">Move the phone in a figure eight, away from metal.</string>
+    <string name="f_magnet_detector">Metal detector</string>
+    <string name="f_magnet_detector_desc">How much metal nearby changes the field</string>
+    <string name="f_magnet_deviation">Change</string>
+    <string name="f_magnet_zeroing">Zeroing…</string>
+    <string name="f_magnet_recalibrate">Zero here</string>
+    <string name="f_magnet_recalibrate_desc">Away from metal</string>
+    <string name="f_magnet_feedback">Signal</string>
+    <string name="f_magnet_feedback_off">None</string>
+    <string name="f_magnet_feedback_tone">Tone</string>
+    <string name="f_magnet_feedback_buzz">Vibration</string>
+    <string name="f_magnet_detector_note">Move the phone\'s top slowly over the surface. It finds iron, steel and magnets, not aluminum or copper.</string>
+    <string name="f_magnet_note">The Earth\'s field: 25–65 µT.</string>
+</resources>

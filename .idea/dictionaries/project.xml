@@ -23,6 +23,7 @@
       <w>avif</w>
       <w>bayer</w>
       <w>bcff</w>
+      <w>biquads</w>
       <w>btime</w>
       <w>bundletool</w>
       <w>bundletool's</w>
@@ -35,6 +36,8 @@
       <w>ctxt</w>
       <w>currencyconv</w>
       <w>currencyconverter</w>
+      <w>dBFS</w>
+      <w>dbfs</w>
       <w>defaultgamemode</w>
       <w>devnull</w>
       <w>dexed</w>
@@ -71,6 +74,7 @@
       <w>gfxstream's</w>
       <w>gitleaks</w>
       <w>gplay</w>
+      <w>hann</w>
       <w>heapgrowthlimit</w>
       <w>heatsink</w>
       <w>heic</w>
@@ -157,6 +161,7 @@
       <w>poziomica</w>
       <w>poziomicy</w>
       <w>ppid</w>
+      <w>prewarped</w>
       <w>procs</w>
       <w>proot</w>
       <w>przelicznik</w>
