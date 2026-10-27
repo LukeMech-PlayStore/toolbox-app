@@ -2,6 +2,8 @@
 <resources>
     <string name="fp_display">Display connectors</string>
     <string name="fd_display">HDMI (full, mini, micro), DisplayPort, Mini DisplayPort, DVI and VGA</string>
+    <!-- Keywords as people type them in the search -->
+    <!--suppress GrazieInspection -->
     <string name="fk_display">display, screen, monitor, tv, video, hdmi, mini hdmi, micro hdmi, type a, type c, type d, displayport, dp, mini displayport, mdp, dvi, dvi-i, dvi-d, vga, d-sub, de-15, hd15, tmds, ddc, edid, cec, hot plug, pinout, pins, connector, reference</string>
     <string name="rf_display_tmds">A TMDS pair: one color channel\'s data</string>
     <string name="rf_display_shield">The shield of the pair beside it</string>

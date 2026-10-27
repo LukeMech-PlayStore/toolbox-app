@@ -107,7 +107,7 @@ private fun RangeSettings(range: RangeState, title: String, icon: ImageVector, s
 }
 
 /** Kept as the page is turned: the preset's name, the two ends and the unit. */
-private val rangeSaver = listSaver<RangeState, String>(
+private val rangeSaver = listSaver(
     save = { listOf(it.preset.name, it.lo, it.hi, it.unit) },
     restore = { saved ->
         RangeState(RangePreset.Current4To20).apply {

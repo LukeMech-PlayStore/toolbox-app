@@ -157,8 +157,8 @@
       <w>nopass</w>
       <w>nowości</w>
       <w>nowszymi</w>
-      <w>nsrst</w>
-      <w>ntrst</w>
+      <w>nSRST</w>
+      <w>nTRST</w>
       <w>nxdomain</w>
       <w>okhttp</w>
       <w>omtp</w>
@@ -187,7 +187,7 @@
       <w>pgscan</w>
       <w>pgskip</w>
       <w>pgsteal</w>
-      <w>pickit</w>
+      <w>PICkit</w>
       <w>plac</w>
       <w>podsystem</w>
       <w>popen</w>
@@ -284,6 +284,7 @@
       <w>vcap</w>
       <w>vcodec</w>
       <w>veryfast</w>
+      <w>vhpwr</w>
       <w>videoremuxer</w>
       <w>vmstat</w>
       <w>vout</w>

@@ -17,7 +17,7 @@ import org.lukemech.lmtoolbox.features.reference.common.inRow
 import org.lukemech.lmtoolbox.features.reference.common.raw
 import org.lukemech.lmtoolbox.features.reference.common.res
 
-/** Programming headers: AVR's 6-pin ISP and Microchip PIC's 6-pin ICSP (PICkit's). */
+/** Programming headers: AVR's 6-pin ISP and Microchip PIC's 6-pin ICSP (the PICkit one). */
 object IspIcspFeature : ReferenceFeature() {
 
     override val route = "isp_icsp"
