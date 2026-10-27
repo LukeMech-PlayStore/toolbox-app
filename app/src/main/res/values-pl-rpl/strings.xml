@@ -28,6 +28,7 @@
     <string name="search_settings">Szukaj w ustawieniach</string>
     <string name="search_no_results">Nic nie znaleziono</string>
     <string name="search_clear">Wyczyść wyszukiwanie</string>
+    <string name="search_choices">Szukaj w opcjach</string>
     <!-- A file a tool made (SavedFiles.kt) -->
     <string name="no_app_opens">Żadna aplikacja nie otworzy tego pliku</string>
 

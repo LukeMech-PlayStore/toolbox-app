@@ -48,7 +48,6 @@ import org.lukemech.lmtoolbox.features.media.qr_gen.QrGenFeature
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoEncoderFeature
 import org.lukemech.lmtoolbox.features.reference.arduino.ArduinoFeature
 import org.lukemech.lmtoolbox.features.reference.audio_jack.AudioJackFeature
-import org.lukemech.lmtoolbox.features.reference.batteries.BatteriesFeature
 import org.lukemech.lmtoolbox.features.reference.capacitor_code.CapacitorCodeFeature
 import org.lukemech.lmtoolbox.features.reference.car_audio.CarAudioFeature
 import org.lukemech.lmtoolbox.features.reference.display.DisplayFeature
@@ -152,10 +151,15 @@ object FeatureRegistry {
         LogicGatesFeature,
         ResistivityFeature,
         ThermocouplesFeature,
-        FusesFeature,
-        BatteriesFeature
+        FusesFeature
     )
 
-    /** The tool with [route], if there's one. */
-    fun byRoute(route: String?): AppFeature? = features.firstOrNull { it.route == route }
+    /** Tools gone into others, by their routes: the battery sizes into the battery life's page. */
+    private val MOVED = mapOf("batteries" to "battery_life")
+
+    /** [route] as it is now: a tool's that went into another, that one's (a favourite, a link kept from before). */
+    fun current(route: String): String = MOVED[route] ?: route
+
+    /** The tool with [route] (or the one it went into), if there's one. */
+    fun byRoute(route: String?): AppFeature? = route?.let(::current).let { r -> features.firstOrNull { it.route == r } }
 }

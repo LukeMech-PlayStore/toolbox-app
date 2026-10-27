@@ -41,7 +41,7 @@ fun DecibelPage() {
             Formula("""G = 20 · \text{log}_{10} \frac{U_{2}}{U_{1}}""", stringResource(R.string.ec_voltage)),
             Formula("""\frac{U_{2}}{U_{1}} = 10^{G/20}"""),
         ),
-        table = DecibelFeature.table
+        tables = listOf(DecibelFeature.table)
     ) {
         OptionSetting(
             title = stringResource(R.string.ec_quantity),

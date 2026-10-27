@@ -52,7 +52,7 @@ fun NumberBasePage() {
             Formula("""x = (−1)^{s} · 1.f · 2^{e − bias}""", "IEEE 754"),
             Formula("""bias = 127 \text{ (float32)},  1023 \text{ (float64)}"""),
         ),
-        table = NumberBaseFeature.table
+        tables = listOf(NumberBaseFeature.table)
     ) {
         OptionSetting(
             title = stringResource(R.string.ec_mode),

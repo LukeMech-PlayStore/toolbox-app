@@ -1,15 +1,21 @@
 package org.lukemech.lmtoolbox.ui.pages.features.electronics.battery_life
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Battery5Bar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import java.util.Locale
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.electronics.battery_life.BatteryLifeFeature
 import org.lukemech.lmtoolbox.features.electronics.common.formatValue
 import org.lukemech.lmtoolbox.features.electronics.common.parseValue
+import org.lukemech.lmtoolbox.ui.components.Note
+import org.lukemech.lmtoolbox.ui.components.OptionSetting
 import org.lukemech.lmtoolbox.ui.components.ResultRow
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.SectionTitle
@@ -43,6 +49,10 @@ fun BatteryLifePage() {
             ?: emptyMap()
     }
     val hours = values[Battery.Life]
+    // The battery picked for its usual capacity: none (its own) once the capacity's another
+    var picked by rememberSaveable { mutableIntStateOf(-1) }
+    val typical = BatteryLifeFeature.TYPICAL
+    if (picked >= 0 && values[Battery.Capacity] != typical[picked].mAh.toDouble()) picked = -1
 
     CalculatorPage(
         stringResource(R.string.fp_battery_life),
@@ -64,5 +74,6 @@ fun BatteryLifePage() {
             if (avg != null) ResultRow(stringResource(R.string.ec_avg_current), formatValue(avg, "A"))
             if (hours != null && hours >= 48) ResultRow(stringResource(R.string.ec_life), String.format(Locale.US, "%.1f d", hours / 24))
         }
+        Note(stringResource(R.string.ec_battery_note), visible = picked >= 0)
     }
 }

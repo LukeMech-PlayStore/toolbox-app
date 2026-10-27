@@ -1,12 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="fp_battery_life">Czas baterii</string>
-    <string name="fd_battery_life">Czas pracy na baterii</string>
-    <string name="fk_battery_life">bateria, akumulator, czas pracy, mah, pojemność, prąd, uśpienie, czas pracy baterii, powerbank, autonomia, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="fp_battery_life">Baterie: czas pracy i rozmiary</string>
+    <string name="fd_battery_life">Czas pracy na jednym ładowaniu oraz rozmiary od AAA do 21700 i CR2032</string>
+    <string name="fk_battery_life">bateria, baterie, akumulator, czas pracy, mah, pojemność, prąd, uśpienie, czas pracy baterii, powerbank, autonomia, ogniwo, aa, aaa, c, d, 9v, 18650, 21700, cr2032, cr2025, lr44, bateria pastylkowa, guzikowa, rozmiar, wymiary, nimh, li-ion, alkaliczna, iec 60086, kalkulator, oblicz, obliczenia, policz, ściągawka, tabela, elektronika</string>
     <string name="ec_capacity">Pojemność</string>
     <string name="ec_stage1">Praca</string>
     <string name="ec_stage2">Uśpienie</string>
     <string name="ec_duration">Za każdym razem przez</string>
     <string name="ec_avg_current">Prąd średni</string>
     <string name="ec_life">Wytrzyma</string>
+    <string name="ec_battery">Bateria</string>
+    <string name="ec_battery_own">Własna pojemność</string>
+    <string name="ec_battery_alkaline">Alkaliczne</string>
+    <string name="ec_battery_nimh">NiMH</string>
+    <string name="ec_battery_li_ion">Li-ion</string>
+    <string name="ec_battery_lithium">Litowe (3 V)</string>
+    <string name="ec_battery_note">Pojemność rozmiaru to typowa przy małym obciążeniu: przy dużym jest mniejsza, w alkalicznych najbardziej.</string>
+    <string name="rf_cylindrical">Cylindryczne</string>
+    <string name="rf_coin_cells">Pastylkowe i guzikowe</string>
+    <string name="rf_size_name">Rozmiar</string>
+    <string name="rf_battery_size">Ø × wysokość (mm)</string>
+    <string name="rf_battery_voltage">Napięcie</string>
+    <string name="rf_capacity_typical">Typowa pojemność</string>
+    <string name="rf_cylindrical_note">Nazwy IEC 60086 ogniw alkalicznych (LR) i litowych (CR). Bateria 9V: wysokość × szerokość × głębokość. Ogniwa Li-ion nazywa się od wymiarów: 18650 ma 18 mm średnicy i 65 mm długości.</string>
+    <string name="rf_coin_note">CR: litowe, 3 V; cyfry to wymiary (CR2032 ma 20 mm średnicy i 3,2 mm grubości). Pojemność zależy od producenta i obciążenia.</string>
 </resources>

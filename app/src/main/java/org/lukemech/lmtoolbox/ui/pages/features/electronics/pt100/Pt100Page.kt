@@ -40,7 +40,7 @@ fun Pt100Page() {
             Formula("""B = −5.775 · 10^{−7}"""),
             Formula("""C = −4.183 · 10^{−12} \text{  (t < 0 °C)}"""),
         ),
-        table = Pt100Feature.table
+        tables = listOf(Pt100Feature.table)
     ) {
         OptionSetting(
             title = stringResource(R.string.ec_sensor),

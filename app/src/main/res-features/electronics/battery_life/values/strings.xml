@@ -1,12 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="fp_battery_life">Battery life</string>
-    <string name="fd_battery_life">Runtime on one charge</string>
-    <string name="fk_battery_life">battery, runtime, mAh, capacity, current, life, sleep, accumulator, battery life, power bank, autonomy, calculator, calc, compute, electronics</string>
+    <string name="fp_battery_life">Batteries: life and sizes</string>
+    <string name="fd_battery_life">Runtime on one charge, and the sizes from AAA to 21700 and CR2032</string>
+    <string name="fk_battery_life">battery, batteries, runtime, mAh, capacity, current, life, sleep, accumulator, battery life, power bank, autonomy, cell, aa, aaa, c, d, 9v, 18650, 21700, cr2032, cr2025, lr44, coin cell, button cell, size, dimensions, nimh, li-ion, alkaline, iec 60086, calculator, calc, compute, reference, table, electronics</string>
     <string name="ec_capacity">Capacity</string>
     <string name="ec_stage1">Active</string>
     <string name="ec_stage2">Sleep</string>
     <string name="ec_duration">Each time for</string>
     <string name="ec_avg_current">Average current</string>
     <string name="ec_life">Lasts</string>
+    <string name="ec_battery">Battery</string>
+    <string name="ec_battery_own">Its own capacity</string>
+    <string name="ec_battery_alkaline">Alkaline</string>
+    <string name="ec_battery_nimh">NiMH</string>
+    <string name="ec_battery_li_ion">Li-ion</string>
+    <string name="ec_battery_lithium">Lithium (3 V)</string>
+    <string name="ec_battery_note">A size\'s capacity is its usual one at a light load: a heavy one gets less out of it, an alkaline\'s most of all.</string>
+    <string name="rf_cylindrical">Cylindrical</string>
+    <string name="rf_coin_cells">Coin and button cells</string>
+    <string name="rf_size_name">Size</string>
+    <string name="rf_battery_size">Ø × height (mm)</string>
+    <string name="rf_battery_voltage">Voltage</string>
+    <string name="rf_capacity_typical">Usual capacity</string>
+    <string name="rf_cylindrical_note">IEC 60086\'s names of the alkaline (LR) or lithium (CR) cells. The 9V is height × width × depth. Li-ion cells are named by their size: 18650 is 18 mm across and 65 mm long.</string>
+    <string name="rf_coin_note">CR: lithium, 3 V; its digits are its size (CR2032 is 20 mm across, 3.2 mm thick). Capacities differ by maker and load.</string>
 </resources>

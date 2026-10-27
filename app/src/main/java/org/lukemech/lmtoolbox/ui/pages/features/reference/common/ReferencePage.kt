@@ -98,7 +98,7 @@ fun ReferencePage(
         ) { shown ->
             when (shown) {
                 is TableSheet -> layouts[shown]?.let { TableRows(it, query) }
-                is PinoutSheet -> ScrollingSheet { PinoutView(shown, query) }
+                is PinoutSheet -> PinoutView(shown, query)
                 is ToolSheet -> ScrollingSheet { Column(verticalArrangement = RowArrangement) { shown.content() } }
             }
         }
