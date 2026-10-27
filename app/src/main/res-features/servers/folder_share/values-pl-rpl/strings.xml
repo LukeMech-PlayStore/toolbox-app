@@ -13,22 +13,12 @@
     <string name="f_Fs_port_taken">Port %1$d zajmuje inna aplikacja: wybierz inny</string>
     <string name="f_Fs_open_at">Gdzie go otworzyć</string>
     <string name="f_Fs_open_at_desc">W dowolnej przeglądarce. W tej samej sieci najszybciej kodem QR.</string>
-    <string name="f_Fs_tailscale_none">Włącz aplikację Tailscale: urządzenia z twojego tailnetu otworzą go pod jej adresem</string>
-    <string name="f_Fs_tailscale_desc">Tu otworzą go tylko urządzenia z twojego tailnetu z włączonym Tailscale; nikt inny. Nazwa wymaga MagicDNS, IP działa zawsze.</string>
-    <string name="f_Fs_internet">Z dowolnego miejsca</string>
-    <string name="f_Fs_internet_none">Włącz Bore albo tunel Cloudflare</string>
     <string name="f_Fs_internet_note">Każdy, kto zna adres, może go otworzyć: ustaw hasło.</string>
-    <string name="f_Fs_bore_enable">Udostępniaj wszędzie przez Bore</string>
-    <string name="f_Fs_bore_enable_desc">Bez konta, nic do ustawiania: uruchamia się z udostępnianiem</string>
     <!-- bore.pub is a host name, not a sentence ending in "bore." -->
     <!--suppress GrazieInspection -->
-    <string name="f_Fs_bore_desc">Bore daje udostępnianemu folderowi adres na publicznym serwerze Bore, np. http://bore.pub:41234, przez zwykłe HTTP (bez szyfrowania). Publiczny bore.pub jest darmowy, ale nikt nie obiecuje, że działa; twój własny serwer (bore server) też się nada.</string>
-    <string name="f_Fs_cloudflare_enable">Szybki tunel Cloudflare</string>
-    <string name="f_Fs_cloudflare_enable_desc">Własny adres HTTPS, bez konta: uruchamia się z udostępnianiem</string>
-    <string name="f_Fs_cloudflare_desc">Przy każdym uruchomieniu nowy, losowy adres na trycloudflare.com, szyfrowany. Cloudflare daje szybkie tunele do wypróbowania: nikt nie obiecuje, że będą działać.</string>
+    <string name="f_Fs_bore_desc">Bore daje udostępnianemu folderowi adres na publicznym serwerze Bore, np. http://bore.pub:41234, bez szyfrowania. Publiczny bore.pub jest darmowy, ale nikt nie obiecuje, że działa; twój własny serwer (bore server) też się nada.</string>
+    <string name="f_Fs_cloudflare_desc">Cloudflare daje udostępnianemu folderowi adres na trycloudflare.com, nowy przy każdym uruchomieniu, szyfrowany. Szybkie tunele są do wypróbowania: nikt nie obiecuje, że będą działać.</string>
     <string name="f_Fs_tunnel_with_share">Uruchomi się z udostępnianiem</string>
-    <string name="f_Fs_section_folder">Co udostępnić</string>
-    <string name="f_Fs_section_options">Opcje</string>
     <string name="f_Fs_uploads">Przesyłanie</string>
     <string name="f_Fs_uploads_desc">Inni mogą dodawać pliki do folderu; nic nie zostanie zastąpione</string>
     <string name="f_Fs_auth">Hasło</string>

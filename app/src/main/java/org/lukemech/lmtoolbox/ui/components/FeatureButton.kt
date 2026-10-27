@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -37,6 +38,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * The space between rows (a [FeatureButton] and what's built on it: settings, switches, choices) one
@@ -72,6 +74,8 @@ fun FeatureButton(
     title: String,
     subtitle: String? = null,
     titleSubtitleSwap: Boolean = false,
+    /** The subtitle on one line, its text smaller as far as it has to (e.g. an address, read whole). */
+    subtitleOneLine: Boolean = false,
     colors: RowColors = RowColors.default,
     icon: ImageVector,
     icon2: ImageVector? = null,
@@ -137,10 +141,13 @@ fun FeatureButton(
                             style = if (!titleSubtitleSwap) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.bodyMedium,
                             color = colors.content
                         )
+                        val subtitleStyle = if (!titleSubtitleSwap) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
                         Text(subtitle,
-                            style = if (!titleSubtitleSwap) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
+                            style = subtitleStyle,
                             color = colors.content,
-                            fontStyle = if (!titleSubtitleSwap) FontStyle.Italic else FontStyle.Normal
+                            fontStyle = if (!titleSubtitleSwap) FontStyle.Italic else FontStyle.Normal,
+                            maxLines = if (subtitleOneLine) 1 else Int.MAX_VALUE,
+                            autoSize = if (subtitleOneLine) TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = subtitleStyle.fontSize) else null
                         )
                     }
                 } else {

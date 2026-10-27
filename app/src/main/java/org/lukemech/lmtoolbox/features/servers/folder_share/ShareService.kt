@@ -126,7 +126,7 @@ class ShareService : Service() {
             resources.getQuantityString(R.plurals.f_Fs_connected, connected, connected).takeIf { connected > 0 }
         ).joinToString(" · ")
         val open = PendingIntent.getActivity(
-            this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            this, 0, MainActivity.openFeatureIntent(this, FolderShareFeature.route),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val stop = PendingIntent.getService(

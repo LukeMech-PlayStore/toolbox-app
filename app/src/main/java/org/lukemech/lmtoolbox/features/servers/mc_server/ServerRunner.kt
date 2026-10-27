@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -205,6 +206,8 @@ object ServerRunner {
                 }
                 return@launch
             }
+            // Stopped while its Java installed (an installation goes on to its end): not started after all
+            ensureActive()
             var lastError: String? = null
             val result = Java.runService(
                 // Paper without its console: commands go by RCON, and old ones' console (1.7.10's jline) reads its
@@ -507,6 +510,8 @@ object ServerRunner {
     /** Saves the world and quits; killed if it doesn't within [STOP_TIMEOUT] (or can't be told to). */
     fun stop() {
         val run = _state.value?.takeIf { it.isActive } ?: return
+        // Not started yet (its Java installing): nothing to save nor tell, its start called off
+        if (run.taskId == null) return kill(delete = false)
         _state.update { it?.copy(phase = Phase.Stopping) }
         scope.launch {
             val told = runCatching { Rcon(run.rconPort, run.rconPassword).command("stop") }.isSuccess

@@ -13,22 +13,12 @@
     <string name="f_Fs_port_taken">Port %1$d is in use by another app: pick another</string>
     <string name="f_Fs_open_at">Where to open it</string>
     <string name="f_Fs_open_at_desc">In any browser. On the same network, a QR code is quickest.</string>
-    <string name="f_Fs_tailscale_none">Turn on the Tailscale app: devices on your tailnet open it at its address</string>
-    <string name="f_Fs_tailscale_desc">Only devices on your tailnet with Tailscale on can open it here; not anyone else. The name needs MagicDNS, the IP always works.</string>
-    <string name="f_Fs_internet">From anywhere</string>
-    <string name="f_Fs_internet_none">Turn on Bore or a Cloudflare tunnel</string>
     <string name="f_Fs_internet_note">Anyone with the address can open it: set a password.</string>
-    <string name="f_Fs_bore_enable">Share it from anywhere with Bore</string>
-    <string name="f_Fs_bore_enable_desc">No account, nothing to set up: starts with the share</string>
     <!-- bore.pub is a host name, not a sentence ending in "bore." -->
     <!--suppress GrazieInspection -->
-    <string name="f_Fs_bore_desc">Bore gives the share an address on a public Bore server, e.g. http://bore.pub:41234, over plain HTTP (not encrypted). The public one, bore.pub, is free, but nobody promises it\'s up; your own server (bore server) works too.</string>
-    <string name="f_Fs_cloudflare_enable">Cloudflare quick tunnel</string>
-    <string name="f_Fs_cloudflare_enable_desc">An HTTPS address of its own, no account: starts with the share</string>
-    <string name="f_Fs_cloudflare_desc">A new random address on trycloudflare.com each time it starts, encrypted. Cloudflare offers quick tunnels for trying things out: nobody promises they stay up.</string>
+    <string name="f_Fs_bore_desc">Bore gives the share an address on a public Bore server, e.g. http://bore.pub:41234, not encrypted. The public one, bore.pub, is free, but nobody promises it\'s up; your own server (bore server) works too.</string>
+    <string name="f_Fs_cloudflare_desc">Cloudflare gives the share an address on trycloudflare.com, new each time it starts, encrypted. Quick tunnels are for trying things out: nobody promises they stay up.</string>
     <string name="f_Fs_tunnel_with_share">Starts with the share</string>
-    <string name="f_Fs_section_folder">What to share</string>
-    <string name="f_Fs_section_options">Options</string>
     <string name="f_Fs_uploads">Uploads</string>
     <string name="f_Fs_uploads_desc">Others can add files to the folder; nothing is replaced</string>
     <string name="f_Fs_auth">Password</string>

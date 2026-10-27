@@ -40,7 +40,7 @@ internal fun BoreSection(profile: ServerProfile, onChanged: () -> Unit) {
         onChanged()
     }
     Column(verticalArrangement = RowArrangement) {
-        SwitchButton(stringResource(R.string.f_Mc_bore_enable), Icons.Default.SettingsEthernet, enabled, subtitle = stringResource(R.string.f_Mc_bore_enable_desc)) { on ->
+        SwitchButton(stringResource(R.string.f_Srv_bore_enable), Icons.Default.SettingsEthernet, enabled) { on ->
             save(on)
             // At once, the server running or not: on, installed (asked first; not wanted, it's off again) and
             // started if it runs; off, stopped and uninstalled

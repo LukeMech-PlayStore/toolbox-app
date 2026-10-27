@@ -139,11 +139,13 @@ internal fun uptime(since: Long): String {
 internal fun AddressButton(title: String, address: String, icon: ImageVector, shareable: Boolean = false) {
     val context = LocalContext.current
     var qr by remember { mutableStateOf(false) }
-    // The address large, what it's for small above it
+    // The address large, what it's for small above it; on one line, without a link's http:// and its last
+    // slash (a browser takes it as well: copied, sent and in the QR code whole)
     FeatureButton(
         title = title,
-        subtitle = address,
+        subtitle = address.removePrefix("http://").removeSuffix("/"),
         titleSubtitleSwap = true,
+        subtitleOneLine = true,
         icon = icon,
         buttonContent = if (shareable) {
             {

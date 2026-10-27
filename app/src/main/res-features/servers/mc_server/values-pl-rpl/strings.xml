@@ -47,15 +47,9 @@
     <string name="f_Mc_ban">Zbanuj</string>
     <string name="f_Mc_ban_title">Zbanować %1$s?</string>
     <string name="f_Mc_ban_confirm">%1$s zostanie wyrzucony i nie dołączy już do tego serwera. Aby to cofnąć, wpisz w konsoli:\n%2$s</string>
-    <string name="f_Mc_tailscale_desc">Dołączą tu tylko urządzenia z twojego tailnetu z włączonym Tailscale (albo z tailnetów, którym udostępnisz ten telefon), nikt inny. Nazwa wymaga MagicDNS, adres IP działa zawsze.</string>
-    <string name="f_Mc_tailscale_none">Włącz aplikację Tailscale: gracze z twojego tailnetu dołączą pod jej adresem</string>
-    <string name="f_Mc_internet">Z dowolnego miejsca</string>
-    <string name="f_Mc_internet_none">Włącz Bore albo tunel Cloudflare</string>
     <string name="f_Mc_internet_desc">Gracze potrzebują moda Modflared.</string>
     <string name="f_Mc_internet_bore_desc">Gracze potrzebują tylko adresu. Zostaje ten sam, dopóki nikt inny nie zajmie jego portu.</string>
-    <string name="f_Mc_bore_enable">Dostęp z dowolnego miejsca przez Bore</string>
-    <string name="f_Mc_bore_enable_desc">Bez konta i konfiguracji: startuje razem z serwerem</string>
-    <string name="f_Mc_bore_desc">Bore daje serwerowi adres na publicznym serwerze Bore, np. bore.pub:41234, który gracze wpisują tak, jak jest. bore.pub jest darmowy, ale nikt nie gwarantuje, że działa; twój własny serwer (bore server) też się nada.</string>
+    <string name="f_Mc_bore_desc">Bore daje serwerowi adres na publicznym serwerze Bore, np. bore.pub:41234. Publiczny bore.pub jest darmowy, ale nikt nie obiecuje, że działa; twój własny serwer (bore server) też się nada.</string>
     <string name="f_Mc_tunnel_short">Tunel</string>
     <string name="f_Mc_tunnel_connected">Połączony (%1$d)</string>
     <string name="f_Mc_battery_note">Ekran gaśnie normalnie; telefon nie zasypia, dopóki serwer działa.</string>
@@ -93,7 +87,7 @@
     <string name="f_Mc_seed_unknown">Pojawi się po uruchomieniu</string>
     <string name="f_Mc_config_file">Plik konfiguracji</string>
     <string name="f_Mc_config_file_first">Resztę serwer zapisze przy pierwszym uruchomieniu.</string>
-    <string name="f_Mc_tunnel_desc">Gracze spoza sieci dołączają przez Twoją domenę. Bez otwierania portów.</string>
+    <string name="f_Mc_tunnel_desc">Cloudflare daje serwerowi adres w twojej własnej domenie, np. mc.example.com, za każdym razem ten sam, szyfrowany. Wymaga twojej domeny w Cloudflare; nic do otwierania na routerze.</string>
     <string name="f_Mc_token">Token tunelu</string>
     <string name="f_Mc_token_desc">Token lub całe polecenie instalacji, które pokazuje Cloudflare</string>
     <string name="f_Mc_hostname">Adres dla graczy</string>
@@ -166,8 +160,6 @@
     <string name="f_Mc_backing_up">Tworzenie kopii świata…</string>
     <string name="f_Mc_installing_java">Instalowanie Javy…</string>
     <string name="f_Mc_discard">Odrzuć zmiany</string>
-    <string name="f_Mc_tunnel_enable">Tunel Cloudflare</string>
-    <string name="f_Mc_tunnel_enable_desc">Gracze dołączą z dowolnego miejsca przez twoją domenę.</string>
     <string name="f_Mc_version_stop_first">Zatrzymaj serwer, aby zmienić wersję</string>
     <string name="f_Mc_adding_addons">Dodawanie</string>
 

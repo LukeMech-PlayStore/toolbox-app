@@ -44,7 +44,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.lukemech.lmtoolbox.R
-import org.lukemech.lmtoolbox.features.servers.common.Reach
 import org.lukemech.lmtoolbox.features.servers.folder_share.FolderShare
 import org.lukemech.lmtoolbox.features.servers.folder_share.FolderShareFeature
 import org.lukemech.lmtoolbox.features.servers.folder_share.FolderShareServer
@@ -74,11 +73,10 @@ import org.lukemech.lmtoolbox.ui.pages.features.servers.common.AddressButton
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.BoreServerSettings
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.EditDialog
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.PartPackage
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.ReachSection
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TextSetting
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TunnelPhase
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TunnelStatus
-import org.lukemech.lmtoolbox.ui.pages.features.servers.common.networkChanges
-import org.lukemech.lmtoolbox.ui.pages.features.servers.common.openTailscale
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.uptime
 import org.lukemech.lmtoolbox.features.servers.folder_share.FolderShareFeature as F
 
@@ -102,23 +100,13 @@ fun FolderSharePage() {
     val state by FolderShare.state.collectAsState()
     val run = state
     val running = run?.isActive == true
-    // The folder's name as its provider has it, and whether it's still allowed (taken back, or deleted)
-    val folder = settings.folder
-    val allowed = remember(folder, run?.phase) { folder != null && ShareSettings.isAllowed(context, folder) }
-    val folderName by produceState<String?>(null, folder, allowed) {
-        value = folder?.takeIf { allowed }?.let { withContext(Dispatchers.IO) { FolderShare.folderName(context, it) } }
-    }
-    val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
-        ShareSettings.setFolder(context, uri)
-        settings = ShareSettings.load(context)
-    }
+    val folder = rememberSharedFolder(settings, run?.phase) { settings = ShareSettings.load(context) }
 
     StepWithButtons(
         content = {
             PageHeading(stringResource(F.titleStringResId)) {
                 Column(verticalArrangement = RowArrangement) {
-                    StatusCard(run, folderName)
+                    StatusCard(run, folder.name)
                     // What it takes while it's shared (the app's network), how long it's been, who's connected
                     val lastRun = remember { arrayOfNulls<FolderShare.Run>(1) }
                     if (running) lastRun[0] = run
@@ -128,22 +116,12 @@ fun FolderSharePage() {
                     Reveal(visible = running) {
                         lastRun[0]?.let { r -> Recent(r.recent) }
                     }
-                    Reveal(visible = running) {
-                        lastRun[0]?.let { r -> Addresses(r.port, settings) }
-                    }
 
-                    Section(stringResource(R.string.f_Fs_section_folder))
-                    FolderRow(folderName, folder != null && !allowed, running) { pick.launch(folder) }
-                    PortRow(settings.port, running) { set(F.S_PORT, it) }
+                    Addresses(run?.takeIf { it.isActive }?.port ?: settings.port, settings)
 
-                    Section(stringResource(R.string.f_Fs_section_options))
-                    SwitchButton(stringResource(R.string.f_Fs_uploads), Icons.Default.CloudUpload, settings.uploads, subtitle = stringResource(R.string.f_Fs_uploads_desc)) {
-                        set(F.S_UPLOADS, it)
-                    }
-                    PasswordSettings(settings, ::set)
-                    IdleSetting(settings.idleMinutes) { set(F.S_IDLE, it) }
+                    ShareSetup(settings, folder, running, ::set)
 
-                    Section(stringResource(R.string.f_Fs_internet))
+                    Section(stringResource(R.string.f_Srv_internet))
                     BoreSection(settings, ::set)
                     CloudflareSection(settings, ::set)
                     Note(stringResource(R.string.f_Fs_internet_note), visible = (settings.bore || settings.cloudflare) && !settings.protected)
@@ -158,12 +136,59 @@ fun FolderSharePage() {
             if (running) {
                 BigButton(Icons.Default.Stop, stringResource(R.string.f_Fs_stop), enabled = true) { FolderShare.stop() }
             } else {
-                BigButton(Icons.Default.PlayArrow, stringResource(R.string.f_Fs_start), enabled = folder != null && allowed) {
+                BigButton(Icons.Default.PlayArrow, stringResource(R.string.f_Fs_start), enabled = settings.folder != null && folder.allowed) {
                     FolderShare.start(context)
                 }
             }
         }
     )
+}
+
+/** Its settings in the tool's settings page: what to share and how, as its page has them (the tunnels stay there). */
+@Composable
+fun FolderShareSettings() {
+    val context = LocalContext.current
+    var settings by remember { mutableStateOf(ShareSettings.load(context)) }
+    val run by FolderShare.state.collectAsState()
+    val folder = rememberSharedFolder(settings, run?.phase) { settings = ShareSettings.load(context) }
+    Column(verticalArrangement = RowArrangement) {
+        ShareSetup(settings, folder, running = run?.isActive == true) { key, value ->
+            ShareSettings.put(context, key, value)
+            settings = ShareSettings.load(context)
+        }
+    }
+}
+
+/** The folder shared as it's shown: its name as its provider has it, whether it's still allowed, and its picker. */
+private class SharedFolder(val name: String?, val allowed: Boolean, val pick: () -> Unit)
+
+/** [settings]' folder, allowed or not (taken back, or deleted) as of the share's [phase]; [onPicked] once another's set. */
+@Composable
+private fun rememberSharedFolder(settings: ShareSettings, phase: FolderShare.Phase?, onPicked: () -> Unit): SharedFolder {
+    val context = LocalContext.current
+    val folder = settings.folder
+    val allowed = remember(folder, phase) { folder != null && ShareSettings.isAllowed(context, folder) }
+    val name by produceState<String?>(null, folder, allowed) {
+        value = folder?.takeIf { allowed }?.let { withContext(Dispatchers.IO) { FolderShare.folderName(context, it) } }
+    }
+    val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        uri ?: return@rememberLauncherForActivityResult
+        ShareSettings.setFolder(context, uri)
+        onPicked()
+    }
+    return SharedFolder(name, allowed) { pick.launch(folder) }
+}
+
+/** What's shared (the folder, its port) and how (uploads, a password, stopping when idle): its page's and its settings'. */
+@Composable
+private fun ShareSetup(settings: ShareSettings, folder: SharedFolder, running: Boolean, set: (String, Any) -> Unit) {
+    FolderRow(folder.name, settings.folder != null && !folder.allowed, running, folder.pick)
+    PortRow(settings.port, running) { set(F.S_PORT, it) }
+    SwitchButton(stringResource(R.string.f_Fs_uploads), Icons.Default.CloudUpload, settings.uploads, subtitle = stringResource(R.string.f_Fs_uploads_desc)) {
+        set(F.S_UPLOADS, it)
+    }
+    PasswordSettings(settings, set)
+    IdleSetting(settings.idleMinutes) { set(F.S_IDLE, it) }
 }
 
 @Composable
@@ -293,13 +318,6 @@ private fun Recent(recent: List<FolderShareServer.Access>) {
  */
 @Composable
 private fun Addresses(port: Int, settings: ShareSettings) {
-    val context = LocalContext.current
-    val networks = networkChanges(context)
-    val lan = remember(networks) { Reach.lanAddresses(context) }
-    val tailnet = remember(networks) { Reach.tailscaleAddresses(context) }
-    val tailnetNames by produceState(emptyMap(), tailnet) {
-        value = withContext(Dispatchers.IO) { tailnet.mapNotNull { ip -> Reach.tailscaleName(ip)?.let { ip to it } }.toMap() }
-    }
     val tunnelState by FolderShare.tunnels.tunnel.collectAsState()
     val tunnel = tunnelState?.takeIf { it.serverId == FolderShare.ID }?.state
     val boreState by FolderShare.tunnels.bore.collectAsState()
@@ -307,57 +325,28 @@ private fun Addresses(port: Int, settings: ShareSettings) {
 
     Column(verticalArrangement = RowArrangement) {
         Section(stringResource(R.string.f_Fs_open_at))
-        Crossfade(lan, animationSpec = tween(REVEAL_MS), label = "lan") { addresses ->
+        ReachSection(address = { "http://$it:$port/" }, tunnelsOn = settings.bore || settings.cloudflare, refresh = port) {
+            // The tunnels, starting with the share by themselves: their address once connected, else how they're doing
             Column(verticalArrangement = RowArrangement) {
-                if (addresses.isEmpty()) {
-                    FeatureButton(title = stringResource(R.string.f_Srv_lan), subtitle = stringResource(R.string.f_Srv_lan_none), icon = Icons.Default.Wifi)
-                } else {
-                    addresses.forEach { ip -> AddressButton(stringResource(R.string.f_Srv_lan), "http://$ip:$port/", Icons.Default.Wifi, shareable = true) }
-                }
-            }
-        }
-        // The tunnels, starting with the share by themselves: their address once connected, else how they're doing
-        Reveal(visible = settings.bore) {
-            val address = bore?.address?.takeIf { bore.phase == Bore.Phase.Connected }
-            Crossfade(address, animationSpec = tween(REVEAL_MS), label = "bore") { a ->
-                if (a != null) AddressButton(stringResource(R.string.f_Srv_through_bore), "http://$a/", Icons.Default.Public, shareable = true)
-                else TunnelStatus(
-                    stringResource(R.string.f_Srv_bore), tunnelPhase(bore?.phase?.name), bore?.error, Icons.Default.SettingsEthernet,
-                    offText = stringResource(R.string.f_Fs_tunnel_with_share)
-                )
-            }
-        }
-        Reveal(visible = settings.cloudflare) {
-            val url = tunnel?.url?.takeIf { tunnel.phase == Tunnel.Phase.Connected }
-            Crossfade(url, animationSpec = tween(REVEAL_MS), label = "cloudflare") { u ->
-                if (u != null) AddressButton(stringResource(R.string.f_Srv_through_cloudflare), "$u/", Icons.Default.Public, shareable = true)
-                else TunnelStatus(
-                    stringResource(R.string.f_Fs_cloudflare_enable), tunnelPhase(tunnel?.phase?.name), tunnel?.error,
-                    Icons.Default.Cloud, Icons.Default.CloudOff, offText = stringResource(R.string.f_Fs_tunnel_with_share)
-                )
-            }
-        }
-        Reveal(visible = !settings.bore && !settings.cloudflare) {
-            FeatureButton(title = stringResource(R.string.f_Fs_internet), subtitle = stringResource(R.string.f_Fs_internet_none), icon = Icons.Default.Public)
-        }
-        Crossfade(tailnet, animationSpec = tween(REVEAL_MS), label = "tailnet") { addresses ->
-            Column(verticalArrangement = RowArrangement) {
-                if (addresses.isEmpty()) {
-                    FeatureButton(
-                        title = stringResource(R.string.f_Srv_tailscale),
-                        subtitle = stringResource(R.string.f_Fs_tailscale_none),
-                        icon = Icons.Default.VpnLock,
-                        icon2 = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                        onClick = { openTailscale(context) }
-                    )
-                } else {
-                    addresses.forEach { ip ->
-                        Reveal(visible = tailnetNames[ip] != null) {
-                            tailnetNames[ip]?.let { AddressButton(stringResource(R.string.f_Srv_tailscale), "http://$it:$port/", Icons.Default.VpnLock, shareable = true) }
-                        }
-                        AddressButton(stringResource(R.string.f_Srv_tailscale_ip), "http://$ip:$port/", Icons.Default.VpnLock, shareable = true)
+                Reveal(visible = settings.bore) {
+                    val address = bore?.address?.takeIf { bore.phase == Bore.Phase.Connected }
+                    Crossfade(address, animationSpec = tween(REVEAL_MS), label = "bore") { a ->
+                        if (a != null) AddressButton(stringResource(R.string.f_Srv_through_bore), "http://$a/", Icons.Default.Public, shareable = true)
+                        else TunnelStatus(
+                            stringResource(R.string.f_Srv_bore), tunnelPhase(bore?.phase?.name), bore?.error, Icons.Default.SettingsEthernet,
+                            offText = stringResource(R.string.f_Fs_tunnel_with_share)
+                        )
                     }
-                    Note(stringResource(R.string.f_Fs_tailscale_desc))
+                }
+                Reveal(visible = settings.cloudflare) {
+                    val url = tunnel?.url?.takeIf { tunnel.phase == Tunnel.Phase.Connected }
+                    Crossfade(url, animationSpec = tween(REVEAL_MS), label = "cloudflare") { u ->
+                        if (u != null) AddressButton(stringResource(R.string.f_Srv_through_cloudflare), "$u/", Icons.Default.Public, shareable = true)
+                        else TunnelStatus(
+                            stringResource(R.string.f_Srv_tunnel), tunnelPhase(tunnel?.phase?.name), tunnel?.error,
+                            Icons.Default.Cloud, Icons.Default.CloudOff, offText = stringResource(R.string.f_Fs_tunnel_with_share)
+                        )
+                    }
                 }
             }
         }
@@ -472,8 +461,7 @@ private fun BoreSection(settings: ShareSettings, set: (String, Any) -> Unit) {
     val available = remember { LinuxParts.isAvailable(context, listOf(Bore.PART)) }
     Column(verticalArrangement = RowArrangement) {
         SwitchButton(
-            stringResource(R.string.f_Fs_bore_enable), Icons.Default.SettingsEthernet, settings.bore,
-            subtitle = stringResource(R.string.f_Fs_bore_enable_desc), enabled = available
+            stringResource(R.string.f_Srv_bore_enable), Icons.Default.SettingsEthernet, settings.bore, enabled = available
         ) { on ->
             set(F.S_BORE, on)
             if (on) scope.launch { if (FolderShare.boreOn(context) == InstallResult.Declined) set(F.S_BORE, false) }
@@ -501,8 +489,7 @@ private fun CloudflareSection(settings: ShareSettings, set: (String, Any) -> Uni
     val available = remember { LinuxParts.isAvailable(context, listOf(Tunnel.PART)) }
     Column(verticalArrangement = RowArrangement) {
         SwitchButton(
-            stringResource(R.string.f_Fs_cloudflare_enable), Icons.Default.Cloud, settings.cloudflare,
-            subtitle = stringResource(R.string.f_Fs_cloudflare_enable_desc), enabled = available
+            stringResource(R.string.f_Srv_tunnel), Icons.Default.Cloud, settings.cloudflare, enabled = available
         ) { on ->
             set(F.S_CLOUDFLARE, on)
             if (on) scope.launch { if (FolderShare.tunnelOn(context) == InstallResult.Declined) set(F.S_CLOUDFLARE, false) }

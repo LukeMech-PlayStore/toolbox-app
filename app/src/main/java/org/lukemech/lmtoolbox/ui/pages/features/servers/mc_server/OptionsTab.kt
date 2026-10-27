@@ -191,10 +191,8 @@ internal fun OptionsTab(
         }
 
         // From anywhere: bore first (nothing to set up), then Cloudflare's
-        Box(modifier = Modifier.bringIntoViewRequester(tunnelAt)) { Section(stringResource(R.string.f_Srv_bore)) }
+        Box(modifier = Modifier.bringIntoViewRequester(tunnelAt)) { Section(stringResource(R.string.f_Srv_internet)) }
         BoreSection(profile, onChanged)
-
-        Section(stringResource(R.string.f_Srv_tunnel))
         TunnelSection(profile, onChanged)
 
         Section(stringResource(R.string.f_Mc_section_files))

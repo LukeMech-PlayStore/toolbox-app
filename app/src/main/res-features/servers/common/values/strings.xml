@@ -8,9 +8,14 @@
     <string name="f_Srv_through_cloudflare">Through Cloudflare</string>
     <string name="f_Srv_bore">Bore tunnel</string>
     <string name="f_Srv_tunnel">Cloudflare tunnel</string>
+    <string name="f_Srv_bore_enable">Access from outside through Bore</string>
     <string name="f_Srv_tunnel_connecting">Connecting…</string>
     <string name="f_Srv_tunnel_failed">Couldn\'t connect</string>
     <string name="f_Srv_tunnel_with_server">Starts with the server</string>
+    <string name="f_Srv_internet">From anywhere</string>
+    <string name="f_Srv_internet_none">Turn on Bore or a Cloudflare tunnel</string>
+    <string name="f_Srv_tailscale_none">Turn on the Tailscale app: devices on your tailnet connect at its address</string>
+    <string name="f_Srv_tailscale_desc">Only devices on your tailnet with Tailscale on (or tailnets you share this phone with) can connect here; not anyone else. The name needs MagicDNS, the IP always works.</string>
     <string name="f_Srv_bore_server">Bore server</string>
     <string name="f_Srv_bore_server_desc">bore.pub, or your own (e.g. bore.example.com)</string>
     <string name="f_Srv_bore_secret">Secret</string>

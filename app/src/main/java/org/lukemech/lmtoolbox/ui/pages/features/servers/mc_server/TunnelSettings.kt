@@ -55,7 +55,7 @@ internal fun TunnelSection(profile: ServerProfile, onChanged: () -> Unit) {
         onChanged()
     }
     Column(verticalArrangement = RowArrangement) {
-        SwitchButton(stringResource(R.string.f_Mc_tunnel_enable), Icons.Default.Cloud, enabled, subtitle = stringResource(R.string.f_Mc_tunnel_enable_desc)) { on ->
+        SwitchButton(stringResource(R.string.f_Srv_tunnel), Icons.Default.Cloud, enabled) { on ->
             save(on)
             // At once, the server running or not: on, installed (asked first; not wanted, it's off again) and
             // started if it runs (with its token in); off, stopped and uninstalled

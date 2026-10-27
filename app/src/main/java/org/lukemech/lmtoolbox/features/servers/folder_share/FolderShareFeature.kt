@@ -12,6 +12,7 @@ import org.lukemech.lmtoolbox.helpers.ResourceTile
 import org.lukemech.lmtoolbox.linux.parts.Bore
 import org.lukemech.lmtoolbox.linux.parts.Tunnel
 import org.lukemech.lmtoolbox.ui.pages.features.servers.folder_share.FolderSharePage
+import org.lukemech.lmtoolbox.ui.pages.features.servers.folder_share.FolderShareSettings
 
 /**
  * Folder share: a folder picked on the phone (the system's picker, kept allowed) served over HTTP, its own
@@ -63,6 +64,14 @@ object FolderShareFeature : AppFeature {
     @Composable
     override fun Content(arguments: Map<String, String?>?) {
         FolderSharePage()
+    }
+
+    override val hasSettingsContent get() = true
+
+    /** The folder shared and how, as its page has them. */
+    @Composable
+    override fun SettingsContent() {
+        FolderShareSettings()
     }
 
     /** A tunnel's part while its tunnel is turned on (see ServerTunnels.prune). */

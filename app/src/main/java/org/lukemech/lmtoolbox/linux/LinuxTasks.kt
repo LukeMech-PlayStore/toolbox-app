@@ -293,6 +293,19 @@ object LinuxTasks {
     val services: StateFlow<List<LinuxService>> = _services.asStateFlow()
 
     /**
+     * A tool's own service, not on the subsystem (e.g. the folder share's server), in the bottom bar as
+     * [runService]'s are while it runs: its id, for [serviceEnded].
+     */
+    fun serviceStarted(source: AppFeature, label: String): Long {
+        val service = LinuxService(ids.incrementAndGet(), source, label)
+        _services.update { it + service }
+        return service.id
+    }
+
+    /** [serviceStarted]'s service stopped: out of the bottom bar. */
+    fun serviceEnded(id: Long) = _services.update { list -> list.filterNot { it.id == id } }
+
+    /**
      * A tool's program running until it's stopped (a server, its tunnel), its tool keeping it going
      * with a service of its own (and its notification): not a task. It's in neither the task list nor
      * the subsystem's notification, and in the bottom bar as what runs ([services]), without progress. It
