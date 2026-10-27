@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_magnetometer">Pole magnetyczne</string>
+    <string name="fk_magnetometer">pole magnetyczne, magnetometr, wykrywacz metalu, wykrywacz metali, metal, magnes, tesla, mikrotesla, µT, gaus, żelazo, stal, wykrywacz profili, narzędzia</string>
+    <string name="fd_magnetometer">Znajdź metal i magnesy</string>
+    <string name="f_magnet_missing_sensors_message">Nie znaleziono magnetometru.</string>
+    <string name="f_magnet_calibration_title">Magnetometr wymaga kalibracji</string>
+    <string name="f_magnet_calibration_message">Poruszaj telefonem ósemką, z dala od metalu.</string>
+    <string name="f_magnet_detector">Wykrywacz metalu</string>
+    <string name="f_magnet_detector_desc">Jak bardzo metal w pobliżu zmienia pole</string>
+    <string name="f_magnet_deviation">Zmiana</string>
+    <string name="f_magnet_zeroing">Zerowanie…</string>
+    <string name="f_magnet_recalibrate">Zeruj tutaj</string>
+    <string name="f_magnet_recalibrate_desc">Z dala od metalu</string>
+    <string name="f_magnet_feedback">Sygnał</string>
+    <string name="f_magnet_feedback_off">Brak</string>
+    <string name="f_magnet_feedback_tone">Dźwięk</string>
+    <string name="f_magnet_feedback_buzz">Wibracje</string>
+    <string name="f_magnet_detector_note">Przesuwaj górę telefonu powoli nad powierzchnią. Wykrywa żelazo, stal i magnesy, ale nie aluminium ani miedź.</string>
+    <string name="f_magnet_note">Pole Ziemi: 25–65 µT.</string>
+</resources>

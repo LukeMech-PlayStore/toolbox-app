@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_stroboscope">Stroboscope</string>
+    <string name="fk_stroboscope">stroboscope, strobe, tachometer, rpm, revolutions, speed, rotation, frequency, hz, flash, torch, flashlight, fan, motor, wheel, tools</string>
+    <string name="fd_stroboscope">Freeze what turns</string>
+    <string name="f_strobe_rate">Flashing at</string>
+    <string name="f_strobe_rate_value">%1$s Hz · %2$s RPM</string>
+    <string name="f_strobe_measured">Reached</string>
+    <string name="f_strobe_behind">The torch can\'t keep up</string>
+    <string name="f_strobe_rate_field">Rate · %1$s–%2$s %3$s</string>
+    <string name="f_strobe_limited">Out of range: it\'ll be %1$s %2$s</string>
+    <string name="f_strobe_tap">Tap tempo</string>
+    <string name="f_strobe_tap_desc">Tap with each turn</string>
+    <string name="f_strobe_flash">Flash</string>
+    <string name="f_strobe_flash_desc">Off when you leave</string>
+    <string name="f_strobe_no_torch">This device has no torch.</string>
+    <string name="f_strobe_torch_busy">The torch is busy: another app may be using the camera.</string>
+    <string name="f_strobe_note">Change the rate until what turns seems to stand still. Up to %1$s Hz (%2$s RPM).</string>
+    <string name="f_strobe_warning">Flashing light can trigger seizures in people with photosensitive epilepsy.</string>
+</resources>

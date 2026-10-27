@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_vibration_meter">Vibration meter</string>
+    <string name="fk_vibration_meter">vibration meter, vibration, accelerometer, acceleration, shake, rms, peak, frequency, fft, machine, motor, seismometer, g, tools</string>
+    <string name="fd_vibration_meter">How much does it shake?</string>
+    <string name="f_vibration_unit" translatable="false">m/s²</string>
+    <string name="f_vibration_missing_sensors_message">No accelerometer was found.</string>
+    <string name="f_vibration_rms">RMS</string>
+    <string name="f_vibration_peak">Peak</string>
+    <string name="f_vibration_max_peak">Highest peak</string>
+    <string name="f_vibration_frequency">Main frequency</string>
+    <string name="f_vibration_sample_rate">Sensor rate</string>
+    <string name="f_vibration_note">Lay the phone flat on what vibrates. The sensor measures %1$s times a second, so it tells vibrations up to %2$s Hz.</string>
+</resources>

@@ -78,6 +78,8 @@ abstract class E2eTest {
         buildList {
             add(Manifest.permission.ACCESS_FINE_LOCATION)
             add(Manifest.permission.ACCESS_COARSE_LOCATION)
+            // The sound level meter's microphone
+            add(Manifest.permission.RECORD_AUDIO)
             if (Build.VERSION.SDK_INT >= 33) add(Manifest.permission.POST_NOTIFICATIONS)
         }.forEach { permission ->
             runCatching { automation.grantRuntimePermission(pkg, permission) }
