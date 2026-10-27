@@ -59,8 +59,21 @@ fun BatteryLifePage() {
         formulas = listOf(
             Formula("""I_{avg} = \frac{I_{1} t_{1} + I_{2} t_{2}}{t_{1} + t_{2}}""", stringResource(R.string.ec_avg_current)),
             Formula("""t = \frac{C}{I_{avg}}""", stringResource(R.string.ec_life)),
-        )
+        ),
+        tables = BatteryLifeFeature.tables
     ) {
+        val own = stringResource(R.string.ec_battery_own)
+        val chemistries = typical.map { stringResource(it.chemistry) }
+        OptionSetting(
+            title = stringResource(R.string.ec_battery),
+            icon = Icons.Default.Battery5Bar,
+            selected = picked,
+            options = listOf(-1 to own) + typical.mapIndexed { i, it -> i to "${it.name} (${chemistries[i]}) · ≈ ${it.mAh} mAh" },
+            groupOf = { i -> if (i < 0) null else chemistries[i] }
+        ) { i ->
+            picked = i
+            if (i >= 0) fields.edit(Battery.Capacity, typical[i].mAh.toString())
+        }
         LinkedField(fields, values, Battery.Capacity, stringResource(R.string.ec_capacity), "mAh")
         LinkedField(fields, values, Battery.Life, stringResource(R.string.ec_life), "h")
         SectionTitle(stringResource(R.string.ec_stage1))

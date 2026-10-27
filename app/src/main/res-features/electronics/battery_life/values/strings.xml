@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="fp_battery_life">Batteries: life and sizes</string>
+    <string name="fp_battery_life">Batteries</string>
     <string name="fd_battery_life">Runtime on one charge, and the sizes from AAA to 21700 and CR2032</string>
     <string name="fk_battery_life">battery, batteries, runtime, mAh, capacity, current, life, sleep, accumulator, battery life, power bank, autonomy, cell, aa, aaa, c, d, 9v, 18650, 21700, cr2032, cr2025, lr44, coin cell, button cell, size, dimensions, nimh, li-ion, alkaline, iec 60086, calculator, calc, compute, reference, table, electronics</string>
     <string name="ec_capacity">Capacity</string>

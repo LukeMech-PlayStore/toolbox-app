@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="fp_battery_life">Baterie: czas pracy i rozmiary</string>
+    <string name="fp_battery_life">Baterie</string>
     <string name="fd_battery_life">Czas pracy na jednym ładowaniu oraz rozmiary od AAA do 21700 i CR2032</string>
     <string name="fk_battery_life">bateria, baterie, akumulator, czas pracy, mah, pojemność, prąd, uśpienie, czas pracy baterii, powerbank, autonomia, ogniwo, aa, aaa, c, d, 9v, 18650, 21700, cr2032, cr2025, lr44, bateria pastylkowa, guzikowa, rozmiar, wymiary, nimh, li-ion, alkaliczna, iec 60086, kalkulator, oblicz, obliczenia, policz, ściągawka, tabela, elektronika</string>
     <string name="ec_capacity">Pojemność</string>
