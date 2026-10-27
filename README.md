@@ -320,7 +320,7 @@ an outdated library among them) fail it. Moderate, low and info problems (weak w
 reported.
 
 **On a pull request.** The `comment` job ([`comment.py`](.github/scripts/tests/comment.py)) puts both reports in one
-comment: a line for each on top, the whole summaries folded under it, and each failed test with its logcat's errors.
+comment: a line for each on top, the whole summaries folded under it, and each failed test with the errors in its logcat.
 Its screenshot and whole logcat are in the `e2e-failures` artifact, linked (GitHub's API can't attach files to a
 comment). Every run updates the same comment, found by
 its hidden marker, instead of adding a new one. It's skipped for pull requests from forks and Dependabot, whose token

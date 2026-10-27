@@ -261,7 +261,7 @@ class FolderShareServer(
                         continue
                     }
                     val entry = ZipEntry(prefix + child.name).apply { if (child.modified > 0) time = child.modified }
-                    // Stored as it is: its size and CRC first, read once before (a STORED entry's are in its header).
+                    // Stored as it is: its size and CRC first, read once before (a STORED entry has them in its header).
                     // Not a deflate level of none: changing the level between entries (deflateParams) makes broken
                     // data on some Android versions' zlib (x86 API 30's: "invalid block type").
                     if (!Http.isCompressible(Http.mime(child.name, child.mime))) {

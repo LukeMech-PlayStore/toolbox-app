@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.seconds
 import org.json.JSONArray
 import org.json.JSONObject
 import org.lukemech.lmtoolbox.BuildConfig
@@ -41,7 +42,7 @@ internal object Http {
 
     /** How many times a download's tried (a dropped connection, a server's hiccup), the next after a longer wait each. */
     const val DOWNLOAD_TRIES = 3
-    const val RETRY_DELAY_MS = 3_000L
+    val RETRY_DELAY = 3.seconds
 
     fun open(url: String): HttpURLConnection = (URI(url).toURL().openConnection() as HttpURLConnection).apply {
         setRequestProperty("User-Agent", USER_AGENT)
@@ -75,7 +76,7 @@ internal object Http {
                 return downloadOnce(url, file, sha1, sha256, onProgress)
             } catch (e: IOException) {
                 if (++tries >= DOWNLOAD_TRIES || e is HttpStatus && e.code < 500) throw e
-                delay(RETRY_DELAY_MS * tries)
+                delay(RETRY_DELAY * tries)
             }
         }
     }
@@ -539,7 +540,7 @@ object Installer {
             if (LinuxTasks.isCancelled(_state.value?.taskId)) throw kotlinx.coroutines.CancellationException()
             if (result.isSuccess) break
             if (retried(result)) {
-                delay(Http.RETRY_DELAY_MS * ++tries)
+                delay(Http.RETRY_DELAY * ++tries)
                 continue
             }
             throw Reported(result.stderr.lineSequence().lastOrNull { it.isNotBlank() } ?: "The installer failed")
