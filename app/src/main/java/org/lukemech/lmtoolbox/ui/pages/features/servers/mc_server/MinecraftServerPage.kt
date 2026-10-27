@@ -48,6 +48,7 @@ import org.lukemech.lmtoolbox.ui.components.PackageTable
 import org.lukemech.lmtoolbox.ui.components.PackageTableRow
 import org.lukemech.lmtoolbox.helpers.PreferenceHelper
 import org.lukemech.lmtoolbox.ui.components.BigButton
+import org.lukemech.lmtoolbox.ui.components.ChipChoice
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.components.OptionSetting
@@ -283,24 +284,13 @@ private fun NewServer(onBack: () -> Unit, onCreated: (String) -> Unit) {
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(stringResource(R.string.f_Mc_type), style = MaterialTheme.typography.labelLarge)
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            ServerType.entries.forEach { t ->
-                                FilterChip(
-                                    selected = type == t,
-                                    enabled = !busy,
-                                    onClick = { type = t },
-                                    label = { Text(t.label) }
-                                )
-                            }
-                        }
-                        Text(
-                            stringResource(typeDescription(type)),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    ChipChoice(
+                        stringResource(R.string.f_Mc_type),
+                        ServerType.entries.map { it to it.label },
+                        type,
+                        note = stringResource(typeDescription(type)),
+                        enabled = !busy
+                    ) { type = it }
 
                 }
                 // A settings row (as the start page's), as wide as in the settings

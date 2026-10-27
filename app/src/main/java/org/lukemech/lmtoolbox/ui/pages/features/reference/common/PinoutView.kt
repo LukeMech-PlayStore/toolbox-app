@@ -1,9 +1,7 @@
 package org.lukemech.lmtoolbox.ui.pages.features.reference.common
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +17,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -46,7 +43,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
@@ -59,6 +55,7 @@ import org.lukemech.lmtoolbox.features.reference.common.Pin
 import org.lukemech.lmtoolbox.features.reference.common.PinKind
 import org.lukemech.lmtoolbox.features.reference.common.PinoutSheet
 import org.lukemech.lmtoolbox.ui.components.EmptyText
+import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
@@ -91,7 +88,7 @@ fun PinoutView(sheet: PinoutSheet, query: String) {
         Reveal(pin != null) {
             // The last one tapped stays in it as it folds away
             val shown = pin ?: return@Reveal
-            PinDetails(shown)
+            PinDetails(shown) { selected = null }
         }
         Column(verticalArrangement = RowArrangement) {
             sheet.pins.forEachIndexed { i, p ->
@@ -220,55 +217,29 @@ private fun DrawScope.drawPin(pin: Pin, center: Offset, radius: Float) {
     drawCircle(Color.Black.copy(alpha = 0.25f), radius, center, style = Stroke(1.dp.toPx()))
 }
 
-/** The pin tapped: its number and name, what it is, what it does. */
+/** The pin tapped: its number and name, what it is, what it does; tapped again, it folds away ([onClose]). */
 @Composable
-private fun PinDetails(pin: Pin) {
+private fun PinDetails(pin: Pin, onClose: () -> Unit) {
     val resources = LocalResources.current
-    PinCard(
-        pin,
+    FeatureButton(
         title = "${stringResource(R.string.rf_pin)} ${pin.number} · ${pin.name}",
         subtitle = listOfNotNull(stringResource(pin.kind.label), pin.description?.resolve(resources)).joinToString(" · "),
-        colors = RowColors.highlighted
+        leading = { PinBadge(pin, 40.dp) },
+        colors = RowColors.highlighted,
+        onClick = onClose
     )
 }
 
-/** A pin in the list: its badge, name and what it does; marked while it's the one picked. */
+/** A pin in the list, as the app's rows are: its badge where their icon is, its name and what it does; marked while it's the one picked. */
 @Composable
 private fun PinRow(pin: Pin, selected: Boolean, onClick: () -> Unit) {
-    PinCard(
-        pin,
+    FeatureButton(
         title = pin.name,
         subtitle = pin.description?.resolve(LocalResources.current),
+        leading = { PinBadge(pin, 40.dp) },
         colors = if (selected) RowColors.highlighted else RowColors.default,
         onClick = onClick
     )
-}
-
-/** A pin as the app's rows are ([org.lukemech.lmtoolbox.ui.components.FeatureButton]'s card, margins and type), its badge where their icon is. */
-@Composable
-private fun PinCard(pin: Pin, title: String, subtitle: String?, colors: RowColors, onClick: (() -> Unit)? = null) {
-    val background by animateColorAsState(colors.background, label = "pinBackground")
-    val content by animateColorAsState(colors.content, label = "pinContent")
-    Surface(
-        shape = MaterialTheme.shapes.medium,
-        color = background,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp)) { PinBadge(pin, 40.dp) }
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.bodyLarge, color = content)
-                subtitle?.let { Text(it, style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic, color = content) }
-            }
-        }
-    }
 }
 
 /** A pin's number on its color, as in the drawing. */

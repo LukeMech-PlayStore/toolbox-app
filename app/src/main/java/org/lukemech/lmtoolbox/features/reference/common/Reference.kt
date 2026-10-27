@@ -65,13 +65,25 @@ data class Pin(
 /** The outline a pinout's pins are drawn in: a plain box, or a D-sub's trapezoid (DB9, OBD-II, HDMI). */
 enum class Outline { Box, Trapezoid }
 
-/** One page of a reference: what's picked at its top when there are several (USB's A, B, micro-B, C). */
+/**
+ * One page of a reference: what's picked at its top when there are several (USB's A, B, micro-B, C), found there by
+ * its [name], its [group] or its [note]. [group]: the family it's listed under (Arduino's Nano, Nano Every... under
+ * "Nano"), none for a sheet of its own.
+ */
 sealed interface Sheet {
     val name: Txt
+    val group: Txt?
+    val note: Txt?
 }
 
 /** A table: its [columns]' headings, its [rows] (as many cells each), searched as it's typed. */
-class TableSheet(override val name: Txt, val columns: List<Txt>, val rows: List<List<Txt>>, val note: Txt? = null) : Sheet
+class TableSheet(
+    override val name: Txt,
+    val columns: List<Txt>,
+    val rows: List<List<Txt>>,
+    override val note: Txt? = null,
+    override val group: Txt? = null,
+) : Sheet
 
 /**
  * A connector drawn from its [pins], each tapped for what it does, listed under it. [inOrder]: drawn in number
@@ -81,12 +93,15 @@ class PinoutSheet(
     override val name: Txt,
     val pins: List<Pin>,
     val outline: Outline = Outline.Box,
-    val note: Txt? = null,
+    override val note: Txt? = null,
     val inOrder: Boolean = false,
+    override val group: Txt? = null,
 ) : Sheet
 
 /** A page of its own (a decoder: a capacitor's code, an IP rating). */
-class ToolSheet(override val name: Txt, val content: @Composable () -> Unit) : Sheet
+class ToolSheet(override val name: Txt, override val group: Txt? = null, val content: @Composable () -> Unit) : Sheet {
+    override val note: Txt? = null
+}
 
 /** [this] in one row, in order. */
 fun List<Pin>.inRow(): List<Pin> = mapIndexed { i, pin -> pin.copy(x = i.toFloat(), y = 0f) }
@@ -117,7 +132,7 @@ abstract class ReferenceFeature : AppFeature {
 
     @Composable
     override fun Content(arguments: Map<String, String?>?) {
-        ReferencePage(stringResource(titleStringResId), sheets)
+        ReferencePage(stringResource(titleStringResId), sheets, icon = icon)
     }
 }
 

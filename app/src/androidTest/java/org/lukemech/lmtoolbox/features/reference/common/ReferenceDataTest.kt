@@ -84,7 +84,31 @@ class ReferenceDataTest {
         val atx = org.lukemech.lmtoolbox.features.reference.pc_power.PcPowerFeature
         assertEquals("PS_ON#", pin(atx, 0, "16").name)
         assertEquals(pin(atx, 0, "1").x, pin(atx, 0, "13").x)
-        assertEquals("SENSE0", pin(atx, 4, "S3").name)
-        assertEquals("DAS/DSS", pin(atx, 6, "11").name)
+        assertEquals("PS_ON#", pin(atx, 1, "14").name)
+        assertEquals("SENSE0", pin(atx, 6, "S3").name)
+        assertEquals("DAS/DSS", pin(atx, 7, "11").name)
+        // Rev. 1's I²C on GPIO0 and 1, the Pico's VBUS at the top right
+        assertEquals("GPIO0", pin(rpi, 2, "3").name)
+        assertEquals("GPIO2", pin(rpi, 1, "3").name)
+        assertEquals("VBUS", pin(rpi, 3, "40").name)
+        assertEquals(pin(rpi, 3, "1").y, pin(rpi, 3, "40").y)
+        val arduino = org.lukemech.lmtoolbox.features.reference.arduino.ArduinoFeature
+        assertEquals("D53", (arduino.sheets[3] as PinoutSheet).pins.last { it.name.startsWith("D") }.name)
+        assertEquals("D13", pin(arduino, 4, "16").name)
+        val esp = org.lukemech.lmtoolbox.features.reference.esp_boards.EspBoardsFeature
+        assertEquals("GPIO1", pin(esp, 0, "TX").name)
+        assertEquals("GPIO16", pin(esp, 5, "D0").name)
+        assertEquals("GPIO4", pin(esp, 6, "D2").name)
+    }
+
+    @Test
+    fun familiesTogether() {
+        // The picker heads each family once: its sheets one after another, a family's or none from the start
+        references.forEach { feature ->
+            val groups = feature.sheets.map { it.group?.resolve(resources) }
+            val runs = groups.filterIndexed { i, g -> i == 0 || g != groups[i - 1] }
+            assertEquals("${feature.route}: a family split", runs.toSet().size, runs.size)
+            if (groups.any { it != null }) assertTrue("${feature.route}: a sheet without a family", groups.none { it == null })
+        }
     }
 }

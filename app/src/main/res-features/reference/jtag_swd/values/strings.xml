@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_jtag_swd">ARM JTAG and SWD</string>
-    <string name="fd_jtag_swd">The 20-pin and 10-pin debug headers</string>
+    <string name="fd_jtag_swd">The 20-pin and 10-pin debug headers, and the Cortex 20-pin with trace</string>
     <string name="fk_jtag_swd">jtag, swd, arm, cortex, debug, debugger, j-link, st-link, programmer, tdi, tdo, tms, tck, swdio, swclk, swo, pinout, pins, connector, reference</string>
     <string name="rf_jtag_vtref">The target\'s supply voltage, which the probe matches its levels to</string>
     <string name="rf_jtag_vsupply">Supply voltage, left unconnected by most probes</string>
@@ -18,4 +18,8 @@
     <string name="rf_jtag_gnddetect">Ground; tells the probe a target is connected</string>
     <string name="rf_jtag_note">ARM\'s 20-pin header, 2.54 mm pitch. Pins 7, 9 and 13 carry SWD too.</string>
     <string name="rf_swd_note">ARM Cortex Debug, 1.27 mm pitch</string>
+    <string name="rf_jtag_traceclk">Trace clock (ETM)</string>
+    <string name="rf_jtag_trace">Trace data (ETM)</string>
+    <string name="rf_jtag_tgtpwr">Ground, or the target\'s power on some probes</string>
+    <string name="rf_cortex20_note">ARM Cortex Debug + ETM, 1.27 mm pitch: pins 1–10 as the 10-pin header\'s, the trace on 12–20.</string>
 </resources>

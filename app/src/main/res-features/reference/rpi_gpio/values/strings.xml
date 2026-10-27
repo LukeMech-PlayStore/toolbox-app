@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_rpi_gpio">Raspberry Pi GPIO</string>
-    <string name="fd_rpi_gpio">The 40-pin header, pin by pin</string>
-    <string name="fk_rpi_gpio">raspberry pi, rpi, gpio, 40 pin, header, i2c, spi, uart, pwm, pi 4, pi 5, pi zero, pinout, pins, connector, reference</string>
+    <string name="fd_rpi_gpio">The 40 and 26-pin headers and the Pico, pin by pin</string>
+    <string name="fk_rpi_gpio">raspberry pi, rpi, gpio, 40 pin, 26 pin, header, i2c, spi, uart, pwm, adc, pi 3, pi 4, pi 5, pi zero, model b, rev 1, rev 2, pico, pico w, pico 2, rp2040, rp2350, pinout, pins, connector, reference</string>
     <string name="rf_rpi_id_sd">I²C data of a HAT\'s EEPROM (ID_SD)</string>
     <string name="rf_rpi_id_sc">I²C clock of a HAT\'s EEPROM (ID_SC)</string>
     <string name="rf_rpi_note">Every model with 40 pins (A+, B+, 2, 3, 4, 5, Zero). The GPIOs work at 3.3 V and don\'t take 5 V. Pin 1 has the square pad.</string>
+    <string name="rf_rpi_26_note">Model A and B (rev. 2): the first 26 pins of today\'s 40-pin header. The GPIOs work at 3.3 V. Pin 1 has the square pad.</string>
+    <string name="rf_rpi_rev1_note">The first Model B (rev. 1, 2012): pins 3, 5 and 13 are GPIO0, GPIO1 and GPIO21 (I²C0 on 3 and 5), the rest as rev. 2.</string>
+    <string name="rf_pico_note">RP2040 (Pico, Pico W) and RP2350 (Pico 2, 2 W), seen from above, USB at the top. The GP pins work at 3.3 V; each one\'s functions as its pinout prints them.</string>
+    <string name="rf_pico_run">Pulled low, it resets the chip</string>
+    <string name="rf_pico_agnd">The ADC\'s ground</string>
+    <string name="rf_pico_vref">The ADC\'s reference voltage (3.3 V on the board)</string>
+    <string name="rf_pico_3v3">3.3 V out, up to about 300 mA</string>
+    <string name="rf_pico_3v3_en">Pulled low, it turns the 3.3 V regulator off</string>
+    <string name="rf_pico_vsys">Supply in, 1.8–5.5 V</string>
+    <string name="rf_pico_vbus">USB\'s 5 V</string>
 </resources>

@@ -62,6 +62,7 @@ import org.lukemech.lmtoolbox.features.reference.obd2.Obd2Feature
 import org.lukemech.lmtoolbox.features.reference.pc_power.PcPowerFeature
 import org.lukemech.lmtoolbox.features.reference.resistivity.ResistivityFeature
 import org.lukemech.lmtoolbox.features.reference.rpi_gpio.RpiGpioFeature
+import org.lukemech.lmtoolbox.features.reference.esp_boards.EspBoardsFeature
 import org.lukemech.lmtoolbox.features.reference.rs232.Rs232Feature
 import org.lukemech.lmtoolbox.features.reference.sd_card.SdCardFeature
 import org.lukemech.lmtoolbox.features.reference.si_prefixes.SiPrefixesFeature
@@ -134,6 +135,7 @@ object FeatureRegistry {
         SmdPackagesFeature,
         RpiGpioFeature,
         ArduinoFeature,
+        EspBoardsFeature,
         UsbFeature,
         EthernetFeature,
         Rs232Feature,

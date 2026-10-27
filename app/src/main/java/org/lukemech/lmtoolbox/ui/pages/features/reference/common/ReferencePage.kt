@@ -3,18 +3,15 @@ package org.lukemech.lmtoolbox.ui.pages.features.reference.common
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -23,7 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.lukemech.lmtoolbox.R
@@ -40,16 +37,20 @@ import org.lukemech.lmtoolbox.ui.components.fadeEnter
 import org.lukemech.lmtoolbox.ui.components.fadeExit
 
 /**
- * A reference tool's page: its [sheets] picked by chips at the top (when there are several), the search
- * through a table's rows or a pinout's pins under them, and a table's headings staying put as its rows scroll.
- * [action]: at the end of the title's row (a calculator's formulas).
+ * A reference tool's page: its [sheets] picked at the top (when there are several: a [SheetPicker], [icon] its
+ * icon), the search through a table's rows or a pinout's pins under it, and a table's headings staying put as its
+ * rows scroll. [action]: at the end of the title's row (a calculator's formulas).
  */
 @Composable
-fun ReferencePage(title: String, sheets: List<Sheet>, action: (@Composable () -> Unit)? = null) {
+fun ReferencePage(
+    title: String,
+    sheets: List<Sheet>,
+    icon: ImageVector = Icons.Default.Layers,
+    action: (@Composable () -> Unit)? = null
+) {
     var index by rememberSaveable { mutableIntStateOf(0) }
     var query by rememberSaveable { mutableStateOf("") }
     val sheet = sheets[index.coerceIn(sheets.indices)]
-    val resources = LocalResources.current
     // A table's columns, as wide as their widest cell, and its sideways scroll: its headings' and its rows'
     val table = (sheet as? TableSheet)?.let { rememberTableLayout(it) }
     // Each table's as it was last laid out: the one going out of sight fades with its own
@@ -63,16 +64,7 @@ fun ReferencePage(title: String, sheets: List<Sheet>, action: (@Composable () ->
         title = title,
         action = action,
         header = {
-            if (sheets.size > 1) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp)
-                ) {
-                    sheets.forEachIndexed { i, it ->
-                        FilterChip(selected = i == index, onClick = { index = i }, label = { Text(it.name.resolve(resources)) })
-                    }
-                }
-            }
+            if (sheets.size > 1) SheetPicker(sheets, sheets.indexOf(sheet), icon) { index = it }
             Reveal(sheet !is ToolSheet) {
                 Column {
                     Spacer(Modifier.height(8.dp))

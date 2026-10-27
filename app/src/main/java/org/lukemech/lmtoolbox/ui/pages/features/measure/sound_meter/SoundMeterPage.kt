@@ -56,7 +56,7 @@ import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.LiveGraph
-import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterReading
+import org.lukemech.lmtoolbox.ui.components.ReadingResult
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
 
 /** The graph's last 30 s, a reading every SoundMeterFeature.BLOCK_MS. */
@@ -143,7 +143,12 @@ fun SoundMeterPage() {
             )
 
             val current = shown(last?.level)
-            MeterReading(text(current), unit, held = holding, color = if (clipped) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onBackground)
+            Results {
+                ReadingResult(text(current), unit, held = holding, color = if (clipped) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
+                ResultRow(stringResource(R.string.f_meter_min), "${text(shown(levels.min))} $unit")
+                ResultRow(stringResource(R.string.f_meter_max), "${text(shown(levels.max))} $unit")
+                ResultRow(stringResource(R.string.f_sound_leq), "${text(shown(meanSquares.mean?.let(::leqDbfs)))} $unit")
+            }
             Note(stringResource(R.string.f_sound_clipped), visible = clipped)
             // Its scale in SPL; the history kept in dBFS, so it follows the calibration too
             LiveGraph(
@@ -152,11 +157,6 @@ fun SoundMeterPage() {
                 intervalMs = SoundMeterFeature.BLOCK_MS.toLong(), label = { "%.1f %s".format(it, unit) },
                 holding = holding, onHoldingChange = { holding = it }
             )
-            Results {
-                ResultRow(stringResource(R.string.f_meter_min), "${text(shown(levels.min))} $unit")
-                ResultRow(stringResource(R.string.f_meter_max), "${text(shown(levels.max))} $unit")
-                ResultRow(stringResource(R.string.f_sound_leq), "${text(shown(meanSquares.mean?.let(::leqDbfs)))} $unit")
-            }
 
             SwitchButton(
                 title = stringResource(R.string.f_sound_a_weighting),

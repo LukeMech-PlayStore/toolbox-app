@@ -12,6 +12,8 @@
     <string name="rf_kind_unused">Niepodłączony</string>
     <string name="rf_search_table">Szukaj w tabeli</string>
     <string name="rf_search_pins">Szukaj wyprowadzeń</string>
+    <string name="rf_search_sheets">Znajdź płytkę, złącze lub wariant</string>
+    <string name="rf_sheet_position">%1$d z %2$d</string>
     <string name="rf_copied">Skopiowano: %1$s</string>
     <string name="rf_copy_hint">Przytrzymaj komórkę, aby ją skopiować</string>
     <string name="rf_drawn_in_order">Narysowane w kolejności numerów, nie tak, jak leżą na złączu</string>

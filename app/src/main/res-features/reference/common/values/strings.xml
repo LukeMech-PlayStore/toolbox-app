@@ -12,6 +12,8 @@
     <string name="rf_kind_unused">Not connected</string>
     <string name="rf_search_table">Search the table</string>
     <string name="rf_search_pins">Search the pins</string>
+    <string name="rf_search_sheets">Find a board, connector or variant</string>
+    <string name="rf_sheet_position">%1$d of %2$d</string>
     <string name="rf_copied">Copied: %1$s</string>
     <string name="rf_copy_hint">Hold a cell to copy it</string>
     <string name="rf_drawn_in_order">Drawn in number order, not laid out as on the connector</string>

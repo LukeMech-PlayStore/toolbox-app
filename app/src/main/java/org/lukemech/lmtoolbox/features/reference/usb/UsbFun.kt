@@ -74,35 +74,41 @@ object UsbFeature : ReferenceFeature() {
     )
 
     override val sheets by lazy {
+        val a = raw("USB-A")
+        val b = raw("USB-B")
         listOf(
-            PinoutSheet(raw("A (2.0)"), usb2(GND).inRow(), inOrder = true),
+            PinoutSheet(raw("A (2.0)"), usb2(GND).inRow(), inOrder = true, group = a),
             PinoutSheet(
                 raw("A (3.x)"),
                 (usb2(GND) + superSpeed(5, "SSRX", "SSTX")).inRows(4, 5),
                 note = res(R.string.rf_usb3_note),
-                inOrder = true
+                inOrder = true,
+                group = a
             ),
-            PinoutSheet(raw("B (2.0)"), usb2(GND).inRow(), inOrder = true),
+            PinoutSheet(raw("B (2.0)"), usb2(GND).inRow(), inOrder = true, group = b),
             PinoutSheet(
                 raw("B (3.x)"),
                 (usb2(GND) + superSpeed(5, "SSTX", "SSRX")).inRows(4, 5),
                 note = res(R.string.rf_usb3b_note),
-                inOrder = true
+                inOrder = true,
+                group = b
             ),
-            PinoutSheet(raw("Mini-B"), otg().inRow(), note = res(R.string.rf_usb_mini_note), inOrder = true),
-            PinoutSheet(raw("Micro-B (2.0)"), otg().inRow(), note = res(R.string.rf_usb_micro_note), inOrder = true),
+            PinoutSheet(raw("Mini-B"), otg().inRow(), note = res(R.string.rf_usb_mini_note), inOrder = true, group = b),
+            PinoutSheet(raw("Micro-B (2.0)"), otg().inRow(), note = res(R.string.rf_usb_micro_note), inOrder = true, group = b),
             PinoutSheet(
                 raw("Micro-B (3.x)"),
                 (otg() + superSpeed(6, "SSTX", "SSRX")).inRows(5, 5),
                 note = res(R.string.rf_usb3_micro_note),
-                inOrder = true
+                inOrder = true,
+                group = b
             ),
             PinoutSheet(
                 raw("C"),
                 // The receptacle from the front: A1 top left, and B1 under A12 (the plug fits either way up)
                 cRow("A", 1, 2, "CC1", "SBU1").mapIndexed { i, pin -> pin.copy(x = i.toFloat(), y = 0f) } +
                     cRow("B", 2, 1, "CC2", "SBU2").mapIndexed { i, pin -> pin.copy(x = 11f - i, y = 1f) },
-                note = res(R.string.rf_usbc_note)
+                note = res(R.string.rf_usbc_note),
+                group = raw("USB-C")
             ),
         )
     }

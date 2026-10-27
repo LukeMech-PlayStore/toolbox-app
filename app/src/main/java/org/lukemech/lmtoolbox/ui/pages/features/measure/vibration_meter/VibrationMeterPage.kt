@@ -36,7 +36,7 @@ import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SensorWarning
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.LiveGraph
-import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterReading
+import org.lukemech.lmtoolbox.ui.components.ReadingResult
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.SensorUpdates
 
@@ -130,14 +130,9 @@ fun VibrationMeterPage() {
                 calibrationIcon = Icons.Default.Storm,
                 missingMessage = R.string.f_vibration_missing_sensors_message
             )
-            MeterReading(analysis.rms?.let { "%.3f".format(it) } ?: none, unit, held = holding)
-            LiveGraph(
-                values = trace, capacity = TRACE, min = 0f, max = 1f, step = 0.25f, unit = unit,
-                intervalMs = TRACE_MS, label = { "%.3f %s".format(it, unit) },
-                holding = holding, onHoldingChange = { holding = it }
-            )
             Results {
-                ResultRow(stringResource(R.string.f_vibration_rms), text(analysis.rms))
+                // The RMS, large on top: the reading
+                ReadingResult(analysis.rms?.let { "%.3f".format(it) } ?: none, unit, held = holding)
                 ResultRow(stringResource(R.string.f_vibration_peak), text(analysis.peak))
                 ResultRow(stringResource(R.string.f_vibration_max_peak), text(maxPeak))
                 ResultRow(
@@ -149,6 +144,11 @@ fun VibrationMeterPage() {
                     analysis.sampleRate?.let { "${it.roundToInt()} Hz" } ?: none
                 )
             }
+            LiveGraph(
+                values = trace, capacity = TRACE, min = 0f, max = 1f, step = 0.25f, unit = unit,
+                intervalMs = TRACE_MS, label = { "%.3f %s".format(it, unit) },
+                holding = holding, onHoldingChange = { holding = it }
+            )
             Note(
                 stringResource(
                     R.string.f_vibration_note,

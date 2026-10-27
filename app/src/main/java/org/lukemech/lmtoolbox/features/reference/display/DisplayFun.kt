@@ -80,6 +80,9 @@ object DisplayFeature : ReferenceFeature() {
     }
 
     override val sheets by lazy {
+        val hdmi = raw("HDMI")
+        val dp = raw("DisplayPort")
+        val analog = raw("DVI, VGA")
         listOf(
             PinoutSheet(
                 raw("HDMI A"),
@@ -89,7 +92,8 @@ object DisplayFeature : ReferenceFeature() {
                     "TMDS Data0+", "TMDS Data0 Shield", "TMDS Data0−", "TMDS Clock+", "TMDS Clock Shield", "TMDS Clock−",
                     "CEC", "Utility", "SCL", "SDA", "DDC/CEC GND", "+5V", "HPD",
                 ).staggered(),
-                note = res(R.string.rf_display_staggered_note)
+                note = res(R.string.rf_display_staggered_note),
+                group = hdmi
             ),
             PinoutSheet(
                 raw("Mini HDMI (C)"),
@@ -99,7 +103,8 @@ object DisplayFeature : ReferenceFeature() {
                     "TMDS Data0 Shield", "TMDS Data0+", "TMDS Data0−", "TMDS Clock Shield", "TMDS Clock+", "TMDS Clock−",
                     "DDC/CEC GND", "CEC", "SCL", "SDA", "Utility", "+5V", "HPD",
                 ).inRows(10, 9, shift = 0.5f),
-                inOrder = true
+                inOrder = true,
+                group = hdmi
             ),
             PinoutSheet(
                 raw("Micro HDMI (D)"),
@@ -109,7 +114,8 @@ object DisplayFeature : ReferenceFeature() {
                     "TMDS Data1−", "TMDS Data0+", "TMDS Data0 Shield", "TMDS Data0−", "TMDS Clock+", "TMDS Clock Shield",
                     "TMDS Clock−", "CEC", "DDC/CEC GND", "SCL", "SDA", "+5V",
                 ).inRows(10, 9, shift = 0.5f),
-                inOrder = true
+                inOrder = true,
+                group = hdmi
             ),
             PinoutSheet(
                 raw("DisplayPort"),
@@ -118,7 +124,8 @@ object DisplayFeature : ReferenceFeature() {
                     "ML_Lane0+", "GND", "ML_Lane0−", "ML_Lane1+", "GND", "ML_Lane1−", "ML_Lane2+", "GND", "ML_Lane2−",
                     "ML_Lane3+", "GND", "ML_Lane3−", "CONFIG1", "CONFIG2", "AUX+", "GND", "AUX−", "HPD", "Return", "DP_PWR",
                 ).staggered(),
-                note = res(R.string.rf_display_dp_note)
+                note = res(R.string.rf_display_dp_note),
+                group = dp
             ),
             PinoutSheet(
                 raw("Mini DisplayPort"),
@@ -128,10 +135,11 @@ object DisplayFeature : ReferenceFeature() {
                     "ML_Lane1−", "ML_Lane3−", "GND", "GND", "ML_Lane2+", "AUX+", "ML_Lane2−", "AUX−", "GND", "DP_PWR",
                 ).inRows(10, 10),
                 note = res(R.string.rf_display_dp_note),
-                inOrder = true
+                inOrder = true,
+                group = dp
             ),
-            PinoutSheet(raw("DVI-I"), dvi(), note = res(R.string.rf_display_dvi_note)),
-            PinoutSheet(raw("VGA"), vga(), outline = Outline.Trapezoid, note = res(R.string.rf_display_vga_note)),
+            PinoutSheet(raw("DVI-I"), dvi(), note = res(R.string.rf_display_dvi_note), group = analog),
+            PinoutSheet(raw("VGA"), vga(), outline = Outline.Trapezoid, note = res(R.string.rf_display_vga_note), group = analog),
         )
     }
 
