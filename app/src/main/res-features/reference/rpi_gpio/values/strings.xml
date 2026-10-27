@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_rpi_gpio">Raspberry Pi GPIO</string>
+    <string name="fd_rpi_gpio">The 40-pin header, pin by pin</string>
+    <string name="fk_rpi_gpio">raspberry pi, rpi, gpio, 40 pin, header, i2c, spi, uart, pwm, pi 4, pi 5, pi zero, pinout, pins, connector, reference</string>
+    <string name="rf_rpi_id_sd">I²C data of a HAT\'s EEPROM (ID_SD)</string>
+    <string name="rf_rpi_id_sc">I²C clock of a HAT\'s EEPROM (ID_SC)</string>
+    <string name="rf_rpi_note">Every model with 40 pins (A+, B+, 2, 3, 4, 5, Zero). The GPIOs work at 3.3 V and don\'t take 5 V. Pin 1 has the square pad.</string>
+</resources>

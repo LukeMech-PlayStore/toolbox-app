@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_energy">Energy converter</string>
+    <string name="fd_energy">Joules to kWh, calories, BTU and eV</string>
+    <string name="fk_energy">energy, converter, joule, j, kj, watt-hour, wh, kwh, calorie, cal, kcal, btu, electronvolt, ev, battery, mAh, capacity, units, conversion, calculator, calc, compute, electronics</string>
+    <string name="ec_energy">Energy</string>
+    <string name="ec_cal_thermochemical">Thermochemical calorie</string>
+    <string name="ec_btu_it">BTU (International Table)</string>
+    <string name="ec_battery_energy">A battery\'s energy</string>
+    <string name="ec_charge_mah">Capacity</string>
+    <string name="ec_nominal_voltage">Nominal voltage</string>
+</resources>

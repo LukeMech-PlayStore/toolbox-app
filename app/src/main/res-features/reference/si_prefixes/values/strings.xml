@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_si_prefixes">SI prefixes</string>
+    <string name="fd_si_prefixes">From quetta to quecto</string>
+    <string name="fk_si_prefixes">si prefixes, prefix, metric, kilo, mega, giga, tera, milli, micro, nano, pico, femto, units, power of ten, exponent, reference, table</string>
+    <string name="rf_prefix">Prefix</string>
+    <string name="rf_symbol">Symbol</string>
+    <string name="rf_factor">Factor</string>
+    <string name="rf_decimal">Written out</string>
+    <string name="rf_si_quetta">quetta</string>
+    <string name="rf_si_ronna">ronna</string>
+    <string name="rf_si_yotta">yotta</string>
+    <string name="rf_si_zetta">zetta</string>
+    <string name="rf_si_exa">exa</string>
+    <string name="rf_si_peta">peta</string>
+    <string name="rf_si_tera">tera</string>
+    <string name="rf_si_giga">giga</string>
+    <string name="rf_si_mega">mega</string>
+    <string name="rf_si_kilo">kilo</string>
+    <string name="rf_si_hecto">hecto</string>
+    <string name="rf_si_deca">deca</string>
+    <string name="rf_si_deci">deci</string>
+    <string name="rf_si_centi">centi</string>
+    <string name="rf_si_milli">milli</string>
+    <string name="rf_si_micro">micro</string>
+    <string name="rf_si_nano">nano</string>
+    <string name="rf_si_pico">pico</string>
+    <string name="rf_si_femto">femto</string>
+    <string name="rf_si_atto">atto</string>
+    <string name="rf_si_zepto">zepto</string>
+    <string name="rf_si_yocto">yocto</string>
+    <string name="rf_si_ronto">ronto</string>
+    <string name="rf_si_quecto">quecto</string>
+</resources>

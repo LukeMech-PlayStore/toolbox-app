@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_trailer">Trailer sockets (7 and 13-pin)</string>
+    <string name="fd_trailer">ISO 1724 and ISO 11446</string>
+    <string name="fk_trailer">trailer, towbar, tow hitch, 7 pin, 13 pin, 12n, iso 1724, iso 11446, caravan, indicator, brake light, wire colors, pinout, pins, connector, reference</string>
+    <string name="rf_trailer_left_indicator">Left indicator</string>
+    <string name="rf_trailer_right_indicator">Right indicator</string>
+    <string name="rf_trailer_fog">Rear fog light</string>
+    <string name="rf_trailer_ground">Ground</string>
+    <string name="rf_trailer_ground_1_8">Ground of pins 1–8</string>
+    <string name="rf_trailer_right_tail">Right tail light (and the number plate)</string>
+    <string name="rf_trailer_left_tail">Left tail light</string>
+    <string name="rf_trailer_brake">Brake lights</string>
+    <string name="rf_trailer_reverse">Reversing light</string>
+    <string name="rf_trailer_permanent">+12 V permanent</string>
+    <string name="rf_trailer_ignition">+12 V with the ignition (charging a caravan\'s battery)</string>
+    <string name="rf_trailer_ground_10">Ground of pin 10</string>
+    <string name="rf_trailer_ground_9">Ground of pin 9</string>
+    <string name="rf_trailer_unassigned">Not assigned</string>
+    <string name="rf_trailer_7_note">ISO 1724 (12N). Each pin also has its circuit\'s number (DIN 72552) and the usual wire color.</string>
+    <string name="rf_trailer_13_note">ISO 11446: pins 1–7 are the 7-pin socket\'s</string>
+</resources>

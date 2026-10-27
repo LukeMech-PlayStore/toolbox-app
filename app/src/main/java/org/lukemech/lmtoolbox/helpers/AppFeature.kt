@@ -3,6 +3,7 @@ package org.lukemech.lmtoolbox.helpers
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.DeveloperBoard
 import androidx.compose.material.icons.filled.Dns
@@ -19,6 +20,7 @@ import org.lukemech.lmtoolbox.linux.LinuxTasks
 enum class FeatureCategory(@param:StringRes val titleRes: Int, val icon: ImageVector) {
     Measure(R.string.cat_measure, Icons.Default.Straighten),
     Electronics(R.string.cat_electronics, Icons.Default.DeveloperBoard),
+    Reference(R.string.cat_reference, Icons.AutoMirrored.Default.MenuBook),
     Finance(R.string.cat_finance, Icons.Default.AccountBalance),
     Media(R.string.cat_media, Icons.Default.VideoLibrary),
     Servers(R.string.cat_servers, Icons.Default.Dns),

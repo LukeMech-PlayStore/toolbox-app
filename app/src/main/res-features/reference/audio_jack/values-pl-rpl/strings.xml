@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_audio_jack">Wtyki audio</string>
+    <string name="fd_audio_jack">TS, TRS, symetryczny TRS i TRRS słuchawek z mikrofonem</string>
+    <string name="fk_audio_jack">gniazdo audio, wtyk, 2,5 mm, 3,5 mm, 6,35 mm, duży jack, minijack, jack, mono, stereo, symetryczny, trs, trrs, ctia, ahj, omtp, słuchawki, zestaw słuchawkowy, mikrofon, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_jack_left">Kanał lewy</string>
+    <string name="rf_jack_right">Kanał prawy</string>
+    <string name="rf_jack_mic">Mikrofon</string>
+    <string name="rf_jack_ground">Masa (wspólna)</string>
+    <string name="rf_jack_note">Końcówka, pierścień, tuleja: od czubka wtyku. Tak samo we wtykach 2,5, 3,5 i 6,35 mm.</string>
+    <string name="rf_jack_mono">Sygnał: instrument, głośnik, linia mono</string>
+    <string name="rf_jack_ts_note">Mono, jak w kablu gitarowym. Wtyk TS w gnieździe stereo zwiera jego pierścień do masy.</string>
+    <string name="rf_jack_hot">Gorący: sygnał w fazie</string>
+    <string name="rf_jack_cold">Zimny: sygnał odwrócony</string>
+    <string name="rf_jack_balanced_note">Symetryczne mono, jak w liniowych wejściach i wyjściach 6,35 mm sprzętu studyjnego: połączone jak piny 2, 3 i 1 XLR</string>
+    <string name="rf_jack_ctia_note">CTIA (też AHJ): dziś większość telefonów, laptopów i słuchawek</string>
+    <string name="rf_jack_omtp_note">OMTP: starsze telefony; mikrofon i masa są zamienione</string>
+</resources>

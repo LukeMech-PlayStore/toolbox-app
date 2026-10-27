@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_capacitor_code">Capacitor codes</string>
+    <string name="fd_capacitor_code">104, 4n7 or 223J, read</string>
+    <string name="fk_capacitor_code">capacitor code, capacitor marking, ceramic capacitor, film capacitor, 104, 103, 4n7, 223j, pf, nf, uf, μf, tolerance letter, decode, reference</string>
+    <string name="rf_marking">Marking</string>
+    <string name="rf_cap_code_hint">Three digits: two of the value and the zeros after them, in picofarads (104 = 100 nF). A letter for the decimal point: p, n, μ (u) or R (picofarads). A tolerance letter may follow.</string>
+    <string name="rf_codes">Codes</string>
+    <string name="rf_letter">Letter</string>
+    <string name="rf_tolerance_note">IEC 60062: B, C and D for capacitors under 10 pF</string>
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fp_xlr_dmx">XLR and DMX</string>
+    <string name="fd_xlr_dmx">Balanced audio and stage lighting</string>
+    <string name="fk_xlr_dmx">xlr, xlr3, xlr5, dmx, dmx512, microphone, balanced, hot, cold, stage lighting, aes14, e1.11, pinout, pins, connector, reference</string>
+    <string name="rf_xlr_ground">Shield and ground</string>
+    <string name="rf_xlr_hot">Hot: the signal in phase</string>
+    <string name="rf_xlr_cold">Cold: the signal inverted</string>
+    <string name="rf_xlr_note" tools:ignore="TypographyDashes">AES14 / IEC 61076-2-103; the numbers are marked on the connector</string>
+    <string name="rf_dmx_common">Common: shield and signal ground</string>
+    <string name="rf_dmx_data1">The data link (RS-485)</string>
+    <string name="rf_dmx_data2">A second, optional link; most fixtures leave it out</string>
+    <string name="rf_dmx_note">ANSI E1.11. Lights wired with 3-pin XLR use pins 1–3 the same way.</string>
+</resources>

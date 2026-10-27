@@ -8,7 +8,7 @@ import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.helpers.FeatureCategory
 import org.lukemech.lmtoolbox.ui.pages.features.electronics.rc_filter.RcFilterPage
 
-/** RC filter: cutoff frequency and response. */
+/** RC, RL and RLC filters: cutoff, resonance and response, low-pass or high-pass. */
 object RcFilterFeature : AppFeature {
 
     override val route = "rc_filter"

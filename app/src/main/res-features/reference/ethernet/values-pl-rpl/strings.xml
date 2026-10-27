@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_ethernet">Ethernet RJ45</string>
+    <string name="fd_ethernet">T568A, T568B i PoE</string>
+    <string name="fk_ethernet">ethernet, rj45, 8p8c, t568a, t568b, lan, kabel sieciowy, skrętka, patchcord, kabel krosowany, cat5, cat6, poe, zasilanie przez ethernet, kolory żył, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_signals_poe">Sygnały i PoE</string>
+    <string name="rf_poe_a">PoE tryb A</string>
+    <string name="rf_poe_b">PoE tryb B</string>
+    <string name="rf_rj45_note">Każdy pin nazwany według tego, co przenosi przy 10/100 Mbit/s i 1 Gbit/s, od strony komputera (MDI); przełącznik (MDI-X) zamienia nadawanie z odbiorem. Kabel prosty ma ten sam układ na obu końcach, krosowany T568A na jednym i T568B na drugim.</string>
+    <string name="rf_poe_note">Tryb A podaje zasilanie parami danych, tryb B wolnymi; PoE 4-parowe (802.3bt) używa obu. Urządzenie zasilane przyjmuje dowolną biegunowość.</string>
+</resources>

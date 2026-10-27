@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_arduino">Arduino Uno and Nano</string>
+    <string name="fd_arduino">Every header pin, and what else it does</string>
+    <string name="fk_arduino">arduino, uno, nano, atmega328p, header, digital, analog, pwm, i2c, spi, uart, interrupt, pinout, pins, connector, reference</string>
+    <string name="rf_ard_int0">external interrupt INT0</string>
+    <string name="rf_ard_int1">external interrupt INT1</string>
+    <string name="rf_ard_led">the built-in LED</string>
+    <string name="rf_ard_analog_only">Analog input only</string>
+    <string name="rf_ard_scl">I²C clock, the same as A5</string>
+    <string name="rf_ard_sda">I²C data, the same as A4</string>
+    <string name="rf_ard_aref">Reference voltage for the analog inputs</string>
+    <string name="rf_ard_ioref">The voltage the board\'s pins work at (5 V)</string>
+    <string name="rf_ard_reset">Pulled low, it resets the board</string>
+    <string name="rf_ard_3v3">3.3 V out, up to 50 mA</string>
+    <string name="rf_ard_vin">Supply in, 7–12 V (the jack\'s voltage when powered from it)</string>
+    <string name="rf_ard_vin_nano">Supply in, 7–12 V</string>
+    <string name="rf_ard_uno_note">Seen from above, the USB socket and the power jack on the left. The gaps between the headers are drawn roughly.</string>
+    <string name="rf_ard_nano_note">Seen from above, USB at the top. The pins are numbered around the board, from TX (1).</string>
+</resources>

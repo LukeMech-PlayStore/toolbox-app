@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_resistivity">Rezystywność materiałów</string>
+    <string name="fd_resistivity">Metale i stopy w 20 °C</string>
+    <string name="fk_resistivity">rezystywność, opór właściwy, przewodność, współczynnik temperaturowy, miedź, aluminium, srebro, nichrom, konstantan, manganin, drut, materiały, ściągawka, tabela</string>
+    <string name="rf_material">Materiał</string>
+    <string name="rf_resistivity_note">W 20 °C, według podręczników. Stopy różnią się zależnie od składu; α to zmiana na kelwin w pobliżu 20 °C.</string>
+    <string name="rf_mat_silver">Srebro</string>
+    <string name="rf_mat_copper">Miedź</string>
+    <string name="rf_mat_copper_annealed">Miedź wyżarzona</string>
+    <string name="rf_mat_gold">Złoto</string>
+    <string name="rf_mat_aluminium">Aluminium</string>
+    <string name="rf_mat_tungsten">Wolfram</string>
+    <string name="rf_mat_zinc">Cynk</string>
+    <string name="rf_mat_nickel">Nikiel</string>
+    <string name="rf_mat_iron">Żelazo</string>
+    <string name="rf_mat_platinum">Platyna</string>
+    <string name="rf_mat_tin">Cyna</string>
+    <string name="rf_mat_lead">Ołów</string>
+    <string name="rf_mat_titanium">Tytan</string>
+    <string name="rf_mat_manganin">Manganin</string>
+    <string name="rf_mat_constantan">Konstantan</string>
+    <string name="rf_mat_stainless">Stal nierdzewna</string>
+    <string name="rf_mat_mercury">Rtęć</string>
+    <string name="rf_mat_nichrome">Nichrom</string>
+</resources>

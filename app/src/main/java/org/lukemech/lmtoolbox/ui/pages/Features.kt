@@ -2,6 +2,10 @@ package org.lukemech.lmtoolbox.ui.pages
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
@@ -32,7 +36,8 @@ import org.lukemech.lmtoolbox.ui.components.Tile
 import org.lukemech.lmtoolbox.ui.components.TileGrid
 import org.lukemech.lmtoolbox.ui.helpers.LocalAppNav
 import org.lukemech.lmtoolbox.ui.helpers.NewsFeedSection
-import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.ui.components.ROW_SPACING
+import org.lukemech.lmtoolbox.ui.components.edgeFade
 
 /** How long a feature counts as new / recently updated. */
 
@@ -142,13 +147,11 @@ fun CategoryPage(id: String?, search: Boolean = false) {
             }
             else -> null
         },
-        header = { SearchBar(query, { query = it }, filter, autoFocus = search) { filter = it } }
+        header = { SearchBar(query, { query = it }, filter, autoFocus = search) { filter = it } },
+        // The results are a lazy list: only the features in sight built, however many there are
+        scrolls = false
     ) {
-        if (query.isBlank() && category.features.isEmpty() && category.empty != null) {
-            EmptyText(category.empty)
-        } else {
-            SearchResults(query, filter)
-        }
+        SearchResults(query, filter, empty = category.empty.takeIf { query.isBlank() && category.features.isEmpty() })
     }
 }
 
@@ -172,10 +175,11 @@ private fun SearchBar(
 
 /**
  * The features of [filter] (a [Category] id, null for all) matching [query], best first; with no
- * query, all of them in its order (by name, the recent ones as they were opened).
+ * query, all of them in its order (by name, the recent ones as they were opened). [empty]: said
+ * instead while the user's own list is (no favourites yet).
  */
 @Composable
-private fun SearchResults(query: String, filter: String?) {
+private fun SearchResults(query: String, filter: String?, empty: String?) {
     val context = LocalContext.current
     val resources = LocalResources.current
     // Names, categories and keywords of the features, in every app language
@@ -190,7 +194,10 @@ private fun SearchResults(query: String, filter: String?) {
             .sortedWith(compareByDescending<Pair<AppFeature, Int>> { it.second }.thenBy { resources.getString(it.first.titleStringResId) })
             .map { it.first }.toList()
     }
-    if (results.isEmpty()) EmptyText(stringResource(R.string.search_no_results)) else FeatureList(results)
+    // Back to the top as the query or filter changes: the best ones are there
+    val list = rememberLazyListState()
+    LaunchedEffect(query, filter) { list.scrollToItem(0) }
+    FeatureList(results, list, empty ?: stringResource(R.string.search_no_results).takeIf { results.isEmpty() })
 }
 
 /** Chips limiting the search to the favourites, the recent ones or a category; [onSelect] gets the tapped one's id. */
@@ -233,15 +240,25 @@ private fun CategoryGrid(categories: List<Category>, onClick: (Category) -> Unit
     }
 }
 
-/** Features to open, each with its star. */
+/**
+ * Features to open, each with its star, filling the page and scrolling ([list]): only those in sight
+ * are built, coming and going (and moving) as the search changes. [empty]: said instead of them.
+ */
 @Composable
-private fun FeatureList(items: List<AppFeature>) {
+private fun FeatureList(items: List<AppFeature>, list: LazyListState, empty: String?) {
     val context = LocalContext.current
     val navController = LocalAppNav.current.controller
 
-    Column(verticalArrangement = RowArrangement) {
-        items.forEach { feature ->
+    LazyColumn(
+        state = list,
+        verticalArrangement = Arrangement.spacedBy(ROW_SPACING),
+        contentPadding = PaddingValues(bottom = 16.dp),
+        modifier = Modifier.fillMaxSize().edgeFade(list)
+    ) {
+        if (empty != null) item(key = "empty") { Box(Modifier.animateItem()) { EmptyText(empty) } }
+        else items(items, key = { it.route }) { feature ->
             FeatureButton(
+                modifier = Modifier.animateItem(),
                 title = stringResource(feature.titleStringResId),
                 subtitle = stringResource(feature.descriptionResId),
                 icon = feature.icon,

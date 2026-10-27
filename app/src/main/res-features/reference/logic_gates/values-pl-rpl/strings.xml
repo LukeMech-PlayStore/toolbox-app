@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_logic_gates">Bramki logiczne</string>
+    <string name="fd_logic_gates">Tablice prawdy od AND do XNOR</string>
+    <string name="fk_logic_gates">bramki logiczne, tablica prawdy, and, or, not, nand, nor, xor, xnor, algebra boole\'a, cyfrowe, logika, iec 60617, ściągawka, tabela</string>
+    <string name="rf_truth_table">Tablica prawdy</string>
+    <string name="rf_gates">Bramki</string>
+    <string name="rf_gate">Bramka</string>
+    <string name="rf_expression">Wyrażenie</string>
+    <string name="rf_gives_one">Daje 1, gdy</string>
+    <string name="rf_gate_and">oba wejścia są 1</string>
+    <string name="rf_gate_or">co najmniej jedno wejście jest 1</string>
+    <string name="rf_gate_nand">nie oba wejścia są 1</string>
+    <string name="rf_gate_nor">żadne wejście nie jest 1</string>
+    <string name="rf_gate_xor">wejścia się różnią</string>
+    <string name="rf_gate_xnor">wejścia są takie same</string>
+    <string name="rf_gate_not">wejście jest 0</string>
+    <string name="rf_gates_note">○ to kółko na zanegowanym wyjściu</string>
+</resources>

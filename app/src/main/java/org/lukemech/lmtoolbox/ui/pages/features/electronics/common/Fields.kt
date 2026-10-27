@@ -120,10 +120,13 @@ private fun UnitPicker(current: String, choices: List<String>, onPick: (String) 
     }
 }
 
-/** A field for a code with letters in it (e.g. an SMD marking, "4R7"), its [label] above. */
+/**
+ * A field for a code with letters in it (e.g. an SMD marking, "4R7"), its [label] above; [keyboardType] for one
+ * of digits alone (a binary number).
+ */
 @Composable
-fun CodeField(label: String, value: String, onValueChange: (String) -> Unit) =
-    ValueField(label, value, { onValueChange(it.uppercase()) }, KeyboardType.Ascii, capitalization = KeyboardCapitalization.Characters)
+fun CodeField(label: String, value: String, keyboardType: KeyboardType = KeyboardType.Ascii, onValueChange: (String) -> Unit) =
+    ValueField(label, value, { onValueChange(it.uppercase()) }, keyboardType, capitalization = KeyboardCapitalization.Characters)
 
 @Composable
 private fun ValueField(

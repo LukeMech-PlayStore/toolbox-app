@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_decibel">Decybele</string>
-    <string name="fd_decibel">dB na stosunki i z powrotem</string>
-    <string name="fk_decibel">decybel, db, wzmocnienie, tłumienie, poziom, moc, napięcie, stosunek, decybele, dbm, dbv, logarytmiczny, kalkulator, oblicz, obliczenia, policz, elektronika, konwerter, konwertuj, konwersja, przelicznik, przelicz, zamiana</string>
+    <string name="fd_decibel">dB na stosunki i z powrotem, z tabelą</string>
+    <string name="fk_decibel">decybel, db, wzmocnienie, tłumienie, poziom, moc, napięcie, stosunek, decybele, dbm, dbv, stosunek mocy, stosunek napięć, amplituda, logarytm, tabela, ściągawka, logarytmiczny, kalkulator, oblicz, obliczenia, policz, elektronika, konwerter, konwertuj, konwersja, przelicznik, przelicz, zamiana</string>
     <string name="ec_quantity">Stosunek</string>
     <string name="ec_db">Poziom</string>
+    <string name="rf_power_ratio">Stosunek mocy</string>
+    <string name="rf_voltage_ratio">Stosunek napięć</string>
 </resources>
