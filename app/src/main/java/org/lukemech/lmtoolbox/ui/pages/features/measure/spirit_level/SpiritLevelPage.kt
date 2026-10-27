@@ -18,16 +18,19 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessibilityNew
 import androidx.compose.material.icons.filled.Storm
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import org.lukemech.lmtoolbox.R
-import org.lukemech.lmtoolbox.ui.components.FeatureButton
+import androidx.compose.ui.res.stringResource
+import org.lukemech.lmtoolbox.ui.components.PageHeading
+import org.lukemech.lmtoolbox.ui.components.ResultRow
+import org.lukemech.lmtoolbox.ui.components.Results
+import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
 import kotlin.math.abs
 import org.lukemech.lmtoolbox.ui.components.SensorWarning
 
@@ -37,12 +40,14 @@ fun SpiritLevelPage() {
     val pitchState = remember { mutableFloatStateOf(0f) }
     val rollState = remember { mutableFloatStateOf(0f) }
     val isCalibratedState = remember { mutableStateOf(true) }
+    var holding by remember { mutableStateOf(false) }
 
     RememberLevelSensorUpdates(
         context = context,
         pitch = pitchState,
         roll = rollState,
-        isCalibrated = isCalibratedState
+        isCalibrated = isCalibratedState,
+        holding = holding
     )
 
     val pitch = pitchState.floatValue
@@ -51,11 +56,9 @@ fun SpiritLevelPage() {
 
     val hasRequiredSensors = remember { SpiritLevelFeature.hasSensors(context) }
 
-    // The bars on top, the level in the middle of what they leave (sized to it, never under them)
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Bar on top (explained in a dialog when tapped), the values below it
-        // Off the bars above the page (e.g. notifications off), as a page heading would be
-        Column(modifier = Modifier.padding(top = 16.dp)) {
+    PageHeading(title = stringResource(R.string.fp_spirit_level), action = { HoldAction(holding) { holding = it } }) {
+        // The bar on top (explained in a dialog when tapped), the level, its angles below it
+        Column(verticalArrangement = RowArrangement) {
             SensorWarning(
                 hasSensors = hasRequiredSensors, calibrated = isCalibrated,
                 calibrationTitle = R.string.f_level_accuracy_title,
@@ -63,14 +66,13 @@ fun SpiritLevelPage() {
                 calibrationIcon = Icons.Default.Storm,
                 missingMessage = R.string.f_level_missing_sensors_message
             )
-
-            FeatureButton(
-                title = "X: ${"%.1f".format(roll)}° · Y: ${"%.1f".format(pitch)}°",
-                icon = Icons.Default.AccessibilityNew
-            )
-        }
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f).fillMaxWidth()) {
-            SpiritLevel(pitch, roll, lowAccuracy = !isCalibrated && hasRequiredSensors)
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                SpiritLevel(pitch, roll, lowAccuracy = !isCalibrated && hasRequiredSensors)
+            }
+            Results {
+                ResultRow("X", "${"%.1f".format(roll)}°")
+                ResultRow("Y", "${"%.1f".format(pitch)}°")
+            }
         }
     }
 }
@@ -102,8 +104,8 @@ private fun SpiritLevel(pitch: Float, roll: Float, lowAccuracy: Boolean) {
     }
     Canvas(
         modifier = Modifier
-            .fillMaxSize(0.8f)
-            .padding(16.dp)
+            .fillMaxWidth(0.8f)
+            .aspectRatio(1f)
     ) {
         // The ring's radius is a third of the area
         val side = size.minDimension / 3 / RING_RADIUS
@@ -139,8 +141,11 @@ private fun RememberLevelSensorUpdates(
     context: Context,
     pitch: MutableFloatState,
     roll: MutableFloatState,
-    isCalibrated: MutableState<Boolean>
+    isCalibrated: MutableState<Boolean>,
+    /** The tilt stays as it was while it's true (the accuracy's state goes on). */
+    holding: Boolean
 ) {
+    val held by rememberUpdatedState(holding)
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
 
     DisposableEffect(Unit) {
@@ -149,8 +154,10 @@ private fun RememberLevelSensorUpdates(
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
                 state.onSensorChanged(event)
-                pitch.floatValue = state.pitch
-                roll.floatValue = state.roll
+                if (!held) {
+                    pitch.floatValue = state.pitch
+                    roll.floatValue = state.roll
+                }
                 isCalibrated.value = state.isCalibrated
             }
 

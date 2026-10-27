@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_stroboscope">Stroboskop</string>
+    <string name="fk_stroboscope">stroboskop, strob, tachometr, obrotomierz, obroty, rpm, obr/min, prędkość obrotowa, obrót, częstotliwość, hz, błysk, latarka, lampa błyskowa, wentylator, silnik, koło, narzędzia</string>
+    <string name="fd_stroboscope">Zatrzymaj to, co się kręci</string>
+    <string name="f_strobe_rate">Błyska z częstotliwością</string>
+    <string name="f_strobe_rate_value">%1$s Hz · %2$s obr/min</string>
+    <string name="f_strobe_measured">Osiągnięta</string>
+    <string name="f_strobe_behind">Latarka nie nadąża</string>
+    <string name="f_strobe_rate_field">Częstotliwość · %1$s–%2$s %3$s</string>
+    <string name="f_strobe_limited">Poza zakresem: zostanie %1$s %2$s</string>
+    <string name="f_strobe_tap">Wystukaj tempo</string>
+    <string name="f_strobe_tap_desc">Stukaj z każdym obrotem</string>
+    <string name="f_strobe_flash">Błyskaj</string>
+    <string name="f_strobe_flash_desc">Gaśnie po wyjściu</string>
+    <string name="f_strobe_no_torch">To urządzenie nie ma latarki.</string>
+    <string name="f_strobe_torch_busy">Latarka jest zajęta: być może używa jej inna aplikacja.</string>
+    <string name="f_strobe_note">Zmieniaj częstotliwość, aż to, co się kręci, wyda się nieruchome. Do %1$s Hz (%2$s obr/min).</string>
+    <string name="f_strobe_warning">Migające światło może wywołać napad u osób z padaczką fotogenną.</string>
+</resources>

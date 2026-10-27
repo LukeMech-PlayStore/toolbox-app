@@ -3,4 +3,8 @@
     <string name="fp_ruler">Ruler</string>
     <string name="fk_ruler">ruler, length, measure, distance, size, centimeter, millimeter, inch, tape measure, measuring, tools</string>
     <string name="fd_ruler">Measure on the screen</string>
+    <string name="f_ruler_length">Length</string>
+    <string name="f_ruler_millimeters">Millimeters</string>
+    <string name="f_ruler_inches">Inches</string>
+    <string name="f_ruler_note">Put one end at 0 and drag the line to the other.</string>
 </resources>

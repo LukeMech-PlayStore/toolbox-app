@@ -21,12 +21,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ContactSupport
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.AccessibilityNew
 import androidx.compose.material.icons.filled.CompassCalibration
 import androidx.compose.material.icons.filled.Landscape
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -55,8 +53,14 @@ import kotlin.math.roundToInt
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.measure.compass.CompassFeature
 import org.lukemech.lmtoolbox.features.measure.compass.CompassFeature.AltitudeStatus
-import org.lukemech.lmtoolbox.ui.components.Fade
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
+import org.lukemech.lmtoolbox.ui.components.MainResult
+import org.lukemech.lmtoolbox.ui.components.PageHeading
+import org.lukemech.lmtoolbox.ui.components.ResultRow
+import org.lukemech.lmtoolbox.ui.components.Results
+import org.lukemech.lmtoolbox.ui.components.Reveal
+import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
 import org.lukemech.lmtoolbox.ui.components.SensorWarning
 import org.lukemech.lmtoolbox.ui.components.PromptBar
 import org.lukemech.lmtoolbox.ui.components.PermissionDialog
@@ -109,28 +113,30 @@ fun CompassPage() {
     val isCalibratedState = remember { mutableStateOf(true) }
     var locationDialog by remember { mutableStateOf(false) }
     var readingInfo by remember { mutableStateOf(false) }
+    var holding by remember { mutableStateOf(false) }
 
     RememberCompassSensorUpdates(
         context = context,
         azimuth = azimuthState,
-        isCalibrated = isCalibratedState
+        isCalibrated = isCalibratedState,
+        holding = holding
     )
     val azimuth = azimuthState.floatValue
     val isCalibrated = isCalibratedState.value
-    val (altitudeStatus, altitude) = rememberAltitude()
+    val (altitudeStatus, liveAltitude) = rememberAltitude()
+    // Held: the altitude stays as it was too
+    var heldAltitude by remember { mutableStateOf(liveAltitude) }
+    LaunchedEffect(liveAltitude, holding) { if (!holding) heldAltitude = liveAltitude }
+    val altitude = heldAltitude?.takeIf { altitudeStatus == AltitudeStatus.Known }
 
     val hasRequiredSensors = remember { CompassFeature.hasSensors(context) }
 
     val textColor = MaterialTheme.colorScheme.onBackground
 
-    // The bars on top, the dial in the middle of what they leave (sized to it, never under them)
-    Column(modifier = Modifier.fillMaxSize()) {
-        if (locationDialog) LocationDialog(onDismiss = { locationDialog = false })
-
-        // Bars on top (explained in a dialog when tapped): red for the compass, amber for the
-        // altitude; the heading below them. Off the bars above the page (e.g. notifications off),
-        // as a page heading would be
-        Column(modifier = Modifier.padding(top = 16.dp)) {
+    if (locationDialog) LocationDialog(onDismiss = { locationDialog = false })
+    PageHeading(title = stringResource(R.string.fp_compass), action = { HoldAction(holding) { holding = it } }) {
+        // Bars on top (explained in a dialog when tapped): red for the compass, amber for the altitude
+        Column(verticalArrangement = RowArrangement) {
             SensorWarning(
                 hasSensors = hasRequiredSensors, calibrated = isCalibrated,
                 calibrationTitle = R.string.f_compass_calibration_title,
@@ -153,55 +159,44 @@ fun CompassPage() {
                 }
             )
 
-            FeatureButton(
-                // The altitude next to it (what it's missing is in the bar above)
-                title = listOfNotNull(
-                    "${"%.1f".format(azimuth)}°",
-                    when (altitudeStatus) {
-                        AltitudeStatus.Known -> CompassFeature.altitudeText(context, altitude!!)
-                        AltitudeStatus.Searching -> stringResource(R.string.f_compass_altitude_searching)
-                        else -> null
-                    }
-                ).joinToString(" · "),
-                icon = Icons.Default.AccessibilityNew,
-                // The altitude's accuracy at the right (also the lighter part of the arrow's
-                // shaft), before the help
-                buttonContent = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Fading in once known (the last one kept while it fades out)
-                        val accuracy = altitude?.accuracy?.takeIf { altitudeStatus == AltitudeStatus.Known }
-                        val lastAccuracy = remember { floatArrayOf(0f) }
-                        if (accuracy != null) lastAccuracy[0] = accuracy
-                        Fade(visible = accuracy != null) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    stringResource(R.string.f_compass_altitude_accuracy, lastAccuracy[0].roundToInt().coerceAtLeast(1)),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                            }
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                // The arrow's altitude scale, once there is one
+                Compass(azimuth, textColor, needsCalibration = !isCalibrated && hasRequiredSensors, altitude = altitude)
+            }
+
+            Results {
+                MainResult(stringResource(R.string.f_compass_heading), "${"%.1f".format(azimuth)}°")
+                // The altitude once it's looked for: GPS… until it's known, then with its accuracy
+                val searching = altitudeStatus == AltitudeStatus.Searching
+                val lastAltitude = remember { arrayOfNulls<CompassFeature.Altitude>(1) }
+                if (altitude != null) lastAltitude[0] = altitude
+                Reveal(visible = altitude != null || searching) {
+                    val shown = altitude ?: lastAltitude[0]
+                    Column {
+                        ResultRow(
+                            stringResource(R.string.f_compass_altitude),
+                            if (shown == null || searching) stringResource(R.string.f_compass_altitude_searching)
+                            else CompassFeature.altitudeText(context, shown)
+                        )
+                        shown?.accuracy?.takeIf { !searching }?.let {
+                            ResultRow(stringResource(R.string.f_compass_accuracy), stringResource(R.string.f_compass_altitude_accuracy, it.roundToInt().coerceAtLeast(1)))
                         }
-                        Icon(Icons.AutoMirrored.Default.ContactSupport, contentDescription = null, modifier = Modifier.size(24.dp))
                     }
-                },
+                }
+            }
+            FeatureButton(
+                title = stringResource(R.string.f_compass_info_title),
+                icon = Icons.AutoMirrored.Default.ContactSupport,
                 onClick = { readingInfo = true }
             )
         }
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f).fillMaxWidth()) {
-            Compass(
-                azimuth, textColor, needsCalibration = !isCalibrated && hasRequiredSensors,
-                // The arrow's altitude scale, once there is one
-                altitude = altitude?.takeIf { altitudeStatus == AltitudeStatus.Known }
-            )
-        }
-        if (readingInfo) {
-            ReadingInfoDialog(
-                altitude = altitude?.takeIf { altitudeStatus == AltitudeStatus.Known },
-                showAltitude = altitudeStatus != AltitudeStatus.Hidden,
-                onDismiss = { readingInfo = false }
-            )
-        }
+    }
+    if (readingInfo) {
+        ReadingInfoDialog(
+            altitude = altitude,
+            showAltitude = altitudeStatus != AltitudeStatus.Hidden,
+            onDismiss = { readingInfo = false }
+        )
     }
 }
 
@@ -446,8 +441,8 @@ private fun Compass(azimuth: Float, textColor: Color, needsCalibration: Boolean,
     }
     Canvas(
         modifier = Modifier
-            .fillMaxSize(0.8f)
-            .padding(16.dp)
+            .fillMaxWidth(0.8f)
+            .padding(vertical = 8.dp)
             .aspectRatio(1f)
     ) {
         val level = (CompassFeature.normalize(animatedAzimuth) / 360f * 10000).roundToInt()
@@ -477,7 +472,10 @@ private fun RememberCompassSensorUpdates(
     context: Context,
     azimuth: MutableFloatState,
     isCalibrated: MutableState<Boolean>,
+    /** The heading stays as it was while it's true (the calibration's state goes on). */
+    holding: Boolean,
 ) {
+    val held by rememberUpdatedState(holding)
     val sensorManager = remember {
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     }
@@ -487,7 +485,7 @@ private fun RememberCompassSensorUpdates(
         val state = CompassFeature.SensorState()
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
-                state.onSensorChanged(event)?.let { azimuth.floatValue = it }
+                state.onSensorChanged(event)?.let { if (!held) azimuth.floatValue = it }
                 isCalibrated.value = state.isCalibrated
             }
 
