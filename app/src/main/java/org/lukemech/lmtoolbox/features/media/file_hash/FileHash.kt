@@ -1,0 +1,107 @@
+package org.lukemech.lmtoolbox.features.media.file_hash
+
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
+import java.io.Reader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
+import org.lukemech.lmtoolbox.helpers.PreferenceHelper
+import org.lukemech.lmtoolbox.helpers.displayName
+
+/** What's hashed: a file picked or shared in, or text typed. */
+enum class HashMode { Files, Text }
+
+/**
+ * Checksums of files (read through Android's content resolver, never whole in memory: see [MultiDigest]) and
+ * of text; no Linux. What's open stays while the page is left (kept here, as the image resizer keeps its).
+ */
+object FileHash {
+    /** A file to hash: its [name] and [size] (0: unknown), and its [hashes] so far. */
+    data class Item(
+        val uri: Uri,
+        val name: String,
+        val size: Long,
+        val hashes: Map<HashAlgorithm, String> = emptyMap(),
+        val state: State = State.Waiting,
+        /** Why it couldn't be read, when it [State.Failed]. */
+        val error: String? = null,
+    )
+
+    enum class State { Waiting, Hashing, Done, Failed }
+
+    // The page's, while it's left (see FileHashPage): one file at a time, as the video encoder has it
+    var mode = HashMode.Files
+    var file: Item? = null
+    var text = ""
+    /** The hashes to check against, as pasted or loaded (and the checksum file's name, which can tell their algorithm). */
+    var expectedText = ""
+    var expectedFile: String? = null
+    /** Another file checked against (not a checksum file), with its own hashes. */
+    var reference: Item? = null
+
+    /** [uri] as a file to hash: its name and size, as its provider has them. */
+    suspend fun describe(context: Context, uri: Uri): Item = withContext(Dispatchers.IO) {
+        val size = runCatching {
+            context.contentResolver.query(uri, arrayOf(OpenableColumns.SIZE), null, null, null)?.use {
+                if (it.moveToFirst() && !it.isNull(0)) it.getLong(0) else null
+            }
+        }.getOrNull() ?: 0L
+        Item(uri, displayName(context, uri) ?: uri.lastPathSegment ?: uri.toString(), size)
+    }
+
+    /**
+     * [uri]'s hashes by [algorithms], in one pass over it; [onRead] with the bytes read so far. Stops (throwing
+     * the CancellationException) as soon as its coroutine is canceled, between pieces.
+     */
+    suspend fun hash(context: Context, uri: Uri, algorithms: Collection<HashAlgorithm>, onRead: (Long) -> Unit): Map<HashAlgorithm, String> =
+        withContext(Dispatchers.IO) {
+            val scope = this
+            val input = context.contentResolver.openInputStream(uri) ?: error("Couldn't open the file")
+            input.use { MultiDigest.digest(it, algorithms) { read -> scope.ensureActive(); onRead(read) } }
+        }
+
+    /**
+     * [file]'s text if it's a checksum file: small enough for one (at most [MAX_CHECKSUM_FILE]), with hashes in it
+     * ([Checksums.parse]); null for any other file (a picture, a download), or one that can't be read as text.
+     */
+    suspend fun readChecksumFile(context: Context, file: Item): String? = withContext(Dispatchers.IO) {
+        if (file.size > MAX_CHECKSUM_FILE) return@withContext null
+        runCatching {
+            val input = context.contentResolver.openInputStream(file.uri) ?: return@runCatching null
+            input.use { it.reader(Charsets.UTF_8).buffered().readCapped() }
+        }.getOrNull()?.takeIf { Checksums.parse(it, file.name).isNotEmpty() }
+    }
+
+    /** [text] written to [uri] (an exported checksum file). */
+    suspend fun write(context: Context, uri: Uri, text: String) = withContext(Dispatchers.IO) {
+        val output = context.contentResolver.openOutputStream(uri, "wt") ?: error("Couldn't write the file")
+        output.use { it.write(text.toByteArray(Charsets.UTF_8)) }
+    }
+
+    /** The algorithms the page starts with, as the settings have them (the [HashAlgorithm.DEFAULTS] at first). */
+    fun algorithms(context: Context): Set<HashAlgorithm> {
+        if (!PreferenceHelper.contains(context, FileHashFeature.S_ALGORITHMS)) return HashAlgorithm.DEFAULTS
+        val names = PreferenceHelper.getStringList(context, FileHashFeature.S_ALGORITHMS)
+        return HashAlgorithm.entries.filter { it.name in names }.toSet()
+    }
+
+    fun saveAlgorithms(context: Context, algorithms: Set<HashAlgorithm>) =
+        PreferenceHelper.putStringList(context, FileHashFeature.S_ALGORITHMS, algorithms.map { it.name })
+
+    /** Bigger than any checksum file (in characters), small enough to read at once. */
+    private const val MAX_CHECKSUM_FILE = 4 shl 20
+
+    /** What's here, up to [MAX_CHECKSUM_FILE] characters: not a whole big file picked by mistake. */
+    private fun Reader.readCapped(): String {
+        val out = StringBuilder()
+        val buffer = CharArray(8192)
+        while (out.length < MAX_CHECKSUM_FILE) {
+            val n = read(buffer, 0, minOf(buffer.size, MAX_CHECKSUM_FILE - out.length))
+            if (n < 0) break
+            out.appendRange(buffer, 0, n)
+        }
+        return out.toString()
+    }
+}

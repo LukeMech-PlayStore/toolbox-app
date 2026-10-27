@@ -29,6 +29,7 @@ import org.lukemech.lmtoolbox.features.finance.currencyconv.CurrencyConverterFea
 import org.lukemech.lmtoolbox.features.measure.compass.CompassFeature
 import org.lukemech.lmtoolbox.features.measure.ruler.RulerFeature
 import org.lukemech.lmtoolbox.features.measure.spirit_level.SpiritLevelFeature
+import org.lukemech.lmtoolbox.features.media.file_hash.FileHashFeature
 import org.lukemech.lmtoolbox.features.media.file_size.FileSizeFeature
 import org.lukemech.lmtoolbox.features.media.image_resize.ImageResizerFeature
 import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
@@ -50,6 +51,7 @@ object FeatureRegistry {
         VideoEncoderFeature,
         ImageResizerFeature,
         FileSizeFeature,
+        FileHashFeature,
         MinecraftServerFeature,
         ColorCodeFeature,
         SmdCodeFeature,
