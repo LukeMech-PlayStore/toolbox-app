@@ -7,9 +7,10 @@ name: Tests
 #
 # Alongside them, the code is inspected as Android Studio's Inspect Code does. Results:
 # - the run's summary: every test on every leg (report job), every inspection problem (inspect job)
-# - annotations: failed tests (merge.py); inspection problems that fail the job, through code scanning
+# - annotations: failed tests (merge.py)
 # - artifacts: screenshots, logcat, raw results, Qodana's HTML report
-# - on a pull request: both summaries in one comment, updated by every run (comment job)
+# - on a pull request: both summaries in one comment, updated by every run, the failed tests' screenshots and logcat
+#   in it (comment job)
 #
 # Jobs: plan, build and inspect start at once; test needs plan and build; report needs test; comment needs report
 # and inspect.
@@ -107,13 +108,10 @@ jobs:
 
   # The code inspected as Android Studio's Inspect Code does: IntelliJ's and Android's inspections with the project's
   # profile (.idea/inspectionProfiles), in Qodana Community for Android (no token, no Qodana Cloud). Reported as soon as
-  # it's done (report.py); fails on critical and high problems, which also go to code scanning. The image is pulled at
-  # :latest on every run (Dependabot doesn't update container images), so the inspections stay as current as the IDE's.
+  # it's done (report.py); fails on critical and high problems. The image is pulled at :latest on every run (Dependabot
+  # doesn't update container images), so the inspections stay as current as the IDE's.
   inspect:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write # code scanning
     container:
       image: jetbrains/qodana-jvm-android:latest
       # The runner's Android SDK: the image has only android-33
@@ -156,17 +154,13 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      # The summary (also kept for the pull request's comment) and a SARIF of the failing problems alone, for code
-      # scanning. The image has no Python.
+      # The summary, also kept for the pull request's comment. The image has no Python.
       - name: Report
-        id: report
         if: always()
         run: |
           apt-get update -qq && apt-get install -y -qq python3 > /dev/null
           status=0
-          python3 .github/scripts/tests/inspections/report.py /tmp/inspections/qodana.sarif.json inspections.md \
-            /tmp/code-scanning.sarif.json || status=$?
-          if [ -f /tmp/code-scanning.sarif.json ]; then echo "sarif=found" >> "$GITHUB_OUTPUT"; fi
+          python3 .github/scripts/tests/inspections/report.py /tmp/inspections/qodana.sarif.json inspections.md || status=$?
           cat inspections.md >> "$GITHUB_STEP_SUMMARY"
           exit $status
 
@@ -178,18 +172,6 @@ jobs:
           path: inspections.md
           if-no-files-found: ignore
           retention-days: 3
-
-      # Critical and high problems on their lines, in the pull request's changes and the Security tab; typos and the
-      # like stay in the summary. Skipped for forks' and Dependabot's pull requests: their token can't write it.
-      - name: Upload to code scanning
-        if: >-
-          always() && steps.report.outputs.sarif == 'found'
-          && (github.event_name != 'pull_request'
-            || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'))
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
-        with:
-          sarif_file: /tmp/code-scanning.sarif.json
-          category: qodana
 
   # One job per shard (matrix.py): the app installed and its tests run on an emulator (run-tests.sh)
   test:
@@ -259,8 +241,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  # Every shard's results in one report (merge.py): the summary, failed tests as annotations, and the job failed if a
-  # test failed or didn't run
+  # Every shard's results in one report (merge.py): the summary, failed tests as annotations, what they left for the
+  # pull request's comment (their screenshots and logcat), and the job failed if a test failed or didn't run
   report:
     needs: [plan, test]
     if: always() && needs.plan.result == 'success'
@@ -282,14 +264,14 @@ jobs:
         with:
           name: e2e-durations
 
-      # The summary also kept for the pull request's comment
+      # The summary and the failures also kept for the pull request's comment
       - name: Report
         id: report
         env:
           MATRIX: ${{ needs.plan.outputs.matrix }}
         run: |
           status=0
-          python3 .github/scripts/tests/e2e/merge.py "$MATRIX" e2e-results e2e.md durations.json || status=$?
+          python3 .github/scripts/tests/e2e/merge.py "$MATRIX" e2e-results e2e.md durations.json failures || status=$?
           cat e2e.md >> "$GITHUB_STEP_SUMMARY"
           exit $status
 
@@ -299,6 +281,16 @@ jobs:
         with:
           name: summary-e2e
           path: e2e.md
+          if-no-files-found: ignore
+          retention-days: 3
+
+      # None when nothing failed
+      - name: Upload the failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-failures
+          path: failures/
           if-no-files-found: ignore
           retention-days: 3
 
@@ -314,9 +306,9 @@ jobs:
           path: durations.json
           key: e2e-durations-${{ github.run_id }}-${{ github.run_attempt }}
 
-  # On a pull request: both summaries in one comment (comment.py), whatever the jobs came to. Every run updates the
-  # same comment, found by its hidden marker. Skipped when the run is canceled (a newer one comments instead) and for
-  # forks' and Dependabot's pull requests (their token can't comment).
+  # On a pull request: both summaries in one comment (comment.py), whatever the jobs came to, the failed tests' screens
+  # and logcat in it. Every run updates the same comment, found by its hidden marker. Skipped when the run is canceled
+  # (a newer one comments instead) and for forks' and Dependabot's pull requests (their token can't comment).
   comment:
     needs: [report, inspect]
     if: >-
@@ -324,7 +316,7 @@ jobs:
       && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write # the failures' branch
       pull-requests: write
     steps:
       - name: Checkout code
@@ -339,6 +331,54 @@ jobs:
           path: summaries
           merge-multiple: true
 
+      # None when nothing failed
+      - name: Download the failures
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        continue-on-error: true
+        with:
+          name: e2e-failures
+          path: failures
+
+      # A comment can't hold files: the screenshots and logcat go to a branch of their own (BRANCH), shown from there
+      # by their commit (never a stale cached copy). One commit, no history: each run replaces its pull request's
+      # folder (pr-<number>), closed ones' dropped; other pull requests' runs race it, so it's tried again. Never
+      # merged: nothing in it is code.
+      - name: Publish the failures
+        id: failures
+        if: hashFiles('failures/failures.json') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          BRANCH: e2e-failures
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          open=$(gh pr list --state open --limit 1000 --json number --jq '.[].number')
+          mkdir -p "$RUNNER_TEMP/assets" && cp -r failures "$RUNNER_TEMP/assets/pr-$PR"
+          export GIT_INDEX_FILE="$RUNNER_TEMP/assets.index"
+          for try in 1 2 3; do
+            rm -f "$GIT_INDEX_FILE"
+            lease=
+            if git fetch -q --depth 1 origin "$BRANCH" 2> /dev/null; then
+              lease=$(git rev-parse FETCH_HEAD)
+              git read-tree "$lease"
+            fi
+            for dir in $(git ls-files | cut -d/ -f1 | sort -u); do
+              number=${dir#pr-}
+              if [ "$number" = "$PR" ] || ! grep -qx "$number" <<< "$open"; then git rm -r -q --cached "$dir"; fi
+            done
+            git --work-tree="$RUNNER_TEMP/assets" add "pr-$PR"
+            commit=$(git commit-tree "$(git write-tree)" -m "E2E failures: pull request #$PR, run $GITHUB_RUN_ID")
+            if git push -q --force-with-lease="refs/heads/$BRANCH:$lease" origin "$commit:refs/heads/$BRANCH"; then
+              echo "url=https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$commit/pr-$PR" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep $((try * 5))
+          done
+          echo "::warning title=Failures::Couldn't push them to $BRANCH: the comment goes without them"
+
       - name: Comment
         env:
           GH_TOKEN: ${{ github.token }}
@@ -347,8 +387,10 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           E2E_RESULT: ${{ needs.report.result }}
           INSPECT_RESULT: ${{ needs.inspect.result }}
+          FAILURES_URL: ${{ steps.failures.outputs.url }}
         run: |
-          python3 .github/scripts/tests/comment.py summaries/e2e.md summaries/inspections.md comment.md
+          python3 .github/scripts/tests/comment.py summaries/e2e.md summaries/inspections.md comment.md \
+            ${FAILURES_URL:+failures "$FAILURES_URL"}
           id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
             --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- lmtoolbox-tests -->"))) | .id' | head -n 1)
           if [ -n "$id" ]; then
