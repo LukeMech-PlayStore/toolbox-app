@@ -136,7 +136,7 @@ object Checksums {
      */
     fun parse(text: String, fileName: String? = null): List<ExpectedHash> {
         val fromName = fileName?.let(HashAlgorithm::byFileName)
-        return text.lineSequence().map { it.trim().removePrefix("\uFEFF") }.filter { it.isNotEmpty() && !it.startsWith("#") && !it.startsWith(";") }.mapNotNull { line ->
+        return text.lineSequence().map { it.trim().removePrefix(Char(0xFEFF).toString()) }.filter { it.isNotEmpty() && !it.startsWith("#") && !it.startsWith(";") }.mapNotNull { line ->
             BSD.matchEntire(line)?.let { m ->
                 val alg = HashAlgorithm.byTag(m.groupValues[1]) ?: return@let null
                 return@mapNotNull ExpectedHash(m.groupValues[3].lowercase(), m.groupValues[2], alg).takeIf { it.hash.length == alg.hexLength }
