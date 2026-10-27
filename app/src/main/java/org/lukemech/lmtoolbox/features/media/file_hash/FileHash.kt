@@ -53,7 +53,7 @@ object FileHash {
 
     /**
      * [uri]'s hashes by [algorithms], in one pass over it; [onRead] with the bytes read so far. Stops (throwing
-     * the CancellationException) as soon as its coroutine is cancelled, between pieces.
+     * the CancellationException) as soon as its coroutine is canceled, between pieces.
      */
     suspend fun hash(context: Context, uri: Uri, algorithms: Collection<HashAlgorithm>, onRead: (Long) -> Unit): Map<HashAlgorithm, String> =
         withContext(Dispatchers.IO) {
@@ -70,7 +70,7 @@ object FileHash {
         if (file.size > MAX_CHECKSUM_FILE) return@withContext null
         runCatching {
             val input = context.contentResolver.openInputStream(file.uri) ?: return@runCatching null
-            input.use { it.reader(Charsets.UTF_8).buffered().readText(MAX_CHECKSUM_FILE) }
+            input.use { it.reader(Charsets.UTF_8).buffered().readCapped() }
         }.getOrNull()?.takeIf { Checksums.parse(it, file.name).isNotEmpty() }
     }
 
@@ -93,12 +93,12 @@ object FileHash {
     /** Bigger than any checksum file (in characters), small enough to read at once. */
     private const val MAX_CHECKSUM_FILE = 4 shl 20
 
-    /** What's here, up to [max] characters: not a whole big file picked by mistake. */
-    private fun Reader.readText(max: Int): String {
+    /** What's here, up to [MAX_CHECKSUM_FILE] characters: not a whole big file picked by mistake. */
+    private fun Reader.readCapped(): String {
         val out = StringBuilder()
         val buffer = CharArray(8192)
-        while (out.length < max) {
-            val n = read(buffer, 0, minOf(buffer.size, max - out.length))
+        while (out.length < MAX_CHECKSUM_FILE) {
+            val n = read(buffer, 0, minOf(buffer.size, MAX_CHECKSUM_FILE - out.length))
             if (n < 0) break
             out.appendRange(buffer, 0, n)
         }

@@ -40,7 +40,7 @@ enum class HashAlgorithm(val label: String, val javaName: String?, val hexLength
         fun byTag(tag: String): HashAlgorithm? = tag.replace("-", "").uppercase().let { t -> entries.firstOrNull { it.tag == t } }
 
         /**
-         * The one a checksum file's [name] tells (SHA256SUMS, file.sha256, MD5SUMS, sha1sum.txt...), if any. The
+         * The one a checksum file's [name] tells (`SHA256SUMS`, `file.sha256`, `MD5SUMS`, `sha1sum.txt`...), if any. The
          * longer tags first, so "sha3-256" isn't taken for SHA-256.
          */
         fun byFileName(name: String): HashAlgorithm? {
@@ -89,7 +89,7 @@ class MultiDigest(algorithms: Collection<HashAlgorithm>) {
 
         /**
          * [input] read to its end through all of [algorithms]; [onRead] after each piece with how many bytes
-         * so far (it can throw to stop, e.g. a cancelled coroutine's ensureActive()). Doesn't close [input].
+         * so far (it can throw to stop, e.g. a canceled coroutine's ensureActive()). Doesn't close [input].
          */
         fun digest(input: InputStream, algorithms: Collection<HashAlgorithm>, onRead: (Long) -> Unit = {}): Map<HashAlgorithm, String> {
             val multi = MultiDigest(algorithms)
@@ -211,7 +211,7 @@ object Checksums {
         return Verdict(matched, mismatched - matched, missing - matched - mismatched)
     }
 
-    /** [computed] against what was expected: [matched] and [mismatched] rows, and the [missing] ones to compute to tell. */
+    /** What [verify] found: [matched] and [mismatched] rows, and the [missing] ones to compute to tell. */
     data class Verdict(val matched: Set<HashAlgorithm>, val mismatched: Set<HashAlgorithm>, val missing: Set<HashAlgorithm>) {
         val isMatch get() = matched.isNotEmpty() && mismatched.isEmpty()
         val isMismatch get() = mismatched.isNotEmpty()

@@ -156,7 +156,7 @@ fun FileHashPage(providedInput: String? = "") {
                     }
                 }
             } finally {
-                // Not another one's, started as this one was cancelled
+                // Not another one's, started as this one was canceled
                 if (job === started) {
                     job = null
                     reading = null

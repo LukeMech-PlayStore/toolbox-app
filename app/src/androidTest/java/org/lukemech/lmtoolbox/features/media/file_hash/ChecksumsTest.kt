@@ -165,7 +165,7 @@ class ChecksumsTest {
     @Test
     fun md5FileWithoutItsAlgorithmInLines() {
         val parsed = Checksums.parse("900150983cd24fb0d6963f7d28e17f72  abc.txt\r\n", "files.md5")
-        assertEquals(listOf(ExpectedHash("900150983cd24fb0d6963f7d28e17f72", "abc.txt", HashAlgorithm.MD5)), parsed)
+        assertEquals(ExpectedHash("900150983cd24fb0d6963f7d28e17f72", "abc.txt", HashAlgorithm.MD5), parsed.single())
         // Without a name to tell, its length does
         assertEquals(listOf(HashAlgorithm.MD5), Checksums.parse("900150983cd24fb0d6963f7d28e17f72  abc.txt").single().candidates)
     }
@@ -190,8 +190,8 @@ class ChecksumsTest {
     @Test
     fun bareHashesPasted() {
         assertEquals(
-            listOf(ExpectedHash("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")),
-            Checksums.parse("  BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD \n")
+            ExpectedHash("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"),
+            Checksums.parse("  BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD \n").single()
         )
         // Bytes apart, as some pages show them
         assertEquals("352441c2", Checksums.parse("35:24:41:C2").single().hash)
