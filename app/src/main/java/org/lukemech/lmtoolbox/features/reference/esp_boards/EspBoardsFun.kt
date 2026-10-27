@@ -329,7 +329,7 @@ object EspBoardsFeature : ReferenceFeature() {
     )
 
     private val C3_SPECS = listOf(
-        spec(SpecKind.Chip, "ESP32-C3 (RISC-V)"), spec(SpecKind.Clock, "160 MHz"), spec(SpecKind.Flash, "4 MB"),
+        spec(SpecKind.Chip, "ESP32-C3"), spec(SpecKind.Clock, "160 MHz"), spec(SpecKind.Flash, "4 MB"),
         spec(SpecKind.Ram, "400 KB"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, "5 V (USB-C)"),
         spec(SpecKind.Wireless, "Wi-Fi, BLE 5"),
     )
@@ -355,7 +355,7 @@ object EspBoardsFeature : ReferenceFeature() {
                 raw("ESP32-S3-DevKitC-1"), S3_DEVKITC, note = res(R.string.rf_esp_s3_note), group = raw("ESP32-S3"),
                 specs = listOf(
                     spec(SpecKind.Chip, "ESP32-S3"), spec(SpecKind.Clock, "2 × 240 MHz"), spec(SpecKind.Flash, "8 / 16 MB"),
-                    spec(SpecKind.Ram, "512 KB (+ 2–8 MB)"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, "5 V (USB)"),
+                    spec(SpecKind.Ram, "512 KB + PSRAM"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, "5 V (USB)"),
                     spec(SpecKind.Wireless, "Wi-Fi, BLE 5"),
                 )
             ),

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.SaveAs
@@ -49,6 +50,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -174,12 +176,12 @@ fun ResourceTiles(
 }
 
 /**
- * [tiles] alone, nothing measured (a board's chip, memory and voltages), laid out and drawn as the measured ones:
- * three to a row, their icons in [color].
+ * [tiles] alone, nothing measured (a board's chip, memory and voltages), drawn as the measured ones: two to a row,
+ * their values longer than a number ("STM32F411 / F401"), shrunk to fit; their icons in [color].
  */
 @Composable
 fun InfoTiles(tiles: List<InfoTile>, modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.primary) =
-    ResourceTileGrid(tiles.map { TileSpec(it.label, it.icon, it.value, null, null, null, color) }, modifier)
+    ResourceTileGrid(tiles.map { TileSpec(it.label, it.icon, it.value, null, null, null, color) }, modifier, perRow = 2)
 
 /** A tile as [ChartTile] draws it. */
 private data class TileSpec(
@@ -189,10 +191,9 @@ private data class TileSpec(
     val samples: List<Float?>?, val max: Float?, val color: Color,
 )
 
-/** Tiles, three to a row (four as two by two), each row as tall as its tallest. */
+/** Tiles, [perRow] to a row (three, four as two by two), each row as tall as its tallest. */
 @Composable
-private fun ResourceTileGrid(specs: List<TileSpec>, modifier: Modifier) {
-    val perRow = if (specs.size == 4) 2 else 3
+private fun ResourceTileGrid(specs: List<TileSpec>, modifier: Modifier, perRow: Int = if (specs.size == 4) 2 else 3) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = modifier.fillMaxWidth()) {
         specs.chunked(perRow).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
@@ -229,11 +230,16 @@ private fun ChartTile(spec: TileSpec, modifier: Modifier) {
                 )
             }
             Spacer(modifier = Modifier.height(6.dp))
-            // Alone in its tile (a board's chip), it may wrap; a measured one keeps to its line over its chart
-            Text(
-                value, style = MaterialTheme.typography.titleMedium, fontFamily = FontFamily.Monospace,
-                maxLines = if (samples == null && detail == null) 2 else 1, overflow = TextOverflow.Ellipsis
-            )
+            // A measured one in its line over its chart, monospaced as it changes; one alone in its tile (a board's
+            // chip) on two lines at most, shrunk as far as that takes to show it whole
+            if (samples == null && detail == null) {
+                Text(
+                    value, style = MaterialTheme.typography.titleMedium, maxLines = 2,
+                    autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = MaterialTheme.typography.titleMedium.fontSize)
+                )
+            } else {
+                Text(value, style = MaterialTheme.typography.titleMedium, fontFamily = FontFamily.Monospace, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
             detail?.forEach {
                 Text(
                     it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,

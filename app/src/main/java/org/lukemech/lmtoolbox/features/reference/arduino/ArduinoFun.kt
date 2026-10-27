@@ -378,7 +378,7 @@ object ArduinoFeature : ReferenceFeature() {
             PinoutSheet(
                 raw("Uno R4 (Minima, WiFi)"), UNO_R4_PINS, note = res(R.string.rf_ard_r4_note), group = unoSized,
                 specs = listOf(
-                    spec(SpecKind.Chip, "RA4M1 (Cortex-M4)"), spec(SpecKind.Clock, "48 MHz"), spec(SpecKind.Flash, "256 KB"),
+                    spec(SpecKind.Chip, "RA4M1"), spec(SpecKind.Clock, "48 MHz"), spec(SpecKind.Flash, "256 KB"),
                     spec(SpecKind.Ram, "32 KB"), spec(SpecKind.Logic, "5 V"), spec(SpecKind.Supply, "6–24 V"),
                     Spec(SpecKind.Wireless, res(R.string.rf_ard_r4_wireless)),
                 )

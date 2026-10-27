@@ -35,6 +35,7 @@ import org.lukemech.lmtoolbox.features.reference.common.TableSheet
 import org.lukemech.lmtoolbox.features.reference.common.ToolSheet
 import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.Reveal
+import org.lukemech.lmtoolbox.ui.components.ROW_SPACING
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SearchField
 import org.lukemech.lmtoolbox.ui.components.edgeFade
@@ -95,8 +96,16 @@ fun ReferencePage(
                     }
                 }
             }
-            // Under a search or a pinout's, but none under a table's headings: its rows start right there
-            val gap by animateDpAsState(if (table != null) 0.dp else 16.dp, label = "headerGap")
+            // Under a search as on the home page, none under a table's headings (its rows start right there), and
+            // under the picker alone (a calculator's page) as rows are apart: it's one of its rows
+            val gap by animateDpAsState(
+                when {
+                    table != null -> 0.dp
+                    sheet is ToolSheet -> ROW_SPACING
+                    else -> 16.dp
+                },
+                label = "headerGap"
+            )
             Spacer(Modifier.height(gap))
         },
         // Each sheet scrolls itself: a table's a lazy list, only its rows in sight built

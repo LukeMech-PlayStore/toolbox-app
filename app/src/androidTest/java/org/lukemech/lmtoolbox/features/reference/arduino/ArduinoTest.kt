@@ -14,6 +14,7 @@ class ArduinoTest : ToolTest(ArduinoFeature) {
         ui.click(hasText("Uno R3") and hasClickAction(), what = "the board picker")
         ui.type(ui.str(R.string.rf_search_sheets), "2560")
         ui.click(hasText("Mega 2560") and hasClickAction(), what = "the Mega in the list")
-        ui.waitShown(hasText("D53"), what = "the Mega's pins")
+        // Its chip's tile, over its pins (the list's lazy: D53, far down, isn't there until it's scrolled to)
+        ui.waitShown(hasText("ATmega2560"), what = "the Mega's chip")
     }
 }

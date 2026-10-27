@@ -154,16 +154,16 @@ object Stm32Feature : ReferenceFeature() {
                 PinoutSheet(
                 raw("Blue Pill"), BLUE_PILL, note = res(R.string.rf_stm32_blue_note),
                 specs = listOf(
-                    spec(SpecKind.Chip, "STM32F103C8 (Cortex-M3)"), spec(SpecKind.Clock, "72 MHz"), spec(SpecKind.Flash, "64 KB"),
-                    spec(SpecKind.Ram, "20 KB"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, "5 V (USB) / 3.3 V"),
+                    spec(SpecKind.Chip, "STM32F103C8"), spec(SpecKind.Clock, "72 MHz"), spec(SpecKind.Flash, "64 KB"),
+                    spec(SpecKind.Ram, "20 KB"), spec(SpecKind.Logic, "3.3 V"), spec(SpecKind.Supply, "5 V / 3.3 V"),
                 )
             ),
             PinoutSheet(
                 raw("Black Pill"), BLACK_PILL, note = res(R.string.rf_stm32_black_note),
                 specs = listOf(
-                    spec(SpecKind.Chip, "STM32F411CE / F401CC (Cortex-M4)"), spec(SpecKind.Clock, "100 / 84 MHz"),
+                    spec(SpecKind.Chip, "STM32F411 / F401"), spec(SpecKind.Clock, "100 / 84 MHz"),
                     spec(SpecKind.Flash, "512 / 256 KB"), spec(SpecKind.Ram, "128 / 64 KB"), spec(SpecKind.Logic, "3.3 V"),
-                    spec(SpecKind.Supply, "5 V (USB-C) / 3.3 V"),
+                    spec(SpecKind.Supply, "5 V / 3.3 V"),
                 )
             ),
         )

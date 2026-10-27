@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
@@ -76,7 +77,7 @@ import org.lukemech.lmtoolbox.ui.components.ROW_SPACING
 import org.lukemech.lmtoolbox.ui.components.RowColors
 
 /** How far apart pins are drawn: as much as the page has, between these. */
-private val MIN_PITCH = 18.dp
+private val MIN_PITCH = 16.dp
 private val MAX_PITCH = 40.dp
 
 /**
@@ -141,9 +142,23 @@ private const val TURN_FROM_ROWS = 8
 private fun fitted(pins: List<Pin>): Drawn {
     val columns = pins.maxOf { it.x } + 1f
     val rows = pins.maxOf { it.y } + 1f
-    if (rows <= TURN_FROM_ROWS || rows < columns * 1.5f) return Drawn(pins, false)
+    if (rows <= TURN_FROM_ROWS || rows < columns * 1.5f) return Drawn(closer(pins), false)
     val right = pins.maxOf { it.x }
-    return Drawn(pins.map { it.copy(x = it.y, y = right - it.x) }, true)
+    return Drawn(closer(pins.map { it.copy(x = it.y, y = right - it.x) }), true)
+}
+
+/** The widest a gap between rows of pins is drawn (a board's two sides, a pill's), in pitches: no strip of nothing. */
+private const val MAX_ROW_GAP = 2f
+
+/** [pins] with the gaps between their rows no wider than [MAX_ROW_GAP]. */
+private fun closer(pins: List<Pin>): List<Pin> {
+    val rows = pins.map { it.y }.distinct().sorted()
+    var shift = 0f
+    val moved = rows.mapIndexed { i, y ->
+        if (i > 0) shift += maxOf(0f, y - rows[i - 1] - MAX_ROW_GAP)
+        y to y - shift
+    }.toMap()
+    return pins.map { it.copy(y = moved.getValue(it.y)) }
 }
 
 /**
@@ -330,11 +345,15 @@ private fun PinBadge(pin: Pin, size: Dp) {
     val fill = pin.wire?.first() ?: pin.kind.color
     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(size)) {
         pin.wire?.let { Swatch(it, size) } ?: Box(Modifier.size(size).clip(CircleShape).background(fill))
+        // Shrunk to fit inside the circle, as in the drawing ("IOREF", "3V3(OUT)")
         Text(
             pin.number,
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, fontSize = if (pin.number.length > 3) 9.sp else 12.sp),
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
             color = if (fill.luminance() > 0.5f) Color.Black else Color.White,
-            maxLines = 1
+            maxLines = 1,
+            softWrap = false,
+            autoSize = TextAutoSize.StepBased(minFontSize = 6.sp, maxFontSize = 12.sp),
+            modifier = Modifier.padding(horizontal = size * 0.12f)
         )
     }
 }

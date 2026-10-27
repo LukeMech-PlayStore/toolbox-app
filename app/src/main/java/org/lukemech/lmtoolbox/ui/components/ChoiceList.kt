@@ -68,7 +68,8 @@ fun <T> ChoiceList(
         }
     }
     if (choices.size >= searchFrom) {
-        SearchField(query, { query = it }, placeholder, modifier = Modifier.padding(bottom = 4.dp))
+        // As far in as the choices' radio buttons, apart from the line over it and the choices as a page's search is
+        SearchField(query, { query = it }, placeholder, modifier = Modifier.padding(top = 8.dp, bottom = 8.dp), inset = 12.dp)
     }
     // A couple of lines above the selected one in sight
     val scroll = rememberLazyListState(
