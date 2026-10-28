@@ -186,6 +186,11 @@ object Installer {
     private const val LOADERS_SHOWN = 30
     /** Forge and NeoForge's installers download their libraries: it takes a while on a phone. */
     private const val INSTALLER_TIMEOUT_MS = 30 * 60_000L
+    /**
+     * Its own downloads' timeouts, as [Http.open]'s: Java's are none, so a library stalled on Forge's maven hung it until
+     * [INSTALLER_TIMEOUT_MS]. Timed out, it's a library that "failed to download": the installer's run again
+     */
+    private val INSTALLER_NET_TIMEOUTS = listOf("-Dsun.net.client.defaultConnectTimeout=15000", "-Dsun.net.client.defaultReadTimeout=30000")
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     // By kind, and with snapshots or not
@@ -562,6 +567,7 @@ object Installer {
             val result = Java.runInBackground(
                 context, MinecraftServerFeature, jdk, listOf("-jar", installer.name, "--installServer"),
                 dir = dir,
+                options = INSTALLER_NET_TIMEOUTS,
                 label = context.getString(R.string.f_Mc_installing_loader),
                 timeoutMs = INSTALLER_TIMEOUT_MS,
                 // Megabytes of stdout (every library it fetches), of which only the end is read (the task's log): kept
