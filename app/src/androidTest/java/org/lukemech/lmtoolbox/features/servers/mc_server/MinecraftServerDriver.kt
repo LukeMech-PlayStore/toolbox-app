@@ -108,7 +108,7 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         Device.screenshot("mc-new-$name")
         // Enabled once the Java its version needs is known
         ui.click(hasText(s(R.string.f_Mc_create)) and hasClickAction(), timeoutMs = 2 * Device.MINUTE, what = "Create")
-        Device.waitFor("$name to be made", 40 * Device.MINUTE, intervalMs = 2000, failFast = {
+        Device.waitFor("$name to be made", 15 * Device.MINUTE, intervalMs = 2000, failFast = {
             Installer.state.value?.takeIf { it.stage == Installer.Stage.Failed }?.let { "it failed: ${it.error}\n${linux.failure().orEmpty()}" }
                 ?: linux.failure()
         }) {
@@ -153,7 +153,7 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
     }
 
     private fun waitRunning(profile: ServerProfile, after: Long? = null) {
-        Device.waitFor("${profile.name} to run", 30 * Device.MINUTE, intervalMs = 2000, failFast = ::crashed) {
+        Device.waitFor("${profile.name} to run", 5 * Device.MINUTE, intervalMs = 2000, failFast = ::crashed) {
             linux.confirmPrompt()
             run?.let { it.serverId == profile.id && it.phase == ServerRunner.Phase.Running && (after == null || (it.readyAt ?: 0) > after) } == true
         }
@@ -211,7 +211,7 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         // Asked first: the setting changes once it's installed
         choose(s(R.string.f_Mc_loader_version, profile.type.label), Installer.loaderLabel(profile.type, other.version)) { ui.dialogShown }
         ui.clickInDialog(s(R.string.f_Mc_install))
-        Device.waitFor("its loader changed to ${other.version}", 30 * Device.MINUTE, intervalMs = 2000, failFast = {
+        Device.waitFor("its loader changed to ${other.version}", 15 * Device.MINUTE, intervalMs = 2000, failFast = {
             Installer.state.value?.takeIf { it.stage == Installer.Stage.Failed }?.let { "it failed: ${it.error}\n${linux.failure().orEmpty()}" }
                 ?: linux.failure()
         }) {
