@@ -15,6 +15,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.measure.common.MeterReport
 import org.lukemech.lmtoolbox.features.measure.common.ReadingStats
 import org.lukemech.lmtoolbox.features.measure.light_meter.LIGHT_REFERENCES
 import org.lukemech.lmtoolbox.features.measure.light_meter.LightMeterFeature
@@ -29,7 +30,7 @@ import org.lukemech.lmtoolbox.ui.components.ResultRow
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SectionTitle
-import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
+import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterActions
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.SensorUpdates
 
 /**
@@ -71,13 +72,34 @@ fun LightMeterPage() {
     val none = stringResource(R.string.f_meter_none)
     val unit = stringResource(R.string.f_light_unit)
     fun text(value: Double?) = value?.let(::formatLux)?.let { "$it $unit" } ?: none
+    val rows = listOf(
+        stringResource(R.string.f_light_foot_candles) to (shown?.let { "%.2f fc".format(footCandles(it)) } ?: none),
+        stringResource(R.string.f_meter_min) to text(summary.first),
+        stringResource(R.string.f_meter_max) to text(summary.second),
+        stringResource(R.string.f_meter_avg) to text(summary.third),
+    )
+    // The typical lights, the one the reading is like marked
+    val referencesTitle = stringResource(R.string.f_light_references)
+    val references = LIGHT_REFERENCES.map { stringResource(it.name) to "${range(it)} $unit" }
+    val like = shown?.let { referenceFor(it) }
+    val title = stringResource(R.string.fp_light_meter)
+    val note = stringResource(R.string.f_light_note)
 
     PageHeading(
-        title = stringResource(R.string.fp_light_meter),
+        title = title,
         action = {
-            HoldAction(holding) {
-                holding = it
-                if (!it) shown = lux
+            MeterActions(
+                title, readings = shown != null, holding = holding,
+                onHoldingChange = {
+                    holding = it
+                    if (!it) shown = lux
+                }
+            ) {
+                MeterReport(
+                    reading = shown?.let(::formatLux) ?: none, unit = unit,
+                    sections = listOf(MeterReport.Section(null, rows), MeterReport.Section(referencesTitle, references, marked = like)),
+                    notes = listOf(note)
+                )
             }
         }
     ) {
@@ -88,25 +110,13 @@ fun LightMeterPage() {
         Column(verticalArrangement = RowArrangement) {
             Results {
                 ReadingResult(shown?.let(::formatLux) ?: none, unit, held = holding)
-                ResultRow(stringResource(R.string.f_light_foot_candles), shown?.let { "%.2f fc".format(footCandles(it)) } ?: none)
-                ResultRow(stringResource(R.string.f_meter_min), text(summary.first))
-                ResultRow(stringResource(R.string.f_meter_max), text(summary.second))
-                ResultRow(stringResource(R.string.f_meter_avg), text(summary.third))
+                rows.forEach { (label, value) -> ResultRow(label, value) }
             }
-            SectionTitle(stringResource(R.string.f_light_references))
-            References(current = shown?.let { referenceFor(it) })
-            Note(stringResource(R.string.f_light_note))
-        }
-    }
-}
-
-/** The typical lights (LIGHT_REFERENCES), the one the reading is like ([current]) marked. */
-@Composable
-private fun References(current: Int?) {
-    val unit = stringResource(R.string.f_light_unit)
-    Results {
-        LIGHT_REFERENCES.forEachIndexed { i, reference ->
-            ResultRow(stringResource(reference.name), "${range(reference)} $unit", marked = i == current)
+            SectionTitle(referencesTitle)
+            Results {
+                references.forEachIndexed { i, (name, range) -> ResultRow(name, range, marked = i == like) }
+            }
+            Note(note)
         }
     }
 }

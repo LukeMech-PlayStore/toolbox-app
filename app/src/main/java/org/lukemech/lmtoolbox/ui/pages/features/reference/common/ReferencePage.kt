@@ -27,16 +27,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.reference.common.PinoutSheet
+import org.lukemech.lmtoolbox.features.reference.common.ReferencePdf
 import org.lukemech.lmtoolbox.features.reference.common.Sheet
 import org.lukemech.lmtoolbox.features.reference.common.TableSheet
 import org.lukemech.lmtoolbox.features.reference.common.ToolSheet
 import org.lukemech.lmtoolbox.ui.components.Fade
 import org.lukemech.lmtoolbox.ui.components.PageHeading
+import org.lukemech.lmtoolbox.ui.components.PdfExportAction
+import org.lukemech.lmtoolbox.ui.components.PdfFile
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.ROW_SPACING
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
@@ -79,8 +83,15 @@ fun ReferencePage(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // The last one there was, as it fades away for a calculator's page
                 val printable = remember { arrayOfNulls<Sheet>(1) }
+                val resources = LocalContext.current.resources
                 if (sheet !is ToolSheet) printable[0] = sheet
-                Fade(sheet !is ToolSheet) { printable[0]?.let { PdfExportAction(title, it) } }
+                Fade(sheet !is ToolSheet) {
+                    printable[0]?.let { shown ->
+                        PdfExportAction {
+                            PdfFile("$title - ${shown.name.resolve(resources)}") { ReferencePdf(resources, title).write(shown, it) }
+                        }
+                    }
+                }
                 action?.invoke()
             }
         },

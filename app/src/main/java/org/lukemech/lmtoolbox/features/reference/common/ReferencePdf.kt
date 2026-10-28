@@ -1,15 +1,8 @@
 package org.lukemech.lmtoolbox.features.reference.common
 
 import android.content.res.Resources
-import android.graphics.Canvas
-import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
-import android.graphics.Typeface
-import android.graphics.pdf.PdfDocument
-import android.text.Layout
-import android.text.StaticLayout
-import android.text.TextPaint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -20,98 +13,26 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import java.io.OutputStream
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.helpers.PdfPages
 
 /**
- * A reference's sheet as a PDF, drawn as it's printed, not a picture of the page: its text sharp and found by a
- * search. A pinout: its board's specs, the connector as on its page (turned the same way), what its colors mean, its
- * notes, then every pin in a table. A table: its columns as wide as they need (the page turned when they're many),
- * its headings again on every page. A4, [title] (the tool's) over each page, its number under.
+ * A reference's sheet as a PDF ([PdfPages]). A pinout: its board's specs, the connector as on its page (turned the
+ * same way), what its colors mean, its notes, then every pin in a table. A table: its columns as wide as they need
+ * (the page turned when they're many), its headings again on every page.
  */
-class ReferencePdf(private val resources: Resources, private val title: String) {
+class ReferencePdf(resources: Resources, title: String) : PdfPages(resources, title) {
 
-    private val document = PdfDocument()
-    private var page: PdfDocument.Page? = null
-    private var number = 0
-    private var landscape = false
-
-    // Where the next thing goes, from the top of the page's content
-    private var y = 0f
-    private val width get() = (if (landscape) A4_HEIGHT else A4_WIDTH) - 2 * MARGIN
-    private val bottom get() = (if (landscape) A4_WIDTH else A4_HEIGHT) - MARGIN - FOOTER
-    private val canvas: Canvas get() = page!!.canvas
-
-    private fun paint(size: Float, bold: Boolean = false, color: Int = INK) = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = size
-        typeface = if (bold) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
-        this.color = color
-    }
-
-    private val titlePaint = paint(15f, bold = true)
-    private val headingPaint = paint(11f, bold = true)
-    private val textPaint = paint(9f)
-    private val quietPaint = paint(8f, color = QUIET)
     private val cellPaint = paint(8f)
     private val cellBoldPaint = paint(8f, bold = true)
     private val valuePaint = paint(11f, bold = true)
-    private val fill = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
 
     /** Writes [sheet] (a pinout's or a table's) to [out]. */
-    fun write(sheet: Sheet, out: OutputStream) {
-        try {
-            when (sheet) {
-                is PinoutSheet -> pinout(sheet)
-                is TableSheet -> table(sheet)
-                is ToolSheet -> error("A tool's sheet has nothing to print")
-            }
-            finishPage()
-            document.writeTo(out)
-        } finally {
-            document.close()
+    fun write(sheet: Sheet, out: OutputStream) = write(out) {
+        when (sheet) {
+            is PinoutSheet -> pinout(sheet)
+            is TableSheet -> table(sheet)
+            is ToolSheet -> error("A tool's sheet has nothing to print")
         }
-    }
-
-    // --- Pages ---
-
-    private fun newPage(landscape: Boolean = this.landscape) {
-        finishPage()
-        this.landscape = landscape
-        number++
-        val (w, h) = if (landscape) A4_HEIGHT to A4_WIDTH else A4_WIDTH to A4_HEIGHT
-        page = document.startPage(PdfDocument.PageInfo.Builder(w.toInt(), h.toInt(), number).create())
-        canvas.drawText(title, MARGIN, MARGIN + 6f, quietPaint)
-        y = MARGIN + 18f
-    }
-
-    private fun finishPage() {
-        val current = page ?: return
-        val h = if (landscape) A4_WIDTH else A4_HEIGHT
-        val footer = resources.getString(R.string.rf_pdf_footer, resources.getString(R.string.app_name), number)
-        current.canvas.drawText(footer, MARGIN, h - MARGIN + 4f, quietPaint)
-        document.finishPage(current)
-        page = null
-    }
-
-    /** Room for [height] more on this page, or a new one. */
-    private fun room(height: Float) {
-        if (page == null || y + height > bottom) newPage()
-    }
-
-    private fun layout(text: String, paint: TextPaint, width: Float): StaticLayout =
-        StaticLayout.Builder.obtain(text, 0, text.length, paint, width.toInt().coerceAtLeast(1))
-            .setAlignment(Layout.Alignment.ALIGN_NORMAL)
-            .setIncludePad(false)
-            .build()
-
-    /** [text], wrapped to the page's width, at its left margin. */
-    private fun paragraph(text: String, paint: TextPaint = textPaint, after: Float = 6f) {
-        val laid = layout(text, paint, width)
-        room(laid.height.toFloat())
-        canvas.save()
-        canvas.translate(MARGIN, y)
-        laid.draw(canvas)
-        canvas.restore()
-        y += laid.height + after
     }
 
     private fun heading(sheet: Sheet) {
@@ -357,35 +278,12 @@ class ReferencePdf(private val resources: Resources, private val title: String) 
         y += 8f
     }
 
-    private fun drawLayout(layout: StaticLayout, x: Float, y: Float) {
-        canvas.save()
-        canvas.translate(x, y)
-        layout.draw(canvas)
-        canvas.restore()
-    }
-
     private companion object {
-        // A4 in points, and the page's margins
-        const val A4_WIDTH = 595f
-        const val A4_HEIGHT = 842f
-        const val MARGIN = 36f
-        const val FOOTER = 14f
         const val MAX_PITCH = 30f
         const val MAX_COLUMN = 220f
         const val CELL_PAD = 4f
         const val SPECS_PER_ROW = 3
         const val TILE_PAD = 8f
         const val TILE_CORNER = 8f
-
-        // Printed: dark on white, whatever the app's theme
-        const val INK = 0xFF212121.toInt()
-        const val QUIET = 0xFF616161.toInt()
-        const val BODY = 0xFFF1F3F4.toInt()
-        const val EDGE = 0xFF9E9E9E.toInt()
-        const val HEAD = 0xFFE3E7EA.toInt()
-        const val STRIPE = 0xFFF6F7F8.toInt()
-        const val TILE_EDGE = 0xFFD5DADD.toInt()
-        // The app's teal, as its tiles' icons
-        const val ACCENT = 0xFF00897B.toInt()
     }
 }

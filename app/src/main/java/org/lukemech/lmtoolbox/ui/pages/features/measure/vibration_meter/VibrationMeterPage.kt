@@ -19,6 +19,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.measure.common.MeterReport
 import org.lukemech.lmtoolbox.features.measure.common.ReadingStats
 import org.lukemech.lmtoolbox.features.measure.common.sampleRate
 import org.lukemech.lmtoolbox.features.measure.vibration_meter.GravityFilter
@@ -37,7 +38,7 @@ import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SensorWarning
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.LiveGraph
 import org.lukemech.lmtoolbox.ui.components.ReadingResult
-import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
+import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterActions
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.SensorUpdates
 
 /** The trace takes a point this often (ms): the largest motion since the last one, so no shake is missed. */
@@ -45,6 +46,11 @@ private const val TRACE_MS = 50L
 
 /** The trace's last 5 s. */
 private const val TRACE = (5000 / TRACE_MS).toInt()
+
+/** The trace's scale (m/s²): from 0 to 1 at least, a line every 0.25. */
+private const val GRAPH_MIN = 0f
+private const val GRAPH_MAX = 1f
+private const val GRAPH_STEP = 0.25f
 
 /** The RMS, the peak and the frequency are worked out every this many trace points (250 ms). */
 private const val ANALYSIS_EVERY = 5
@@ -115,10 +121,31 @@ fun VibrationMeterPage() {
     val none = stringResource(R.string.f_meter_none)
     val unit = stringResource(R.string.f_vibration_unit)
     fun text(ms2: Double?) = ms2?.let { "%.3f %s · %.4f g".format(it, unit, toG(it)) } ?: none
+    val reading = analysis.rms?.let { "%.3f".format(it) } ?: none
+    val rows = listOf(
+        stringResource(R.string.f_vibration_peak) to text(analysis.peak),
+        stringResource(R.string.f_vibration_max_peak) to text(maxPeak),
+        stringResource(R.string.f_vibration_frequency) to (analysis.frequency?.let { "%.1f Hz".format(it) } ?: none),
+        stringResource(R.string.f_vibration_sample_rate) to (analysis.sampleRate?.let { "${it.roundToInt()} Hz" } ?: none),
+    )
+    val note = stringResource(
+        R.string.f_vibration_note,
+        analysis.sampleRate?.roundToInt()?.toString() ?: none,
+        analysis.sampleRate?.let { (it / 2).roundToInt().toString() } ?: none
+    )
+    val title = stringResource(R.string.fp_vibration_meter)
 
     PageHeading(
-        title = stringResource(R.string.fp_vibration_meter),
-        action = { HoldAction(holding) { holding = it } }
+        title = title,
+        action = {
+            MeterActions(title, readings = analysis.rms != null, holding = holding, onHoldingChange = { holding = it }) {
+                MeterReport(
+                    reading = reading, unit = unit, sections = listOf(MeterReport.Section(null, rows)),
+                    graph = MeterReport.Graph(trace, TRACE_MS, GRAPH_MIN, GRAPH_MAX, GRAPH_STEP, unit),
+                    notes = listOf(note)
+                )
+            }
+        }
     ) {
         Column(verticalArrangement = RowArrangement) {
             // Only the missing sensor: the motion's readings have no calibration to ask for (the spirit
@@ -132,30 +159,15 @@ fun VibrationMeterPage() {
             )
             Results {
                 // The RMS, large on top: the reading
-                ReadingResult(analysis.rms?.let { "%.3f".format(it) } ?: none, unit, held = holding)
-                ResultRow(stringResource(R.string.f_vibration_peak), text(analysis.peak))
-                ResultRow(stringResource(R.string.f_vibration_max_peak), text(maxPeak))
-                ResultRow(
-                    stringResource(R.string.f_vibration_frequency),
-                    analysis.frequency?.let { "%.1f Hz".format(it) } ?: none
-                )
-                ResultRow(
-                    stringResource(R.string.f_vibration_sample_rate),
-                    analysis.sampleRate?.let { "${it.roundToInt()} Hz" } ?: none
-                )
+                ReadingResult(reading, unit, held = holding)
+                rows.forEach { (label, value) -> ResultRow(label, value) }
             }
             LiveGraph(
-                values = trace, capacity = TRACE, min = 0f, max = 1f, step = 0.25f, unit = unit,
+                values = trace, capacity = TRACE, min = GRAPH_MIN, max = GRAPH_MAX, step = GRAPH_STEP, unit = unit,
                 intervalMs = TRACE_MS, label = { "%.3f %s".format(it, unit) },
                 holding = holding, onHoldingChange = { holding = it }
             )
-            Note(
-                stringResource(
-                    R.string.f_vibration_note,
-                    analysis.sampleRate?.roundToInt()?.toString() ?: none,
-                    analysis.sampleRate?.let { (it / 2).roundToInt().toString() } ?: none
-                )
-            )
+            Note(note)
         }
     }
 }

@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.measure.common.MeterReport
 import org.lukemech.lmtoolbox.features.measure.common.ReadingStats
 import org.lukemech.lmtoolbox.features.measure.sound_meter.SoundMeterFeature
 import org.lukemech.lmtoolbox.features.measure.sound_meter.calibrationFor
@@ -57,10 +58,15 @@ import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.LiveGraph
 import org.lukemech.lmtoolbox.ui.components.ReadingResult
-import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
+import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterActions
 
 /** The graph's last 30 s, a reading every SoundMeterFeature.BLOCK_MS. */
 private const val HISTORY = 30_000 / SoundMeterFeature.BLOCK_MS
+
+/** The graph's scale (dB): from 30 to 110 at least, a line every 20. */
+private const val GRAPH_MIN = 30f
+private const val GRAPH_MAX = 110f
+private const val GRAPH_STEP = 20f
 
 /** A step of the calibration's − and + (dB). */
 private const val CALIBRATION_STEP = 0.5
@@ -122,8 +128,38 @@ fun SoundMeterPage() {
     val none = stringResource(R.string.f_meter_none)
     fun text(db: Double?) = db?.let { "%.1f".format(it) } ?: none
     val unit = stringResource(if (aWeighted) R.string.f_sound_unit_a else R.string.f_sound_unit_z)
+    val current = shown(last?.level)
+    val rows = listOf(
+        stringResource(R.string.f_meter_min) to "${text(shown(levels.min))} $unit",
+        stringResource(R.string.f_meter_max) to "${text(shown(levels.max))} $unit",
+        stringResource(R.string.f_sound_leq) to "${text(shown(meanSquares.mean?.let(::leqDbfs)))} $unit",
+    )
+    // Its scale in SPL; the history kept in dBFS, so it follows the calibration too
+    val graph = if (fullScale == null) emptyList() else history.map { (it + fullScale + calibration).toFloat() }
+    val title = stringResource(R.string.fp_sound_meter)
+    val note = stringResource(
+        R.string.f_sound_note,
+        stringResource(if (unprocessed) R.string.f_sound_source_unprocessed else R.string.f_sound_source_voice)
+    )
+    // In the PDF, what's on the page, and what it's measured with: the calibration, the microphone
+    val notes = listOfNotNull(
+        stringResource(R.string.f_sound_calibration, "%+.1f".format(calibration)),
+        stringResource(R.string.f_sound_clipped).takeIf { clipped },
+        note,
+    )
 
-    PageHeading(title = stringResource(R.string.fp_sound_meter), action = { HoldAction(holding) { holding = it } }) {
+    PageHeading(
+        title = title,
+        action = {
+            MeterActions(title, readings = current != null, holding = holding, onHoldingChange = { holding = it }) {
+                MeterReport(
+                    reading = text(current), unit = unit, sections = listOf(MeterReport.Section(null, rows)),
+                    graph = MeterReport.Graph(graph, SoundMeterFeature.BLOCK_MS.toLong(), GRAPH_MIN, GRAPH_MAX, GRAPH_STEP, unit),
+                    notes = notes
+                )
+            }
+        }
+    ) {
         Column(verticalArrangement = RowArrangement) {
             PromptBar(
                 visible = !allowed,
@@ -142,18 +178,14 @@ fun SoundMeterPage() {
                 onClick = { attempt++ }
             )
 
-            val current = shown(last?.level)
             Results {
                 ReadingResult(text(current), unit, held = holding, color = if (clipped) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
-                ResultRow(stringResource(R.string.f_meter_min), "${text(shown(levels.min))} $unit")
-                ResultRow(stringResource(R.string.f_meter_max), "${text(shown(levels.max))} $unit")
-                ResultRow(stringResource(R.string.f_sound_leq), "${text(shown(meanSquares.mean?.let(::leqDbfs)))} $unit")
+                rows.forEach { (label, value) -> ResultRow(label, value) }
             }
             Note(stringResource(R.string.f_sound_clipped), visible = clipped)
-            // Its scale in SPL; the history kept in dBFS, so it follows the calibration too
             LiveGraph(
-                values = if (fullScale == null) emptyList() else history.map { (it + fullScale + calibration).toFloat() },
-                capacity = HISTORY, min = 30f, max = 110f, step = 20f, unit = unit,
+                values = graph,
+                capacity = HISTORY, min = GRAPH_MIN, max = GRAPH_MAX, step = GRAPH_STEP, unit = unit,
                 intervalMs = SoundMeterFeature.BLOCK_MS.toLong(), label = { "%.1f %s".format(it, unit) },
                 holding = holding, onHoldingChange = { holding = it }
             )
@@ -170,12 +202,7 @@ fun SoundMeterPage() {
                     reset()
                 }
             )
-            Note(
-                stringResource(
-                    R.string.f_sound_note,
-                    stringResource(if (unprocessed) R.string.f_sound_source_unprocessed else R.string.f_sound_source_voice)
-                )
-            )
+            Note(note)
         }
     }
 
