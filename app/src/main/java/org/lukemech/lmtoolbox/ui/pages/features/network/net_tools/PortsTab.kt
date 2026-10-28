@@ -45,7 +45,7 @@ import org.lukemech.lmtoolbox.ui.components.RowArrangement
 internal enum class PortPreset { Common, WellKnown, All, Custom }
 
 /** The port scan's host, ports and timeout, its run and the open ports; the page's, as the other tabs'. */
-internal class PortsState(private val context: Context, private val scope: CoroutineScope) {
+internal class PortsState(private val context: Context, scope: CoroutineScope) {
     var host by mutableStateOf("")
     var preset by mutableStateOf(PortPreset.Common)
     var custom by mutableStateOf("")
@@ -150,7 +150,7 @@ internal fun PortsTab(state: PortsState) {
     }
 }
 
-/** An open port: its number, what usually listens there, how long it took to answer. */
+/** An open port's line: the number, what usually listens there, how long it took to answer. */
 @Composable
 private fun PortLine(open: PortScan.Open) {
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp)) {

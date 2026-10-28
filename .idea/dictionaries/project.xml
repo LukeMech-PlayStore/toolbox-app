@@ -115,6 +115,8 @@
       <w>henries</w>
       <w>hpwr</w>
       <w>hsync</w>
+      <w>iata</w>
+      <w>icmp</w>
       <w>icsp</w>
       <w>icspclk</w>
       <w>icspdat</w>
@@ -200,6 +202,7 @@
       <w>nxdomain</w>
       <w>okhttp</w>
       <w>omtp</w>
+      <w>oneplus</w>
       <w>opamp</w>
       <w>oparty</w>
       <w>otwartego</w>
@@ -262,6 +265,7 @@
       <w>rsplit</w>
       <w>rstrip</w>
       <w>rtck</w>
+      <w>rtts</w>
       <w>rxc</w>
       <w>sclk</w>
       <w>scts</w>

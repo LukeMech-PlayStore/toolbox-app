@@ -130,7 +130,7 @@ private fun PingResults(result: PingResult) {
     }
 }
 
-/** A probe: its number, its time (or lost, or a router's error) and who answered. */
+/** A probe's line: the number, the time (or lost, or a router's error) and who answered. */
 @Composable
 private fun PingRowLine(row: PingRow) {
     val text = when {

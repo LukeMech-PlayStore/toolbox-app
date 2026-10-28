@@ -189,7 +189,7 @@ internal fun phaseText(run: ServerRunner.Run?): String = stringResource(
 
 /** A dot in the color of how it's doing: green running, amber on its way, red crashed, gray stopped. */
 @Composable
-internal fun PhaseDot(run: ServerRunner.Run?, size: androidx.compose.ui.unit.Dp = 14.dp) {
+internal fun PhaseDot(run: ServerRunner.Run?, size: Dp = 14.dp) {
     val color = when (run?.phase) {
         ServerRunner.Phase.Running -> androidx.compose.ui.graphics.Color(0xFF2E9E4F)
         ServerRunner.Phase.Starting, ServerRunner.Phase.Stopping -> androidx.compose.ui.graphics.Color(0xFFE0A100)

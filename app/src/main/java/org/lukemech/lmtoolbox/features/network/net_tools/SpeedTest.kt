@@ -10,6 +10,7 @@ import java.util.Collections
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.abs
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 /**
@@ -104,7 +106,7 @@ object SpeedTest {
      * HTTP request's answer waits on the server's work, as long as the trip or longer).
      */
     private suspend fun latency(onPing: suspend (done: Int) -> Unit): List<Double> {
-        val address = InetAddress.getByName(HOST)
+        val address = withContext(Dispatchers.IO) { InetAddress.getByName(HOST) }
         val times = mutableListOf<Double>()
         for (i in 0..PINGS) {
             val start = System.nanoTime()
@@ -147,7 +149,7 @@ object SpeedTest {
                     } catch (e: IOException) {
                         // Closed at the end, or the connection's gone: again (the phase fails if none got through)
                         failure = e
-                        if (System.nanoTime() < end) delay(SAMPLE_MS)
+                        if (System.nanoTime() < end) delay(SAMPLE_MS.milliseconds)
                     }
                 }
             }
@@ -159,7 +161,7 @@ object SpeedTest {
         var last = start to 0L
         try {
             while (System.nanoTime() < end) {
-                delay(SAMPLE_MS)
+                delay(SAMPLE_MS.milliseconds)
                 val now = System.nanoTime() to bytes.get()
                 val (t0, b0) = marks.last()
                 samples += rate(now.second - b0, now.first - t0)

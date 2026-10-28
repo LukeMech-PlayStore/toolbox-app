@@ -29,7 +29,7 @@ sealed interface PingLine {
     data class Failure(val message: String) : PingLine
 }
 
-/** Android's ping's output, line by line: what it says, or null for what it says nothing of (blank, a "DUP!"'s header...). */
+/** Android's ping's output, line by line: what it says, or null for what it says nothing of (blank, the statistics' header...). */
 object PingParser {
     private val HEADER = Regex("""^PING6?\s+(\S+)\s+\(([^)\s]+)\)""")
     // The sender's name with its address in brackets, or the address alone (an IPv6 one has colons: up to ": icmp_")
@@ -149,7 +149,7 @@ object Ping {
     internal fun binary(address: InetAddress): String? =
         (if (address is Inet6Address) PING6 else PING).takeIf { File(it).canExecute() }
 
-    /** The results of pinging [host] as they come; whether the system's ping ran ([native]) is told by [onNative]. */
+    /** The results of pinging [host] as they come; whether the system's ping ran (native) is told by [onNative]. */
     fun run(host: String, options: Options, onNative: (Boolean) -> Unit = {}): Flow<PingResult> = channelFlow {
         val address = Hosts.resolve(host) ?: run {
             send(PingResult(failure = "Unknown host"))
@@ -192,7 +192,7 @@ object Ping {
         }
     }
 
-    /** ping's -i takes a dot, whatever the phone's language. */
+    /** The -i of ping takes a dot, whatever the phone's language. */
     internal fun format(seconds: Double) = String.format(Locale.ROOT, "%.1f", seconds)
 
     /** What ping says when apps may not open its socket. */

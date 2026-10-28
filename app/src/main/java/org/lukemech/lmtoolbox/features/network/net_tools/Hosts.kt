@@ -58,7 +58,7 @@ object Hosts {
 /** The system's own programs (ping), not the Linux subsystem's. */
 object Commands {
     /**
-     * Runs [cmd] (its errors as its output), [onLine] getting each line it prints; its exit code. Cancelled, it's
+     * Runs [cmd] (its errors as its output), [onLine] getting each line it prints; its exit code. Canceled, it's
      * stopped.
      */
     suspend fun lines(cmd: List<String>, onLine: (String) -> Unit): Int = withContext(Dispatchers.IO) {

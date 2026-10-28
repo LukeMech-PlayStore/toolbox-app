@@ -14,7 +14,7 @@ import kotlinx.coroutines.sync.withLock
  * Traceroute, made of Android's ping (no root, no Linux): a probe with a TTL of 1, 2, 3... is answered by the
  * router where it runs out ("From 10.0.0.1 icmp_seq=1 Time to live exceeded"), until one reaches the host. A
  * router's "Time to live exceeded" carries no time, so each one found is pinged itself for its round trips (most
- * answer; one that doesn't shows the address alone), and its name is looked up. Termux's traceroute and tracepath
+ * answer; one that doesn't is shown by its address alone), and its name is looked up. Termux's traceroute and tracepath
  * would need the subsystem, and raw sockets PRoot doesn't give either.
  */
 object Traceroute {
@@ -39,7 +39,7 @@ object Traceroute {
     /** Round trips measured to each router found. */
     private const val RTT_PROBES = 3
 
-    /** What [probe]'s ping said of one TTL: who answered, and whether that's the host. */
+    /** What a probe's ping said of one TTL: who answered, and whether that's the host. */
     internal fun answer(lines: List<String>): Pair<String?, Boolean> {
         for (line in lines) {
             when (val p = PingParser.parse(line)) {

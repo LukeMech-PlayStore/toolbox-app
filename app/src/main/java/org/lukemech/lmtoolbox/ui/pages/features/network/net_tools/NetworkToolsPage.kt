@@ -192,7 +192,7 @@ private fun LocalNetworkDialog(onDismiss: () -> Unit) {
 
 /**
  * A tab's run, one at a time: [running] from its start until it's over, stopped or not. Observed, as a Job's isActive
- * isn't (stopped, the tab stayed "Stop"); and only once it's over, not as soon as it's cancelled, so a new one can't
+ * isn't (stopped, the tab stayed "Stop"); and only once it's over, not as soon as it's canceled, so a new one can't
  * start while the last still lets go of what it held (a scan's sockets).
  */
 internal class TabRun(private val scope: CoroutineScope) {
@@ -213,7 +213,7 @@ internal class TabRun(private val scope: CoroutineScope) {
     }
 }
 
-/** A tab's fields, as a form's are app-wide: in from the page's edges, [FIELD_SPACING] apart. */
+/** A tab's fields, as the app's forms are: in from the page's edges, [FIELD_SPACING] apart. */
 @Composable
 internal fun Fields(content: @Composable ColumnScope.() -> Unit) =
     Column(verticalArrangement = FieldArrangement, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), content = content)

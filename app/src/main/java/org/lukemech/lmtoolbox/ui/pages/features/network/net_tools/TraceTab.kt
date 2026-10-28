@@ -36,7 +36,7 @@ import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.FieldArrangement
 
 /** The traceroute tab's host, its run and its hops; the page's, as the other tabs'. */
-internal class TraceState(private val context: Context, private val scope: CoroutineScope) {
+internal class TraceState(private val context: Context, scope: CoroutineScope) {
     var host by mutableStateOf(PreferenceHelper.get(context, NetworkToolsFeature.S_TRACE, ""))
     var result by mutableStateOf<Traceroute.Result?>(null)
     private val run = TabRun(scope)
@@ -70,7 +70,7 @@ internal fun TraceTab(state: TraceState) {
     }
 }
 
-/** A hop: its number, who answered (its name over its address) and the round trips to it; "*" for no answer. */
+/** A hop's line: the number, who answered (the name over the address) and the round trips to it; "*" for no answer. */
 @Composable
 private fun HopLine(hop: Traceroute.Hop) {
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {

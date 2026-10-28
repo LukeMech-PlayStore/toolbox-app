@@ -15,27 +15,27 @@ import org.junit.Test
 class NetworkParsersTest {
     @Test
     fun pingLines() {
-        assertEquals(PingLine.Header("example.com", "93.184.215.14"), PingParser.parse("PING example.com (93.184.215.14) 56(84) bytes of data."))
+        assertEquals(PingLine.Header("example.com", "93.184.215.14"), ping("PING example.com (93.184.215.14) 56(84) bytes of data."))
         assertEquals(
             PingLine.Reply("142.250.186.206", 1, 117, 12.3, 64),
-            PingParser.parse("64 bytes from 142.250.186.206: icmp_seq=1 ttl=117 time=12.3 ms")
+            ping("64 bytes from 142.250.186.206: icmp_seq=1 ttl=117 time=12.3 ms")
         )
         // Its name with the address in brackets; an IPv6 address's colons
-        assertEquals("142.250.186.206", (PingParser.parse("64 bytes from waw07s05-in-f14.1e100.net (142.250.186.206): icmp_seq=2 ttl=117 time=11.9 ms") as PingLine.Reply).from)
+        assertEquals("142.250.186.206", (ping("64 bytes from waw07s05-in-f14.1e100.net (142.250.186.206): icmp_seq=2 ttl=117 time=11.9 ms") as PingLine.Reply).from)
         assertEquals(
             PingLine.Reply("2a00:1450:401b:80e::200e", 3, 57, 13.4, 64),
-            PingParser.parse("64 bytes from 2a00:1450:401b:80e::200e: icmp_seq=3 ttl=57 time=13.4 ms")
+            ping("64 bytes from 2a00:1450:401b:80e::200e: icmp_seq=3 ttl=57 time=13.4 ms")
         )
-        assertEquals(PingLine.Error("10.0.0.1", 1, "Time to live exceeded"), PingParser.parse("From 10.0.0.1 icmp_seq=1 Time to live exceeded"))
-        assertEquals(PingLine.Error("192.168.1.1", 4, "Destination Host Unreachable"), PingParser.parse("From _gateway (192.168.1.1) icmp_seq=4 Destination Host Unreachable"))
-        assertEquals(PingLine.Summary(4, 3, 0, 25.0), PingParser.parse("4 packets transmitted, 3 received, 25% packet loss, time 3004ms"))
-        assertEquals(PingLine.Summary(4, 0, 4, 100.0), PingParser.parse("4 packets transmitted, 0 received, +4 errors, 100% packet loss, time 3003ms"))
-        assertEquals(PingLine.Rtt(11.981, 12.349, 12.876), PingParser.parse("rtt min/avg/max/mdev = 11.981/12.349/12.876/0.345 ms"))
-        assertEquals(PingLine.Failure("unknown host nowhere.invalid"), PingParser.parse("ping: unknown host nowhere.invalid"))
-        assertEquals(PingLine.Failure("Name or service not known"), PingParser.parse("ping: nowhere.invalid: Name or service not known"))
-        assertEquals(PingLine.Failure("Network is unreachable"), PingParser.parse("connect: Network is unreachable"))
-        assertNull(PingParser.parse(""))
-        assertNull(PingParser.parse("--- example.com ping statistics ---"))
+        assertEquals(PingLine.Error("10.0.0.1", 1, "Time to live exceeded"), ping("From 10.0.0.1 icmp_seq=1 Time to live exceeded"))
+        assertEquals(PingLine.Error("192.168.1.1", 4, "Destination Host Unreachable"), ping("From _gateway (192.168.1.1) icmp_seq=4 Destination Host Unreachable"))
+        assertEquals(PingLine.Summary(4, 3, 0, 25.0), ping("4 packets transmitted, 3 received, 25% packet loss, time 3004ms"))
+        assertEquals(PingLine.Summary(4, 0, 4, 100.0), ping("4 packets transmitted, 0 received, +4 errors, 100% packet loss, time 3003ms"))
+        assertEquals(PingLine.Rtt(11.981, 12.349, 12.876), ping("rtt min/avg/max/mdev = 11.981/12.349/12.876/0.345 ms"))
+        assertEquals(PingLine.Failure("unknown host nowhere.invalid"), ping("ping: unknown host nowhere.invalid"))
+        assertEquals(PingLine.Failure("Name or service not known"), ping("ping: nowhere.invalid: Name or service not known"))
+        assertEquals(PingLine.Failure("Network is unreachable"), ping("connect: Network is unreachable"))
+        assertNull(ping(""))
+        assertNull(ping("--- example.com ping statistics ---"))
     }
 
     @Test
@@ -64,9 +64,9 @@ class NetworkParsersTest {
 
     @Test
     fun tracerouteAnswers() {
-        assertEquals("10.0.0.1" to false, Traceroute.answer(listOf("PING 1.1.1.1 (1.1.1.1) 56(84) bytes of data.", "From 10.0.0.1 icmp_seq=1 Time to live exceeded")))
-        assertEquals("1.1.1.1" to true, Traceroute.answer(listOf("64 bytes from 1.1.1.1: icmp_seq=1 ttl=57 time=10.0 ms")))
-        assertEquals(null to false, Traceroute.answer(listOf("1 packets transmitted, 0 received, 100% packet loss, time 0ms")))
+        assertEquals("10.0.0.1" to false, trace(listOf("PING 1.1.1.1 (1.1.1.1) 56(84) bytes of data.", "From 10.0.0.1 icmp_seq=1 Time to live exceeded")))
+        assertEquals("1.1.1.1" to true, trace(listOf("64 bytes from 1.1.1.1: icmp_seq=1 ttl=57 time=10.0 ms")))
+        assertEquals(null to false, trace(listOf("1 packets transmitted, 0 received, 100% packet loss, time 0ms")))
     }
 
     @Test
@@ -83,7 +83,7 @@ class NetworkParsersTest {
     @Test
     fun portRanges() {
         assertEquals(listOf(22, 80, 443), PortRanges.parse("443, 22,80"))
-        assertEquals((8000..8003).toList() + 25565, PortRanges.parse("8000-8003 25565"))
+        assertEquals(listOf(8000, 8001, 8002, 8003, 25565), PortRanges.parse("8000-8003 25565"))
         assertEquals(listOf(1, 2, 3), PortRanges.parse("1-3, 2"))
         assertNull(PortRanges.parse(""))
         assertNull(PortRanges.parse("0"))
@@ -127,4 +127,10 @@ class NetworkParsersTest {
         assertEquals(LanScan.Kind.Computer, LanScan.Device("192.168.1.9", ports = listOf(445)).kind)
         assertNull(LanScan.Device("192.168.1.10").kind)
     }
+
+    // The parsers through these, so that Kotlin's inspection doesn't take their calls (an object's, of constants) for
+    // the expected values
+    private fun ping(line: String) = PingParser.parse(line)
+
+    private fun trace(lines: List<String>) = Traceroute.answer(lines)
 }

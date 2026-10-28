@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="fp_NetTools">Network tools</string>
-    <string name="fk_NetTools" tools:ignore="Typos">network, ping, traceroute, tracert, route, hops, latency, lag, packet loss, lan, wifi, wi-fi, devices, scanner, scan, ip, ip scanner, port, ports, port scanner, open ports, speedtest, speed test, internet speed, download, upload, bandwidth, speed, throughput, cloudflare, mdns, router</string>
+    <string name="fk_NetTools" tools:ignore="Typos">network, ping, traceroute, tracert, route, hops, latency, lag, packet loss, lan, wi-fi, devices, scanner, scan, ip, ip scanner, port, ports, port scanner, open ports, speedtest, speed test, internet speed, download, upload, bandwidth, speed, throughput, cloudflare, mdns, router</string>
     <string name="fd_NetTools">Speed test, ping, trace, scan</string>
 
     <string name="f_Net_tab_speed">Speed</string>
@@ -11,7 +11,6 @@
 
     <string name="f_Net_host">Host</string>
     <string name="f_Net_host_hint">example.com or 192.168.1.1</string>
-    <string name="f_Net_port">Port</string>
     <string name="f_Net_stop">Stop</string>
     <string name="f_Net_failed">Failed</string>
     <string name="f_Net_address">Address</string>
@@ -27,7 +26,7 @@
     <string name="f_Net_interval">Every</string>
     <string name="f_Net_size">Size</string>
     <string name="f_Net_ping_start">Ping</string>
-    <string name="f_Net_ping_fallback">This phone\'s ping isn\'t available to apps: Java\'s reachability check is used instead, timed by the app (rougher).</string>
+    <string name="f_Net_ping_fallback">This phone\'s ping is not available to apps: Java\'s reachability check is used instead, timed by the app (rougher).</string>
     <string name="f_Net_avg">Average</string>
     <string name="f_Net_min">Fastest</string>
     <string name="f_Net_max">Slowest</string>
@@ -37,7 +36,7 @@
 
     <string name="f_Net_trace_start">Trace route</string>
     <string name="f_Net_trace_note">Each router on the way, found with the phone\'s ping. Some don\'t answer (*), or answer pings without times.</string>
-    <string name="f_Net_trace_no_ping">Needs the phone\'s ping, which isn\'t available to apps on this phone.</string>
+    <string name="f_Net_trace_no_ping">Needs the phone\'s ping, which is not available to apps on this phone.</string>
 
     <string name="f_Net_lan_start">Scan network</string>
     <string name="f_Net_lan_scanning">Scanning…</string>
@@ -48,7 +47,7 @@
     <string name="f_Net_lan_router">router: %1$s</string>
     <string name="f_Net_lan_devices">Devices: %1$d</string>
     <string name="f_Net_lan_empty">No other devices answered</string>
-    <string name="f_Net_lan_note">Devices that ignore pings and keep their ports closed stay hidden. Android doesn\'t let apps read devices\' hardware (MAC) addresses, so what a device is, is a guess from its ports and what it announces. Tap one to scan its ports.</string>
+    <string name="f_Net_lan_note">Devices that ignore pings and keep their ports closed stay hidden. Android does not let apps read devices\' hardware (MAC) addresses, so what a device is, is a guess from its ports and what it announces. Tap one to scan its ports.</string>
     <string name="f_Net_kind_phone">phone</string>
     <string name="f_Net_kind_router">router</string>
     <string name="f_Net_kind_printer">printer</string>

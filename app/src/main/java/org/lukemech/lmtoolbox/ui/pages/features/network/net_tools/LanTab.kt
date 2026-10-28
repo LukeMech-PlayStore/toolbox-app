@@ -47,7 +47,7 @@ import org.lukemech.lmtoolbox.ui.components.SectionTitle
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.networkChanges
 
 /** The LAN scan's run and the devices it found; the page's, as the other tabs'. */
-internal class LanState(private val context: Context, private val scope: CoroutineScope) {
+internal class LanState(private val context: Context, scope: CoroutineScope) {
     var result by mutableStateOf<LanScan.Result?>(null)
     private val run = TabRun(scope)
     val running get() = run.running

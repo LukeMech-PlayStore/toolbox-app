@@ -46,7 +46,7 @@ data class Subnet(val network: Int, val prefix: Int) {
 
         fun of(address: Int, prefix: Int): Subnet {
             val p = if (prefix in 1..32 && (1L shl (32 - prefix)) - 2 <= MAX_HOSTS) prefix else 24
-            val mask = if (p == 0) 0 else (-1 shl (32 - p))
+            val mask = -1 shl (32 - p)
             return Subnet(address and mask, p)
         }
 
@@ -57,8 +57,8 @@ data class Subnet(val network: Int, val prefix: Int) {
 }
 
 /**
- * What's on the phone's Wi-Fi (or Ethernet): every address of its subnet (from its link's properties) knocked at
- * at once, by ICMP's echo (isReachable) and TCP connections to a few telling ports ([Services.LAN]): a device
+ * What's on the phone's Wi-Fi (or Ethernet): every address of its subnet (from its link's properties) knocked on
+ * all at once, by ICMP's echo (isReachable) and TCP connections to a few telling ports ([Services.LAN]): a device
  * answering either, even refusing the connection, is there. Its name from reverse DNS (the router's) or mDNS (what
  * it announces, NsdManager). No MAC addresses (and so no makers): Android 10+ keeps the ARP table (/proc/net/arp)
  * from apps; what a device is, is guessed from its ports and services ([Kind]).
@@ -219,7 +219,7 @@ object LanScan {
 
     /** [info]'s IPv4 addresses, resolved. */
     private suspend fun resolve(nsd: NsdManager, info: NsdServiceInfo): List<String> = suspendCancellableCoroutine { cont ->
-        @Suppress("DEPRECATION") // resolveService: one callback, as on every Android the app runs on (14's own way is a subscription)
+        @Suppress("DEPRECATION") // resolveService: one callback, as on every Android the app runs on (Android 14's own way is a subscription)
         runCatching {
             nsd.resolveService(info, object : NsdManager.ResolveListener {
                 override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
