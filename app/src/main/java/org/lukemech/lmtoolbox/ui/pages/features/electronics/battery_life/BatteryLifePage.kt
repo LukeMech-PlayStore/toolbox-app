@@ -1,15 +1,21 @@
 package org.lukemech.lmtoolbox.ui.pages.features.electronics.battery_life
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Battery5Bar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import java.util.Locale
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.electronics.battery_life.BatteryLifeFeature
 import org.lukemech.lmtoolbox.features.electronics.common.formatValue
 import org.lukemech.lmtoolbox.features.electronics.common.parseValue
+import org.lukemech.lmtoolbox.ui.components.Note
+import org.lukemech.lmtoolbox.ui.components.OptionSetting
 import org.lukemech.lmtoolbox.ui.components.ResultRow
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.SectionTitle
@@ -43,14 +49,31 @@ fun BatteryLifePage() {
             ?: emptyMap()
     }
     val hours = values[Battery.Life]
+    // The battery picked for its usual capacity: none (its own) once the capacity's another
+    var picked by rememberSaveable { mutableIntStateOf(-1) }
+    val typical = BatteryLifeFeature.TYPICAL
+    if (picked >= 0 && values[Battery.Capacity] != typical[picked].mAh.toDouble()) picked = -1
 
     CalculatorPage(
         stringResource(R.string.fp_battery_life),
         formulas = listOf(
             Formula("""I_{avg} = \frac{I_{1} t_{1} + I_{2} t_{2}}{t_{1} + t_{2}}""", stringResource(R.string.ec_avg_current)),
             Formula("""t = \frac{C}{I_{avg}}""", stringResource(R.string.ec_life)),
-        )
+        ),
+        tables = BatteryLifeFeature.tables
     ) {
+        val own = stringResource(R.string.ec_battery_own)
+        val chemistries = typical.map { stringResource(it.chemistry) }
+        OptionSetting(
+            title = stringResource(R.string.ec_battery),
+            icon = Icons.Default.Battery5Bar,
+            selected = picked,
+            options = listOf(-1 to own) + typical.mapIndexed { i, it -> i to "${it.name} (${chemistries[i]}) · ≈ ${it.mAh} mAh" },
+            groupOf = { i -> if (i < 0) null else chemistries[i] }
+        ) { i ->
+            picked = i
+            if (i >= 0) fields.edit(Battery.Capacity, typical[i].mAh.toString())
+        }
         LinkedField(fields, values, Battery.Capacity, stringResource(R.string.ec_capacity), "mAh")
         LinkedField(fields, values, Battery.Life, stringResource(R.string.ec_life), "h")
         SectionTitle(stringResource(R.string.ec_stage1))
@@ -64,5 +87,6 @@ fun BatteryLifePage() {
             if (avg != null) ResultRow(stringResource(R.string.ec_avg_current), formatValue(avg, "A"))
             if (hours != null && hours >= 48) ResultRow(stringResource(R.string.ec_life), String.format(Locale.US, "%.1f d", hours / 24))
         }
+        Note(stringResource(R.string.ec_battery_note), visible = picked >= 0)
     }
 }

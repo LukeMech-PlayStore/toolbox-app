@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_sd_card">Karty SD i microSD</string>
+    <string name="fd_sd_card">Styki w trybie SD i SPI</string>
+    <string name="fk_sd_card">karta sd, microsd, karta tf, karta pamięci, spi, sdio, styki, mosi, miso, dat0, cmd, clk, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_sd_note">Pin 9 leży obok pinu 1</string>
+    <string name="rf_microsd_note">Styki od 1 do 8 w jednym rzędzie</string>
+</resources>

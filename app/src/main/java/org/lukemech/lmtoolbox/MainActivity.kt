@@ -150,8 +150,12 @@ class MainActivity : ComponentActivity() {
         private const val EXTRA_OPEN_FEATURE = "open_feature"
         private const val EXTRA_OPEN_SETTINGS = "open_settings"
 
+        // Each with an identifier of its own: PendingIntents of intents differing only in their extras are one
+        // and the same, the latest's extras for all (a server's notification opened the tasks, as the subsystem's)
+
         /** Brings the app to front (reusing the running activity) on the task list. */
         fun openTasksIntent(context: Context) = Intent(context, MainActivity::class.java)
+            .setIdentifier(EXTRA_OPEN_TASKS)
             .putExtra(EXTRA_OPEN_TASKS, true)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
@@ -160,6 +164,7 @@ class MainActivity : ComponentActivity() {
          * [route], or its [settings].
          */
         fun openFeatureIntent(context: Context, route: String, settings: Boolean = false) = Intent(context, MainActivity::class.java)
+            .setIdentifier("$EXTRA_OPEN_FEATURE/$route" + if (settings) "/$EXTRA_OPEN_SETTINGS" else "")
             .putExtra(EXTRA_OPEN_FEATURE, route)
             .putExtra(EXTRA_OPEN_SETTINGS, settings)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)

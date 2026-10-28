@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_smd_packages">SMD package sizes</string>
+    <string name="fd_smd_packages">0603 imperial or metric, and its size</string>
+    <string name="fk_smd_packages">smd, smt, package, chip size, footprint, 0402, 0603, 0805, 1206, 2512, imperial, metric, resistor, capacitor, power rating, dimensions, reference, table</string>
+    <string name="rf_chip_sizes">Chip sizes</string>
+    <string name="rf_imperial">Imperial</string>
+    <string name="rf_metric">Metric</string>
+    <string name="rf_size_mm">L × W (mm)</string>
+    <string name="rf_size_in">L × W (in)</string>
+    <string name="rf_power_typical">Resistor power</string>
+    <string name="rf_smd_note">Power: a thick-film chip resistor\'s usual rating at 70 °C; each maker\'s datasheet has its own. Capacitors and other parts in the same size are as large, but their height varies.</string>
+</resources>

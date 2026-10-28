@@ -36,9 +36,13 @@ object Device {
     /**
      * Waits (polling, off the main thread: not for the UI to settle, a server takes minutes) until [condition]
      * holds; fails saying [what] after [timeoutMs]. [failFast]: a message when it can't come anymore (e.g. a crash).
-     * Every half a minute it says what it's still waiting for, and the Linux tasks running (the job's log shows it).
+     * Every half a minute it says what it's still waiting for, how far it is ([status]) and the Linux tasks running
+     * (the job's log shows it).
      */
-    fun waitFor(what: String, timeoutMs: Long, intervalMs: Long = 1000, failFast: () -> String? = { null }, condition: () -> Boolean) {
+    fun waitFor(
+        what: String, timeoutMs: Long, intervalMs: Long = 1000, failFast: () -> String? = { null }, status: () -> String? = { null },
+        condition: () -> Boolean,
+    ) {
         val start = SystemClock.uptimeMillis()
         val end = start + timeoutMs
         var told = start
@@ -49,7 +53,7 @@ object Device {
             if (now > end) throw AssertionError("Timed out after ${timeoutMs / 1000} s waiting for $what")
             if (now - told >= 30_000) {
                 told = now
-                Log.i(E2eTest.TAG, "Waiting for $what (${(now - start) / 1000} s)${running()}")
+                Log.i(E2eTest.TAG, "Waiting for $what (${(now - start) / 1000} s)${status()?.let { ": $it" }.orEmpty()}${running()}")
             }
             Thread.sleep(intervalMs)
             // The pages' coroutines as far on as real time went (a sleep alone would hold them where they are)

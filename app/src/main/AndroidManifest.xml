@@ -34,7 +34,7 @@
     <!-- The stroboscope: the torch (no camera permission needed for it) -->
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
 
-    <!-- The Minecraft server's join addresses: opening the Tailscale app (its tailnet's address) -->
+    <!-- The Minecraft server's join addresses, the folder share's: opening the Tailscale app (its tailnet's address) -->
     <queries>
         <package android:name="com.tailscale.ipn" />
     </queries>
@@ -107,6 +107,16 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Hosts a Minecraft game server the user started on the phone, for players to connect to, until the user stops it (from the app or the notification)" />
+        </service>
+
+        <!-- Keeps a shared folder's web server going (and the phone awake for it) until it's stopped -->
+        <service
+            android:name=".features.servers.folder_share.ShareService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Serves a folder the user picked over HTTP from the phone, for the user's other devices and people they give the address to, until the user stops it (from the app or the notification) or nobody has used it for the time the user set" />
         </service>
 
         <!-- Normal app start -->

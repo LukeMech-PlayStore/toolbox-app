@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fp_fuses">Car blade fuses</string>
+    <string name="fd_fuses">The color of each rating</string>
+    <string name="fk_fuses">fuse, blade fuse, car fuse, ato, atc, mini fuse, iso 8820, amp, rating, color, reference, table</string>
+    <string name="rf_rating">Rating</string>
+    <string name="rf_fuses_note" tools:ignore="TypographyDashes">ISO 8820-3, for regular (ATO, ATC) and mini blade fuses</string>
+</resources>

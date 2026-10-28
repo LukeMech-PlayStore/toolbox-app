@@ -112,9 +112,10 @@ object Java {
         maxOutput: Int = LinuxEnv.DEFAULT_MAX_OUTPUT,
         onStart: (id: Long) -> Unit = {},
         onLine: ((String) -> Unit)? = null,
+        retried: (ExecResult) -> Boolean = { false },
     ): ExecResult = LinuxTasks.runInBackground(
         context, command(jdk, args, dir, heap, options), source,
-        label = label, timeoutMs = timeoutMs, maxOutput = maxOutput, onStart = onStart, onLine = onLine
+        label = label, timeoutMs = timeoutMs, maxOutput = maxOutput, onStart = onStart, onLine = onLine, retried = retried
     )
 
     /**

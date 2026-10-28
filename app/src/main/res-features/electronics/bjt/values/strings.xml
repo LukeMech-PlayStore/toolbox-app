@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_bjt">Transistor (BJT)</string>
+    <string name="fd_bjt">Base resistor and bias point</string>
+    <string name="fk_bjt">transistor, bjt, bipolar, npn, pnp, switch, base resistor, saturation, hfe, beta, gain, bias, voltage divider bias, q-point, operating point, collector, emitter, base, vbe, vce, calculator, calc, compute, electronics</string>
+    <string name="ec_bjt_switch">As a switch</string>
+    <string name="ec_bjt_bias">Voltage-divider bias</string>
+    <string name="ec_drive">Drive voltage</string>
+    <string name="ec_hfe">Current gain (hFE, its minimum)</string>
+    <string name="ec_overdrive">Overdrive factor</string>
+    <string name="ec_vbe">Base–emitter voltage (VBE)</string>
+    <string name="ec_vce_sat">Saturation voltage (VCE(sat))</string>
+    <string name="ec_base_resistor">Base resistor</string>
+    <string name="ec_rb_standard">%1$s value just under it</string>
+    <string name="ec_ic">Collector current</string>
+    <string name="ec_ib">Base current</string>
+    <string name="ec_transistor_power">Heat in the transistor</string>
+    <string name="ec_drive_too_low">The drive voltage has to be higher than VBE</string>
+    <string name="ec_rc_collector">Collector resistor (RC)</string>
+    <string name="ec_re">Emitter resistor (RE)</string>
+    <string name="ec_beta">Current gain (β)</string>
+    <string name="ec_vce">Collector–emitter voltage</string>
+    <string name="ec_vb">Base voltage</string>
+    <string name="ec_ve">Emitter voltage</string>
+    <string name="ec_vc">Collector voltage</string>
+    <string name="ec_region">Operating region</string>
+    <string name="ec_region_cutoff">Cutoff</string>
+    <string name="ec_region_active">Active</string>
+    <string name="ec_region_saturation">Saturation</string>
+    <string name="ec_saturated_note">Saturated: VCE stays at about 0.2 V and β no longer sets the current. For an amplifier, make RC smaller or RE larger.</string>
+</resources>

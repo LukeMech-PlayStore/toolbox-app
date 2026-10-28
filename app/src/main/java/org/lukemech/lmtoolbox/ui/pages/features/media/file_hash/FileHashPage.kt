@@ -65,6 +65,8 @@ import org.lukemech.lmtoolbox.features.media.file_hash.MultiDigest
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.ui.components.ActionButton
 import org.lukemech.lmtoolbox.ui.components.BigButton
+import org.lukemech.lmtoolbox.ui.components.Chip
+import org.lukemech.lmtoolbox.ui.components.ChipGroup
 import org.lukemech.lmtoolbox.ui.components.ErrorText
 import org.lukemech.lmtoolbox.ui.components.Fade
 import org.lukemech.lmtoolbox.ui.components.InputField
@@ -426,16 +428,9 @@ private fun SubjectCard(icon: ImageVector, title: String, details: String?, acti
 /** Which algorithms are computed, a chip each. */
 @Composable
 fun AlgorithmChoice(selected: Set<HashAlgorithm>, onChange: (Set<HashAlgorithm>) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(stringResource(R.string.f_FileHash_algorithms), style = MaterialTheme.typography.labelLarge)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            HashAlgorithm.entries.forEach { alg ->
-                FilterChip(
-                    selected = alg in selected,
-                    onClick = { onChange(if (alg in selected) selected - alg else selected + alg) },
-                    label = { Text(alg.label) }
-                )
-            }
+    ChipGroup(stringResource(R.string.f_FileHash_algorithms)) {
+        HashAlgorithm.entries.forEach { alg ->
+            Chip(alg.label, selected = alg in selected) { onChange(if (alg in selected) selected - alg else selected + alg) }
         }
     }
 }

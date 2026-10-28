@@ -14,8 +14,11 @@ tests.yml, whose result is the tests':
   its legs), the tests not seen as they were. Only if almost nothing failed or went unrun (MAX_FAILED of the legs'
   results): a run that went wrong (an emulator dying, a shard cut short) times the rest wrong too. Whether it was
   updated, the step's output durations (updated or kept), for tests.yml to save it or not
+- with <failures dir>: what each failed (or flaky) test left on its leg, for the pull request's comment (comment.py):
+  the screen when it failed and its class's logcat, under its shard's id, listed in failures.json. Nothing failed:
+  nothing written
 
-    merge.py <matrix JSON> <artifacts dir> [<summary.md> [<durations.json>]]
+    merge.py <matrix JSON> <artifacts dir> [<summary.md> [<durations.json> [<failures dir>]]]
 
 <artifacts dir>/e2e-results-<id>/junit/*.xml, as download-artifact puts them.
 """
@@ -23,6 +26,8 @@ import glob
 import html
 import json
 import os
+import re
+import shutil
 import statistics
 import sys
 import xml.etree.ElementTree as ET
@@ -32,6 +37,8 @@ ICONS = {"failed": "❌", "not run": "⚠️", "flaky": "🔁", "passed": "✅",
 
 # The share of the legs' results (a test on a leg) failed or not run above which the durations aren't updated
 MAX_FAILED = 0.05
+# A logcat kept for the comment: its end, at most this much (one class's, cleared before it: far less as a rule)
+MAX_LOGCAT = 1024 * 1024
 
 
 def outcome(case):
@@ -102,6 +109,44 @@ def durations(legs, tests, path):
         f.write("\n")
 
 
+def collect(legs, artifacts, why, out):
+    """
+    [out] (<failures dir>): for each of [why]'s tests on its leg, the screen when it failed (E2eTest's FAILED-
+    screenshot) and its class's logcat (instrument.py's; a shard's setup: run-tests.sh's), copied under its shard's id,
+    and failures.json listing them in [why]'s order: {title, shard, status, screenshot, logcat}, the paths relative to
+    [out] (null: there was none, e.g. a crash takes no screenshot).
+    """
+    ids = {shard["name"]: shard["id"] for shard in legs}
+    listed = []
+    for _, title, shard, status, _, cls, name in why:
+        results = os.path.join(artifacts, f"e2e-results-{ids[shard]}")
+        short = "setup" if cls == "e2e.Setup" else cls.rsplit(".", 1)[-1]
+        # As Device.screenshot names it
+        picture = re.sub(r"[^\w.\-]", "_", f"FAILED-{short}.{name}") + ".png"
+        found = {
+            "screenshot": (os.path.join(results, "e2e", "screenshots", picture), picture),
+            "logcat": (os.path.join(results, "logcat", f"{short}.txt"), f"{short}.logcat.txt"),
+        }
+        entry = {"title": title, "shard": shard, "status": status}
+        for kind, (source, named) in found.items():
+            entry[kind] = None
+            if not os.path.isfile(source):
+                continue
+            entry[kind] = f"{ids[shard]}/{named}"
+            target = os.path.join(out, entry[kind])
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            if kind == "logcat" and os.path.getsize(source) > MAX_LOGCAT:
+                with open(source, "rb") as f, open(target, "wb") as t:
+                    f.seek(-MAX_LOGCAT, os.SEEK_END)
+                    f.readline()
+                    t.write(f.read())
+            else:
+                shutil.copyfile(source, target)
+        listed.append(entry)
+    with open(os.path.join(out, "failures.json"), "w", encoding="utf-8") as f:
+        json.dump(listed, f, indent=1, ensure_ascii=False)
+
+
 def main():
     legs = json.loads(sys.argv[1])["include"]
     order = list(dict.fromkeys(shard["name"].rsplit(" · ", 1)[0] for shard in legs))
@@ -130,7 +175,7 @@ def main():
             if status == "failed":
                 failed.append((f"{title} ({shard})", message))
             if status in ("failed", "flaky"):
-                why.append((list(ICONS).index(status), title, shard, status, message))
+                why.append((list(ICONS).index(status), title, shard, status, message, cls, name))
             results.append(status)
             seconds = sum(float(attempt.get("time") or 0) for _, attempt in tries)
             cells.append(f"{ICONS[status]} {seconds:.0f} s" if status != "skipped" else ICONS[status])
@@ -141,9 +186,9 @@ def main():
         totals[overall] += 1
         rows.append((list(ICONS).index(overall), title, f"| {html.escape(title, quote=False)} | " + " | ".join(cells) + " |\n"))
 
+    why.sort(key=lambda w: w[:3])
     if len(sys.argv) > 3:
         rows.sort(key=lambda r: r[:2])
-        why.sort(key=lambda w: w[:3])
         counts = " · ".join(f"{ICONS[s]} {n} {s}" for s, n in totals.items() if n)
         # A leg's column headed by its ABI over its Android, to keep the table narrow
         head = " | ".join(leg.replace(" · ", "<br>", 1) for leg in order)
@@ -152,7 +197,7 @@ def main():
             f.write(f"| Test | {head} |\n|---|" + "---|" * len(order) + "\n" + "".join(r for *_, r in rows))
             if why:
                 f.write("\n### Why\n\n")
-                for _, title, shard, status, message in why:
+                for _, title, shard, status, message, *_ in why:
                     f.write(f"<details><summary>{ICONS[status]} {html.escape(title, quote=False)} · {html.escape(shard, quote=False)}</summary>\n\n"
                             f"```\n{(message or status)[:4000].replace('```', '` ` `')}\n```\n\n</details>\n")
             f.write("\n### Legs\n\n| Leg | System image | Channel |\n|---|---|---|\n")
@@ -169,6 +214,8 @@ def main():
         if os.environ.get("GITHUB_OUTPUT"):
             with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
                 f.write(f"durations={'updated' if updated else 'kept'}\n")
+    if len(sys.argv) > 5 and why:
+        collect(legs, sys.argv[2], why, sys.argv[5])
     for title, message in failed:
         # A workflow command: its message one line, its % and line breaks escaped
         text = brief(message or "failed").replace("%", "%25").replace("\r", "").replace("\n", "%0A")

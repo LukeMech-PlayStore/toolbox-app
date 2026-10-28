@@ -55,6 +55,12 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
             .onFailure { throw AssertionError("Not shown after ${timeoutMs / 1000} s: $what") }
     }
 
+    /** As [waitShown], for what's further down a lazy list (a table's row, a search's result): scrolled to, as a user would. */
+    fun waitScrolledTo(matcher: SemanticsMatcher, timeoutMs: Long = 20_000, what: String = matcher.description) {
+        runCatching { compose.waitUntil(timeoutMs) { scrollTo(matcher) } }
+            .onFailure { throw AssertionError("Not shown after ${timeoutMs / 1000} s: $what") }
+    }
+
     /**
      * Brings the node to sight: scrolled to in its page, or in a lazy list (the choices of a setting, a long list)
      * until it's composed. True once its middle (where a tap lands) is on screen: not yet if the scroll failed, or
@@ -120,10 +126,13 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
     fun field(label: String): SemanticsNode? {
         nodes(hasSetTextAction() and hasText(label, substring = true)).firstOrNull()?.let { return it }
         val title = nodes(hasText(label)).firstOrNull() ?: return null
-        val below = title.boundsInRoot.bottom
+        // Where they are on the page, not on the screen: boundsInRoot is clipped to what's shown, a field scrolled off it
+        // all zeros, so any of them would be "under" a title scrolled off too
+        val below = title.positionInRoot.y + title.size.height
+        val right = title.positionInRoot.x + title.size.width
         return nodes(hasSetTextAction())
-            .filter { it.boundsInRoot.top >= below - 1 && it.boundsInRoot.left <= title.boundsInRoot.right }
-            .minByOrNull { it.boundsInRoot.top }
+            .filter { it.positionInRoot.y >= below - 1 && it.positionInRoot.x <= right }
+            .minByOrNull { it.positionInRoot.y }
     }
 
     /** Replaces the text of the field named [label] (see [field]) by [text]. */

@@ -243,7 +243,8 @@ object LinuxTasks {
      *
      * [onStart] gets the task's id (for [cancel], [detach], [setProgress]); [onLine] each line
      * the command prints, as it comes. [label] is what the UI shows of it (e.g. a file's name).
-     * [maxOutput]: how much of its output is kept (see [LinuxEnv.exec]).
+     * [maxOutput]: how much of its output is kept (see [LinuxEnv.exec]). [retried]: whether the caller runs it
+     * again after this result (a download it couldn't make): then it's done, not failed, the next run the one to tell.
      */
     suspend fun runInBackground(
         context: Context, cmd: List<String>, source: AppFeature,
@@ -251,7 +252,8 @@ object LinuxTasks {
         timeoutMs: Long = LinuxEnv.DEFAULT_TIMEOUT_MS,
         maxOutput: Int = LinuxEnv.DEFAULT_MAX_OUTPUT,
         onStart: (id: Long) -> Unit = {},
-        onLine: ((String) -> Unit)? = null
+        onLine: ((String) -> Unit)? = null,
+        retried: (ExecResult) -> Boolean = { false },
     ): ExecResult {
         val app = context.applicationContext
         notReady(app, leavePage = true)?.let { return it }
@@ -272,8 +274,8 @@ object LinuxTasks {
                 LinuxEnv.exec(app, cmd, timeoutMs, onLine, maxOutput, task = task.id) { partial = it }
             }
             result.complete(r)
-            val state = if (r.isSuccess) LinuxTask.State.Done else LinuxTask.State.Failed
-            finish(task.id, state, if (r.isSuccess) null else summary(r), log(r), r.exitCode)
+            val ok = r.isSuccess || retried(r)
+            finish(task.id, if (ok) LinuxTask.State.Done else LinuxTask.State.Failed, if (ok) null else summary(r), log(r), r.exitCode)
         }.invokeOnCompletion { e ->
             // No-op if the command produced a result; otherwise it failed or was canceled
             val message = _tasks.value.firstOrNull { it.id == task.id }?.message
@@ -291,6 +293,19 @@ object LinuxTasks {
     private val _services = MutableStateFlow<List<LinuxService>>(emptyList())
     /** What runs as a service (see [runService]), oldest first: for the bottom bar. */
     val services: StateFlow<List<LinuxService>> = _services.asStateFlow()
+
+    /**
+     * A tool's own service, not on the subsystem (e.g. the folder share's server), in the bottom bar as
+     * [runService]'s are while it runs: its id, for [serviceEnded].
+     */
+    fun serviceStarted(source: AppFeature, label: String): Long {
+        val service = LinuxService(ids.incrementAndGet(), source, label)
+        _services.update { it + service }
+        return service.id
+    }
+
+    /** [serviceStarted]'s service stopped: out of the bottom bar. */
+    fun serviceEnded(id: Long) = _services.update { list -> list.filterNot { it.id == id } }
 
     /**
      * A tool's program running until it's stopped (a server, its tunnel), its tool keeping it going
@@ -628,7 +643,8 @@ object LinuxTasks {
      * The parts on the device (downloaded or unpacked) that nothing uses once [gone]'s data is
      * deleted. A feature uses its own extension while that's unpacked (its data; just downloaded, it's
      * a module waiting to be uninstalled), and with it all it builds on ([LinuxExtension.requires],
-     * through and through), the core too; nothing else is used.
+     * through and through), the core too; so does one of a tool's extra ones it uses now (see
+     * AppFeature.usesExtraExtension), with what that builds on; nothing else is used.
      */
     fun unused(context: Context, gone: List<AppFeature>): List<LinuxExtension> {
         val all = LinuxParts.extensions(context)
@@ -640,6 +656,10 @@ object LinuxTasks {
         FeatureRegistry.features.filter { it !in gone && hasExtension(context, it) }
             // Its extra ones it unpacked too (e.g. a Java version a server needed)
             .flatMap { f -> f.linuxExtensions + f.extraExtensions.filter { LinuxParts.isExtensionUnpacked(context, it) } }
+            .forEach(::use)
+        // And those a tool uses now, one on no part of its own too (the folder share's tunnels)
+        FeatureRegistry.features.filter { it !in gone }
+            .flatMap { f -> f.extraExtensions.filter { LinuxParts.isExtensionUnpacked(context, it) && f.usesExtraExtension(context, it) } }
             .forEach(::use)
         // The core, while any extension is used
         val core = LinuxParts.core(context)?.takeIf { used.isEmpty() }

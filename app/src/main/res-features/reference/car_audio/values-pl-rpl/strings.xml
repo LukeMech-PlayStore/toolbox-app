@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_car_audio">Radio samochodowe (ISO 10487)</string>
+    <string name="fd_car_audio">Złącza zasilania i głośników</string>
+    <string name="fk_car_audio">iso 10487, radio samochodowe, radioodtwarzacz, złącze iso, głośniki, acc, stały plus, kolory przewodów, wiązka, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_car_varies">Zależy od marki (sygnał prędkości, wyciszenie telefonu…)</string>
+    <string name="rf_car_permanent">+12 V stały: podtrzymuje pamięć</string>
+    <string name="rf_car_remote">+12 V na wyjściu, gdy radio działa: antena elektryczna, wzmacniacz</string>
+    <string name="rf_car_illumination">Podświetlenie, przyciemniane razem z deską rozdzielczą</string>
+    <string name="rf_car_switched">+12 V po przekręceniu kluczyka (ACC)</string>
+    <string name="rf_car_rr">Prawy tylny głośnik</string>
+    <string name="rf_car_rf">Prawy przedni głośnik</string>
+    <string name="rf_car_lf">Lewy przedni głośnik</string>
+    <string name="rf_car_lr">Lewy tylny głośnik</string>
+    <string name="rf_car_a_note">Niektóre marki zamieniają A4 i A7: sprawdź przed podłączeniem.</string>
+    <string name="rf_car_b_note">Kolory przewodów jak w większości wiązek z rynku wtórnego: + jednolity, − z czarnym paskiem.</string>
+</resources>

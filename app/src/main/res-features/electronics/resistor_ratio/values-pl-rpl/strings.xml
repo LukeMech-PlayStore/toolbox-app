@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_resistor_ratio">Stosunek rezystorów</string>
+    <string name="fd_resistor_ratio">Para z szeregu do każdego stosunku</string>
+    <string name="fk_resistor_ratio">stosunek rezystorów, stosunek, para, szereg e, e24, e96, wartości znormalizowane, dzielnik napięcia, sprzężenie zwrotne, wzmocnienie, dobór, rezystory, kalkulator, oblicz, obliczenia, policz, elektronika</string>
+    <string name="ec_two_resistors">Stosunek dwóch rezystorów</string>
+    <string name="ec_target_ratio">Docelowy stosunek</string>
+    <string name="ec_error">Błąd</string>
+    <string name="ec_ratio_scale">R1 jest podany w zakresie 1–10 kΩ: oba można pomnożyć przez tę samą potęgę dziesięciu</string>
+    <string name="ec_divider_under_one">Stosunek dzielnika mieści się między 0 a 1</string>
+    <string name="ec_total_resistance">R1 + R2</string>
+</resources>

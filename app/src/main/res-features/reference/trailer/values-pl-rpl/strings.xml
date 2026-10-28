@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_trailer">Gniazda przyczepy</string>
+    <string name="fd_trailer">ISO 1724, ISO 11446 i amerykańska płaska 4-pinowa</string>
+    <string name="fk_trailer">przyczepa, hak holowniczy, 7 pin, 13 pin, 4 pin płaska, usa, 12n, iso 1724, iso 11446, przyczepa kempingowa, kierunkowskaz, światło stopu, kolory przewodów, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_trailer_left_indicator">Lewy kierunkowskaz</string>
+    <string name="rf_trailer_right_indicator">Prawy kierunkowskaz</string>
+    <string name="rf_trailer_fog">Tylne światło przeciwmgielne</string>
+    <string name="rf_trailer_ground">Masa</string>
+    <string name="rf_trailer_ground_1_8">Masa pinów 1–8</string>
+    <string name="rf_trailer_right_tail">Prawe światło pozycyjne (i tablicy rejestracyjnej)</string>
+    <string name="rf_trailer_left_tail">Lewe światło pozycyjne</string>
+    <string name="rf_trailer_brake">Światła stopu</string>
+    <string name="rf_trailer_reverse">Światło cofania</string>
+    <string name="rf_trailer_permanent">+12 V stały</string>
+    <string name="rf_trailer_ignition">+12 V po włączeniu zapłonu (ładowanie akumulatora przyczepy)</string>
+    <string name="rf_trailer_ground_10">Masa pinu 10</string>
+    <string name="rf_trailer_ground_9">Masa pinu 9</string>
+    <string name="rf_trailer_unassigned">Nieprzypisany</string>
+    <string name="rf_trailer_7_note">ISO 1724 (12N). Każdy pin ma też numer obwodu (DIN 72552) i zwyczajowy kolor przewodu.</string>
+    <string name="rf_trailer_13_note">ISO 11446: piny 1–7 jak w gnieździe 7-pinowym</string>
+    <string name="rf_trailer_europe">Europa (ISO)</string>
+    <string name="rf_trailer_america">Ameryka Północna</string>
+    <string name="rf_trailer_tail">Światła pozycyjne (i tablicy, obrysowe)</string>
+    <string name="rf_trailer_left_stop">Lewy kierunkowskaz i światło stopu</string>
+    <string name="rf_trailer_right_stop">Prawy kierunkowskaz i światło stopu</string>
+    <string name="rf_trailer_4_note">Płaska 4-pinowa wtyczka z USA i Kanady: kierunkowskazy i światła stopu mają wspólne przewody. Pin masy wystaje po stronie auta.</string>
+</resources>

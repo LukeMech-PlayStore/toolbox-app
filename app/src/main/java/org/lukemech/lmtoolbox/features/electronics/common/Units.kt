@@ -61,6 +61,23 @@ fun formatValue(value: Double, unit: String, sigFigs: Int = 4): String {
 fun formatPercent(value: Double, digits: Int = 2): String =
     String.format(Locale.US, "%.${digits}f%%", value)
 
+private const val SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹"
+
+/**
+ * [value] to [sigFigs] significant figures without a prefix, for what spans more than they do (energy in eV
+ * and in kWh): plainly from 0.001 to a million, else as 1.234 × 10¹⁸.
+ */
+fun formatNumber(value: Double, sigFigs: Int = 5): String {
+    if (!value.isFinite()) return "—"
+    if (value == 0.0) return "0"
+    val rounded = BigDecimal(value).round(MathContext(sigFigs))
+    if (abs(value) in 1e-3..<1e6) return rounded.stripTrailingZeros().toPlainString()
+    val exponent = rounded.precision() - rounded.scale() - 1
+    val mantissa = rounded.movePointLeft(exponent).stripTrailingZeros().toPlainString()
+    val power = exponent.toString().map { if (it == '-') '⁻' else SUPERSCRIPTS[it - '0'] }.joinToString("")
+    return "$mantissa × 10$power"
+}
+
 /**
  * [value] as a [UnitField] of [unit] keeps it ("4.7 k"): with the prefix of the field's that reads best,
  * [sigFigs] significant figures.

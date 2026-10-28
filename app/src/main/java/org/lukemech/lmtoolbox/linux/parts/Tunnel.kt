@@ -19,15 +19,16 @@ import org.lukemech.lmtoolbox.helpers.AppFeature
  * A Cloudflare Tunnel (the cloudflared part), for a server on the phone that players reach from
  * anywhere: cloudflared runs a tunnel set up in Cloudflare's dashboard (its token in [tokenFile]),
  * which routes its public hostnames to what's on the phone (e.g. tcp://localhost:25565). Its own
- * routes are the dashboard's; here it's connected or not ([state]).
+ * routes are the dashboard's; here it's connected or not ([state]). Or a quick tunnel ([startQuick]):
+ * no account, no token, an address of its own on trycloudflare.com for a web server on the phone.
  *
  * A tool on it lists [PART] in its extraExtensions and installs it when it's turned on ([install]);
  * [source] is its title, as its tasks show it.
  */
 class Tunnel(
     private val source: AppFeature,
-    /** cloudflared reads the token from there: never in a command line, nor a task's log. */
-    val tokenFile: File,
+    /** cloudflared reads the token from there: never in a command line, nor a task's log. Null: quick tunnels alone. */
+    val tokenFile: File?,
     /** What the bottom bar shows of it while it runs (a service, see LinuxTasks.runService), e.g. "My server · tunnel". */
     private val label: String = "cloudflared",
     /** The service it's part of, as its label (e.g. its server's name): one with it in the bottom bar. */
@@ -41,6 +42,8 @@ class Tunnel(
         val taskId: Long? = null,
         /** Connections to Cloudflare's edge (it keeps up to four, in nearby data centers). */
         val connections: Int = 0,
+        /** A quick tunnel's address, once cloudflared has it: e.g. https://some-random-words.trycloudflare.com. */
+        val url: String? = null,
         /** Why it couldn't connect, as cloudflared said (e.g. the token's not valid). */
         val error: String? = null,
     ) {
@@ -55,11 +58,23 @@ class Tunnel(
     @Volatile
     private var stopping = false
 
-    val hasToken get() = tokenFile.let { it.exists() && it.length() > 0 }
+    val hasToken get() = tokenFile?.let { it.exists() && it.length() > 0 } == true
 
     /** Connects (unless it is, or there's no token); [onLine] gets each line cloudflared prints. */
     fun start(context: Context, onLine: (String) -> Unit = {}) {
-        if (_state.value?.isActive == true || !hasToken) return
+        if (!hasToken) return
+        run(context, listOf("cloudflared", "tunnel", "--no-autoupdate", "run", "--token-file", checkNotNull(tokenFile).absolutePath), onLine)
+    }
+
+    /**
+     * Connects a quick tunnel to [localUrl] (e.g. http://127.0.0.1:8080), unless it's connected: its address
+     * ([State.url]) is a new one each time. For HTTP alone (not a game's TCP), with no account.
+     */
+    fun startQuick(context: Context, localUrl: String, onLine: (String) -> Unit = {}) =
+        run(context, listOf("cloudflared", "tunnel", "--no-autoupdate", "--url", localUrl), onLine)
+
+    private fun run(context: Context, command: List<String>, onLine: (String) -> Unit) {
+        if (_state.value?.isActive == true) return
         val app = context.applicationContext
         stopping = false
         _state.value = State()
@@ -67,10 +82,11 @@ class Tunnel(
             var lastError: String? = null
             // Until it's stopped: a service of its tool's, not a task
             val result = LinuxTasks.runService(
-                app, command(), source, label, group = group,
+                app, command, source, label, group = group,
                 onStart = { id -> _state.update { it?.copy(taskId = id) } },
                 onLine = { line ->
                     onLine(line)
+                    QUICK_URL.find(line)?.let { m -> _state.update { it?.copy(url = m.value) } }
                     when {
                         "Registered tunnel connection" in line ->
                             _state.update { it?.copy(phase = Phase.Connected, connections = it.connections + 1, error = null) }
@@ -84,6 +100,7 @@ class Tunnel(
                 it?.copy(
                     phase = if (stopping) Phase.Stopped else Phase.Failed,
                     connections = 0,
+                    url = null,
                     error = if (stopping) null else lastError ?: result.stderr.lineSequence().lastOrNull { l -> l.isNotBlank() }
                 )
             }
@@ -97,10 +114,9 @@ class Tunnel(
         s.taskId?.let(LinuxTasks::cancel)
     }
 
-    private fun command() = listOf("cloudflared", "tunnel", "--no-autoupdate", "run", "--token-file", tokenFile.absolutePath)
-
     /** Saves [token] to [tokenFile], readable by the app alone (null: removes it). */
     fun setToken(token: String?) {
+        val tokenFile = checkNotNull(tokenFile) { "A quick tunnel has no token" }
         if (token.isNullOrBlank()) {
             tokenFile.delete()
             return
@@ -133,5 +149,7 @@ class Tunnel(
         }
 
         private val TOKEN = Regex("[A-Za-z0-9+/=_-]+")
+        /** "INF |  https://some-random-words.trycloudflare.com  |", in the box cloudflared draws around it (not its API's, api.trycloudflare.com, in its errors). */
+        private val QUICK_URL = Regex("""https://(?!api\.)[a-z0-9-]+\.trycloudflare\.com""")
     }
 }

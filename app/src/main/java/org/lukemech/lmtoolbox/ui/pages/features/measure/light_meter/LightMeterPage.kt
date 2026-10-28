@@ -1,30 +1,21 @@
 package org.lukemech.lmtoolbox.ui.pages.features.measure.light_meter
 
 import android.hardware.Sensor
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.measure.common.MeterReport
 import org.lukemech.lmtoolbox.features.measure.common.ReadingStats
 import org.lukemech.lmtoolbox.features.measure.light_meter.LIGHT_REFERENCES
 import org.lukemech.lmtoolbox.features.measure.light_meter.LightMeterFeature
@@ -34,12 +25,12 @@ import org.lukemech.lmtoolbox.features.measure.light_meter.referenceFor
 import org.lukemech.lmtoolbox.ui.components.EmptyText
 import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.PageHeading
+import org.lukemech.lmtoolbox.ui.components.ReadingResult
 import org.lukemech.lmtoolbox.ui.components.ResultRow
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SectionTitle
-import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterReading
-import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
+import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterActions
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.SensorUpdates
 
 /**
@@ -81,13 +72,34 @@ fun LightMeterPage() {
     val none = stringResource(R.string.f_meter_none)
     val unit = stringResource(R.string.f_light_unit)
     fun text(value: Double?) = value?.let(::formatLux)?.let { "$it $unit" } ?: none
+    val rows = listOf(
+        stringResource(R.string.f_light_foot_candles) to (shown?.let { "%.2f fc".format(footCandles(it)) } ?: none),
+        stringResource(R.string.f_meter_min) to text(summary.first),
+        stringResource(R.string.f_meter_max) to text(summary.second),
+        stringResource(R.string.f_meter_avg) to text(summary.third),
+    )
+    // The typical lights, the one the reading is like marked
+    val referencesTitle = stringResource(R.string.f_light_references)
+    val references = LIGHT_REFERENCES.map { stringResource(it.name) to "${range(it)} $unit" }
+    val like = shown?.let { referenceFor(it) }
+    val title = stringResource(R.string.fp_light_meter)
+    val note = stringResource(R.string.f_light_note)
 
     PageHeading(
-        title = stringResource(R.string.fp_light_meter),
+        title = title,
         action = {
-            HoldAction(holding) {
-                holding = it
-                if (!it) shown = lux
+            MeterActions(
+                title, readings = shown != null, holding = holding,
+                onHoldingChange = {
+                    holding = it
+                    if (!it) shown = lux
+                }
+            ) {
+                MeterReport(
+                    reading = shown?.let(::formatLux) ?: none, unit = unit,
+                    sections = listOf(MeterReport.Section(null, rows), MeterReport.Section(referencesTitle, references, marked = like)),
+                    notes = listOf(note)
+                )
             }
         }
     ) {
@@ -96,46 +108,15 @@ fun LightMeterPage() {
             return@PageHeading
         }
         Column(verticalArrangement = RowArrangement) {
-            MeterReading(shown?.let(::formatLux) ?: none, unit, held = holding)
+            Results(apart = false) {
+                ReadingResult(shown?.let(::formatLux) ?: none, unit, held = holding)
+                rows.forEach { (label, value) -> ResultRow(label, value) }
+            }
+            SectionTitle(referencesTitle)
             Results {
-                ResultRow(stringResource(R.string.f_light_foot_candles), shown?.let { "%.2f fc".format(footCandles(it)) } ?: none)
-                ResultRow(stringResource(R.string.f_meter_min), text(summary.first))
-                ResultRow(stringResource(R.string.f_meter_max), text(summary.second))
-                ResultRow(stringResource(R.string.f_meter_avg), text(summary.third))
+                references.forEachIndexed { i, (name, range) -> ResultRow(name, range, marked = i == like) }
             }
-            SectionTitle(stringResource(R.string.f_light_references))
-            References(current = shown?.let { referenceFor(it) })
-            Note(stringResource(R.string.f_light_note))
-        }
-    }
-}
-
-/** The typical lights (LIGHT_REFERENCES), the one the reading is like ([current]) marked. */
-@Composable
-private fun References(current: Int?) {
-    val unit = stringResource(R.string.f_light_unit)
-    Results {
-        LIGHT_REFERENCES.forEachIndexed { i, reference ->
-            val marked = i == current
-            val color by animateColorAsState(if (marked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Text(
-                    stringResource(reference.name),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (marked) FontWeight.Bold else FontWeight.Normal,
-                    color = color,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    "${range(reference)} $unit",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (marked) FontWeight.Bold else FontWeight.SemiBold,
-                    color = color
-                )
-            }
+            Note(note)
         }
     }
 }

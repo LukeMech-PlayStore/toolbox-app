@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fp_audio_jack">Audio jacks</string>
+    <string name="fd_audio_jack">TS, TRS, balanced TRS and headset TRRS</string>
+    <string name="fk_audio_jack" tools:ignore="TypographyFractions">audio jack, 2.5 mm, 3.5 mm, 6.35 mm, 1/4 inch, minijack, jack, mono, stereo, balanced, trs, trrs, ctia, ahj, omtp, headphones, headset, microphone, tip, ring, sleeve, pinout, pins, connector, reference</string>
+    <string name="rf_jack_left">Left channel</string>
+    <string name="rf_jack_right">Right channel</string>
+    <string name="rf_jack_mic">Microphone</string>
+    <string name="rf_jack_ground">Ground (common)</string>
+    <string name="rf_jack_note">Tip, ring, sleeve: from the plug\'s end back. The same on 2.5, 3.5 and 6.35 mm jacks.</string>
+    <string name="rf_jack_mono">The signal: an instrument, a speaker, a mono line</string>
+    <string name="rf_jack_ts_note">Mono, as a guitar cable has it. A TS plug in a stereo socket grounds its ring.</string>
+    <string name="rf_jack_hot">Hot: the signal in phase</string>
+    <string name="rf_jack_cold">Cold: the signal inverted</string>
+    <string name="rf_jack_balanced_note">Balanced mono, as studio gear\'s 6.35 mm line ins and outs have it: wired as XLR\'s pins 2, 3 and 1</string>
+    <string name="rf_jack_ctia_note">CTIA (also AHJ): most phones, laptops and headsets now</string>
+    <string name="rf_jack_omtp_note">OMTP: older phones; the microphone and ground are swapped</string>
+</resources>

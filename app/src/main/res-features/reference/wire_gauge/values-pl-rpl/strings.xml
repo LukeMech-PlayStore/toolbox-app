@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_wire_gauge">Przekroje przewodów (AWG, SWG)</string>
+    <string name="fd_wire_gauge">Średnica, mm² i obciążalność</string>
+    <string name="fk_wire_gauge">awg, swg, rozmiar przewodu, american wire gauge, standard wire gauge, przekrój, mm2, średnica, obciążalność prądowa, prąd dopuszczalny, kabel, nec, ściągawka, tabela</string>
+    <string name="rf_ampacity_60">Miedź, 60 °C</string>
+    <string name="rf_ampacity_75">Miedź, 75 °C</string>
+    <string name="rf_awg_note">Obciążalność z tabeli NEC 310.16 (USA): miedź w izolacji 60 °C lub 75 °C, do trzech obciążonych żył w rurze lub kablu, otoczenie 30 °C. Inne sposoby ułożenia i przepisy innych krajów dopuszczają inne prądy.</string>
+    <string name="rf_swg_note">Imperial Standard Wire Gauge (BS 3737)</string>
+</resources>

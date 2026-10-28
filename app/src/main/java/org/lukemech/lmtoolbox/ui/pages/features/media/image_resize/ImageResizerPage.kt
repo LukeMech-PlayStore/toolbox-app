@@ -55,6 +55,10 @@ import org.lukemech.lmtoolbox.features.media.image_resize.ImageResizerFeature
 import org.lukemech.lmtoolbox.features.media.image_resize.ResizeOptions
 import org.lukemech.lmtoolbox.ui.components.ActionButton
 import org.lukemech.lmtoolbox.ui.components.BigButton
+import org.lukemech.lmtoolbox.ui.components.Chip
+import org.lukemech.lmtoolbox.ui.components.ChipChoice
+import org.lukemech.lmtoolbox.ui.components.ChipGroup
+import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.ErrorText
 import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.Reveal
@@ -282,14 +286,14 @@ fun OptionsForm(
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 TargetSizeChoice(image?.size ?: 0, options.targetMb) { onChange(options.copy(targetMb = it)) }
                 Reveal(visible = options.targetMb > 0) {
-                    Note(stringResource(if (format.isLossy) R.string.f_ImgRes_target_note else R.string.f_ImgRes_target_note_png))
+                    Note(stringResource(if (format.isLossy) R.string.f_ImgRes_target_note else R.string.f_ImgRes_target_note_png), inset = false)
                 }
             }
 
             SizeChoice(image, options, onChange)
             Reveal(visible = options.hasBox) {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Chips(
+                    ChipChoice(
                         stringResource(R.string.f_ImgRes_fit),
                         listOf(
                             Fit.Fit to stringResource(R.string.f_ImgRes_fit_fit),
@@ -297,10 +301,8 @@ fun OptionsForm(
                             Fit.Pad to stringResource(R.string.f_ImgRes_fit_pad),
                             Fit.Stretch to stringResource(R.string.f_ImgRes_fit_stretch),
                         ),
-                        options.fit
-                    ) { onChange(options.copy(fit = it)) }
-                    Note(
-                        stringResource(
+                        options.fit,
+                        note = stringResource(
                             when (options.fit) {
                                 Fit.Fit -> R.string.f_ImgRes_fit_fit_desc
                                 Fit.Fill -> R.string.f_ImgRes_fit_fill_desc
@@ -308,16 +310,16 @@ fun OptionsForm(
                                 Fit.Stretch -> R.string.f_ImgRes_fit_stretch_desc
                             }
                         )
-                    )
+                    ) { onChange(options.copy(fit = it)) }
                 }
             }
             // What the size (and how it goes in the box) comes to, under them
             if (image != null) {
                 val plan = ImageResize.plan(image.width, image.height, options)
-                Note(stringResource(R.string.f_ImgRes_result, "${plan.width}×${plan.height}"))
+                Note(stringResource(R.string.f_ImgRes_result, "${plan.width}×${plan.height}"), inset = false)
             }
 
-            Chips(
+            ChipChoice(
                 stringResource(R.string.f_ImgRes_format),
                 ImageFormat.entries.map {
                     it to if (it == ImageFormat.Original) {
@@ -382,33 +384,21 @@ private fun SizeChoice(image: ImageResize.Opened?, options: ResizeOptions, onCha
     val preset = options.width to options.height
     var custom by remember { mutableStateOf(options.hasBox && preset !in ResizeOptions.BOXES) }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(stringResource(R.string.f_ImgRes_size), style = MaterialTheme.typography.labelLarge)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        ChipGroup(stringResource(R.string.f_ImgRes_size)) {
             ResizeOptions.PERCENTS.forEach { p ->
-                FilterChip(
-                    selected = !custom && !options.hasBox && options.percent == p,
-                    onClick = { custom = false; onChange(options.copy(percent = p, width = 0, height = 0)) },
-                    label = {
-                        Text(if (p == 100) stringResource(R.string.f_ImgRes_original) else "$p%")
-                    }
-                )
+                Chip(
+                    if (p == 100) stringResource(R.string.f_ImgRes_original) else "$p%",
+                    selected = !custom && !options.hasBox && options.percent == p
+                ) { custom = false; onChange(options.copy(percent = p, width = 0, height = 0)) }
             }
             ResizeOptions.BOXES.forEach { (w, h) ->
-                FilterChip(
-                    selected = !custom && preset == (w to h),
-                    onClick = { custom = false; onChange(options.copy(width = w, height = h)) },
-                    label = { Text("$w×$h") }
-                )
+                Chip("$w×$h", selected = !custom && preset == (w to h)) { custom = false; onChange(options.copy(width = w, height = h)) }
             }
-            FilterChip(
-                selected = custom,
-                onClick = {
-                    custom = true
-                    // From what it is: a side to change
-                    if (!options.hasBox) onChange(options.copy(width = image?.width ?: ResizeOptions.BOXES[1].first, height = 0))
-                },
-                label = { Text(stringResource(R.string.f_ImgRes_custom)) }
-            )
+            Chip(stringResource(R.string.f_ImgRes_custom), selected = custom) {
+                custom = true
+                // From what it is: a side to change
+                if (!options.hasBox) onChange(options.copy(width = image?.width ?: ResizeOptions.BOXES[1].first, height = 0))
+            }
         }
         Reveal(visible = custom) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -428,7 +418,7 @@ private fun SizeChoice(image: ImageResize.Opened?, options: ResizeOptions, onCha
                     Text("×")
                     Side(options.height, stringResource(R.string.f_ImgRes_height), { onChange(options.copy(height = it)) }, Modifier.weight(1f))
                 }
-                Note(stringResource(R.string.f_ImgRes_custom_note))
+                Note(stringResource(R.string.f_ImgRes_custom_note), inset = false)
             }
         }
     }
@@ -441,28 +431,15 @@ private fun TargetSizeChoice(size: Long, selected: Double, onSelect: (Double) ->
     var other by remember { mutableStateOf(selected > 0 && selected !in presets) }
     var text by remember { mutableStateOf(if (selected > 0 && selected !in presets) megabytes(selected) else "") }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(stringResource(R.string.f_ImgRes_target), style = MaterialTheme.typography.labelLarge)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(
-                selected = selected <= 0 && !other,
-                onClick = { other = false; onSelect(0.0) },
-                label = { Text(stringResource(R.string.f_ImgRes_target_none)) }
-            )
+        ChipGroup(stringResource(R.string.f_ImgRes_target)) {
+            Chip(stringResource(R.string.f_ImgRes_target_none), selected = selected <= 0 && !other) { other = false; onSelect(0.0) }
             presets.forEach { mb ->
-                FilterChip(
-                    selected = !other && selected == mb,
-                    onClick = { other = false; onSelect(mb) },
-                    label = { Text("${megabytes(mb)} MB") }
-                )
+                Chip("${megabytes(mb)} MB", selected = !other && selected == mb) { other = false; onSelect(mb) }
             }
-            FilterChip(
-                selected = other,
-                onClick = {
-                    other = true
-                    text.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }?.let(onSelect)
-                },
-                label = { Text(stringResource(R.string.f_ImgRes_custom)) }
-            )
+            Chip(stringResource(R.string.f_ImgRes_custom), selected = other) {
+                other = true
+                text.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }?.let(onSelect)
+            }
         }
         Reveal(visible = other) {
             InputField(
@@ -482,23 +459,6 @@ private fun TargetSizeChoice(size: Long, selected: Double, onSelect: (Double) ->
 
 /** e.g. 1, 0.5 */
 private fun megabytes(mb: Double) = if (mb % 1.0 == 0.0) "%.0f".format(mb) else "%.1f".format(mb)
-
-@Composable
-private fun <T> Chips(label: String, values: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            values.forEach { (value, text) ->
-                FilterChip(selected = value == selected, onClick = { onSelect(value) }, label = { Text(text) })
-            }
-        }
-    }
-}
-
-@Composable
-private fun Note(text: String) {
-    Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-}
 
 /** The saved picture: where it went, what it is now and what it was. */
 @Composable

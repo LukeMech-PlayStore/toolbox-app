@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_esp_boards">Płytki ESP32 i ESP8266</string>
+    <string name="fd_esp_boards">DevKity, ESP32-CAM, płytki C3, NodeMCU, D1 mini, ESP-01, ESP-12F: każdy pin, układ i pamięć</string>
+    <string name="fk_esp_boards">esp, esp32, esp8266, espressif, devkit, devkitc, devkit v1, doit, wroom, s3, esp32-s3, c3, esp32-c3, supermini, c3 zero, waveshare, cam, esp32-cam, nodemcu, d1 mini, wemos, lolin, esp-01, esp-01s, esp-12, esp-12f, wifi, bluetooth, gpio, adc, dac, touch, dotyk, i2c, spi, uart, strapping, boot, flash, ram, psram, pinout, wyprowadzenia, piny, płytka, ściągawka</string>
+    <string name="rf_esp_input_only">tylko wejście, bez podciągania</string>
+    <string name="rf_esp_flash">Zajęty przez pamięć flash: nic nie podłączaj</string>
+    <string name="rf_esp_strap">pin konfiguracyjny: jego stan przy resecie ustala, jak układ startuje</string>
+    <string name="rf_esp_strap_12">pin konfiguracyjny: stan wysoki przy resecie ustawia flash na 1,8 V i płytka nie wystartuje; trzymaj go nisko</string>
+    <string name="rf_esp_boot">zwarty do masy przy resecie uruchamia bootloader (przycisk BOOT)</string>
+    <string name="rf_esp_led">wbudowana dioda LED na wielu płytkach</string>
+    <string name="rf_esp_led_low">wbudowana dioda LED, świeci przy stanie niskim</string>
+    <string name="rf_esp_psram">zajęty przez PSRAM w modułach z nią (R8: octal)</string>
+    <string name="rf_esp_rgb">dioda RGB (na płytkach v1.1 jest na GPIO38)</string>
+    <string name="rf_esp_en">Enable: zwarty do masy resetuje układ (przycisk EN lub RST)</string>
+    <string name="rf_esp_rst">Zwarty do masy resetuje układ</string>
+    <string name="rf_esp_3v3">3,3 V: wyjście stabilizatora albo zasilanie zamiast USB</string>
+    <string name="rf_esp_5v">5 V: wyjście z USB albo zasilanie zamiast niego</string>
+    <string name="rf_esp_vin">Zasilanie stabilizatora (5 V) albo wyjście 5 V z USB</string>
+    <string name="rf_esp_rsv">Niepodłączony (na płytkach LoLin v3: VU, czyli 5 V z USB, i GND)</string>
+    <string name="rf_esp_cam_flash">jasna biała dioda (lampa błyskowa)</string>
+    <string name="rf_esp_cam_xclk">zegar kamery</string>
+    <string name="rf_esp_cam_vcc">Wyjście: 3,3 V lub 5 V, zależnie od zworki na płytce</string>
+    <string name="rf_esp8266_wake">Połączony z RST budzi układ z głębokiego uśpienia. Bez PWM, I²C i przerwań</string>
+    <string name="rf_esp8266_flash">Zwarty do masy przy resecie uruchamia bootloader (przycisk FLASH)</string>
+    <string name="rf_esp8266_high">musi być w stanie wysokim przy resecie</string>
+    <string name="rf_esp8266_low">musi być w stanie niskim przy resecie</string>
+    <string name="rf_esp8266_a0">Wejście analogowe, 0–3,3 V na płytce (dzielnik przed 0–1 V układu)</string>
+    <string name="rf_esp_devkitc_note">ESP32-WROOM-32, widok z góry, antena u góry, strona z 3V3 po lewej. GPIO pracują przy 3,3 V. ADC2 nie działa, gdy włączone jest Wi-Fi.</string>
+    <string name="rf_esp_devkit_v1_note">ESP32-WROOM-32, 30 pinów, widok z góry, antena u góry, strona z EN po lewej. GPIO pracują przy 3,3 V. ADC2 nie działa, gdy włączone jest Wi-Fi; dioda LED jest na GPIO2.</string>
+    <string name="rf_esp_cam_note">Płytka AI-Thinker, strona z 5V po lewej, 5V i 3V3 u góry. Nie ma USB: programuje się ją przez U0R i U0T, z IO0 zwartym do masy. Karta microSD zajmuje GPIO2, 4 i 12–15.</string>
+    <string name="rf_esp_s3_note">ESP32-S3-WROOM-1, widok z góry, antena u góry, strona z 3V3 po lewej. GPIO19 i 20 to własne USB układu. ADC2 nie działa, gdy włączone jest Wi-Fi.</string>
+    <string name="rf_esp_c3_note">Widok z góry, USB u góry, strona z 5V po lewej. GPIO pracują przy 3,3 V; przycisk BOOT jest na GPIO9. Niektóre klony mają piny w innej kolejności: sprawdź opis na płytce.</string>
+    <string name="rf_esp_nodemcu_note">ESP8266 (ESP-12), widok z góry, antena u góry, strona z A0 po lewej. Numery D są nadrukowane na płytce, numerów GPIO używa kod; pracują przy 3,3 V.</string>
+    <string name="rf_esp_d1_note">ESP8266, widok z góry, antena u góry, strona z RST po lewej. Numery D jak w NodeMCU; GPIO pracują przy 3,3 V.</string>
+    <string name="rf_esp_rgb_10">dioda RGB (WS2812)</string>
+    <string name="rf_esp_vcc_33">Zasilanie tylko 3,3 V: 5 V go uszkadza</string>
+    <string name="rf_esp8266_adc">Wejście analogowe, 0–1 V (samego układu, bez dzielnika)</string>
+    <string name="rf_esp_c3_zero_note">ESP32-C3-Zero od Waveshare, widok z góry, USB-C u góry, strona z 5V po lewej. GPIO18 i 19 to własne USB układu.</string>
+    <string name="rf_esp01_note">ESP-01 i ESP-01S, jak na większości schematów, od strony układu. EN (CH_PD) i RST muszą być w stanie wysokim, by działał. Sprawdź opis od spodu: producenci się różnią.</string>
+    <string name="rf_esp12f_note">Sam moduł, widok z góry, antena u góry. EN w stanie wysokim, GPIO15 niskim, GPIO0 i 2 wysokim, by wystartował z flash; dolne pola należą do pamięci flash.</string>
+</resources>

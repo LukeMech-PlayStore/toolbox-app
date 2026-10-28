@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -34,9 +36,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * The space between rows (a [FeatureButton] and what's built on it: settings, switches, choices) one
@@ -72,8 +76,12 @@ fun FeatureButton(
     title: String,
     subtitle: String? = null,
     titleSubtitleSwap: Boolean = false,
+    /** The subtitle on one line, its text smaller as far as it has to (e.g. an address, read whole). */
+    subtitleOneLine: Boolean = false,
     colors: RowColors = RowColors.default,
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    /** In the icon's place (a pin's numbered badge), as big. */
+    leading: (@Composable () -> Unit)? = null,
     icon2: ImageVector? = null,
     image: Painter? = null,
     onClick: () -> Unit = {},
@@ -118,12 +126,16 @@ fun FeatureButton(
                     .padding(16.dp)
                     .animateContentSize()
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = colors.content,
-                    modifier = Modifier.size(48.dp)
-                )
+                if (leading != null) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp)) { leading() }
+                } else if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = colors.content,
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
@@ -137,10 +149,13 @@ fun FeatureButton(
                             style = if (!titleSubtitleSwap) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.bodyMedium,
                             color = colors.content
                         )
+                        val subtitleStyle = if (!titleSubtitleSwap) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
                         Text(subtitle,
-                            style = if (!titleSubtitleSwap) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
+                            style = subtitleStyle,
                             color = colors.content,
-                            fontStyle = if (!titleSubtitleSwap) FontStyle.Italic else FontStyle.Normal
+                            fontStyle = if (!titleSubtitleSwap) FontStyle.Italic else FontStyle.Normal,
+                            maxLines = if (subtitleOneLine) 1 else Int.MAX_VALUE,
+                            autoSize = if (subtitleOneLine) TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = subtitleStyle.fontSize) else null
                         )
                     }
                 } else {
@@ -176,16 +191,23 @@ fun FeatureButton(
 
                 if (buttonContent != null || buttonContent2 != null) {
                     Spacer(modifier = Modifier.width(12.dp))
+                    // Measured before the title: at most half the room, so a long value there wraps instead of
+                    // squeezing the title to a letter a line, and the title still takes all the rest
+                    val buttonsWidth = Modifier.layout { measurable, constraints ->
+                        val placeable = measurable.measure(constraints.copy(minWidth = 0, maxWidth = constraints.maxWidth / 2))
+                        layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+                    }
                     if (buttonsInColumn) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(4.dp),
-                            horizontalAlignment = Alignment.End
+                            horizontalAlignment = Alignment.End,
+                            modifier = buttonsWidth
                         ) {
                             buttonContent?.invoke()
                             buttonContent2?.invoke()
                         }
                     } else {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = buttonsWidth) {
                             buttonContent?.invoke()
                             buttonContent2?.invoke()
                         }

@@ -106,7 +106,7 @@ fun StroboscopePage() {
 
     PageHeading(title = stringResource(R.string.fp_stroboscope)) {
         Column(verticalArrangement = RowArrangement) {
-            Results {
+            Results(apart = false) {
                 MainResult(
                     stringResource(R.string.f_strobe_rate),
                     hz?.let { stringResource(R.string.f_strobe_rate_value, "%.2f".format(it), "%.0f".format(rpm(it))) }

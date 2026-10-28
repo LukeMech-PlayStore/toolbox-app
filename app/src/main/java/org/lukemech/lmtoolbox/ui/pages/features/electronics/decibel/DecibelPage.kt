@@ -11,6 +11,7 @@ import androidx.compose.ui.res.stringResource
 import kotlin.math.log10
 import kotlin.math.pow
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.electronics.decibel.DecibelFeature
 import org.lukemech.lmtoolbox.ui.components.OptionSetting
 import org.lukemech.lmtoolbox.ui.pages.features.electronics.common.CalculatorPage
 import org.lukemech.lmtoolbox.ui.pages.features.electronics.common.Formula
@@ -39,7 +40,8 @@ fun DecibelPage() {
             Formula("""\frac{P_{2}}{P_{1}} = 10^{G/10}"""),
             Formula("""G = 20 · \text{log}_{10} \frac{U_{2}}{U_{1}}""", stringResource(R.string.ec_voltage)),
             Formula("""\frac{U_{2}}{U_{1}} = 10^{G/20}"""),
-        )
+        ),
+        tables = listOf(DecibelFeature.table)
     ) {
         OptionSetting(
             title = stringResource(R.string.ec_quantity),

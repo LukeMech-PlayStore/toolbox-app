@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_sd_card">SD and microSD cards</string>
+    <string name="fd_sd_card">Contacts in SD and SPI mode</string>
+    <string name="fk_sd_card">sd card, microsd, tf card, memory card, spi, sdio, contacts, mosi, miso, dat0, cmd, clk, pinout, pins, connector, reference</string>
+    <string name="rf_sd_note">Pin 9 lies next to pin 1</string>
+    <string name="rf_microsd_note">Contacts 1 to 8 in a row</string>
+</resources>

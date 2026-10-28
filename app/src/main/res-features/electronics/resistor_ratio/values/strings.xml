@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_resistor_ratio">Resistor ratio</string>
+    <string name="fd_resistor_ratio">The standard pair for any ratio</string>
+    <string name="fk_resistor_ratio">resistor ratio, ratio, pair, e-series, e24, e96, standard values, voltage divider, feedback, gain, matching, resistors, calculator, calc, compute, electronics</string>
+    <string name="ec_two_resistors">Ratio of two resistors</string>
+    <string name="ec_target_ratio">Target ratio</string>
+    <string name="ec_error">Error</string>
+    <string name="ec_ratio_scale">R1 is shown in 1–10 kΩ: both can be multiplied by the same power of ten</string>
+    <string name="ec_divider_under_one">A divider\'s ratio is between 0 and 1</string>
+    <string name="ec_total_resistance">R1 + R2</string>
+</resources>

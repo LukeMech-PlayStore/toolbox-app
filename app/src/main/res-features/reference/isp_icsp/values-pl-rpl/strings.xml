@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_isp_icsp">AVR ISP i PIC ICSP</string>
+    <string name="fd_isp_icsp">6- i 10-pinowe złącza AVR, 6-pinowe PIC</string>
+    <string name="fk_isp_icsp">isp, avr isp, icsp, pic, pickit, avrisp, usbasp, programator, złącze programowania, atmega, attiny, mclr, vpp, pinout, wyprowadzenia, piny, złącze, ściągawka</string>
+    <string name="rf_isp_miso">Dane z układu</string>
+    <string name="rf_isp_mosi">Dane do układu</string>
+    <string name="rf_isp_sck">Zegar z programatora</string>
+    <string name="rf_isp_vcc">Zasilanie układu (mierzone albo podawane przez programator)</string>
+    <string name="rf_isp_reset">Trzymany w stanie niskim podczas programowania</string>
+    <string name="rf_isp_note">Pin 1 oznacza trójkąt albo kropka na wtyku i płytce</string>
+    <string name="rf_icsp_vpp">Reset (master clear) i napięcie programowania</string>
+    <string name="rf_icsp_pgd">Dane programowania</string>
+    <string name="rf_icsp_pgc">Zegar programowania</string>
+    <string name="rf_icsp_pgm">Programowanie niskim napięciem; większość układów go nie używa</string>
+    <string name="rf_icsp_note">Złącze PICkita, w jednym rzędzie; pin 1 oznacza trójkąt</string>
+    <string name="rf_isp10_note">Starsze 10-pinowe złącze AVR (STK500, USBasp): pin 1 ma trójkąt. Pin 3 na większości płytek jest niepodłączony.</string>
+</resources>
