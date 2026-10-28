@@ -111,6 +111,8 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         Device.waitFor("$name to be made", 15 * Device.MINUTE, intervalMs = 2000, failFast = {
             Installer.state.value?.takeIf { it.stage == Installer.Stage.Failed }?.let { "it failed: ${it.error}\n${linux.failure().orEmpty()}" }
                 ?: linux.failure()
+        }, status = {
+            Installer.state.value?.let { i -> "${i.stage}" + (i.progress?.let { " ${(it * 100).toInt()}%" } ?: "") }
         }) {
             // Java, if it isn't there yet: asked first
             linux.confirmPrompt()

@@ -44,6 +44,9 @@ internal object Http {
     /** How many times a download's tried (a dropped connection, a server's hiccup), the next after a longer wait each. */
     const val DOWNLOAD_TRIES = 3
     val RETRY_DELAY = 3.seconds
+    /** Less than this in [SLOW_WINDOW] (about 8 KB/s): a stuck connection, dropped for a new one. */
+    private const val SLOW_BYTES = 256 * 1024L
+    private val SLOW_WINDOW = 30.seconds
 
     fun open(url: String): HttpURLConnection = (URI(url).toURL().openConnection() as HttpURLConnection).apply {
         setRequestProperty("User-Agent", USER_AGENT)
@@ -123,6 +126,10 @@ internal object Http {
                 var done = if (resumed) from else 0L
                 val total = c.contentLengthLong.takeIf { it > 0 }?.let { it + done }
                 var last = -1
+                // A trickle never reaches the read timeout (Forge's maven, at a few KB/s, took 11 minutes for its
+                // installer, then stalled): under SLOW_BYTES in a SLOW_WINDOW, a new connection, going on from here
+                var windowStart = System.nanoTime()
+                var windowFrom = done
                 c.inputStream.use { input ->
                     FileOutputStream(part, resumed).use { out ->
                         val buf = ByteArray(64 * 1024)
@@ -133,6 +140,11 @@ internal object Http {
                             out.write(buf, 0, n)
                             digest.update(buf, 0, n)
                             done += n
+                            if (System.nanoTime() - windowStart >= SLOW_WINDOW.inWholeNanoseconds) {
+                                if (done - windowFrom < SLOW_BYTES) throw IOException("Too slow: $url")
+                                windowStart = System.nanoTime()
+                                windowFrom = done
+                            }
                             val percent = total?.let { (done * 100 / it).toInt() } ?: -1
                             if (percent != last) {
                                 last = percent
