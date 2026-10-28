@@ -1,9 +1,11 @@
 ✨ Nowości
-• Udostępnianie folderu: folder z telefonu w dowolnej przeglądarce, w pobliżu lub z daleka
-• Pomiary: poziom dźwięku, światło, pole magnetyczne z wykrywaczem metalu, drgania i stroboskop
-• Elektronika: pięć nowych kalkulatorów, filtry RL/RLC, Ściągawki z tabelami i pinoutami
-• Suma kontrolna: hashe pliku lub tekstu, sprawdzane z hashem lub innym plikiem
+• Udostępnianie folderu: folder telefonu w przeglądarce, też z daleka
+• Mierniki: dźwięk, światło, wykrywacz metalu, drgania, stroboskop
+• Elektronika: pięć nowych kalkulatorów, filtry RL/RLC
+• Ściągawki: tabele i pinouty, Arduino, ESP32, STM32
+• Suma kontrolna: hashe pliku lub tekstu i ich sprawdzanie
+• Eksport PDF pinoutów, tabel i odczytów mierników
 
 ⚡ Ulepszenia
-• Każdy miernik ma Zatrzymaj i jeden układ; obrót ekranu zachowuje stronę
-• Adresy jako kody QR, poprawki i inne
+• Mierniki mają Zatrzymaj; obrót ekranu zachowuje stronę
+• Baterie: czas pracy i rozmiary w jednym; poprawki i inne
