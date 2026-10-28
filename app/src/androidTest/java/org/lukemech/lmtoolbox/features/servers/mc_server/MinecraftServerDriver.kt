@@ -108,7 +108,9 @@ class MinecraftServerDriver(private val ui: Ui, private val linux: Linux) {
         Device.screenshot("mc-new-$name")
         // Enabled once the Java its version needs is known
         ui.click(hasText(s(R.string.f_Mc_create)) and hasClickAction(), timeoutMs = 2 * Device.MINUTE, what = "Create")
-        Device.waitFor("$name to be made", 15 * Device.MINUTE, intervalMs = 2000, failFast = {
+        // Under a minute on every leg, the installers too: longer, it's a runner Forge's CDN sends a few KB/s to (it'd
+        // take an hour), better failed early
+        Device.waitFor("$name to be made", 5 * Device.MINUTE, intervalMs = 2000, failFast = {
             Installer.state.value?.takeIf { it.stage == Installer.Stage.Failed }?.let { "it failed: ${it.error}\n${linux.failure().orEmpty()}" }
                 ?: linux.failure()
         }, status = {
