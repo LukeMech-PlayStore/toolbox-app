@@ -219,7 +219,7 @@ object LanScan {
 
     /** [info]'s IPv4 addresses, resolved. */
     private suspend fun resolve(nsd: NsdManager, info: NsdServiceInfo): List<String> = suspendCancellableCoroutine { cont ->
-        @Suppress("DEPRECATION") // resolveService: one callback, as on every Android the app runs on (Android 14's own way is a subscription)
+        @Suppress("DEPRECATION") // resolveService: a single callback, on every Android version the app runs on (Android 14 adds a subscription instead)
         runCatching {
             nsd.resolveService(info, object : NsdManager.ResolveListener {
                 override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
