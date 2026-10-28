@@ -33,8 +33,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.network.net_tools.LanScan
 import org.lukemech.lmtoolbox.features.network.net_tools.Services
@@ -51,16 +49,16 @@ import org.lukemech.lmtoolbox.ui.pages.features.servers.common.networkChanges
 /** The LAN scan's run and the devices it found; the page's, as the other tabs'. */
 internal class LanState(private val context: Context, private val scope: CoroutineScope) {
     var result by mutableStateOf<LanScan.Result?>(null)
-    var job by mutableStateOf<Job?>(null)
-    val running get() = job?.isActive == true
+    private val run = TabRun(scope)
+    val running get() = run.running
 
     fun start(lan: LanScan.Lan) {
         if (running) return
         result = LanScan.Result(lan)
-        job = scope.launch { LanScan.run(context, lan).collect { result = it } }
+        run.start { LanScan.run(context, lan).collect { result = it } }
     }
 
-    fun stop() = job?.cancel()
+    fun stop() = run.stop()
 
     @Composable
     fun steps() = result?.takeIf { running }?.let {

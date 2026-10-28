@@ -19,13 +19,13 @@
 **One app, a drawer full of tools.** Measure with a ruler, a spirit level, a compass, a sound level meter, a
 light meter, a metal detector, a vibration meter and a stroboscope; work out a resistor's color code or a 555
 timer with 30 electronics calculators; look up pinouts and tables; convert currencies; download, convert and
-shrink videos, music and images; edit a photo's metadata; share a folder with any browser; ping, trace and scan
-your network and measure it with iperf3; or run your own Minecraft server, Vanilla to NeoForge, straight from
+shrink videos, music and images; edit a photo's metadata; share a folder with any browser; test your internet's
+speed, ping, trace and scan your network; or run your own Minecraft server, Vanilla to NeoForge, straight from
 your phone and reachable by your friends through Bore, a Cloudflare tunnel or Tailscale.
 
-The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared, bore, iperf3)
-inside a PRoot-based Linux subsystem. You never set it up: the app installs it part by part, only when a tool you
-open needs it, and removes what no tool uses anymore. No root, no terminal, and in English and Polish.
+The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared, bore) inside a
+PRoot-based Linux subsystem. You never set it up: the app installs it part by part, only when a tool you open
+needs it, and removes what no tool uses anymore. No root, no terminal, and in English and Polish.
 
 <a href="https://play.google.com/store/apps/details?id=org.lukemech.lmtoolbox"><img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="80"></a>
 
@@ -61,7 +61,7 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Media       | File size (a shortcut to the media or the image encoder)                                       | Android                                                                                                                                                                      | `app`               |
 | Media       | File hash (MD5, SHA-1, SHA-2, SHA-3, CRC32; checked against a hash or a checksum file)         | Android (`MessageDigest`, `CRC32`); SHA-3 the app's own (Android has none)                                                                                                   | `app`               |
 | Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
-| Network     | Network tools (ping, traceroute, LAN devices, port scan, iperf3 client and server)             | Android (its `ping`, sockets, `NsdManager`); iperf3 for its tab alone, installed when it's first run (`features:iperf3`)                                                     | `app`               |
+| Network     | Network tools (speed test, ping, traceroute, LAN devices, port scan)                           | Android (its `ping`, sockets, HTTP, `NsdManager`); the speed test on Cloudflare's servers (speed.cloudflare.com)                                                             | `app`               |
 | Servers     | Folder share (a folder in any browser: ranges, ZIPs, uploads, a password; Bore, Cloudflare)    | Android (a web server of its own); bore or cloudflared once a tunnel is on (`features:bore`, `cloudflared`)                                                                  | `app`               |
 
 The electronics calculators: color code, SMD resistor code, Ohm's law, electric power, reactance and
@@ -131,9 +131,6 @@ checks that the routes are unique.
   It lists the parts it runs on (`linuxExtensions`, each with what it builds on). Its pages are a `FeatureUi`
   object in the part's module (`uiClass`, loaded by name through `FeatureDelivery`). Until its parts are
   there, `ExtensionGate` shows what they take and installs them.
-- A native tool with a part for some of its work (the network tools' iperf3) lists it in `extraExtensions` alone:
-  everything else works without the subsystem, and the part is installed (`LinuxTasks.installParts`, asked first)
-  when that work is first started, and goes with the tool's data.
 - A tool on several parts (the Minecraft server) is the app's: there's no module of code alone. The parts it
   picks among or turns on (`extraExtensions`: a Java version, cloudflared, bore) have their API in the app
   (`linux/parts/`: `Java`, `Tunnel`, `Bore`), and their modules are just their archives. So a tool gets one only once
@@ -176,7 +173,7 @@ standards named in each one's notes.
 ### The Linux subsystem
 
 The subsystem is a Termux-based rootfs, split into parts (`core`, `python`, `pypkgs`, `ffmpeg`, `exiftool`,
-`ytdlp`, `jdk8`, `jdk17`, `jdk21`, `jdk25`, `cloudflared`, `bore`, `iperf3`), plus PRoot. Each part is an on-demand Play module under
+`ytdlp`, `jdk8`, `jdk17`, `jdk21`, `jdk25`, `cloudflared`, `bore`), plus PRoot. Each part is an on-demand Play module under
 `features/`, installed with the first tool that needs it (the core, with PRoot, comes with the first one). A
 part may not be built for every ABI (`jdk25`: no OpenJDK 25 for x86); a tool none of whose parts are there
 says it isn't available. Its commands run as argv lists through PRoot, with the Termux prefix bound to
@@ -312,7 +309,7 @@ Minecraft server's test makes every type of server (Vanilla, Paper, Fabric, Forg
 the newest Minecraft made for it: starts it, uses its console and options, changes its loader, exports its world.
 The pages' own tests (home, search, navigation, settings, tasks) sit next to them. What a tool parses or works
 out without the UI is checked on the device too, in a test of its own next to the tool's (`NetworkParsersTest`: ping's
-and iperf3's output, port ranges, subnets).
+output, the speed test's ping, port ranges, subnets).
 
 **Where.** The legs come from what the app supports and what Google publishes, worked out on every run
 ([`matrix.py`](.github/scripts/tests/e2e/matrix.py)): for x86_64, the oldest Android the app supports (`sdkMin`,

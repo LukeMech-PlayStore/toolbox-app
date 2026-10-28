@@ -11,13 +11,11 @@ import androidx.core.content.ContextCompat
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.helpers.FeatureCategory
-import org.lukemech.lmtoolbox.helpers.ResourceTile
 import org.lukemech.lmtoolbox.ui.pages.features.network.net_tools.NetworkToolsPage
 
 /**
- * Network tools: ping, traceroute, the LAN's devices and a host's ports are Android's own (its ping, Java's
- * sockets, NsdManager), nothing to download; iperf3 comes in a part of the subsystem ([Iperf.PART]), installed
- * when its tab first runs it.
+ * Network tools: the internet's speed (Cloudflare's speed test servers), ping, traceroute, the LAN's devices and a
+ * host's ports, all Android's own (its ping, Java's sockets and HTTP, NsdManager): nothing to download.
  */
 object NetworkToolsFeature : AppFeature {
     override val route = "net_tools"
@@ -33,16 +31,10 @@ object NetworkToolsFeature : AppFeature {
     const val S_PING = "NetTools_ping"
     const val S_TRACE = "NetTools_trace"
     const val S_PORTS = "NetTools_ports"
-    const val S_IPERF = "NetTools_iperf"
     /** Android 17's local network permission asked for once (Android shows its dialog until it's denied twice). */
     const val S_LOCAL_ASKED = "NetTools_localAsked"
 
-    override val preferenceKeys = listOf(S_TAB, S_PING, S_TRACE, S_PORTS, S_IPERF, S_LOCAL_ASKED)
-
-    override val extraExtensions = listOf(Iperf.PART)
-
-    // iperf3's traffic
-    override val resourceTiles = listOf(ResourceTile.Network, ResourceTile.Cpu)
+    override val preferenceKeys = listOf(S_TAB, S_PING, S_TRACE, S_PORTS, S_LOCAL_ASKED)
 
     @Composable
     override fun Content(arguments: Map<String, String?>?) = NetworkToolsPage()

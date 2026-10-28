@@ -9,8 +9,8 @@ import org.junit.Test
 
 /**
  * What the network tools read and work out, on the device (its org.json, as the app's): ping's lines (Android's
- * iputils, IPv4 and IPv6, a router's errors), traceroute's answers, iperf3's JSON stream and a server's text, port
- * ranges, subnets, hosts as typed, what a LAN device seems to be. No network needed.
+ * iputils, IPv4 and IPv6, a router's errors), traceroute's answers, the speed test's ping and jitter, port ranges,
+ * subnets, hosts as typed, what a LAN device seems to be. No network needed.
  */
 class NetworkParsersTest {
     @Test
@@ -70,74 +70,14 @@ class NetworkParsersTest {
     }
 
     @Test
-    fun iperfJsonStream() {
-        val lines = listOf(
-            """{"event":"start","data":{"connected":[{"socket":5,"local_host":"192.168.1.20","local_port":51234,"remote_host":"192.168.1.10","remote_port":5201}],"version":"iperf 3.22"}}""",
-            """{"event":"interval","data":{"streams":[],"sum":{"start":0,"end":1.0001,"seconds":1.0001,"bytes":11796480,"bits_per_second":94363285.4,"retransmits":0,"omitted":false,"sender":true}}}""",
-            """{"event":"interval","data":{"streams":[],"sum":{"start":1.0001,"end":2.0003,"seconds":1.0002,"bytes":11665408,"bits_per_second":93304512.1,"retransmits":2,"omitted":false,"sender":true}}}""",
-            """{"event":"end","data":{"sum_sent":{"start":0,"end":10,"seconds":10,"bytes":117964800,"bits_per_second":94371840,"retransmits":12,"sender":true},"sum_received":{"start":0,"end":10.04,"seconds":10.04,"bytes":117440512,"bits_per_second":93578100,"sender":true}}}""",
-        )
-        val events = lines.mapNotNull(IperfParser::json)
-        assertEquals(IperfEvent.Connected("192.168.1.10"), events[0])
-        assertEquals(94363285.4, (events[1] as IperfEvent.Interval).bitsPerSecond, 0.1)
-        val state = events.fold(IperfState(), IperfState::add)
-        assertEquals(2, state.intervals.size)
-        assertEquals(93304512.1, state.now!!, 0.1)
-        val summary = state.summary!!
-        assertEquals(94371840.0, summary.sentBitsPerSecond!!, 0.1)
-        assertEquals(93578100.0, summary.receivedBitsPerSecond!!, 0.1)
-        assertEquals(12, summary.retransmits)
-
-        // UDP's loss and jitter
-        val udp = IperfParser.json(
-            """{"event":"end","data":{"sum":{"start":0,"end":10,"seconds":10,"bytes":1310720,"bits_per_second":1048576,"jitter_ms":0.042,"lost_packets":3,"packets":906,"lost_percent":0.331}}}"""
-        ) as IperfEvent.Summary
-        assertEquals(0.042, udp.jitterMs!!, 0.0001)
-        assertEquals(0.331, udp.lostPercent!!, 0.0001)
-        assertEquals(1048576.0, udp.sentBitsPerSecond!!, 0.1)
-
-        assertEquals(
-            IperfEvent.Error("unable to connect to server - server may not be running: Connection refused"),
-            IperfParser.json("""{"event":"error","data":"error - unable to connect to server - server may not be running: Connection refused"}""")
-        )
-        assertNull(IperfParser.json("iperf3: not json"))
-    }
-
-    @Test
-    fun iperfServerText() {
-        val text = IperfParser.Text()
-        val lines = listOf(
-            "-----------------------------------------------------------",
-            "Server listening on 5201 (test #1)",
-            "-----------------------------------------------------------",
-            "Accepted connection from 192.168.1.20, port 53190",
-            "[  5] local 192.168.1.10 port 5201 connected to 192.168.1.20 port 53192",
-            "[  7] local 192.168.1.10 port 5201 connected to 192.168.1.20 port 53194",
-            "[ ID] Interval           Transfer     Bitrate",
-            "[  5]   0.00-1.00   sec  5.45 MBytes  45.7 Mbits/sec",
-            "[  7]   0.00-1.00   sec  5.45 MBytes  45.7 Mbits/sec",
-            "[SUM]   0.00-1.00   sec  10.9 MBytes  91.4 Mbits/sec",
-            "- - - - - - - - - - - - - - - - - - - - - - - - -",
-            "[SUM]   0.00-10.04  sec   111 MBytes  92.6 Mbits/sec                  receiver",
-        )
-        val events = lines.mapNotNull(text::parse)
-        assertEquals(IperfEvent.Listening(5201), events[0])
-        assertEquals(IperfEvent.Connected("192.168.1.20"), events[1])
-        // Two streams: their sum alone
-        assertEquals(4, events.size)
-        assertEquals(91.4e6, (events[2] as IperfEvent.Interval).bitsPerSecond, 1.0)
-        assertEquals(92.6e6, (events[3] as IperfEvent.Summary).receivedBitsPerSecond!!, 1.0)
-        val state = events.fold(IperfState(), IperfState::add)
-        assertEquals("192.168.1.20", state.peer)
-        assertEquals(5201, state.listening)
-
-        // One stream: its own lines (no [SUM]); UDP's jitter and loss after its rate
-        val one = IperfParser.Text()
-        one.parse("Accepted connection from 10.0.0.2, port 40000")
-        one.parse("[  5] local 10.0.0.1 port 5201 connected to 10.0.0.2 port 40001")
-        val udp = one.parse("[  5]   1.00-2.00   sec  1.19 MBytes  10.0 Mbits/sec  0.020 ms  0/863 (0%)") as IperfEvent.Interval
-        assertEquals(10.0e6, udp.bitsPerSecond, 1.0)
-        assertEquals(2.0, udp.end, 0.0)
+    fun speedTestPing() {
+        // The middle round trip: a slow one (the radio waking) doesn't count
+        assertEquals(12.0, SpeedTest.median(listOf(11.0, 250.0, 12.0, 13.0, 12.0))!!, 0.0)
+        assertEquals(12.5, SpeedTest.median(listOf(13.0, 12.0))!!, 0.0)
+        assertNull(SpeedTest.median(emptyList()))
+        // How much each differs from the one before, on average
+        assertEquals(2.0, SpeedTest.jitter(listOf(10.0, 12.0, 10.0, 12.0))!!, 1e-9)
+        assertNull(SpeedTest.jitter(listOf(10.0)))
     }
 
     @Test

@@ -46,9 +46,15 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
 import org.lukemech.lmtoolbox.helpers.PreferenceHelper
+import org.lukemech.lmtoolbox.ui.components.FIELD_SPACING
+import org.lukemech.lmtoolbox.ui.components.FieldArrangement
 import org.lukemech.lmtoolbox.ui.components.InputField
 import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.PermissionDialog
@@ -60,15 +66,15 @@ import org.lukemech.lmtoolbox.ui.components.revealEnter
 import org.lukemech.lmtoolbox.ui.pages.features.measure.compass.WarningColor
 
 private enum class Tab(val title: Int) {
+    Speed(R.string.f_Net_tab_speed),
     Ping(R.string.f_Net_tab_ping),
     Trace(R.string.f_Net_tab_trace),
     Lan(R.string.f_Net_tab_lan),
     Ports(R.string.f_Net_tab_ports),
-    Iperf(R.string.f_Net_tab_iperf),
 }
 
 /**
- * Network tools, a tab each at the bottom: ping, traceroute, the LAN's devices, a host's ports, iperf3. Each tab's
+ * Network tools, a tab each at the bottom: the internet's speed, ping, traceroute, the LAN's devices, a host's ports. Each tab's
  * work goes on while another is looked at, and stops as the page is left (its scope's).
  */
 @Composable
@@ -78,13 +84,13 @@ fun NetworkToolsPage() {
     // The page's: leaving it cancels what any tab runs
     val scope = rememberCoroutineScope()
     var tab by remember {
-        mutableStateOf(Tab.entries.firstOrNull { it.name == PreferenceHelper.get(context, NetworkToolsFeature.S_TAB, "") } ?: Tab.Ping)
+        mutableStateOf(Tab.entries.firstOrNull { it.name == PreferenceHelper.get(context, NetworkToolsFeature.S_TAB, "") } ?: Tab.Speed)
     }
     val ping = remember { PingState(context, scope) }
     val trace = remember { TraceState(context, scope) }
     val lan = remember { LanState(context, scope) }
     val ports = remember { PortsState(context, scope) }
-    val iperf = remember { IperfTabState(context, scope) }
+    val speed = remember { SpeedState(scope) }
     var permissionDialog by remember { mutableStateOf(false) }
     val localAllowed = localNetworkAllowed()
 
@@ -94,15 +100,19 @@ fun NetworkToolsPage() {
                 title = stringResource(R.string.fp_NetTools),
                 back = true,
                 steps = when (tab) {
+                    Tab.Speed -> speed.steps()
                     Tab.Lan -> lan.steps()
                     Tab.Ports -> ports.steps()
                     else -> null
-                }
+                },
+                // The prompt above a tab as far as a form's fields are apart (none while it's hidden)
+                verticalArrangement = FieldArrangement
             ) {
                 if (permissionDialog) LocalNetworkDialog { permissionDialog = false }
                 // Android 17: the network's devices only once the user lets the app reach them
                 PromptBar(
-                    visible = !localAllowed,
+                    // The speed test reaches the internet alone: no need for it there
+                    visible = !localAllowed && tab != Tab.Speed,
                     title = stringResource(R.string.f_Net_local_needed),
                     color = WarningColor,
                     icon = Icons.Default.Wifi,
@@ -110,6 +120,7 @@ fun NetworkToolsPage() {
                     onClick = { permissionDialog = true }
                 )
                 when (tab) {
+                    Tab.Speed -> SpeedTab(speed)
                     Tab.Ping -> PingTab(ping)
                     Tab.Trace -> TraceTab(trace)
                     Tab.Lan -> LanTab(lan) { host ->
@@ -118,17 +129,16 @@ fun NetworkToolsPage() {
                         tab = Tab.Ports
                     }
                     Tab.Ports -> PortsTab(ports)
-                    Tab.Iperf -> IperfTab(iperf)
                 }
             }
         },
         buttons = {
             when (tab) {
+                Tab.Speed -> SpeedButtons(speed)
                 Tab.Ping -> PingButtons(ping)
                 Tab.Trace -> TraceButtons(trace)
                 Tab.Lan -> LanButtons(lan)
                 Tab.Ports -> PortsButtons(ports)
-                Tab.Iperf -> IperfButtons(iperf)
             }
             // The tabs, under it all; their names alone (no icon, nor the selected one's check): five fit side by side
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -180,6 +190,34 @@ private fun LocalNetworkDialog(onDismiss: () -> Unit) {
     )
 }
 
+/**
+ * A tab's run, one at a time: [running] from its start until it's over, stopped or not. Observed, as a Job's isActive
+ * isn't (stopped, the tab stayed "Stop"); and only once it's over, not as soon as it's cancelled, so a new one can't
+ * start while the last still lets go of what it held (a scan's sockets).
+ */
+internal class TabRun(private val scope: CoroutineScope) {
+    private var job by mutableStateOf<Job?>(null)
+    val running get() = job != null
+
+    fun start(block: suspend CoroutineScope.() -> Unit) {
+        if (running) return
+        // Started once it's the job: one over at once would else clear the last's
+        val launched = scope.launch(start = CoroutineStart.LAZY, block = block)
+        job = launched
+        launched.invokeOnCompletion { if (job === launched) job = null }
+        launched.start()
+    }
+
+    fun stop() {
+        job?.cancel()
+    }
+}
+
+/** A tab's fields, as a form's are app-wide: in from the page's edges, [FIELD_SPACING] apart. */
+@Composable
+internal fun Fields(content: @Composable ColumnScope.() -> Unit) =
+    Column(verticalArrangement = FieldArrangement, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), content = content)
+
 /** Steps for a scan under way: how far, and [detail] (e.g. 37/254). */
 internal fun scanSteps(caption: String, progress: Float, detail: String) =
     Steps(1, 0, loadingNext = false, working = true, progress = progress, caption = caption, detail = detail)
@@ -197,7 +235,7 @@ internal fun HostField(value: String, onChange: (String) -> Unit, label: String,
         enabled = enabled,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go, autoCorrectEnabled = false),
         keyboardActions = KeyboardActions(onGo = { focusManager.clearFocus(); onGo() }),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
@@ -256,14 +294,6 @@ internal fun Appearing(content: @Composable () -> Unit) {
 internal fun copy(context: Context, text: String) {
     context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText(text, text))
     Toast.makeText(context, R.string.f_Net_copied, Toast.LENGTH_SHORT).show()
-}
-
-/** A rate, as iperf3 tells it: bits a second, in the largest unit under a thousand of it. */
-internal fun formatRate(bitsPerSecond: Double): String = when {
-    bitsPerSecond >= 1e9 -> "%.2f Gbit/s".format(bitsPerSecond / 1e9)
-    bitsPerSecond >= 1e6 -> "%.1f Mbit/s".format(bitsPerSecond / 1e6)
-    bitsPerSecond >= 1e3 -> "%.0f kbit/s".format(bitsPerSecond / 1e3)
-    else -> "%.0f bit/s".format(bitsPerSecond)
 }
 
 /** A round trip, e.g. "12.3 ms" ("0.045 ms" under one). */

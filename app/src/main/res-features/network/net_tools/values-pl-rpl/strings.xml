@@ -1,13 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="fp_NetTools">Narzędzia sieciowe</string>
-    <string name="fk_NetTools" tools:ignore="Typos">sieć, ping, traceroute, tracert, trasa, przeskoki, opóźnienie, lag, utrata pakietów, lan, wifi, wi-fi, urządzenia, skaner, skanowanie, ip, skaner ip, port, porty, skaner portów, otwarte porty, iperf, iperf3, przepustowość, prędkość, test prędkości, mdns, router</string>
-    <string name="fd_NetTools">Ping, trasa, skan, pomiar</string>
+    <string name="fk_NetTools" tools:ignore="Typos">sieć, ping, traceroute, tracert, trasa, przeskoki, opóźnienie, lag, utrata pakietów, lan, wifi, wi-fi, urządzenia, skaner, skanowanie, ip, skaner ip, port, porty, skaner portów, otwarte porty, speedtest, test prędkości, prędkość internetu, pobieranie, wysyłanie, przepustowość, prędkość, cloudflare, mdns, router</string>
+    <string name="fd_NetTools">Test prędkości, ping, trasa, skan</string>
 
+    <string name="f_Net_tab_speed">Łącze</string>
     <string name="f_Net_tab_ping">Ping</string>
     <string name="f_Net_tab_trace">Trasa</string>
     <string name="f_Net_tab_lan">LAN</string>
     <string name="f_Net_tab_ports">Porty</string>
-    <string name="f_Net_tab_iperf">iperf3</string>
 
     <string name="f_Net_host">Host</string>
     <string name="f_Net_host_hint">example.com lub 192.168.1.1</string>
@@ -15,7 +15,6 @@
     <string name="f_Net_stop">Zatrzymaj</string>
     <string name="f_Net_failed">Nie udało się</string>
     <string name="f_Net_address">Adres</string>
-    <string name="f_Net_copy">Kopiuj</string>
     <string name="f_Net_copied">Skopiowano</string>
 
     <string name="f_Net_local_needed">Zezwól na dostęp do urządzeń w sieci</string>
@@ -71,29 +70,17 @@
     <string name="f_Net_ports_open">Otwarte: %1$d</string>
     <string name="f_Net_ports_none">Nie znaleziono otwartych portów</string>
 
-    <string name="f_Net_iperf_client">Klient</string>
-    <string name="f_Net_iperf_server">Serwer</string>
-    <string name="f_Net_iperf_server_host">Serwer</string>
-    <string name="f_Net_iperf_time">Czas</string>
-    <string name="f_Net_iperf_streams">Strumienie</string>
-    <string name="f_Net_iperf_udp_rate">Wysyłaj z prędkością</string>
-    <string name="f_Net_iperf_reverse">Odwrotnie</string>
-    <string name="f_Net_iperf_reverse_desc">Serwer wysyła, telefon odbiera</string>
-    <string name="f_Net_iperf_start">Zmierz</string>
-    <string name="f_Net_iperf_serve">Uruchom serwer</string>
-    <string name="f_Net_iperf_unavailable">iperf3 nie jest jeszcze dostępny na tym urządzeniu.</string>
-    <string name="f_Net_iperf_install">iperf3 zostanie zainstalowany przy pierwszym uruchomieniu.</string>
-    <string name="f_Net_iperf_on_lan">W tej sieci</string>
-    <string name="f_Net_iperf_on_tailnet">W Twoim tailnecie (Tailscale)</string>
-    <string name="f_Net_iperf_no_address">Połącz się z Wi-Fi (lub Tailscale), by inne urządzenia mogły połączyć się z serwerem.</string>
-    <string name="f_Net_iperf_now">Teraz</string>
-    <string name="f_Net_iperf_rate">Prędkość</string>
-    <string name="f_Net_iperf_waiting">Czeka na klienta na porcie</string>
-    <string name="f_Net_iperf_connecting">Łączenie…</string>
-    <string name="f_Net_iperf_client_at">Klient</string>
-    <string name="f_Net_iperf_server_at">Serwer</string>
-    <string name="f_Net_iperf_sent">Wysłano</string>
-    <string name="f_Net_iperf_received">Odebrano</string>
-    <string name="f_Net_iperf_retransmits">Retransmisje</string>
-    <string name="f_Net_iperf_jitter">Jitter</string>
+
+    <!-- Test prędkości -->
+    <string name="f_Net_speed_start">Rozpocznij test</string>
+    <string name="f_Net_speed_ping">Ping</string>
+    <string name="f_Net_speed_jitter">Jitter</string>
+    <string name="f_Net_speed_download">Pobieranie</string>
+    <string name="f_Net_speed_upload">Wysyłanie</string>
+    <string name="f_Net_speed_server">Serwer</string>
+    <string name="f_Net_speed_isp">Dostawca</string>
+    <string name="f_Net_speed_measuring_ping">Mierzenie pingu…</string>
+    <string name="f_Net_speed_downloading">Pobieranie…</string>
+    <string name="f_Net_speed_uploading">Wysyłanie…</string>
+    <string name="f_Net_speed_note">Mierzone do najbliższego serwera Cloudflare, po 10 sekund w każdą stronę. Na danych komórkowych test może zużyć setki megabajtów.</string>
 </resources>

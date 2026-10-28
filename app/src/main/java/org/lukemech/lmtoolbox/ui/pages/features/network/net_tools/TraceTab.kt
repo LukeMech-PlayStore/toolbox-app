@@ -23,8 +23,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
 import org.lukemech.lmtoolbox.features.network.net_tools.Ping
@@ -35,23 +33,23 @@ import org.lukemech.lmtoolbox.ui.components.MainResult
 import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.Reveal
-import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.ui.components.FieldArrangement
 
 /** The traceroute tab's host, its run and its hops; the page's, as the other tabs'. */
 internal class TraceState(private val context: Context, private val scope: CoroutineScope) {
     var host by mutableStateOf(PreferenceHelper.get(context, NetworkToolsFeature.S_TRACE, ""))
     var result by mutableStateOf<Traceroute.Result?>(null)
-    var job by mutableStateOf<Job?>(null)
-    val running get() = job?.isActive == true
+    private val run = TabRun(scope)
+    val running get() = run.running
 
     fun start() {
         if (host.isBlank() || running) return
         PreferenceHelper.put(context, NetworkToolsFeature.S_TRACE, host)
         result = Traceroute.Result()
-        job = scope.launch { Traceroute.run(host).collect { result = it } }
+        run.start { Traceroute.run(host).collect { result = it } }
     }
 
-    fun stop() = job?.cancel()
+    fun stop() = run.stop()
 }
 
 /** Traceroute: each router on the way to a host, its name and round trips, hop by hop as they're found. */
@@ -59,8 +57,8 @@ internal class TraceState(private val context: Context, private val scope: Corou
 internal fun TraceTab(state: TraceState) {
     val hasPing = remember { Ping.hasNative() }
     val result = state.result
-    Column(verticalArrangement = RowArrangement) {
-        HostField(state.host, { state.host = it }, stringResource(R.string.f_Net_host), enabled = !state.running && hasPing, onGo = state::start)
+    Column(verticalArrangement = FieldArrangement) {
+        Fields { HostField(state.host, { state.host = it }, stringResource(R.string.f_Net_host), enabled = !state.running && hasPing, onGo = state::start) }
         Note(stringResource(R.string.f_Net_trace_no_ping), visible = !hasPing)
         Note(stringResource(R.string.f_Net_trace_note), visible = hasPing)
         Reveal(visible = result?.failure != null) {

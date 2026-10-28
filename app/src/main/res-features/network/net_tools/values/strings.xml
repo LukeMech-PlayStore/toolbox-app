@@ -1,13 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="fp_NetTools">Network tools</string>
-    <string name="fk_NetTools" tools:ignore="Typos">network, ping, traceroute, tracert, route, hops, latency, lag, packet loss, lan, wifi, wi-fi, devices, scanner, scan, ip, ip scanner, port, ports, port scanner, open ports, iperf, iperf3, bandwidth, speed, speed test, throughput, mdns, router</string>
-    <string name="fd_NetTools">Ping, trace, scan, measure</string>
+    <string name="fk_NetTools" tools:ignore="Typos">network, ping, traceroute, tracert, route, hops, latency, lag, packet loss, lan, wifi, wi-fi, devices, scanner, scan, ip, ip scanner, port, ports, port scanner, open ports, speedtest, speed test, internet speed, download, upload, bandwidth, speed, throughput, cloudflare, mdns, router</string>
+    <string name="fd_NetTools">Speed test, ping, trace, scan</string>
 
+    <string name="f_Net_tab_speed">Speed</string>
     <string name="f_Net_tab_ping">Ping</string>
     <string name="f_Net_tab_trace">Route</string>
     <string name="f_Net_tab_lan">LAN</string>
     <string name="f_Net_tab_ports">Ports</string>
-    <string name="f_Net_tab_iperf">iperf3</string>
 
     <string name="f_Net_host">Host</string>
     <string name="f_Net_host_hint">example.com or 192.168.1.1</string>
@@ -15,7 +15,6 @@
     <string name="f_Net_stop">Stop</string>
     <string name="f_Net_failed">Failed</string>
     <string name="f_Net_address">Address</string>
-    <string name="f_Net_copy">Copy</string>
     <string name="f_Net_copied">Copied</string>
 
     <string name="f_Net_local_needed">Allow access to your network\'s devices</string>
@@ -71,29 +70,17 @@
     <string name="f_Net_ports_open">Open: %1$d</string>
     <string name="f_Net_ports_none">No open ports found</string>
 
-    <string name="f_Net_iperf_client">Client</string>
-    <string name="f_Net_iperf_server">Server</string>
-    <string name="f_Net_iperf_server_host">Server</string>
-    <string name="f_Net_iperf_time">Time</string>
-    <string name="f_Net_iperf_streams">Streams</string>
-    <string name="f_Net_iperf_udp_rate">Send at</string>
-    <string name="f_Net_iperf_reverse">Reverse</string>
-    <string name="f_Net_iperf_reverse_desc">The server sends, the phone receives</string>
-    <string name="f_Net_iperf_start">Measure</string>
-    <string name="f_Net_iperf_serve">Start server</string>
-    <string name="f_Net_iperf_unavailable">iperf3 isn\'t available for this device yet.</string>
-    <string name="f_Net_iperf_install">iperf3 is installed the first time you start it.</string>
-    <string name="f_Net_iperf_on_lan">On this network</string>
-    <string name="f_Net_iperf_on_tailnet">On your tailnet (Tailscale)</string>
-    <string name="f_Net_iperf_no_address">Connect to Wi-Fi (or Tailscale) for other devices to reach the server.</string>
-    <string name="f_Net_iperf_now">Now</string>
-    <string name="f_Net_iperf_rate">Speed</string>
-    <string name="f_Net_iperf_waiting">Waiting for a client on port</string>
-    <string name="f_Net_iperf_connecting">Connecting…</string>
-    <string name="f_Net_iperf_client_at">Client</string>
-    <string name="f_Net_iperf_server_at">Server</string>
-    <string name="f_Net_iperf_sent">Sent</string>
-    <string name="f_Net_iperf_received">Received</string>
-    <string name="f_Net_iperf_retransmits">Retransmits</string>
-    <string name="f_Net_iperf_jitter">Jitter</string>
+
+    <!-- Speed test -->
+    <string name="f_Net_speed_start">Start test</string>
+    <string name="f_Net_speed_ping">Ping</string>
+    <string name="f_Net_speed_jitter">Jitter</string>
+    <string name="f_Net_speed_download">Download</string>
+    <string name="f_Net_speed_upload">Upload</string>
+    <string name="f_Net_speed_server">Server</string>
+    <string name="f_Net_speed_isp">Provider</string>
+    <string name="f_Net_speed_measuring_ping">Measuring ping…</string>
+    <string name="f_Net_speed_downloading">Downloading…</string>
+    <string name="f_Net_speed_uploading">Uploading…</string>
+    <string name="f_Net_speed_note">Measured against Cloudflare\'s nearest server, 10 seconds each way. On mobile data a test can use hundreds of megabytes.</string>
 </resources>

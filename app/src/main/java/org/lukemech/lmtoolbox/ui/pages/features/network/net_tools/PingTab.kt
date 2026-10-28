@@ -23,8 +23,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
@@ -38,6 +36,7 @@ import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.ResultRow
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.Reveal
+import org.lukemech.lmtoolbox.ui.components.FieldArrangement
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 
 /** The ping tab's fields, its run and its results; the page's (its [scope]), so it goes on as the tabs change. */
@@ -49,8 +48,8 @@ internal class PingState(private val context: Context, private val scope: Corout
     var result by mutableStateOf<PingResult?>(null)
     /** Android's ping ran (else Java's check, timed by the app). */
     var native by mutableStateOf(true)
-    var job by mutableStateOf<Job?>(null)
-    val running get() = job?.isActive == true
+    private val run = TabRun(scope)
+    val running get() = run.running
 
     init {
         // The last ping's, for the next one
@@ -76,12 +75,12 @@ internal class PingState(private val context: Context, private val scope: Corout
             JSONObject().put("host", host).put("count", count).put("interval", interval).put("size", size).toString()
         )
         result = PingResult()
-        job = scope.launch {
+        run.start {
             Ping.run(host, options) { native = it }.collect { result = it }
         }
     }
 
-    fun stop() = job?.cancel()
+    fun stop() = run.stop()
 
     companion object {
         const val MAX_COUNT = 1000
@@ -93,15 +92,17 @@ internal class PingState(private val context: Context, private val scope: Corout
 @Composable
 internal fun PingTab(state: PingState) {
     val result = state.result
-    Column(verticalArrangement = RowArrangement) {
-        HostField(state.host, { state.host = it }, stringResource(R.string.f_Net_host), enabled = !state.running, onGo = state::start)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(horizontal = 16.dp)) {
-            NumberField(state.count, { state.count = it }, stringResource(R.string.f_Net_count), !state.running, Modifier.weight(1f), maxLength = 4)
-            NumberField(
-                state.interval, { state.interval = it }, stringResource(R.string.f_Net_interval), !state.running, Modifier.weight(1f),
-                suffix = "s", decimal = true, maxLength = 4
-            )
-            NumberField(state.size, { state.size = it }, stringResource(R.string.f_Net_size), !state.running, Modifier.weight(1f), suffix = "B")
+    Column(verticalArrangement = FieldArrangement) {
+        Fields {
+            HostField(state.host, { state.host = it }, stringResource(R.string.f_Net_host), enabled = !state.running, onGo = state::start)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                NumberField(state.count, { state.count = it }, stringResource(R.string.f_Net_count), !state.running, Modifier.weight(1f), maxLength = 4)
+                NumberField(
+                    state.interval, { state.interval = it }, stringResource(R.string.f_Net_interval), !state.running, Modifier.weight(1f),
+                    suffix = "s", decimal = true, maxLength = 4
+                )
+                NumberField(state.size, { state.size = it }, stringResource(R.string.f_Net_size), !state.running, Modifier.weight(1f), suffix = "B")
+            }
         }
         Note(stringResource(R.string.f_Net_ping_fallback), visible = !state.native)
         // Its statistics once a probe's back (or lost), its replies under them

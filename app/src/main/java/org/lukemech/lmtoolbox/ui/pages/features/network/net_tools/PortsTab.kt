@@ -1,10 +1,7 @@
 package org.lukemech.lmtoolbox.ui.pages.features.network.net_tools
 
 import android.content.Context
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,7 +10,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,8 +24,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
@@ -43,6 +37,8 @@ import org.lukemech.lmtoolbox.ui.components.InputField
 import org.lukemech.lmtoolbox.ui.components.MainResult
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.Reveal
+import org.lukemech.lmtoolbox.ui.components.ChipChoice
+import org.lukemech.lmtoolbox.ui.components.FieldArrangement
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 
 /** Which ports a scan knocks at. */
@@ -55,8 +51,8 @@ internal class PortsState(private val context: Context, private val scope: Corou
     var custom by mutableStateOf("")
     var timeout by mutableStateOf("$TIMEOUT_MS")
     var result by mutableStateOf<PortScan.Result?>(null)
-    var job by mutableStateOf<Job?>(null)
-    val running get() = job?.isActive == true
+    private val run = TabRun(scope)
+    val running get() = run.running
 
     init {
         runCatching { JSONObject(PreferenceHelper.get(context, NetworkToolsFeature.S_PORTS, "{}")) }.getOrNull()?.let {
@@ -85,10 +81,10 @@ internal class PortsState(private val context: Context, private val scope: Corou
         )
         val ms = timeout.toIntOrNull()?.coerceIn(MIN_TIMEOUT_MS, MAX_TIMEOUT_MS) ?: TIMEOUT_MS
         result = PortScan.Result()
-        job = scope.launch { PortScan.run(host, ports, ms).collect { result = it } }
+        run.start { PortScan.run(host, ports, ms).collect { result = it } }
     }
 
-    fun stop() = job?.cancel()
+    fun stop() = run.stop()
 
     @Composable
     fun steps() = result?.takeIf { running && it.total > 0 }?.let {
@@ -103,50 +99,42 @@ internal class PortsState(private val context: Context, private val scope: Corou
 }
 
 /** Port scan: a host, which ports (the common ones, 1-1024, all, or typed), how long each may take; the open ones as they're found. */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun PortsTab(state: PortsState) {
     val result = state.result
     val enabled = !state.running
-    Column(verticalArrangement = RowArrangement) {
-        HostField(state.host, { state.host = it }, stringResource(R.string.f_Net_host), enabled = enabled, onGo = state::start)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(horizontal = 16.dp)) {
-            PortPreset.entries.forEach { p ->
-                FilterChip(
-                    selected = state.preset == p,
-                    onClick = { state.preset = p },
-                    enabled = enabled,
-                    label = {
-                        Text(
-                            when (p) {
-                                PortPreset.Common -> stringResource(R.string.f_Net_ports_common, Services.COMMON.size)
-                                PortPreset.WellKnown -> "1–1024"
-                                PortPreset.All -> stringResource(R.string.f_Net_ports_all)
-                                PortPreset.Custom -> stringResource(R.string.f_Net_ports_custom)
-                            }
-                        )
+    Column(verticalArrangement = FieldArrangement) {
+        Fields {
+            HostField(state.host, { state.host = it }, stringResource(R.string.f_Net_host), enabled = enabled, onGo = state::start)
+            ChipChoice(
+                null,
+                PortPreset.entries.map { p ->
+                    p to when (p) {
+                        PortPreset.Common -> stringResource(R.string.f_Net_ports_common, Services.COMMON.size)
+                        PortPreset.WellKnown -> "1–1024"
+                        PortPreset.All -> stringResource(R.string.f_Net_ports_all)
+                        PortPreset.Custom -> stringResource(R.string.f_Net_ports_custom)
                     }
+                },
+                state.preset,
+                enabled = enabled
+            ) { state.preset = it }
+            // Ports as typed: digits, commas and dashes alone
+            Reveal(visible = state.preset == PortPreset.Custom) {
+                InputField(
+                    value = state.custom,
+                    onValueChange = { typed -> state.custom = typed.filter { it.isDigit() || it in ",- " }.take(200) },
+                    label = { Text(stringResource(R.string.f_Net_ports_range)) },
+                    placeholder = { Text("22, 80, 8000-8100") },
+                    isError = state.custom.isNotBlank() && PortRanges.parse(state.custom) == null,
+                    singleLine = true,
+                    enabled = enabled,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
+            NumberField(state.timeout, { state.timeout = it }, stringResource(R.string.f_Net_timeout), enabled, Modifier.fillMaxWidth(), suffix = "ms")
         }
-        // Ports as typed: digits, commas and dashes alone
-        Reveal(visible = state.preset == PortPreset.Custom) {
-            InputField(
-                value = state.custom,
-                onValueChange = { typed -> state.custom = typed.filter { it.isDigit() || it in ",- " }.take(200) },
-                label = { Text(stringResource(R.string.f_Net_ports_range)) },
-                placeholder = { Text("22, 80, 8000-8100") },
-                isError = state.custom.isNotBlank() && PortRanges.parse(state.custom) == null,
-                singleLine = true,
-                enabled = enabled,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-            )
-        }
-        NumberField(
-            state.timeout, { state.timeout = it }, stringResource(R.string.f_Net_timeout), enabled,
-            Modifier.fillMaxWidth().padding(horizontal = 16.dp), suffix = "ms"
-        )
         Reveal(visible = result?.failure != null) {
             Results { MainResult(stringResource(R.string.f_Net_failed), result?.failure.orEmpty()) }
         }
