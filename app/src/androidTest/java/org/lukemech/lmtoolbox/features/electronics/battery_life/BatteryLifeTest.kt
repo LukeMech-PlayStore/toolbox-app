@@ -20,6 +20,7 @@ class BatteryLifeTest : ToolTest(BatteryLifeFeature) {
         ui.waitShown(hasText("225"), what = "its capacity filled in")
         ui.click(hasText(ui.str(R.string.rf_calculate)) and hasClickAction(), what = "the page picker")
         ui.click(hasText(ui.str(R.string.rf_coin_cells)) and hasClickAction(), what = "the coin cells' table")
-        ui.waitShown(hasText("20 × 3.2"), what = "CR2032's size")
+        // Its row far down the table
+        ui.waitScrolledTo(hasText("20 × 3.2"), what = "CR2032's size")
     }
 }
