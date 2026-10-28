@@ -13,7 +13,13 @@ name: Tests
 #   in it (comment job)
 #
 # Jobs: plan, build and inspect start at once; test needs plan and build; report needs test; comment needs report
-# and inspect.
+# and inspect. linux-release, on its own, fails while the subsystem pinned is a pull request's build.
+#
+# A pull request changing the subsystem too (e.g. a tool and the packages it runs) pins that pull request's build:
+# linuxRelease=pr-<number> in gradle.properties, the artifact of the subsystem's newest successful build of its head
+# (buildSrc's LinuxPackages.kt; read with the SUBSYSTEM_TOKEN secret). Its tests run with that build; re-run them
+# after a push there. Once the subsystem's pull request is merged and released, pin the release (./gradlew
+# updateLinuxRelease): until then linux-release fails, so it isn't merged with a build that's no release.
 
 on:
   pull_request:
@@ -60,6 +66,25 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
+  # The subsystem pinned (gradle.properties' linuxRelease): a release, not a pull request's build. Tested with one, a
+  # pull request can't be merged so (see above); which one is said in the run's summary.
+  linux-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check the pinned subsystem
+        run: |
+          linux=$(sed -n 's/^linuxRelease=//p' gradle.properties | tr -d '\r')
+          repo=https://github.com/LukeMech-PlayStore/toolbox-linux-subsystem
+          if [[ "$linux" == pr-* ]]; then
+            echo "Subsystem: the pull request's build, [#${linux#pr-}]($repo/pull/${linux#pr-})." >> "$GITHUB_STEP_SUMMARY"
+            echo "::error file=gradle.properties::linuxRelease=$linux is the subsystem's pull request's build: once it's merged and released, pin the release (./gradlew updateLinuxRelease)"
+            exit 1
+          fi
+          echo "Subsystem: release [$linux]($repo/releases/tag/$linux)." >> "$GITHUB_STEP_SUMMARY"
+
   # The debug bundle and the tests' APK, built once for every leg
   build:
     runs-on: ubuntu-latest
@@ -79,9 +104,12 @@ jobs:
 
       # Version name: the tested commit's short hash (a pull request's head, not its merge commit). Version code 1:
       # not a release (build-app.yml's come from tags).
+      # SUBSYSTEM_TOKEN: a subsystem's pull request's build pinned is an artifact, which GitHub's API gives only with a
+      # token reading that repository's actions (this run's own reads only this one)
       - name: Build the debug bundle and the tests
         env:
           COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+          SUBSYSTEM_TOKEN: ${{ secrets.SUBSYSTEM_TOKEN }}
         run: |
           chmod +x ./gradlew
           ./gradlew --build-cache :app:bundleDebug :app:assembleDebugAndroidTest \

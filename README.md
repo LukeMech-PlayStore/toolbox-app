@@ -211,6 +211,24 @@ published release (set `GITHUB_TOKEN` to avoid its rate limit). Commit that line
 To add a program, define it in the subsystem's `config.yaml` (a Termux or pip package in a part), let its
 workflow release it, pin that release, and use it from the module of the part it's in.
 
+#### Testing with a subsystem's pull request
+
+A change to both (e.g. a new tool and the packages it runs) is two pull requests, tested together before
+either is merged:
+
+1. Open the subsystem's pull request. Its workflow builds it as `main`'s, but doesn't release it: the run
+   keeps its `rootfs.tar.gz` as an artifact.
+2. In the app's pull request, pin it: `linuxRelease=pr-<number>` in `gradle.properties`. Its tests, and every
+   local build, use the newest successful build of that pull request's head, downloaded again only after a
+   new push there. Re-run the app's tests after one.
+3. Merge the subsystem's pull request. Once its release is out, run `./gradlew updateLinuxRelease`, commit
+   the pin, and merge the app's.
+
+GitHub's API gives artifacts only with a token: the tests use the `SUBSYSTEM_TOKEN` secret, a local build
+`SUBSYSTEM_TOKEN` or `GITHUB_TOKEN` if set, else the GitHub CLI's (`gh auth login`). While a `pr-` build is
+pinned, the tests' `linux-release` job fails and `build-app.yml` builds no release, so neither is merged nor
+shipped with a build that's no release.
+
 ### UI conventions
 
 - **Errors are told in one place**: the red line of the bottom bar (`TaskStatusBar`). Tapping it opens the
