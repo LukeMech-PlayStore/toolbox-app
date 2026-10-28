@@ -178,7 +178,7 @@ fun SoundMeterPage() {
                 onClick = { attempt++ }
             )
 
-            Results {
+            Results(apart = false) {
                 ReadingResult(text(current), unit, held = holding, color = if (clipped) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
                 rows.forEach { (label, value) -> ResultRow(label, value) }
             }

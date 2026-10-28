@@ -123,7 +123,7 @@ fun MagnetometerPage() {
                 calibrationIcon = Icons.Default.CompassCalibration,
                 missingMessage = R.string.f_magnet_missing_sensors_message
             )
-            Results {
+            Results(apart = false) {
                 ReadingResult(field?.magnitude?.let { "%.1f".format(it) } ?: none, unit, held = holding)
                 ResultRow("X", text(field?.x))
                 ResultRow("Y", text(field?.y))

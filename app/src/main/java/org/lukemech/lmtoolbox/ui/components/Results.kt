@@ -35,14 +35,15 @@ fun Modifier.resultCard(): Modifier = padding(horizontal = 16.dp)
 /**
  * A calculator's results or a meter's readings, together in one card (as its settings are): a [ReadingResult] (a
  * meter's), a [MainResult] or more and [ResultRow]s, one under another, all lined up. Shows nothing while there are none.
+ * [apart]: a little further from the fields above it than rows are from each other; not on top of a meter's page
+ * (nothing above it but its bars, as far from it as the rows under it are).
  */
 @Composable
-fun Results(content: @Composable ColumnScope.() -> Unit) {
+fun Results(apart: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            // Apart from the fields above it a little more than rows are from each other
-            .padding(top = 8.dp)
+            .padding(top = if (apart) 8.dp else 0.dp)
             .animateContentSize()
             .resultCard(),
         content = content

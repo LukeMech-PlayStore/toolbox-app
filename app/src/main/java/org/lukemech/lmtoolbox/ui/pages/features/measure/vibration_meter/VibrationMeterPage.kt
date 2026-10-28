@@ -157,7 +157,7 @@ fun VibrationMeterPage() {
                 calibrationIcon = Icons.Default.Storm,
                 missingMessage = R.string.f_vibration_missing_sensors_message
             )
-            Results {
+            Results(apart = false) {
                 // The RMS, large on top: the reading
                 ReadingResult(reading, unit, held = holding)
                 rows.forEach { (label, value) -> ResultRow(label, value) }

@@ -108,7 +108,7 @@ fun LightMeterPage() {
             return@PageHeading
         }
         Column(verticalArrangement = RowArrangement) {
-            Results {
+            Results(apart = false) {
                 ReadingResult(shown?.let(::formatLux) ?: none, unit, held = holding)
                 rows.forEach { (label, value) -> ResultRow(label, value) }
             }
