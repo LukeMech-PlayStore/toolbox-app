@@ -18,8 +18,8 @@ import org.lukemech.lmtoolbox.features.reference.common.raw
 import org.lukemech.lmtoolbox.features.reference.common.res
 
 /**
- * A PC power supply's connectors: ATX's 24-pin, the CPU's EPS 8-pin and ATX12V 4-pin, the graphics card's PCIe 6
- * and 8-pin and 12V-2x6, and the drives' SATA, Molex and floppy.
+ * A PC power supply's connectors: ATX's 24-pin (and the older 20-pin), the CPU's EPS 8-pin and ATX12V 4-pin, the
+ * graphics card's PCIe 6 and 8-pin and 12V-2x6, and the drives' SATA, Molex and floppy.
  */
 object PcPowerFeature : ReferenceFeature() {
 
@@ -37,6 +37,9 @@ object PcPowerFeature : ReferenceFeature() {
     private fun sense(n: Int, name: String) = Pin(n.toString(), name, Ground, res(R.string.rf_pc_sense), wire = listOf(Wire.Black))
 
     override val sheets by lazy {
+        val board = res(R.string.rf_pc_board)
+        val card = res(R.string.rf_pc_card)
+        val drives = res(R.string.rf_pc_drives)
         listOf(
             PinoutSheet(
                 raw("ATX 24"),
@@ -53,29 +56,52 @@ object PcPowerFeature : ReferenceFeature() {
                     Pin("20", "NC", Unused, res(R.string.rf_pc_nc)),
                     v5(21), v5(22), v5(23), gnd(24),
                 ).inRows(12, 12),
-                note = res(R.string.rf_pc_atx_note)
+                note = res(R.string.rf_pc_atx_note),
+                group = board
+            ),
+            PinoutSheet(
+                raw("ATX 20"),
+                listOf(
+                    v33(1), v33(2), gnd(3), v5(4), gnd(5), v5(6), gnd(7),
+                    Pin("8", "PWR_OK", Control, res(R.string.rf_pc_pwr_ok), wire = listOf(Wire.Grey)),
+                    Pin("9", "+5VSB", Power, res(R.string.rf_pc_5vsb), wire = listOf(Wire.Violet)),
+                    v12(10),
+                    v33(11).copy(description = res(R.string.rf_pc_3v3_sense)),
+                    Pin("12", "−12V", Power, wire = listOf(Wire.Blue)),
+                    gnd(13),
+                    Pin("14", "PS_ON#", Control, res(R.string.rf_pc_ps_on), wire = listOf(Wire.Green)),
+                    gnd(15), gnd(16), gnd(17),
+                    Pin("18", "−5V", Power, res(R.string.rf_pc_minus5), wire = listOf(Wire.White)),
+                    v5(19), v5(20),
+                ).inRows(10, 10),
+                note = res(R.string.rf_pc_atx20_note),
+                group = board
             ),
             PinoutSheet(
                 raw("EPS 8"),
                 listOf(gnd(1), gnd(2), gnd(3), gnd(4), v12(5), v12(6), v12(7), v12(8)).inRows(4, 4),
-                note = res(R.string.rf_pc_eps_note)
+                note = res(R.string.rf_pc_eps_note),
+                group = board
+            ),
+            PinoutSheet(
+                raw("ATX12V 4"),
+                listOf(gnd(1), gnd(2), v12(3), v12(4)).inRows(2, 2),
+                note = res(R.string.rf_pc_p4_note),
+                group = board
             ),
             PinoutSheet(
                 raw("PCIe 6"),
                 listOf(v12(1), v12(2), v12(3), gnd(4), sense(5, "Sense"), gnd(6)).inRows(3, 3),
-                note = res(R.string.rf_pc_pcie_note)
+                note = res(R.string.rf_pc_pcie_note),
+                group = card
             ),
             PinoutSheet(
                 raw("PCIe 8"),
                 listOf(v12(1), v12(2), v12(3), sense(4, "Sense2"), gnd(5), sense(6, "Sense1"), gnd(7), gnd(8)).inRows(4, 4),
-                note = res(R.string.rf_pc_pcie_note)
+                note = res(R.string.rf_pc_pcie_note),
+                group = card
             ),
-            PinoutSheet(raw("12V-2x6"), hpwr(), note = res(R.string.rf_pc_hpwr_note)),
-            PinoutSheet(
-                raw("ATX12V 4"),
-                listOf(gnd(1), gnd(2), v12(3), v12(4)).inRows(2, 2),
-                note = res(R.string.rf_pc_p4_note)
-            ),
+            PinoutSheet(raw("12V-2x6"), hpwr(), note = res(R.string.rf_pc_hpwr_note), group = card),
             PinoutSheet(
                 raw("SATA"),
                 listOf(
@@ -83,10 +109,11 @@ object PcPowerFeature : ReferenceFeature() {
                     Pin("11", "DAS/DSS", Control, res(R.string.rf_pc_sata_11)),
                     gnd(12), v12(13), v12(14), v12(15),
                 ).inRow(),
-                note = res(R.string.rf_pc_sata_note)
+                note = res(R.string.rf_pc_sata_note),
+                group = drives
             ),
-            PinoutSheet(raw("Molex"), listOf(v12(1), gnd(2), gnd(3), v5(4)).inRow(), note = res(R.string.rf_pc_molex_note)),
-            PinoutSheet(raw("Floppy"), listOf(v5(1), gnd(2), gnd(3), v12(4)).inRow(), note = res(R.string.rf_pc_floppy_note)),
+            PinoutSheet(raw("Molex"), listOf(v12(1), gnd(2), gnd(3), v5(4)).inRow(), note = res(R.string.rf_pc_molex_note), group = drives),
+            PinoutSheet(raw("Floppy"), listOf(v5(1), gnd(2), gnd(3), v12(4)).inRow(), note = res(R.string.rf_pc_floppy_note), group = drives),
         )
     }
 

@@ -14,6 +14,7 @@ class RpiGpioTest : ToolTest(RpiGpioFeature) {
         ui.click(hasText("GPIO14") and hasClickAction(), what = "GPIO14 in the list")
         ui.waitShown(hasText("${ui.str(R.string.rf_pin)} 8 · GPIO14"), what = "pin 8's details")
         ui.type(ui.str(R.string.rf_search_pins), "UART")
-        ui.waitShown(hasText("UART RXD"), what = "GPIO15 found by UART")
+        // Its row says its kind first ("Data · UART RXD"), under the tapped pin's card: scrolled to
+        ui.waitScrolledTo(hasText("UART RXD", substring = true), what = "GPIO15 found by UART")
     }
 }

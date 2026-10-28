@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="fp_trailer">Trailer sockets (7 and 13-pin)</string>
-    <string name="fd_trailer">ISO 1724 and ISO 11446</string>
-    <string name="fk_trailer">trailer, towbar, tow hitch, 7 pin, 13 pin, 12n, iso 1724, iso 11446, caravan, indicator, brake light, wire colors, pinout, pins, connector, reference</string>
+    <string name="fp_trailer">Trailer sockets</string>
+    <string name="fd_trailer">ISO 1724, ISO 11446 and the US 4-pin flat</string>
+    <string name="fk_trailer">trailer, towbar, tow hitch, 7 pin, 13 pin, 4 pin flat, usa, 12n, iso 1724, iso 11446, caravan, indicator, brake light, wire colors, pinout, pins, connector, reference</string>
     <string name="rf_trailer_left_indicator">Left indicator</string>
     <string name="rf_trailer_right_indicator">Right indicator</string>
     <string name="rf_trailer_fog">Rear fog light</string>
@@ -19,4 +19,10 @@
     <string name="rf_trailer_unassigned">Not assigned</string>
     <string name="rf_trailer_7_note">ISO 1724 (12N). Each pin also has its circuit\'s number (DIN 72552) and the usual wire color.</string>
     <string name="rf_trailer_13_note">ISO 11446: pins 1–7 are the 7-pin socket\'s</string>
+    <string name="rf_trailer_europe">Europe (ISO)</string>
+    <string name="rf_trailer_america">North America</string>
+    <string name="rf_trailer_tail">Tail lights (and the number plate, side markers)</string>
+    <string name="rf_trailer_left_stop">Left turn signal and brake light</string>
+    <string name="rf_trailer_right_stop">Right turn signal and brake light</string>
+    <string name="rf_trailer_4_note">The US and Canada\'s flat 4-pin plug: the turn signals and the brake lights share their wires. Ground\'s pin sticks out on the car\'s side.</string>
 </resources>

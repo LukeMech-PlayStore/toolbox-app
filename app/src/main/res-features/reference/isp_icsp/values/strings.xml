@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_isp_icsp">AVR ISP and PIC ICSP</string>
-    <string name="fd_isp_icsp">The 6-pin programming headers</string>
+    <string name="fd_isp_icsp">AVR\'s 6 and 10-pin, PIC\'s 6-pin programming headers</string>
     <string name="fk_isp_icsp">isp, avr isp, icsp, pic, pickit, avrisp, usbasp, programmer, programming header, atmega, attiny, mclr, vpp, pinout, pins, connector, reference</string>
     <string name="rf_isp_miso">Data from the chip</string>
     <string name="rf_isp_mosi">Data to the chip</string>
@@ -14,4 +14,5 @@
     <string name="rf_icsp_pgc">Programming clock</string>
     <string name="rf_icsp_pgm">Low-voltage programming; unused by most chips</string>
     <string name="rf_icsp_note">PICkit\'s header, in one row; pin 1 is marked by a triangle</string>
+    <string name="rf_isp10_note">The older 10-pin AVR header (STK500, USBasp): pin 1 has the triangle. Pin 3 is not connected on most boards.</string>
 </resources>

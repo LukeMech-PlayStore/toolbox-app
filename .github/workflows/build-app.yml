@@ -188,8 +188,9 @@ jobs:
     secrets:
       PLAY_STORE_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
 
-  # A tag's GitHub release, once it's built: titled by the tag, the English release notes, then the
-  # commits since the previous tag. No APK nor bundle attached: builds are on Google Play
+  # A tag's GitHub release, once it's built: titled by the tag, the English release notes, then the commits since
+  # the last stable release (not a pre-release: what went out to everyone). Made a pre-release, made stable by
+  # hand once it's on Play's alpha for all. No APK nor bundle attached: builds are on Google Play
   github-release:
     needs: build
     if: ${{ github.event_name == 'push' }}
@@ -203,10 +204,15 @@ jobs:
           fetch-depth: 0
 
       - name: Write the release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           tag="${GITHUB_REF_NAME}"
-          # The first tag: every commit up to it
-          prev=$(git describe --tags --abbrev=0 "$tag^" 2>/dev/null || true)
+          # The newest stable release before this tag (its history's, newest first); none yet: every commit up to it
+          prev=""
+          for t in $(gh release list --exclude-pre-releases --exclude-drafts --limit 100 --json tagName --jq '.[].tagName'); do
+            if [[ "$t" != "$tag" ]] && git merge-base --is-ancestor "$t" "$tag" 2>/dev/null; then prev="$t"; break; fi
+          done
           {
             cat whatsNew/whatsnew-en-US
             echo
@@ -226,3 +232,4 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
           body_path: release-notes.md
+          prerelease: true

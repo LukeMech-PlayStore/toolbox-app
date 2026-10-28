@@ -21,4 +21,9 @@
     <string name="rf_pc_sata_note">15 styków dysku w rzędzie; każdy z pięciu przewodów zasila trzy. Wiele kabli pomija +3,3 V.</string>
     <string name="rf_pc_molex_note">4-pinowy wtyk peryferyjny (AMP MATE-N-LOK): stare dyski, wentylatory, taśmy LED</string>
     <string name="rf_pc_floppy_note">Mały 4-pinowy wtyk Berg stacji dyskietek: napięcia Molexa w odwrotnej kolejności</string>
+    <string name="rf_pc_board">Płyta główna i procesor</string>
+    <string name="rf_pc_card">Karta graficzna</string>
+    <string name="rf_pc_drives">Dyski i napędy</string>
+    <string name="rf_pc_minus5">−5 V, nie ma go w nowszych zasilaczach (używały go karty ISA)</string>
+    <string name="rf_pc_atx20_note">Starsza wtyczka ATX (przed ATX12V 2.0): 1–10 w jednym rzędzie, 11–20 w drugim. Pasuje do gniazda 24-pinowego, zostawiając wolne jego 11, 12, 23 i 24.</string>
 </resources>

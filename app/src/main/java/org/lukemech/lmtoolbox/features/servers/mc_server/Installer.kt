@@ -5,6 +5,7 @@ import org.lukemech.lmtoolbox.linux.ExecResult
 import org.lukemech.lmtoolbox.linux.InstallResult
 import android.content.Context
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URI
@@ -43,6 +44,9 @@ internal object Http {
     /** How many times a download's tried (a dropped connection, a server's hiccup), the next after a longer wait each. */
     const val DOWNLOAD_TRIES = 3
     val RETRY_DELAY = 3.seconds
+    /** Less than this in [SLOW_WINDOW] (about 8 KB/s): a stuck connection, dropped for a new one. */
+    private const val SLOW_BYTES = 256 * 1024L
+    private val SLOW_WINDOW = 30.seconds
 
     fun open(url: String): HttpURLConnection = (URI(url).toURL().openConnection() as HttpURLConnection).apply {
         setRequestProperty("User-Agent", USER_AGENT)
@@ -69,33 +73,65 @@ internal object Http {
      * or [sha256] when given; [onProgress] gets 0..1, or null while the size isn't known. Cancellable.
      */
     suspend fun download(url: String, file: File, sha1: String? = null, sha256: String? = null, onProgress: (Float?) -> Unit = {}) {
-        // A connection dropped midway ("unexpected end of stream"), a server's 5xx: tried again, from the start
+        // A connection dropped midway ("unexpected end of stream", a stall past the read timeout), a server's 5xx: tried
+        // again, from where it stopped. A try that got further isn't held against it: Forge's maven, slow, stalls every
+        // few minutes, and its installer took longer than three tries from the start each
+        val part = partOf(file)
+        part.delete()
         var tries = 0
         while (true) {
+            val had = part.length()
             try {
                 return downloadOnce(url, file, sha1, sha256, onProgress)
             } catch (e: IOException) {
-                if (++tries >= DOWNLOAD_TRIES || e is HttpStatus && e.code < 500) throw e
+                if (part.length() > had) tries = 0
+                if (++tries >= DOWNLOAD_TRIES || e is HttpStatus && e.code < 500) {
+                    part.delete()
+                    throw e
+                }
                 delay(RETRY_DELAY * tries)
             }
         }
     }
+
+    private fun partOf(file: File) = File(file.parentFile, file.name + ".part")
 
     /** An answer other than 2xx. */
     class HttpStatus(val code: Int, url: String) : IOException("HTTP $code: $url")
 
     private suspend fun downloadOnce(url: String, file: File, sha1: String?, sha256: String?, onProgress: (Float?) -> Unit) =
         withContext(Dispatchers.IO) {
-            val part = File(file.parentFile, file.name + ".part")
+            val part = partOf(file)
+            val from = part.length()
             val c = open(url)
+            if (from > 0) c.setRequestProperty("Range", "bytes=$from-")
             try {
+                // What it has isn't a start of what's there now: from the start, the next try
+                if (c.responseCode == 416) {
+                    part.delete()
+                    throw IOException("HTTP 416: $url")
+                }
                 if (c.responseCode !in 200..299) throw HttpStatus(c.responseCode, url)
-                val total = c.contentLengthLong.takeIf { it > 0 }
+                // The rest of it (206), or all of it again (200: a server without ranges)
+                val resumed = c.responseCode == 206
                 val digest = MessageDigest.getInstance(if (sha1 != null) "SHA-1" else "SHA-256")
-                var done = 0L
+                if (resumed) part.inputStream().use { input ->
+                    val buf = ByteArray(64 * 1024)
+                    while (true) {
+                        val n = input.read(buf)
+                        if (n < 0) break
+                        digest.update(buf, 0, n)
+                    }
+                }
+                var done = if (resumed) from else 0L
+                val total = c.contentLengthLong.takeIf { it > 0 }?.let { it + done }
                 var last = -1
+                // A trickle never reaches the read timeout (Forge's maven, at a few KB/s, took 11 minutes for its
+                // installer, then stalled): under SLOW_BYTES in a SLOW_WINDOW, a new connection, going on from here
+                var windowStart = System.nanoTime()
+                var windowFrom = done
                 c.inputStream.use { input ->
-                    part.outputStream().use { out ->
+                    FileOutputStream(part, resumed).use { out ->
                         val buf = ByteArray(64 * 1024)
                         while (true) {
                             currentCoroutineContext().ensureActive()
@@ -104,6 +140,11 @@ internal object Http {
                             out.write(buf, 0, n)
                             digest.update(buf, 0, n)
                             done += n
+                            if (System.nanoTime() - windowStart >= SLOW_WINDOW.inWholeNanoseconds) {
+                                if (done - windowFrom < SLOW_BYTES) throw IOException("Too slow: $url")
+                                windowStart = System.nanoTime()
+                                windowFrom = done
+                            }
                             val percent = total?.let { (done * 100 / it).toInt() } ?: -1
                             if (percent != last) {
                                 last = percent
@@ -114,10 +155,14 @@ internal object Http {
                 }
                 val expected = sha1 ?: sha256
                 val got = digest.digest().joinToString("") { "%02x".format(it) }
-                if (expected != null && !expected.equals(got, ignoreCase = true)) throw IOException("${file.name}: checksum doesn't match")
+                if (expected != null && !expected.equals(got, ignoreCase = true)) {
+                    part.delete()
+                    throw IOException("${file.name}: checksum doesn't match")
+                }
                 if (!part.renameTo(file)) throw IOException("Couldn't save ${file.name}")
             } catch (e: Exception) {
-                part.delete()
+                // A dropped connection's part kept, the next try going on from it; canceled, it goes
+                if (e !is IOException) part.delete()
                 throw e
             } finally {
                 c.disconnect()
@@ -153,6 +198,11 @@ object Installer {
     private const val LOADERS_SHOWN = 30
     /** Forge and NeoForge's installers download their libraries: it takes a while on a phone. */
     private const val INSTALLER_TIMEOUT_MS = 30 * 60_000L
+    /**
+     * Its own downloads' timeouts, as [Http.open]'s: Java's are none, so a library stalled on Forge's maven hung it until
+     * [INSTALLER_TIMEOUT_MS]. Timed out, it's a library that "failed to download": the installer's run again
+     */
+    private val INSTALLER_NET_TIMEOUTS = listOf("-Dsun.net.client.defaultConnectTimeout=15000", "-Dsun.net.client.defaultReadTimeout=30000")
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     // By kind, and with snapshots or not
@@ -529,6 +579,7 @@ object Installer {
             val result = Java.runInBackground(
                 context, MinecraftServerFeature, jdk, listOf("-jar", installer.name, "--installServer"),
                 dir = dir,
+                options = INSTALLER_NET_TIMEOUTS,
                 label = context.getString(R.string.f_Mc_installing_loader),
                 timeoutMs = INSTALLER_TIMEOUT_MS,
                 // Megabytes of stdout (every library it fetches), of which only the end is read (the task's log): kept

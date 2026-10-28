@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -78,7 +79,9 @@ fun FeatureButton(
     /** The subtitle on one line, its text smaller as far as it has to (e.g. an address, read whole). */
     subtitleOneLine: Boolean = false,
     colors: RowColors = RowColors.default,
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    /** In the icon's place (a pin's numbered badge), as big. */
+    leading: (@Composable () -> Unit)? = null,
     icon2: ImageVector? = null,
     image: Painter? = null,
     onClick: () -> Unit = {},
@@ -123,12 +126,16 @@ fun FeatureButton(
                     .padding(16.dp)
                     .animateContentSize()
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = colors.content,
-                    modifier = Modifier.size(48.dp)
-                )
+                if (leading != null) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp)) { leading() }
+                } else if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = colors.content,
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(16.dp))
 

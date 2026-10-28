@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_stm32">STM32 boards</string>
+    <string name="fd_stm32">The Blue Pill and Black Pill: every pin, its peripherals, the chip and memory</string>
+    <string name="fk_stm32">stm32, blue pill, black pill, stm32f103, stm32f103c8t6, stm32f401, stm32f411, weact, cortex-m3, cortex-m4, arm, swd, st-link, usart, spi, i2c, adc, can, usb, timer, pwm, flash, ram, pinout, pins, board, reference</string>
+    <string name="rf_stm32_5v">5 V in (or USB\'s out), for the board\'s regulator</string>
+    <string name="rf_stm32_vbat">Backup supply of the RTC and its registers (a coin cell)</string>
+    <string name="rf_stm32_reset">Pulled low, it resets the chip</string>
+    <string name="rf_stm32_blue_note">STM32F103C8 (some are clones: CKS32, GD32), seen from above, the SWD header on the right. Pins at 3.3 V; most take 5 V as inputs (but the analog ones). The LED is on PC13.</string>
+    <string name="rf_stm32_black_note">WeAct\'s STM32F411CE (or F401CC), seen from above, the SWD header on the right. Pins at 3.3 V. The LED is on PC13, the KEY button on PA0; BOOT0 is a button, BOOT1 is PB2.</string>
+</resources>

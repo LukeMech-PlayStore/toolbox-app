@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_esp_boards">ESP32 and ESP8266 boards</string>
+    <string name="fd_esp_boards">DevKits, ESP32-CAM, C3 boards, NodeMCU, D1 mini, ESP-01, ESP-12F: every pin, chip and memory</string>
+    <!-- Keywords as people type them in the search, so Wi-Fi without its hyphen -->
+    <!--suppress GrazieInspection -->
+    <string name="fk_esp_boards">esp, esp32, esp8266, espressif, devkit, devkitc, devkit v1, doit, wroom, s3, esp32-s3, c3, esp32-c3, supermini, c3 zero, waveshare, cam, esp32-cam, nodemcu, d1 mini, wemos, lolin, esp-01, esp-01s, esp-12, esp-12f, wifi, bluetooth, gpio, adc, dac, touch, i2c, spi, uart, strapping, boot, flash, ram, psram, pinout, pins, board, reference</string>
+    <string name="rf_esp_input_only">input only, no pull-ups</string>
+    <string name="rf_esp_flash">Used by the flash: don\'t connect anything</string>
+    <string name="rf_esp_strap">strapping pin: its level at reset sets how the chip starts</string>
+    <string name="rf_esp_strap_12">strapping pin: high at reset, it sets the flash to 1.8 V and the board won\'t start; keep it low</string>
+    <string name="rf_esp_boot">held low at reset, it starts the bootloader (the BOOT button)</string>
+    <string name="rf_esp_led">the built-in LED on many boards</string>
+    <string name="rf_esp_led_low">the built-in LED, lit when low</string>
+    <string name="rf_esp_psram">used by the PSRAM on modules with it (R8: octal)</string>
+    <string name="rf_esp_rgb">the RGB LED (on v1.1 boards it\'s on GPIO38)</string>
+    <string name="rf_esp_en">Enable: pulled low, it resets the chip (the EN or RST button)</string>
+    <string name="rf_esp_rst">Pulled low, it resets the chip</string>
+    <string name="rf_esp_3v3">3.3 V: the regulator\'s out, or a supply in instead of USB</string>
+    <string name="rf_esp_5v">5 V: USB\'s out, or a supply in instead of it</string>
+    <string name="rf_esp_vin">Supply in for the regulator (5 V), or USB\'s 5 V out</string>
+    <string name="rf_esp_rsv">Not connected (on LoLin\'s v3 boards: VU, USB\'s 5 V, and GND)</string>
+    <string name="rf_esp_cam_flash">the bright white (flash) LED</string>
+    <string name="rf_esp_cam_xclk">the camera\'s clock</string>
+    <string name="rf_esp_cam_vcc">Out: 3.3 V or 5 V, as a jumper on the board sets it</string>
+    <string name="rf_esp8266_wake">Wired to RST, it wakes the chip from deep sleep. No PWM, I²C or interrupts</string>
+    <string name="rf_esp8266_flash">Held low at reset, it starts the bootloader (the FLASH button)</string>
+    <string name="rf_esp8266_high">must be high at reset</string>
+    <string name="rf_esp8266_low">must be low at reset</string>
+    <string name="rf_esp8266_a0">Analog in, 0–3.3 V on the board (a divider before the chip\'s 0–1 V)</string>
+    <string name="rf_esp_devkitc_note">ESP32-WROOM-32, seen from above, the antenna at the top, 3V3\'s side on the left. The GPIOs work at 3.3 V. ADC2 can\'t be read while Wi-Fi is on.</string>
+    <string name="rf_esp_devkit_v1_note">ESP32-WROOM-32, 30 pins, seen from above, the antenna at the top, EN\'s side on the left. The GPIOs work at 3.3 V. ADC2 can\'t be read while Wi-Fi is on; the LED is on GPIO2.</string>
+    <string name="rf_esp_cam_note">AI-Thinker\'s board, 5V\'s side on the left, 5V and 3V3 at the top. No USB on it: it\'s programmed through U0R and U0T, IO0 held to GND. The microSD card takes GPIO2, 4 and 12–15.</string>
+    <string name="rf_esp_s3_note">ESP32-S3-WROOM-1, seen from above, the antenna at the top, 3V3\'s side on the left. GPIO19 and 20 are the chip\'s own USB. ADC2 can\'t be read while Wi-Fi is on.</string>
+    <string name="rf_esp_c3_note">Seen from above, USB at the top, 5V\'s side on the left. The GPIOs work at 3.3 V; the BOOT button is on GPIO9. Some clones have their pins in another order: check the board\'s printing.</string>
+    <string name="rf_esp_nodemcu_note">ESP8266 (ESP-12), seen from above, the antenna at the top, A0\'s side on the left. The D numbers are printed on the board, the GPIOs\' are what the code uses; they work at 3.3 V.</string>
+    <string name="rf_esp_d1_note">ESP8266, seen from above, the antenna at the top, RST\'s side on the left. The D numbers as on the NodeMCU; the GPIOs work at 3.3 V.</string>
+    <string name="rf_esp_rgb_10">the RGB LED (WS2812)</string>
+    <string name="rf_esp_vcc_33">Supply in, 3.3 V only: 5 V damages it</string>
+    <string name="rf_esp8266_adc">Analog in, 0–1 V (the chip\'s own, no divider)</string>
+    <string name="rf_esp_c3_zero_note">Waveshare\'s ESP32-C3-Zero, seen from above, USB-C at the top, 5V\'s side on the left. GPIO18 and 19 are the chip\'s own USB.</string>
+    <string name="rf_esp01_note">ESP-01 and ESP-01S, as most diagrams show them, from the chip\'s side. EN (CH_PD) and RST have to be high to run. Check the printing on the back: makers differ.</string>
+    <string name="rf_esp12f_note">The bare module, seen from above, its antenna at the top. EN high, GPIO15 low and GPIO0 and 2 high to start from the flash; the bottom pads belong to the flash.</string>
+</resources>

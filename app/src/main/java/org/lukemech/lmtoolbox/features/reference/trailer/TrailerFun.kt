@@ -17,7 +17,7 @@ import org.lukemech.lmtoolbox.features.reference.common.inRow
 import org.lukemech.lmtoolbox.features.reference.common.raw
 import org.lukemech.lmtoolbox.features.reference.common.res
 
-/** European trailer sockets: the 7-pin (ISO 1724) and the 13-pin (ISO 11446). */
+/** Trailer sockets: Europe's 7-pin (ISO 1724) and 13-pin (ISO 11446), North America's 4-pin flat one. */
 object TrailerFeature : ReferenceFeature() {
 
     override val route = "trailer"
@@ -41,8 +41,15 @@ object TrailerFeature : ReferenceFeature() {
         Pin(n.toString(), name, Signal, res(description), wire = listOf(color))
 
     override val sheets by lazy {
+        val europe = res(R.string.rf_trailer_europe)
         listOf(
-            PinoutSheet(raw("7-pin (12N)"), lights(R.string.rf_trailer_ground).inRow(), note = res(R.string.rf_trailer_7_note), inOrder = true),
+            PinoutSheet(
+                raw("7-pin (12N)"),
+                lights(R.string.rf_trailer_ground).inRow(),
+                note = res(R.string.rf_trailer_7_note),
+                inOrder = true,
+                group = europe
+            ),
             PinoutSheet(
                 raw("13-pin"),
                 (lights(R.string.rf_trailer_ground_1_8) + listOf(
@@ -54,7 +61,20 @@ object TrailerFeature : ReferenceFeature() {
                     Pin("13", "13", Ground, res(R.string.rf_trailer_ground_9)),
                 )).inRow(),
                 note = res(R.string.rf_trailer_13_note),
-                inOrder = true
+                inOrder = true,
+                group = europe
+            ),
+            // Its pins in a row as they are, the ground one on the car's side the socket's
+            PinoutSheet(
+                raw("4-pin flat"),
+                listOf(
+                    Pin("1", "GND", Ground, res(R.string.rf_trailer_ground), wire = listOf(Wire.White)),
+                    light(2, "TAIL", R.string.rf_trailer_tail, Wire.Brown),
+                    light(3, "LT", R.string.rf_trailer_left_stop, Wire.Yellow),
+                    light(4, "RT", R.string.rf_trailer_right_stop, Wire.Green),
+                ).inRow(),
+                note = res(R.string.rf_trailer_4_note),
+                group = res(R.string.rf_trailer_america)
             ),
         )
     }

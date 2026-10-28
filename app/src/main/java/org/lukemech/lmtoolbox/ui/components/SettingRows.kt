@@ -1,14 +1,7 @@
 package org.lukemech.lmtoolbox.ui.components
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
@@ -16,9 +9,7 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,7 +54,8 @@ fun ConfirmedActionButton(
 
 /**
  * Setting picking one of [options] (value to label): shows the selected label; a tap opens the choices
- * in a box below. [colors] as a [FeatureButton]'s (e.g. to mark it). Not
+ * in a box below (a [ChoiceList]: searched once they're many, each under its [groupOf]'s heading, if it has one).
+ * [colors] as a [FeatureButton]'s (e.g. to mark it). Not
  * [enabled]: grayed out, it doesn't open (an open one folds). [loading]: its choices are on their way,
  * grayed out as well, a spinner where its arrow goes (as the currency converter's lists). [trailing]
  * before its arrow, e.g. a value the choice gives.
@@ -78,6 +70,7 @@ fun <T> OptionSetting(
     enabled: Boolean = true,
     loading: Boolean = false,
     trailing: (@Composable () -> Unit)? = null,
+    groupOf: ((T) -> String?)? = null,
     onSelect: (T) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -104,29 +97,13 @@ fun <T> OptionSetting(
         expanded = expanded,
         popupContent = {
             // A long list (e.g. Minecraft's versions) scrolls in a box of its own, opened at the selected
-            // choice (a couple of rows above it in sight): the whole of it in the page was pages long, and its
-            // rows past about 8190 px down (Minecraft's from 1.8.9 on) took no taps. Lazy: with snapshots
-            // Minecraft's are some 800, every one composed took seconds to open
-            val scroll = rememberLazyListState(
-                initialFirstVisibleItemIndex = (options.indexOfFirst { it.first == selected } - 2).coerceAtLeast(0)
-            )
-            LazyColumn(state = scroll, modifier = Modifier.heightIn(max = LIST_MAX_HEIGHT).edgeFade(scroll)) {
-                items(options) { (value, label) ->
-                    fun choose() {
-                        onSelect(value)
-                        expanded = false
-                    }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = ::choose)
-                            .padding(horizontal = 8.dp)
-                    ) {
-                        RadioButton(selected = value == selected, onClick = ::choose)
-                        Text(label, style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
+            // choice: the whole of it in the page was pages long, and its rows past about 8190 px down
+            // (Minecraft's from 1.8.9 on) took no taps. Lazy: with snapshots Minecraft's are some 800, every one
+            // composed took seconds to open
+            val choices = remember(options, groupOf) { options.map { (value, label) -> Choice(value, label, groupOf?.invoke(value)) } }
+            ChoiceList(choices, selected) {
+                onSelect(it)
+                expanded = false
             }
         }
     )

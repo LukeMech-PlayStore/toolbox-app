@@ -5,7 +5,6 @@
     <string name="fd_vibration_meter">How much does it shake?</string>
     <string name="f_vibration_unit" translatable="false">m/s²</string>
     <string name="f_vibration_missing_sensors_message">No accelerometer was found.</string>
-    <string name="f_vibration_rms">RMS</string>
     <string name="f_vibration_peak">Peak</string>
     <string name="f_vibration_max_peak">Highest peak</string>
     <string name="f_vibration_frequency">Main frequency</string>

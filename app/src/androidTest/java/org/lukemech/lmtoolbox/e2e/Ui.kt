@@ -55,6 +55,12 @@ class Ui(val compose: AndroidComposeTestRule<*, MainActivity>) {
             .onFailure { throw AssertionError("Not shown after ${timeoutMs / 1000} s: $what") }
     }
 
+    /** As [waitShown], for what's further down a lazy list (a table's row, a search's result): scrolled to, as a user would. */
+    fun waitScrolledTo(matcher: SemanticsMatcher, timeoutMs: Long = 20_000, what: String = matcher.description) {
+        runCatching { compose.waitUntil(timeoutMs) { scrollTo(matcher) } }
+            .onFailure { throw AssertionError("Not shown after ${timeoutMs / 1000} s: $what") }
+    }
+
     /**
      * Brings the node to sight: scrolled to in its page, or in a lazy list (the choices of a setting, a long list)
      * until it's composed. True once its middle (where a tap lands) is on screen: not yet if the scroll failed, or

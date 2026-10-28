@@ -21,4 +21,9 @@
     <string name="rf_pc_sata_note">A drive\'s 15 contacts in a row; the five wires each feed three. Many cables leave out +3.3 V.</string>
     <string name="rf_pc_molex_note">The 4-pin peripheral plug (AMP MATE-N-LOK): old drives, fans, LED strips</string>
     <string name="rf_pc_floppy_note">The small 4-pin Berg plug of floppy drives: Molex\'s voltages in the opposite order</string>
+    <string name="rf_pc_board">Motherboard and CPU</string>
+    <string name="rf_pc_card">Graphics card</string>
+    <string name="rf_pc_drives">Drives</string>
+    <string name="rf_pc_minus5">−5 V, gone from newer supplies (ISA cards used it)</string>
+    <string name="rf_pc_atx20_note">The older ATX plug (before ATX12V 2.0): 1–10 in one row, 11–20 in the other. It fits a 24-pin socket, leaving that one\'s 11, 12, 23 and 24 free.</string>
 </resources>

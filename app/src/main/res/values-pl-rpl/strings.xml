@@ -28,8 +28,14 @@
     <string name="search_settings">Szukaj w ustawieniach</string>
     <string name="search_no_results">Nic nie znaleziono</string>
     <string name="search_clear">Wyczyść wyszukiwanie</string>
+    <string name="search_choices">Szukaj w opcjach</string>
     <!-- A file a tool made (SavedFiles.kt) -->
     <string name="no_app_opens">Żadna aplikacja nie otworzy tego pliku</string>
+    <!-- A page's PDF of what it shows (PdfExport.kt): saved to Downloads, its pages numbered -->
+    <string name="pdf_export">Eksportuj do PDF</string>
+    <string name="pdf_saved">Zapisano w Pobranych: %1$s</string>
+    <string name="pdf_failed">Nie udało się utworzyć PDF</string>
+    <string name="pdf_footer">%1$s · strona %2$d</string>
 
     <!-- Shared by the measuring features and their widgets (the widgets' settings and service); each feature's own are in res-features/<Feature> -->
     <string name="f_missing_sensors_title">Błąd uruchomienia</string>
@@ -38,6 +44,9 @@
     <string name="f_meter_max">Maks</string>
     <string name="f_meter_avg">Średnia</string>
     <string name="f_meter_ago">%1$s s temu</string>
+    <!-- A meter's PDF: its heading (a date and time), and its graph's (e.g. 30, seconds) -->
+    <string name="f_meter_pdf_taken">Pomiar z %1$s</string>
+    <string name="f_meter_pdf_graph">Ostatnie %1$s s</string>
     <string name="w_setting_background">Tło widżetu</string>
     <string name="w_setting_background_transparent">Przezroczyste</string>
     <string name="w_setting_background_opacity">Krycie: %1$d%%</string>

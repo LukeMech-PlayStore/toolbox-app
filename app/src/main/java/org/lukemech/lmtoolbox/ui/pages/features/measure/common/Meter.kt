@@ -10,21 +10,16 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,16 +27,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -51,9 +43,14 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.roundToInt
-import kotlin.math.ceil
-import kotlin.math.floor
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.measure.common.GraphScale
+import org.lukemech.lmtoolbox.features.measure.common.MeterPdf
+import org.lukemech.lmtoolbox.features.measure.common.MeterReport
+import org.lukemech.lmtoolbox.features.measure.common.meterPdfName
+import org.lukemech.lmtoolbox.ui.components.PdfExportAction
+import org.lukemech.lmtoolbox.ui.components.PdfFile
+import org.lukemech.lmtoolbox.ui.components.resultCard
 
 /**
  * The device's [type] sensor (Sensor.TYPE_*) read while the page is in sight: listened to as it's resumed, let
@@ -82,30 +79,8 @@ fun SensorUpdates(
 }
 
 /**
- * A meter's reading, large, in [unit] (smaller beside it); [color] as it's judged (e.g. red when it clips), the
- * primary one while [held] (see [HoldAction]), as in every meter.
- */
-@Composable
-fun MeterReading(value: String, unit: String, held: Boolean, color: Color = MaterialTheme.colorScheme.onBackground) {
-    val shown by animateColorAsState(if (held) MaterialTheme.colorScheme.primary else color)
-    Row(
-        verticalAlignment = Alignment.Bottom,
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Text(value, style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.SemiBold), color = shown)
-        Text(
-            unit,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 8.dp, bottom = 10.dp)
-        )
-    }
-}
-
-/**
  * A PageHeading's action holding a meter's readings where they are ([holding]: everything it shows stays put,
- * to read it off), and letting them go on; in the primary color while it holds.
+ * to read it off, its ReadingResult in the primary color), and letting them go on; in the primary color while it holds.
  */
 @Composable
 fun HoldAction(holding: Boolean, onHoldingChange: (Boolean) -> Unit) {
@@ -118,6 +93,24 @@ fun HoldAction(holding: Boolean, onHoldingChange: (Boolean) -> Unit) {
                 tint = tint
             )
         }
+    }
+}
+
+/**
+ * A meter's page's actions: a PDF of what it shows ([report], taken as it's tapped: see MeterPdf), once it has
+ * [readings]; then its [HoldAction].
+ */
+@Composable
+fun MeterActions(
+    title: String, readings: Boolean, holding: Boolean, onHoldingChange: (Boolean) -> Unit, report: () -> MeterReport,
+) {
+    val resources = LocalContext.current.resources
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        PdfExportAction(enabled = readings) {
+            val taken = report()
+            PdfFile(meterPdfName(title, taken.taken)) { MeterPdf(resources, title).write(taken, it) }
+        }
+        HoldAction(holding, onHoldingChange)
     }
 }
 
@@ -157,10 +150,9 @@ fun LiveGraph(
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(vertical = 4.dp)
+            .resultCard()
             .height(160.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
             .padding(horizontal = 12.dp, vertical = 12.dp)
             .pointerInput(Unit) {
                 awaitEachGesture {
@@ -184,22 +176,16 @@ fun LiveGraph(
             }
     ) {
         // Whole steps around what's there, the given range at least
-        val low = minOf(min, floor((shown.minOrNull() ?: min) / step) * step)
-        val high = maxOf(max, ceil((shown.maxOrNull() ?: max) / step) * step)
-        fun y(value: Float) = size.height * (1 - (value - low) / (high - low))
-        // Widened a lot (a strong vibration), a line every few steps: never more than MAX_LINES
-        var every = step
-        while ((high - low) / every > MAX_LINES) every *= 2
+        val scale = GraphScale.of(shown, min, max, step)
+        fun y(value: Float) = size.height * (1 - scale.fraction(value))
 
-        var line = low
-        while (line <= high + every / 2) {
+        scale.lines.forEach { line ->
             val at = y(line)
             drawLine(gridColor, Offset(0f, at), Offset(size.width, at), strokeWidth = 1.dp.toPx())
-            val text = measurer.measure("${formatTick(line)} $unit", labelStyle)
+            val text = measurer.measure("${GraphScale.tick(line)} $unit", labelStyle)
             // Above its line, but the lowest's (else off the graph)
             val top = (at - text.size.height).coerceIn(0f, size.height - text.size.height)
             drawText(text, topLeft = Offset(0f, top))
-            line += every
         }
 
         if (shown.size < 2) return@Canvas
@@ -226,8 +212,3 @@ fun LiveGraph(
         drawText(tip, topLeft = Offset(left + pad, pad))
     }
 }
-
-private const val MAX_LINES = 6
-
-/** A grid line's value: whole when it is (40, not 40.0). */
-private fun formatTick(value: Float) = if (value == value.toInt().toFloat()) value.toInt().toString() else "%.1f".format(value)

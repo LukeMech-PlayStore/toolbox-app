@@ -22,6 +22,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.lukemech.lmtoolbox.R
 
@@ -35,7 +36,9 @@ fun SearchField(
     /** Focused once shown (keyboard up), e.g. opened to search. */
     autoFocus: Boolean = false,
     /** Instead of typing here, a tap does this (e.g. opens the page searched in). */
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    /** How far in from its sides: a page's edges, or a box's rows (a ChoiceList's, in its row's box). */
+    inset: Dp = 16.dp
 ) {
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
@@ -65,7 +68,7 @@ fun SearchField(
         keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = inset)
             .focusRequester(focusRequester)
     )
 }

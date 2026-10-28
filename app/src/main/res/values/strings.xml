@@ -29,8 +29,14 @@
     <string name="search_settings">Search settings</string>
     <string name="search_no_results">Nothing found</string>
     <string name="search_clear">Clear search</string>
+    <string name="search_choices">Search the choices</string>
     <!-- A file a tool made (SavedFiles.kt) -->
     <string name="no_app_opens">No app can open this file</string>
+    <!-- A page's PDF of what it shows (PdfExport.kt): saved to Downloads, its pages numbered -->
+    <string name="pdf_export">Export to PDF</string>
+    <string name="pdf_saved">Saved to Downloads: %1$s</string>
+    <string name="pdf_failed">Couldn\'t make the PDF</string>
+    <string name="pdf_footer">%1$s · page %2$d</string>
 
     <!-- Shared by the measuring features and their widgets (the widgets' settings and service); each feature's own are in res-features/<Feature> -->
     <string name="f_missing_sensors_title">Initialization error</string>
@@ -41,6 +47,9 @@
     <!-- A point back in a graph: how long ago, in seconds (e.g. 12.4) -->
     <string name="f_meter_ago">%1$s s ago</string>
     <string name="f_meter_none" translatable="false">–</string>
+    <!-- A meter's PDF: its heading (a date and time), and its graph's (e.g. 30, seconds) -->
+    <string name="f_meter_pdf_taken">Measured %1$s</string>
+    <string name="f_meter_pdf_graph">The last %1$s s</string>
     <string name="w_setting_background">Widget background</string>
     <string name="w_setting_background_transparent">Transparent</string>
     <string name="w_setting_background_opacity">Opacity: %1$d%%</string>
