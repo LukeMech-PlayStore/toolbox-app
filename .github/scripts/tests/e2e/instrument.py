@@ -30,7 +30,7 @@ import xml.etree.ElementTree as ET
 # INSTRUMENTATION_STATUS_CODE values (androidx.test's InstrumentationResultPrinter)
 START, OK, ERROR, FAILURE, IGNORED, ASSUMPTION = 1, 0, -1, -2, -3, -4
 
-# A class's whole run: MinecraftServerTest's every server type on every Java the longest
+# A class's whole run: MinecraftServerTest's five servers, each up to TEST_TIMEOUT, the longest
 CLASS_TIMEOUT = 300 * 60
 TEST_TIMEOUT = 60 * 60
 # A run that says nothing for this long is stuck (a test's waits say what they wait for every half a minute)

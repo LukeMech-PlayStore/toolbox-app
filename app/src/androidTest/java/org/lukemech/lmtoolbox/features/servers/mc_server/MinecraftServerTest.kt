@@ -11,10 +11,10 @@ import org.lukemech.lmtoolbox.e2e.Linux
 import org.lukemech.lmtoolbox.linux.parts.Java
 
 /**
- * Every type of server on every Java the subsystem has, each on the newest Minecraft of that type made for that Java
- * (e.g. Paper 1.16.5 on Java 8, Fabric's newest 1.21 on Java 21): made (its Java installed along), started, its
- * console and options used, a setting taken on a restart, its loader changed, its world exported, deleted. A type
- * with no Minecraft for a Java (NeoForge on 8), or a Java this device's ABI hasn't (25 on x86), is skipped.
+ * Every type of server once, together on every Java the subsystem has ([SERVERS]), each on the newest Minecraft of
+ * that type made for its Java (e.g. Paper 1.16.5 on Java 8, Fabric's newest 1.21 on Java 21): made (its Java
+ * installed along), started, its console and options used, a setting taken on a restart, its loader changed, its
+ * world exported, deleted. A Java this device's ABI hasn't (25 on x86): the newest older one it has instead.
  */
 @RunWith(Parameterized::class)
 class MinecraftServerTest(private val typeName: String, private val jdkPart: String) : E2eTest() {
@@ -30,9 +30,10 @@ class MinecraftServerTest(private val typeName: String, private val jdkPart: Str
     @Test
     fun server() {
         val type = ServerType.valueOf(typeName)
-        val jdk = Java.byPart(jdkPart)!!
-        assumeTrue("Java ${jdk.version} isn't built for this device's ABI", jdk in Java.available(context))
-        val version = mc.newestFor(type, jdk)
+        val wanted = Java.byPart(jdkPart)!!
+        val jdk = Java.available(context).lastOrNull { it.version <= wanted.version }
+        assumeTrue("No Java up to ${wanted.version} is built for this device's ABI", jdk != null)
+        val version = mc.newestFor(type, jdk!!)
         assumeTrue("$type has no Minecraft made for Java ${jdk.version}", version != null)
 
         mc.open()
@@ -54,9 +55,17 @@ class MinecraftServerTest(private val typeName: String, private val jdkPart: Str
     }
 
     companion object {
+        /** A Java for each type, so that five servers cover every one; NeoForge's start at 1.20.2, past Java 8's. */
+        private val SERVERS = mapOf(
+            ServerType.Paper to "jdk8",
+            ServerType.Forge to "jdk17",
+            ServerType.Fabric to "jdk21",
+            ServerType.NeoForge to "jdk21",
+            ServerType.Vanilla to "jdk25",
+        )
+
         @JvmStatic
         @Parameterized.Parameters(name = "{0}-{1}")
-        fun servers(): List<Array<String>> =
-            ServerType.entries.flatMap { type -> Java.JDKS.map { arrayOf(type.name, it.part) } }
+        fun servers(): List<Array<String>> = SERVERS.map { (type, jdk) -> arrayOf(type.name, jdk) }
     }
 }
