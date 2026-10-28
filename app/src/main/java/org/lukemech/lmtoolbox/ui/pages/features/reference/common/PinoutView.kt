@@ -85,7 +85,7 @@ private val MAX_PITCH = 40.dp
  * A connector drawn from its pins (colored by what they do, or by their wires), a board's specs over it, and under
  * it one card telling about it: what the colors mean, the pin tapped, its notes. The pins are listed under that,
  * all of it scrolling as a page does. A pin tapped, in the drawing or the list, is marked in both and told about in
- * the card. Lazy: only the pins in sight built (a Mega's some 90), the ones [query] leaves out going as it's typed.
+ * the card. Lazy: only the pins in sight built (a Mega's some 90), the ones [query] leaves out dropped as it's typed.
  */
 @Composable
 fun PinoutView(sheet: PinoutSheet, query: String) {
@@ -196,12 +196,11 @@ private fun Legend(pins: List<Pin>) {
 }
 
 /**
- * The connector: its outline, its pins at their places ([places]: [sheet]'s, maybe turned), numbered; tapping
+ * The connector: its outline, its [pins] at their places ([sheet]'s, maybe turned), numbered; tapping
  * one picks it ([onTap]). As wide as the page, its pins as far apart as that leaves; wider (a Mega's), it scrolls.
  */
 @Composable
-private fun PinoutDrawing(sheet: PinoutSheet, places: List<Pin>, selected: Int?, query: String, matches: (Int) -> Boolean, onTap: (Int) -> Unit) {
-    val pins = places
+private fun PinoutDrawing(sheet: PinoutSheet, pins: List<Pin>, selected: Int?, query: String, matches: (Int) -> Boolean, onTap: (Int) -> Unit) {
     val columns = (pins.maxOf { it.x } + 1f)
     val rows = (pins.maxOf { it.y } + 1f)
     val measurer = rememberTextMeasurer()

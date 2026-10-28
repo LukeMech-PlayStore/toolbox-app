@@ -42,7 +42,7 @@ object EspBoardsFeature : ReferenceFeature() {
     /** [parts] as one description, ", " between them. */
     private fun and(vararg parts: Txt) = Txt.Join(parts.toList(), ", ")
 
-    /** GPIO[n], labeled [label] on the board (its number, or a D number on the ESP8266's), doing [parts] besides. */
+    /** GPIO[n], labeled [label] on the board (the GPIO number, or a D number on an ESP8266 board), doing [parts] besides. */
     private fun io(n: Int, kind: PinKind = Signal, vararg parts: Txt, label: String = n.toString()) =
         Pin(label, "GPIO$n", kind, if (parts.isEmpty()) null else and(*parts))
 

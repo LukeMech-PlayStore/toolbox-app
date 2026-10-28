@@ -93,7 +93,7 @@ class ReferenceDataTest {
         assertEquals("VBUS", pin(rpi, 3, "40").name)
         assertEquals(pin(rpi, 3, "1").y, pin(rpi, 3, "40").y)
         val arduino = org.lukemech.lmtoolbox.features.reference.arduino.ArduinoFeature
-        assertEquals("D53", (arduino.sheets[3] as PinoutSheet).pins.last { it.name.startsWith("D") }.name)
+        assertEquals("D53", arduino.sheets[3].pins.last { it.name.startsWith("D") }.name)
         assertEquals("D13", pin(arduino, 4, "16").name)
         val esp = org.lukemech.lmtoolbox.features.reference.esp_boards.EspBoardsFeature
         assertEquals("GPIO1", pin(esp, 0, "TX").name)

@@ -29,7 +29,7 @@ import org.lukemech.lmtoolbox.helpers.openFile
 import org.lukemech.lmtoolbox.helpers.safeFileName
 import org.lukemech.lmtoolbox.helpers.saveToMediaStore
 
-/** A PDF to make: its file's [name] (".pdf" added), and [write] drawing it (away from the main thread). */
+/** A PDF to make: its file's [name] (the .pdf extension added to it), and [write] drawing it (away from the main thread). */
 class PdfFile(val name: String, val write: (OutputStream) -> Unit)
 
 /**

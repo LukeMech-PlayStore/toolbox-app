@@ -11,6 +11,7 @@
       <w>adbd</w>
       <w>aerr</w>
       <w>affero</w>
+      <w>agnd</w>
       <w>aktualizacja</w>
       <w>alac</w>
       <w>allocstall</w>
@@ -20,17 +21,22 @@
       <w>aplikacja</w>
       <w>appname</w>
       <w>atempo</w>
+      <w>ATmega</w>
+      <w>atmega</w>
       <w>avif</w>
       <w>avrisp</w>
+      <w>basp</w>
       <w>bayer</w>
       <w>bcff</w>
       <w>berg</w>
       <w>biquads</w>
+      <w>bkin</w>
       <w>btime</w>
       <w>bundletool</w>
       <w>bundletool's</w>
       <w>bwiat</w>
       <w>callendar</w>
+      <w>chemistries</w>
       <w>ckit</w>
       <w>cloudflare</w>
       <w>cloudflared</w>
@@ -48,9 +54,11 @@
       <w>dbgrq</w>
       <w>ddc</w>
       <w>defaultgamemode</w>
+      <w>devkitc</w>
       <w>devnull</w>
       <w>dexed</w>
       <w>doesn</w>
+      <w>doit</w>
       <w>domyślne</w>
       <w>dorg</w>
       <w>dout</w>
@@ -85,6 +93,7 @@
       <w>fmpeg</w>
       <w>foojay</w>
       <w>fromkeys</w>
+      <w>fspi</w>
       <w>fullmatch</w>
       <w>gamemode</w>
       <w>gbit</w>
@@ -116,6 +125,10 @@
       <w>jaźń</w>
       <w>jline</w>
       <w>jtag</w>
+      <w>jtck</w>
+      <w>jtdi</w>
+      <w>jtdo</w>
+      <w>jtms</w>
       <w>kennelly</w>
       <w>khugepaged</w>
       <w>kompasu</w>
@@ -134,6 +147,7 @@
       <w>libx</w>
       <w>linuxa</w>
       <w>lmtoolbox</w>
+      <w>lolin</w>
       <w>lowmemorykiller</w>
       <w>lstrip</w>
       <w>lukemech</w>
@@ -156,13 +170,19 @@
       <w>molex</w>
       <w>mosi</w>
       <w>motd</w>
+      <w>mtck</w>
+      <w>mtdi</w>
+      <w>mtdo</w>
+      <w>mtms</w>
       <w>nachylenie</w>
       <w>najnowsze</w>
       <w>narzędzia</w>
       <w>nayuki</w>
       <w>nayuki's</w>
       <w>neoforge</w>
+      <w>njtrst</w>
       <w>nline</w>
+      <w>nodemcu</w>
       <w>nodereclaim</w>
       <w>nogui</w>
       <w>nopass</w>
@@ -215,6 +235,7 @@
       <w>proot</w>
       <w>przelicznik</w>
       <w>przeliczniki</w>
+      <w>psram</w>
       <w>pswpin</w>
       <w>pswpout</w>
       <w>pycache</w>
@@ -226,6 +247,7 @@
       <w>quetta</w>
       <w>quickjs</w>
       <w>rcon</w>
+      <w>renesas</w>
       <w>resizer</w>
       <w>resizer's</w>
       <w>resolv</w>
@@ -248,6 +270,7 @@
       <w>shlex</w>
       <w>shmem</w>
       <w>skrótem</w>
+      <w>smba</w>
       <w>softap</w>
       <w>spdx</w>
       <w>splitcompat</w>
@@ -274,10 +297,16 @@
       <w>tailnets</w>
       <w>tempco</w>
       <w>termuxie</w>
+      <w>TgtPwr</w>
+      <w>tgtpwr</w>
       <w>threadtime</w>
       <w>thévenin</w>
       <w>tmds</w>
+      <w>tmega</w>
       <w>towbar</w>
+      <w>traceclk</w>
+      <w>tracedata</w>
+      <w>traceswo</w>
       <w>trrs</w>
       <w>trunc</w>
       <w>trycloudflare</w>
@@ -296,11 +325,13 @@
       <w>urlretrieve</w>
       <w>urządzeniach</w>
       <w>urządzeniami</w>
+      <w>usart</w>
       <w>usbasp</w>
       <w>usbc</w>
       <w>ushr</w>
       <w>ustawień</w>
       <w>utime</w>
+      <w>vbat</w>
       <w>vbus</w>
       <w>vcap</w>
       <w>vcodec</w>
@@ -311,18 +342,28 @@
       <w>vmstat</w>
       <w>vout</w>
       <w>vref</w>
+      <w>vspi</w>
       <w>vsupply</w>
       <w>vsync</w>
+      <w>vsys</w>
       <w>vtref</w>
       <w>vtresh</w>
+      <w>vusb</w>
       <w>walut</w>
       <w>waluta</w>
       <w>waluty</w>
+      <w>waveshare</w>
+      <w>waveshare's</w>
       <w>wbudowane</w>
+      <w>weact</w>
       <w>weba</w>
+      <w>wemos</w>
       <w>widżety</w>
+      <w>wkup</w>
       <w>workingset</w>
+      <w>wroom</w>
       <w>wybór</w>
+      <w>xclk</w>
       <w>xffccc</w>
       <w>xffefb</w>
       <w>xfffffbfe</w>

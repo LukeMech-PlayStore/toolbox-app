@@ -8,6 +8,7 @@ import android.graphics.pdf.PdfDocument
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import androidx.core.graphics.withTranslation
 import java.io.OutputStream
 import org.lukemech.lmtoolbox.R
 
@@ -92,10 +93,7 @@ open class PdfPages(protected val resources: Resources, private val title: Strin
     }
 
     protected fun drawLayout(layout: StaticLayout, x: Float, y: Float) {
-        canvas.save()
-        canvas.translate(x, y)
-        layout.draw(canvas)
-        canvas.restore()
+        canvas.withTranslation(x, y) { layout.draw(this) }
     }
 
     companion object {

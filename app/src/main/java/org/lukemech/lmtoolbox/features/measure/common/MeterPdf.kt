@@ -126,7 +126,7 @@ class MeterPdf(resources: Resources, title: String) : PdfPages(resources, title)
         val dx = (right - left) / (graph.values.size - 1)
         val path = Path()
         graph.values.forEachIndexed { i, value ->
-            if (i == 0) path.moveTo(left + dx * i, at(value)) else path.lineTo(left + dx * i, at(value))
+            if (i == 0) path.moveTo(left, at(value)) else path.lineTo(left + dx * i, at(value))
         }
         stroke.color = ACCENT
         stroke.strokeWidth = 1.25f

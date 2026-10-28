@@ -93,7 +93,7 @@ object RpiGpioFeature : ReferenceFeature() {
     /** A Pico's GPn: what else it can be (a UART's, I²C's, SPI's, the ADC's), as its pinout prints them. */
     private fun gp(number: Int, n: Int) = gp(number.toString(), n)
 
-    /** GP[n], [label]ed by its number on the board (the Pico's 1–40) or its GPIO's (a Zero's). */
+    /** GP[n], [label]ed by its number on the board (the Pico's 1–40) or by its GPIO number (on a Zero). */
     private fun gp(label: String, n: Int): Pin {
         val uart = when (n) {
             0, 12, 16 -> "UART0 TX"
@@ -103,7 +103,7 @@ object RpiGpioFeature : ReferenceFeature() {
             else -> null
         }
         val i2c = if (n <= 21 || n in 26..27) "I²C${(n / 2) % 2} ${if (n % 2 == 0) "SDA" else "SCL"}" else null
-        val spi = if (n <= 19) "SPI${if (n < 8 || n >= 16) 0 else 1} ${listOf("RX", "CSn", "SCK", "TX")[n % 4]}" else null
+        val spi = if (n <= 19) "SPI${if (n !in 8..15) 0 else 1} ${listOf("RX", "CSn", "SCK", "TX")[n % 4]}" else null
         val adc = if (n in 26..29) "ADC${n - 26}" else null
         val functions = listOfNotNull(adc, uart, i2c, spi)
         return Pin(label, "GP$n", if (adc != null) Analog else Signal, functions.takeIf { it.isNotEmpty() }?.let { raw(it.joinToString(", ")) })

@@ -2,6 +2,8 @@
 <resources>
     <string name="fp_esp_boards">ESP32 and ESP8266 boards</string>
     <string name="fd_esp_boards">DevKits, ESP32-CAM, C3 boards, NodeMCU, D1 mini, ESP-01, ESP-12F: every pin, chip and memory</string>
+    <!-- Keywords as people type them in the search, so Wi-Fi without its hyphen -->
+    <!--suppress GrazieInspection -->
     <string name="fk_esp_boards">esp, esp32, esp8266, espressif, devkit, devkitc, devkit v1, doit, wroom, s3, esp32-s3, c3, esp32-c3, supermini, c3 zero, waveshare, cam, esp32-cam, nodemcu, d1 mini, wemos, lolin, esp-01, esp-01s, esp-12, esp-12f, wifi, bluetooth, gpio, adc, dac, touch, i2c, spi, uart, strapping, boot, flash, ram, psram, pinout, pins, board, reference</string>
     <string name="rf_esp_input_only">input only, no pull-ups</string>
     <string name="rf_esp_flash">Used by the flash: don\'t connect anything</string>

@@ -14,5 +14,5 @@
     <string name="rf_icsp_pgc">Programming clock</string>
     <string name="rf_icsp_pgm">Low-voltage programming; unused by most chips</string>
     <string name="rf_icsp_note">PICkit\'s header, in one row; pin 1 is marked by a triangle</string>
-    <string name="rf_isp10_note">The older 10-pin AVR header (STK500, USBasp): pin 1 has the triangle. Pin 3 isn\'t connected on most boards.</string>
+    <string name="rf_isp10_note">The older 10-pin AVR header (STK500, USBasp): pin 1 has the triangle. Pin 3 is not connected on most boards.</string>
 </resources>

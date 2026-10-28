@@ -20,7 +20,7 @@ import org.lukemech.lmtoolbox.ui.pages.features.reference.common.ReferencePage
 /**
  * A calculator's page: its fields, settings and results one under another, the [formulas] it uses behind its button.
  * With [tables] (its values worked out ahead, e.g. a PT100's every 10 °C; what it's used with, a battery's sizes),
- * they're pages next to the calculator's, picked as a reference's are.
+ * they're pages next to the calculator's, picked as a reference's pages are.
  */
 @Composable
 fun CalculatorPage(title: String, formulas: List<Formula>, tables: List<TableSheet> = emptyList(), content: @Composable () -> Unit) {

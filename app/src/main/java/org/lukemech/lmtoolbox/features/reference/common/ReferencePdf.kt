@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.vector.VectorGroup
 import androidx.compose.ui.graphics.vector.VectorPath
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.withTranslation
 import java.io.OutputStream
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.PdfPages
@@ -89,7 +90,7 @@ class ReferencePdf(resources: Resources, title: String) : PdfPages(resources, ti
                 stroke.color = TILE_EDGE
                 stroke.strokeWidth = 0.75f
                 canvas.drawRoundRect(box, TILE_CORNER, TILE_CORNER, stroke)
-                icon(spec.kind.icon, left + TILE_PAD, y + TILE_PAD, 9f, ACCENT)
+                icon(spec.kind.icon, left + TILE_PAD, y + TILE_PAD)
                 canvas.drawText(resources.getString(spec.kind.label), left + TILE_PAD + 13f, y + TILE_PAD + 8f, quietPaint)
                 drawLayout(values[i], left + TILE_PAD, y + TILE_PAD + 14f)
             }
@@ -98,23 +99,22 @@ class ReferencePdf(resources: Resources, title: String) : PdfPages(resources, ti
         y += 6f
     }
 
-    /** [vector] (a Material icon) at [x], [y], [size] across, in [color]: drawn as its paths, sharp at any zoom. */
-    private fun icon(vector: ImageVector, x: Float, y: Float, size: Float, color: Int) {
-        val scale = size / vector.viewportWidth
-        fill.color = color
-        canvas.save()
-        canvas.translate(x, y)
-        canvas.scale(scale, scale)
-        fun draw(group: VectorGroup) {
-            group.forEach { node ->
-                when (node) {
-                    is VectorPath -> canvas.drawPath(PathParser().addPathNodes(node.pathData).toPath().asAndroidPath(), fill)
-                    is VectorGroup -> draw(node)
+    /** [vector] (a Material icon) at [x], [y], a spec's label high, in the accent: drawn as its paths, sharp at any zoom. */
+    private fun icon(vector: ImageVector, x: Float, y: Float) {
+        val scale = ICON_SIZE / vector.viewportWidth
+        fill.color = ACCENT
+        canvas.withTranslation(x, y) {
+            scale(scale, scale)
+            fun draw(group: VectorGroup) {
+                group.forEach { node ->
+                    when (node) {
+                        is VectorPath -> drawPath(PathParser().addPathNodes(node.pathData).toPath().asAndroidPath(), fill)
+                        is VectorGroup -> draw(node)
+                    }
                 }
             }
+            draw(vector.root)
         }
-        draw(vector.root)
-        canvas.restore()
     }
 
     /** The connector: its outline and its pins at their [places], as on its page, scaled to the page's width. */
@@ -284,6 +284,7 @@ class ReferencePdf(resources: Resources, title: String) : PdfPages(resources, ti
         const val CELL_PAD = 4f
         const val SPECS_PER_ROW = 3
         const val TILE_PAD = 8f
+        const val ICON_SIZE = 9f
         const val TILE_CORNER = 8f
     }
 }

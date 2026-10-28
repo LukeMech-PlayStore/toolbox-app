@@ -18,5 +18,5 @@
     <string name="rf_pico_vbus">USB\'s 5 V</string>
     <string name="rf_rpi_supply">5 V (USB, or pins 2 and 4)</string>
     <string name="rf_pico_wireless">W: Wi-Fi, Bluetooth</string>
-    <string name="rf_rp2040_zero_note">Waveshare\'s, seen from above, USB-C at the top. Its GP pins at 3.3 V, labeled by their GPIO numbers; GP16 drives its RGB LED inside. More pads underneath aren\'t drawn.</string>
+    <string name="rf_rp2040_zero_note">Waveshare\'s, seen from above, USB-C at the top. Its GP pins at 3.3 V, labeled by their GPIO numbers; GP16 drives its RGB LED inside. More pads underneath are not drawn.</string>
 </resources>

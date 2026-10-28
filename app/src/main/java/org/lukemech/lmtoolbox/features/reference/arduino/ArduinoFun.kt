@@ -122,7 +122,7 @@ object ArduinoFeature : ReferenceFeature() {
             52 to raw("SPI SCK"),
             53 to raw("SPI SS"),
         ),
-        setOf(0, 1) + (14..21) + (50..53)
+        setOf(0, 1, 14, 15, 16, 17, 18, 19, 20, 21, 50, 51, 52, 53)
     )
 
     private val NANO_EVERY = Digital(
@@ -166,7 +166,7 @@ object ArduinoFeature : ReferenceFeature() {
     private fun gnd(label: String = "GND") = Pin(label, "GND", Ground)
 
     /**
-     * An Uno-sized board seen from above, the USB socket and the power jack on the left: the ten and eight-pin
+     * A Uno-sized board seen from above, the USB socket and the power jack on the left: the ten and eight-pin
      * headers at the top (SCL, SDA, AREF, GND, D13–D0), the power one and the analog one under them, and,
      * on the Mega, its longer ones.
      */
