@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import kotlin.math.roundToInt
@@ -348,9 +349,13 @@ private fun NewServer(onBack: () -> Unit, onCreated: (String) -> Unit) {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth().clickable(enabled = !busy) { eula = !eula }
                     ) {
-                        Checkbox(checked = eula, onCheckedChange = { eula = it }, enabled = !busy)
+                        // At the edges, as the rows above: the row takes the taps, so neither needs its touch padding
+                        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+                            Checkbox(checked = eula, onCheckedChange = { eula = it }, enabled = !busy)
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(stringResource(R.string.f_Mc_eula), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                        TextButton(onClick = {
+                        TextButton(contentPadding = PaddingValues(start = 12.dp), onClick = {
                             runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, "https://aka.ms/MinecraftEULA".toUri())) }
                         }) { Text(stringResource(R.string.f_Mc_eula_read)) }
                     }
