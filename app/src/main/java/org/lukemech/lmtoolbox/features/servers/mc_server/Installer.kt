@@ -149,7 +149,7 @@ internal object Http {
                 }
                 if (!part.renameTo(file)) throw IOException("Couldn't save ${file.name}")
             } catch (e: Exception) {
-                // A dropped connection's part kept, the next try going on from it; cancelled, it goes
+                // A dropped connection's part kept, the next try going on from it; canceled, it goes
                 if (e !is IOException) part.delete()
                 throw e
             } finally {
