@@ -1,6 +1,7 @@
 package org.lukemech.lmtoolbox.features.electronics.battery_life
 
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import org.junit.Test
 import org.lukemech.lmtoolbox.R
@@ -14,7 +15,8 @@ class BatteryLifeTest : ToolTest(BatteryLifeFeature) {
         ui.click(hasText(ui.str(R.string.ec_battery)) and hasClickAction(), what = "the battery choice")
         // Found as a user would: 21 batteries, it far down their list (a lazy one in a page, too far to scroll to)
         ui.type(ui.str(R.string.search_choices), "CR2032")
-        ui.click(hasText("CR2032", substring = true) and hasClickAction(), what = "CR2032 in its list")
+        // Not the search's field, saying it too
+        ui.click(hasText("CR2032", substring = true) and hasClickAction() and !hasSetTextAction(), what = "CR2032 in its list")
         ui.waitShown(hasText("225"), what = "its capacity filled in")
         ui.click(hasText(ui.str(R.string.rf_calculate)) and hasClickAction(), what = "the page picker")
         ui.click(hasText(ui.str(R.string.rf_coin_cells)) and hasClickAction(), what = "the coin cells' table")

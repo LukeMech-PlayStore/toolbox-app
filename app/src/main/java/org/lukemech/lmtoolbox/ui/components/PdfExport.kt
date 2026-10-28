@@ -47,15 +47,19 @@ fun PdfExportAction(enabled: Boolean = true, pdf: () -> PdfFile) {
         val file = currentPdf()
         val name = safeFileName(file.name, "LM Toolbox") + ".pdf"
         scope.launch {
-            runCatching {
+            val saved = runCatching {
                 withContext(Dispatchers.IO) {
                     saveToMediaStore(context, MediaStore.Downloads.EXTERNAL_CONTENT_URI, Environment.DIRECTORY_DOWNLOADS, name, PDF, file.write)
                 }
-            }.onSuccess { uri ->
-                Toast.makeText(context, context.getString(R.string.pdf_saved, name), Toast.LENGTH_SHORT).show()
-                openFile(context, uri, PDF)
-            }.onFailure {
-                Toast.makeText(context, R.string.pdf_failed, Toast.LENGTH_SHORT).show()
+            }
+            // A toast needs a looper: the main thread's, not wherever the scope's clock goes on (a test's)
+            withContext(Dispatchers.Main) {
+                saved.onSuccess { uri ->
+                    Toast.makeText(context, context.getString(R.string.pdf_saved, name), Toast.LENGTH_SHORT).show()
+                    openFile(context, uri, PDF)
+                }.onFailure {
+                    Toast.makeText(context, R.string.pdf_failed, Toast.LENGTH_SHORT).show()
+                }
             }
             making = false
         }
