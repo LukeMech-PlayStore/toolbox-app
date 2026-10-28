@@ -1,9 +1,12 @@
 package org.lukemech.lmtoolbox.features.servers.mc_server
 
+import android.content.Context
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.FeatureCategory
 import org.lukemech.lmtoolbox.helpers.ModuleFeature
 import org.lukemech.lmtoolbox.helpers.ResourceTile
+import org.lukemech.lmtoolbox.linux.parts.Bore
+import org.lukemech.lmtoolbox.linux.parts.Tunnel
 
 /**
  * Minecraft server: on the subsystem's core, the Java version each server's Minecraft is made for (jdk8, jdk17, jdk21, jdk25, see
@@ -33,4 +36,11 @@ object MinecraftServerFeature : ModuleFeature(
     const val S_SNAPSHOTS = "McServer_snapshots"
 
     override val preferenceKeys = listOf(S_SELECTED, S_SNAPSHOTS)
+
+    /** A tunnel's part while a server has that tunnel turned on (see ServerRunner.pruneTunnel, pruneBore). */
+    override fun usesExtraExtension(context: Context, name: String) = when (name) {
+        Tunnel.PART -> Servers.list(context).any { it.tunnelEnabled }
+        Bore.PART -> Servers.list(context).any { it.boreEnabled }
+        else -> false
+    }
 }

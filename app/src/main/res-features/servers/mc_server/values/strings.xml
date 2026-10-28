@@ -41,48 +41,20 @@
     <string name="f_Mc_tab_status">Status</string>
     <string name="f_Mc_tab_console">Console</string>
     <string name="f_Mc_tab_options">Options</string>
-    <string name="f_Mc_stat_uptime">Up</string>
     <string name="f_Mc_stat_players">Players</string>
-    <string name="f_Mc_uptime_hm">%1$d h %2$d min</string>
-    <string name="f_Mc_uptime_m">%1$d min</string>
     <string name="f_Mc_join">How to join</string>
-    <string name="f_Mc_lan">On this network</string>
-    <string name="f_Mc_lan_none">Not on Wi-Fi or a hotspot</string>
-    <string name="f_Mc_tailscale">Through Tailscale</string>
     <string name="f_Mc_kick">Kick out</string>
     <string name="f_Mc_ban">Ban</string>
     <string name="f_Mc_ban_title">Ban %1$s?</string>
     <string name="f_Mc_ban_confirm">%1$s is kicked out and can\'t join this server again. To undo it, type in the console:\n%2$s</string>
-    <string name="f_Mc_tailscale_ip">Through Tailscale (IP)</string>
-    <string name="f_Mc_tailscale_desc">Only devices on your tailnet with Tailscale on (or tailnets you share this phone with) can join here; not anyone else. The name needs MagicDNS, the IP always works.</string>
-    <string name="f_Mc_tailscale_none">Turn on the Tailscale app: players on your tailnet join at its address</string>
-    <string name="f_Mc_internet">From anywhere</string>
-    <string name="f_Mc_internet_none">Turn on Bore or a Cloudflare tunnel</string>
     <string name="f_Mc_internet_desc">Players need the Modflared mod.</string>
-    <string name="f_Mc_internet_bore">Through Bore</string>
-    <string name="f_Mc_internet_cloudflare">Through Cloudflare</string>
     <string name="f_Mc_internet_bore_desc">Players need nothing but the address. It stays the same while nobody else takes its port.</string>
-    <string name="f_Mc_bore">Bore tunnel</string>
-    <string name="f_Mc_bore_enable">Reach it from anywhere with Bore</string>
-    <string name="f_Mc_bore_enable_desc">No account, nothing to set up: starts with the server</string>
     <!-- bore.pub is a host name, not a sentence ending in "bore." -->
     <!--suppress GrazieInspection -->
-    <string name="f_Mc_bore_desc">Bore gives the server an address on a public Bore server, e.g. bore.pub:41234, that players type as it is. The public one, bore.pub, is free, but nobody promises it\'s up; your own server (bore server) works too.</string>
-    <string name="f_Mc_bore_server">Bore server</string>
-    <string name="f_Mc_bore_server_desc">bore.pub, or your own (e.g. bore.example.com)</string>
-    <string name="f_Mc_bore_secret">Secret</string>
-    <string name="f_Mc_bore_secret_desc" tools:ignore="TypographyDashes">Your server\'s secret (bore server --secret), if it has one</string>
-    <!-- Why Bore couldn't connect, when a DNS blocker (e.g. AdGuard as Private DNS) answers for the Bore server, its name -->
-    <string name="f_Mc_bore_dns_blocked">Your DNS blocks %1$s</string>
-    <string name="f_Mc_tunnel">Cloudflare tunnel</string>
+    <string name="f_Mc_bore_desc">Bore gives the server an address on a public Bore server, e.g. bore.pub:41234. The public one, bore.pub, is free, but nobody promises it\'s up; your own server (bore server) works too.</string>
     <string name="f_Mc_tunnel_short">Tunnel</string>
     <string name="f_Mc_tunnel_connected">Connected (%1$d)</string>
-    <string name="f_Mc_tunnel_connecting">Connecting…</string>
-    <string name="f_Mc_tunnel_failed">Couldn\'t connect</string>
-    <string name="f_Mc_tunnel_with_server">Starts with the server</string>
     <string name="f_Mc_battery_note">The screen goes off as usual; the phone stays awake while the server runs.</string>
-    <string name="f_Mc_copy">Copy</string>
-    <string name="f_Mc_copied">Copied</string>
     <string name="f_Mc_command">Command</string>
     <string name="f_Mc_send">Send</string>
     <string name="f_Mc_console_empty">Start the server to see its console.</string>
@@ -115,14 +87,11 @@
     <string name="f_Mc_seed">World seed</string>
     <string name="f_Mc_seed_desc">Empty: a random one</string>
     <string name="f_Mc_seed_unknown">Known after the next start</string>
-    <string name="f_Mc_save">Save</string>
     <string name="f_Mc_config_file">Config file</string>
     <string name="f_Mc_config_file_first">The server writes the rest on its first start.</string>
-    <string name="f_Mc_tunnel_desc">Players outside your network join at your domain. Nothing to open on the router.</string>
+    <string name="f_Mc_tunnel_desc">Cloudflare gives the server an address on your own domain, e.g. mc.example.com, the same every time, encrypted. It needs your domain on Cloudflare; nothing to open on the router.</string>
     <string name="f_Mc_token">Tunnel token</string>
-    <string name="f_Mc_token_saved">Saved</string>
     <string name="f_Mc_token_desc">The token, or the whole installation command Cloudflare shows</string>
-    <string name="f_Mc_token_remove">Remove the token</string>
     <string name="f_Mc_hostname">Address for players</string>
     <string name="f_Mc_hostname_desc">e.g. mc.example.com</string>
     <string name="f_Mc_check_domain">Check the address</string>
@@ -189,8 +158,6 @@
     <string name="f_Mc_backing_up">Backing up the world…</string>
     <string name="f_Mc_installing_java">Installing Java…</string>
     <string name="f_Mc_discard">Discard the changes</string>
-    <string name="f_Mc_tunnel_enable">Cloudflare tunnel</string>
-    <string name="f_Mc_tunnel_enable_desc">Players join from anywhere through your domain.</string>
     <string name="f_Mc_version_stop_first">Stop the server to change its version</string>
     <string name="f_Mc_adding_addons">Adding</string>
 

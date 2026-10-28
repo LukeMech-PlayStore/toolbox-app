@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_ip_code">Stopień ochrony IP</string>
+    <string name="fd_ip_code">Co znaczy IP67, cyfra po cyfrze</string>
+    <string name="fk_ip_code">stopień ochrony, ip, kod ip, iec 60529, pn-en 60529, wodoszczelny, pyłoszczelny, ip65, ip67, ip68, obudowa, woda, pył, ściągawka</string>
+    <string name="rf_ip_first">Pierwsza cyfra: ciała stałe</string>
+    <string name="rf_ip_second">Druga cyfra: woda</string>
+    <string name="rf_protection">Ochrona</string>
+    <string name="rf_ip_x">Nie badano albo nie podano</string>
+    <string name="rf_ip_solid_0">Brak ochrony</string>
+    <string name="rf_ip_solid_1">Obiekty powyżej 50 mm (wierzch dłoni)</string>
+    <string name="rf_ip_solid_2">Obiekty powyżej 12,5 mm (palce)</string>
+    <string name="rf_ip_solid_3">Obiekty powyżej 2,5 mm (narzędzia, grube druty)</string>
+    <string name="rf_ip_solid_4">Obiekty powyżej 1 mm (większość drutów, śruby)</string>
+    <string name="rf_ip_solid_5">Pyłoochronna: trochę pyłu wnika, ale nie szkodzi</string>
+    <string name="rf_ip_solid_6">Pyłoszczelna: pył nie wnika</string>
+    <string name="rf_ip_water_0">Brak ochrony</string>
+    <string name="rf_ip_water_1">Krople wody spadające pionowo</string>
+    <string name="rf_ip_water_2">Krople wody spadające pionowo, przy pochyleniu do 15°</string>
+    <string name="rf_ip_water_3">Natryskiwana woda, do 60° od pionu</string>
+    <string name="rf_ip_water_4">Bryzgi wody z dowolnego kierunku</string>
+    <string name="rf_ip_water_5">Strugi wody (dysza 6,3 mm) z dowolnego kierunku</string>
+    <string name="rf_ip_water_6">Silne strugi wody (dysza 12,5 mm)</string>
+    <string name="rf_ip_water_7">Zanurzenie do 1 m, przez 30 minut</string>
+    <string name="rf_ip_water_8">Ciągłe zanurzenie powyżej 1 m, na warunkach producenta</string>
+    <string name="rf_ip_water_9">Strugi wody pod wysokim ciśnieniem i o wysokiej temperaturze</string>
+    <string name="rf_ip_note">IEC 60529. Wyższa cyfra ochrony przed wodą nie obejmuje niższych: 7 i 8 bada się pod wodą, nie strugami.</string>
+</resources>

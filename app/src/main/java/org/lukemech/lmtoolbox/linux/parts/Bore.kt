@@ -106,7 +106,7 @@ class Bore(
                 }
             }
             // bore says only "could not connect": the DNS's doing (a blocker's answer) told as such
-            if (!stopping && lastError?.startsWith("could not connect") == true && dnsBlocks(server)) lastError = app.getString(R.string.f_Mc_bore_dns_blocked, server)
+            if (!stopping && lastError?.startsWith("could not connect") == true && dnsBlocks(server)) lastError = app.getString(R.string.f_Srv_bore_dns_blocked, server)
             _state.update {
                 it?.copy(
                     phase = if (stopping) Phase.Stopped else Phase.Failed,

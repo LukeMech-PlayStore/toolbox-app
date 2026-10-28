@@ -18,10 +18,10 @@
 
 **One app, a drawer full of tools.** Measure with a ruler, a spirit level, a compass, a sound level meter, a
 light meter, a metal detector, a vibration meter and a stroboscope; work out a resistor's color code or a 555
-timer with 25 electronics calculators; convert currencies; download, convert and shrink videos, music and images;
-edit a photo's metadata; ping, trace and scan your network and measure it with iperf3; or run your own Minecraft
-server, Vanilla to NeoForge, straight from your phone and reachable by your friends through Bore, a Cloudflare
-tunnel or Tailscale.
+timer with 30 electronics calculators; look up pinouts and tables; convert currencies; download, convert and
+shrink videos, music and images; edit a photo's metadata; share a folder with any browser; ping, trace and scan
+your network and measure it with iperf3; or run your own Minecraft server, Vanilla to NeoForge, straight from
+your phone and reachable by your friends through Bore, a Cloudflare tunnel or Tailscale.
 
 The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared, bore, iperf3)
 inside a PRoot-based Linux subsystem. You never set it up: the app installs it part by part, only when a tool you
@@ -50,7 +50,8 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Measure     | Magnetic field and metal detector (µT, x/y/z, tone or vibration)                               | Android sensors                                                                                                                                                              | `app`               |
 | Measure     | Vibration meter (RMS, peak, main frequency by FFT)                                             | Android sensors                                                                                                                                                              | `app`               |
 | Measure     | Stroboscope / tachometer (Hz or RPM, tap tempo)                                                | Android torch                                                                                                                                                                | `app`               |
-| Electronics | 25 calculators (listed below)                                                                  | Android                                                                                                                                                                      | `app`               |
+| Electronics | 30 calculators (listed below)                                                                  | Android                                                                                                                                                                      | `app`               |
+| Reference   | 29 references: tables, pinouts drawn from data, decoders (listed below)                        | Android                                                                                                                                                                      | `app`               |
 | Finance     | Currency converter (ECB rates, amounts shared from other apps)                                 | Python (`CurrencyConverter`)                                                                                                                                                 | `features:pypkgs`   |
 | Media       | QR generator                                                                                   | Python (`qrcode`, Pillow)                                                                                                                                                    | `features:pypkgs`   |
 | Media       | Metadata editor                                                                                | ExifTool                                                                                                                                                                     | `features:exiftool` |
@@ -61,11 +62,22 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Media       | File hash (MD5, SHA-1, SHA-2, SHA-3, CRC32; checked against a hash or a checksum file)         | Android (`MessageDigest`, `CRC32`); SHA-3 the app's own (Android has none)                                                                                                   | `app`               |
 | Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
 | Network     | Network tools (ping, traceroute, LAN devices, port scan, iperf3 client and server)             | Android (its `ping`, sockets, `NsdManager`); iperf3 for its tab alone, installed when it's first run (`features:iperf3`)                                                     | `app`               |
+| Servers     | Folder share (a folder in any browser: ranges, ZIPs, uploads, a password; Bore, Cloudflare)    | Android (a web server of its own); bore or cloudflared once a tunnel is on (`features:bore`, `cloudflared`)                                                                  | `app`               |
 
 The electronics calculators: color code, SMD resistor code, Ohm's law, electric power, reactance and
-resonance, RC filter, voltage divider, series and parallel, capacitor charging, op-amp amplifier, LED
-resistor, Zener regulator, LM317 regulator, 555 timer, heat sink, battery life, air-core coil, cable voltage
-drop, PCB trace width, star-delta, PT100 sensor, decibels, frequency and wavelength, ADC converter, RMS and peak.
+resonance, RC, RL and RLC filters, voltage divider, resistor ratio, series and parallel, capacitor charging,
+op-amp amplifier, transistor (BJT switch and bias), LED resistor, Zener regulator, LM317 regulator, 555 timer,
+heat sink, battery life, energy converter, air-core coil, cable voltage drop, PCB trace width, star-delta,
+PT100 sensor, decibels, frequency and wavelength, ADC converter, range converter, number bases and bits,
+RMS and peak.
+
+The references: standard values (E-series), PT100 table, decibel table, SI prefixes, wire gauges (AWG, SWG),
+capacitor codes, IP code, SMD package sizes; the pinouts of the Raspberry Pi's GPIO, Arduino Uno and Nano,
+USB (A, B, mini-B, micro-B, 2.0 and 3.x, and C), Ethernet RJ45 (with PoE), RS-232 (DB9, DB25), ARM JTAG and
+SWD, AVR ISP and PIC ICSP, display connectors (HDMI full, mini and micro, DisplayPort and Mini DisplayPort, DVI,
+VGA), OBD-II, PC power connectors (ATX, EPS, ATX12V, PCIe, 12V-2x6, SATA, Molex, floppy), SD cards, XLR and
+DMX, audio jacks (TS, TRS, balanced TRS, TRRS), ISO 10487 car radio and trailer sockets; and tables of ASCII,
+logic gates, resistivity, thermocouple types, car fuses and battery sizes.
 
 ### Project layout
 
@@ -150,6 +162,17 @@ calculator's formula is shown from the button in its corner (`Formula`), and a r
 rounded to the nearest value of an E-series (`ESeries`, `ESeriesSetting`). The maths that's more than a
 line lives in the tool's `<Name>Calc.kt`, with tests.
 
+#### The references
+
+Each reference is a `ReferenceFeature` (`features/reference/<route>/<Name>Fun.kt`) holding only data, its
+`sheets`, which a single page shows (`ReferencePage`, picked by chips when there are several): a `TableSheet`,
+searched as it's typed, its headings staying put and scrolling sideways with its rows, a cell held down
+copied; a `PinoutSheet`, the connector drawn on a canvas from its `Pin`s (placed by `inRow`, `inRows`,
+`dualRow`, `staggered` or by hand, colored by `PinKind` or by their wires), a pin tapped there or in the list
+marked in both; or a `ToolSheet` for a decoder. Texts are `Txt`: as written, or a string resource. What can
+be worked out is (the E-series, the PT100 and AWG tables, the truth tables); the rest is rebuilt from the
+standards named in each one's notes.
+
 ### The Linux subsystem
 
 The subsystem is a Termux-based rootfs, split into parts (`core`, `python`, `pypkgs`, `ffmpeg`, `exiftool`,
@@ -191,6 +214,24 @@ published release (set `GITHUB_TOKEN` to avoid its rate limit). Commit that line
 
 To add a program, define it in the subsystem's `config.yaml` (a Termux or pip package in a part), let its
 workflow release it, pin that release, and use it from the module of the part it's in.
+
+#### Testing with a subsystem's pull request
+
+A change to both (e.g. a new tool and the packages it runs) is two pull requests, tested together before
+either is merged:
+
+1. Open the subsystem's pull request. Its workflow builds it as `main`'s, but doesn't release it: the run
+   keeps its `rootfs.tar.gz` as an artifact.
+2. In the app's pull request, pin it: `linuxRelease=pr-<number>` in `gradle.properties`. Its tests, and every
+   local build, use the newest successful build of that pull request's head, downloaded again only after a
+   new push there. Re-run the app's tests after one.
+3. Merge the subsystem's pull request. Once its release is out, run `./gradlew updateLinuxRelease`, commit
+   the pin, and merge the app's.
+
+GitHub's API gives artifacts only with a token: the tests use the `SUBSYSTEM_TOKEN` secret, a local build
+`SUBSYSTEM_TOKEN` or `GITHUB_TOKEN` if set, else the GitHub CLI's (`gh auth login`). While a `pr-` build is
+pinned, the tests' `linux-release` job fails and `build-app.yml` builds no release, so neither is merged nor
+shipped with a build that's no release.
 
 ### UI conventions
 
@@ -280,10 +321,9 @@ API 30, the oldest and its newest. No ARM: GitHub's runners can't run an ARM emu
 x86_64 images can't run the Linux subsystem.
 
 **How.** Each leg runs in 3 shards. Each test goes to the shard with the least work so far, longest first, by how long
-it took before (`durations.json`, kept in the Actions cache: the report job saves each run's, and the next run's plan job restores
-the newest its branch can see, its own or main's, for all its shards alike; [`cron.yml`](.github/workflows/cron.yml)
-restores main's every 3 days, before GitHub drops it unused), so the shards finish at about the same time. A new test counts as
-the median until it's measured. With no cache yet, the tests are dealt by the listing alone. On a shard,
+it took before (`durations.json`: the report job keeps each run's as its artifact for 90 days, and the next run's plan job takes
+the newest its branch can see, its pull request's or main's, for all its shards alike), so the shards finish at about the same
+time. A new test counts as the median until it's measured. With none yet, the tests are dealt by the listing alone. On a shard,
 [`instrument.py`](.github/scripts/tests/e2e/instrument.py) runs the tests class by class, each in a fresh
 process. After a crash, the tests it cut off are run one by one. A failed test runs once more; passing then
 counts as flaky, not failed.
@@ -303,7 +343,9 @@ an outdated library among them) fail it. Moderate, low and info problems (weak w
 reported.
 
 **On a pull request.** The `comment` job ([`comment.py`](.github/scripts/tests/comment.py)) puts both reports in one
-comment: a line for each on top, the whole summaries folded under it. Every run updates the same comment, found by
+comment: a line for each on top, the whole summaries folded under it, and each failed test with the errors in its logcat.
+Its screenshot and whole logcat are in the `e2e-failures` artifact, linked (GitHub's API can't attach files to a
+comment). Every run updates the same comment, found by
 its hidden marker, instead of adding a new one. It's skipped for pull requests from forks and Dependabot, whose token
 can't comment.
 

@@ -8,12 +8,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import kotlin.math.PI
-import kotlin.math.pow
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.electronics.common.formatPercent
 import org.lukemech.lmtoolbox.features.electronics.common.formatValue
 import org.lukemech.lmtoolbox.features.electronics.common.parseValue
+import org.lukemech.lmtoolbox.features.electronics.voltage_drop.awgDiameterMm
+import org.lukemech.lmtoolbox.features.electronics.voltage_drop.crossSectionMm2
 import org.lukemech.lmtoolbox.ui.components.MainResult
 import org.lukemech.lmtoolbox.ui.components.OptionSetting
 import org.lukemech.lmtoolbox.ui.components.ResultRow
@@ -41,7 +41,7 @@ fun VoltageDropPage() {
     val rho = if (aluminium) 2.82e-8 else 1.68e-8
     val area = when {
         size == null -> null
-        awg -> PI * (0.127 * 92.0.pow((36 - size) / 39.0) / 2000.0).pow(2)
+        awg -> crossSectionMm2(awgDiameterMm(size)) * 1e-6
         size > 0 -> size * 1e-6
         else -> null
     }

@@ -9,6 +9,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.features.electronics.pt100.Pt100Feature
 import org.lukemech.lmtoolbox.features.electronics.pt100.resistanceAt
 import org.lukemech.lmtoolbox.features.electronics.pt100.temperatureAt
 import org.lukemech.lmtoolbox.ui.components.OptionSetting
@@ -38,7 +39,8 @@ fun Pt100Page() {
             Formula("""A = 3.9083 · 10^{−3}"""),
             Formula("""B = −5.775 · 10^{−7}"""),
             Formula("""C = −4.183 · 10^{−12} \text{  (t < 0 °C)}"""),
-        )
+        ),
+        tables = listOf(Pt100Feature.table)
     ) {
         OptionSetting(
             title = stringResource(R.string.ec_sensor),

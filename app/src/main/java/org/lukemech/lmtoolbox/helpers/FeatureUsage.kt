@@ -34,13 +34,15 @@ object FeatureUsage {
     private val startPage = mutableStateOf(StartPage.Home)
 
     fun load(context: Context) {
-        favourites.value = PreferenceHelper.getStringList(context, PREF_FAVOURITES)
-        recent.value = PreferenceHelper.getStringList(context, PREF_RECENT)
-        last.value = PreferenceHelper.get(context, PREF_LAST, "")
-        default.value = PreferenceHelper.get(context, PREF_DEFAULT, "")
+        // A tool that went into another is that one's (FeatureRegistry.current), each once
+        fun routes(key: String) = PreferenceHelper.getStringList(context, key).map(FeatureRegistry::current).distinct()
+        favourites.value = routes(PREF_FAVOURITES)
+        recent.value = routes(PREF_RECENT)
+        last.value = FeatureRegistry.current(PreferenceHelper.get(context, PREF_LAST, ""))
+        default.value = FeatureRegistry.current(PreferenceHelper.get(context, PREF_DEFAULT, ""))
         startPage.value = StartPage.entries.firstOrNull { it.name == PreferenceHelper.get(context, PREF_START_PAGE, "") }
             ?: StartPage.Home
-        used.value = PreferenceHelper.getStringList(context, PREF_USED).toSet()
+        used.value = routes(PREF_USED).toSet()
     }
 
     private fun features(routes: Collection<String>) =

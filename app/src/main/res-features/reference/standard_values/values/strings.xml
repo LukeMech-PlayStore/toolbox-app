@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_standard_values">Standard values (E-series)</string>
+    <string name="fd_standard_values">E6 to E96, every decade</string>
+    <string name="fk_standard_values">e-series, e6, e12, e24, e48, e96, standard values, preferred values, resistor values, capacitor values, iec 60063, tolerance, decade, reference, table</string>
+    <string name="rf_eseries_note">The same values in every decade (IEC 60063): Ω for resistors, pF to μF for capacitors</string>
+</resources>

@@ -46,6 +46,7 @@ import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.RowColors
 import org.lukemech.lmtoolbox.ui.components.SectionTitle
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.networkChanges
 
 /** The LAN scan's run and the devices it found; the page's, as the other tabs'. */
 internal class LanState(private val context: Context, private val scope: CoroutineScope) {

@@ -6,11 +6,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.LinkProperties
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
@@ -37,9 +32,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -255,25 +248,6 @@ internal fun LinesCard(content: @Composable ColumnScope.() -> Unit) {
 internal fun Appearing(content: @Composable () -> Unit) {
     val state = remember { MutableTransitionState(false).apply { targetState = true } }
     AnimatedVisibility(visibleState = state, enter = revealEnter()) { content() }
-}
-
-/** Counts the phone's network changes (one coming or going, its addresses changing) while it's shown. */
-@Composable
-internal fun networkChanges(context: Context): Int {
-    var changes by remember { mutableIntStateOf(0) }
-    DisposableEffect(Unit) {
-        val cm = context.getSystemService(ConnectivityManager::class.java)
-        val callback = object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) { changes++ }
-            override fun onLost(network: Network) { changes++ }
-            override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) { changes++ }
-        }
-        // VPNs too (Tailscale's address for iperf3's server)
-        val request = NetworkRequest.Builder().removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN).build()
-        runCatching { cm.registerNetworkCallback(request, callback) }
-        onDispose { runCatching { cm.unregisterNetworkCallback(callback) } }
-    }
-    return changes
 }
 
 /** Copies [text] (an address), saying so. */

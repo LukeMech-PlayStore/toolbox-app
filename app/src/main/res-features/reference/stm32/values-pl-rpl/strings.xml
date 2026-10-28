@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_stm32">Płytki STM32</string>
+    <string name="fd_stm32">Blue Pill i Black Pill: każdy pin, jego peryferia, układ i pamięć</string>
+    <string name="fk_stm32">stm32, blue pill, black pill, stm32f103, stm32f103c8t6, stm32f401, stm32f411, weact, cortex-m3, cortex-m4, arm, swd, st-link, usart, spi, i2c, adc, can, usb, timer, pwm, flash, ram, pinout, wyprowadzenia, piny, płytka, ściągawka</string>
+    <string name="rf_stm32_5v">Wejście 5 V (albo wyjście z USB) do stabilizatora płytki</string>
+    <string name="rf_stm32_vbat">Zasilanie podtrzymujące RTC i jego rejestrów (bateria pastylkowa)</string>
+    <string name="rf_stm32_reset">Zwarty do masy resetuje układ</string>
+    <string name="rf_stm32_blue_note">STM32F103C8 (bywają klony: CKS32, GD32), widok z góry, złącze SWD po prawej. Piny przy 3,3 V; większość znosi 5 V jako wejście (poza analogowymi). Dioda LED jest na PC13.</string>
+    <string name="rf_stm32_black_note">STM32F411CE (albo F401CC) od WeAct, widok z góry, złącze SWD po prawej. Piny przy 3,3 V. Dioda LED jest na PC13, przycisk KEY na PA0; BOOT0 to przycisk, BOOT1 to PB2.</string>
+</resources>

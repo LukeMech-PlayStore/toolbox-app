@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_standard_values">Wartości znormalizowane (szereg E)</string>
+    <string name="fd_standard_values">Od E6 do E96, w każdej dekadzie</string>
+    <string name="fk_standard_values">szereg e, e6, e12, e24, e48, e96, wartości znormalizowane, wartości rezystorów, wartości kondensatorów, iec 60063, tolerancja, dekada, ściągawka, tabela</string>
+    <string name="rf_eseries_note">Te same wartości w każdej dekadzie (IEC 60063): Ω dla rezystorów, od pF do μF dla kondensatorów</string>
+</resources>

@@ -53,7 +53,7 @@ import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SensorWarning
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.HoldAction
-import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterReading
+import org.lukemech.lmtoolbox.ui.components.ReadingResult
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.SensorUpdates
 
 /** A field the components and strength are shown of, µT (x, y, z, and their strength). */
@@ -123,8 +123,8 @@ fun MagnetometerPage() {
                 calibrationIcon = Icons.Default.CompassCalibration,
                 missingMessage = R.string.f_magnet_missing_sensors_message
             )
-            MeterReading(field?.magnitude?.let { "%.1f".format(it) } ?: none, unit, held = holding)
-            Results {
+            Results(apart = false) {
+                ReadingResult(field?.magnitude?.let { "%.1f".format(it) } ?: none, unit, held = holding)
                 ResultRow("X", text(field?.x))
                 ResultRow("Y", text(field?.y))
                 ResultRow("Z", text(field?.z))

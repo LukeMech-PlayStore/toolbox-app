@@ -45,7 +45,7 @@ import org.lukemech.lmtoolbox.features.network.net_tools.Iperf
 import org.lukemech.lmtoolbox.features.network.net_tools.IperfEvent
 import org.lukemech.lmtoolbox.features.network.net_tools.IperfState
 import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
-import org.lukemech.lmtoolbox.features.servers.mc_server.Network
+import org.lukemech.lmtoolbox.features.servers.common.Reach
 import org.lukemech.lmtoolbox.helpers.PreferenceHelper
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.ui.components.BigButton
@@ -59,6 +59,7 @@ import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RevealSection
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.networkChanges
 
 /** The iperf3 tab's choices, its run (installing iperf3 first, if it isn't) and its test; the page's, as the other tabs'. */
 internal class IperfTabState(private val context: Context, private val scope: CoroutineScope) {
@@ -193,8 +194,8 @@ internal fun IperfTab(state: IperfTabState) {
 private fun ServerAddresses(port: Int) {
     val context = LocalContext.current
     val changes = networkChanges(context)
-    val lan = remember(changes) { Network.lanAddresses(context) }
-    val tailnet = remember(changes) { Network.tailscaleAddresses(context) }
+    val lan = remember(changes) { Reach.lanAddresses(context) }
+    val tailnet = remember(changes) { Reach.tailscaleAddresses(context) }
     val suffix = if (port == Iperf.PORT) "" else " -p $port"
     Column(verticalArrangement = RowArrangement) {
         lan.forEach { AddressRow(stringResource(R.string.f_Net_iperf_on_lan), it, "iperf3 -c $it$suffix", Icons.Default.Wifi) }

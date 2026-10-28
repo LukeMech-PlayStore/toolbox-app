@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fp_range_converter">Range converter</string>
+    <string name="fd_range_converter">4–20 mA, 0–10 V and percent, both ways</string>
+    <string name="fk_range_converter" tools:ignore="TypographyDashes">range, scaling, 4-20 ma, 4–20 ma, 0-10 v, 0–10 v, 0-5 v, current loop, analog signal, transmitter, sensor, percent, span, linear, mapping, engineering units, plc, instrumentation, calculator, calc, compute, electronics</string>
+    <string name="ec_input_range">Input range</string>
+    <string name="ec_output_range">Output range</string>
+    <string name="ec_input_start">Input range start</string>
+    <string name="ec_input_end">Input range end</string>
+    <string name="ec_output_start">Output range start</string>
+    <string name="ec_output_end">Output range end</string>
+    <string name="ec_input">Input</string>
+    <string name="ec_output">Output</string>
+    <string name="ec_span">Position in the range</string>
+    <string name="ec_custom">Custom</string>
+    <string name="ec_out_of_range">Outside the input range</string>
+</resources>

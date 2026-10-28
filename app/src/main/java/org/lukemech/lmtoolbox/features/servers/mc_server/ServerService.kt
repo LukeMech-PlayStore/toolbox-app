@@ -127,7 +127,7 @@ class ServerService : Service() {
             getString(R.string.f_Mc_tunnel_short).takeIf { tunnel }
         ).joinToString(" · ")
         val open = PendingIntent.getActivity(
-            this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            this, 0, MainActivity.openFeatureIntent(this, MinecraftServerFeature.route),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val stop = PendingIntent.getService(

@@ -1,9 +1,6 @@
 package org.lukemech.lmtoolbox.ui.components
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ContactSupport
 import androidx.compose.material.icons.filled.SyncDisabled
@@ -16,30 +13,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import org.lukemech.lmtoolbox.R
 
 /**
- * A bar on top of a page telling of something to do (e.g. calibrate, allow location), in [color], folding away with
- * its gap below; tapping it explains or fixes it ([onClick]).
+ * A bar on top of a page telling of something to do (e.g. calibrate, allow location), in [color], folding away;
+ * tapping it explains or fixes it ([onClick]). A row like any other: as far from what's under it as its page's
+ * RowArrangement puts rows (no gap of its own), none left as it folds away.
  */
 @Composable
 fun PromptBar(visible: Boolean, title: String, color: Color, icon: ImageVector, icon2: ImageVector, onClick: () -> Unit) {
     Reveal(visible = visible) {
-        Column {
-            FeatureButton(
-                title = title,
-                colors = RowColors.tinted(color),
-                onClick = onClick,
-                icon = icon,
-                icon2 = icon2
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        FeatureButton(
+            title = title,
+            colors = RowColors.tinted(color),
+            onClick = onClick,
+            icon = icon,
+            icon2 = icon2
+        )
     }
 }
 
