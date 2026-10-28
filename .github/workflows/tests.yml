@@ -13,7 +13,13 @@ name: Tests
 #   in it (comment job)
 #
 # Jobs: plan, build and inspect start at once; test needs plan and build; report needs test; comment needs report
-# and inspect.
+# and inspect. linux-release, on its own, fails while the subsystem pinned is a pull request's build.
+#
+# A pull request changing the subsystem too (e.g. a tool and the packages it runs) pins that pull request's build:
+# linuxRelease=pr-<number> in gradle.properties, the artifact of the subsystem's newest successful build of its head
+# (buildSrc's LinuxPackages.kt; read with the SUBSYSTEM_TOKEN secret). Its tests run with that build; re-run them
+# after a push there. Once the subsystem's pull request is merged and released, pin the release (./gradlew
+# updateLinuxRelease): until then linux-release fails, so it isn't merged with a build that's no release.
 
 on:
   pull_request:
@@ -25,8 +31,10 @@ concurrency:
   group: tests-${{ github.ref }}
   cancel-in-progress: true
 
+# actions: the durations earlier runs kept (their artifacts, see plan)
 permissions:
   contents: read
+  actions: read
 
 jobs:
   # The legs and their shards (matrix.py), and how long each test took last time, for dealing tests among shards
@@ -42,15 +50,29 @@ jobs:
         id: matrix
         run: echo "matrix=$(python3 .github/scripts/tests/e2e/matrix.py gradle.properties)" >> "$GITHUB_OUTPUT"
 
-      # The newest durations this branch can see (its own, else main's), restored once for the whole run: every shard
-      # of a leg must deal the tests from the same file, or some would run twice and others not at all. None yet:
-      # tests are dealt by their order alone.
-      - name: Restore the durations
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: durations.json
-          key: e2e-durations-${{ github.run_id }}
-          restore-keys: e2e-durations-
+      # The newest durations this branch can see (its pull request's runs', else main's), taken once for the whole run:
+      # every shard of a leg must deal the tests from the same file, or some would run twice and others not at all.
+      # Each run that updated them keeps them as its artifact (durations, the report job's). None yet: tests are
+      # dealt by their order alone.
+      - name: Take the durations
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          # <branch> <which of its runs (jq)>: its newest run's that kept them
+          take() {
+            local id
+            for id in $(gh run list -R "$GITHUB_REPOSITORY" -w tests.yml -b "$1" -L 20 --json databaseId,event \
+              --jq ".[] | select(.databaseId != $GITHUB_RUN_ID and ($2)) | .databaseId"); do
+              if gh run download "$id" -R "$GITHUB_REPOSITORY" -n durations -D . 2>/dev/null; then
+                echo "Durations of run $id"
+                return 0
+              fi
+            done
+            return 1
+          }
+          if [ -n "$HEAD_REF" ] && take "$HEAD_REF" '.event == "pull_request"'; then exit 0; fi
+          take main '.event != "pull_request"' || echo "No durations yet: tests are dealt by their order"
 
       - name: Upload the durations
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -59,6 +81,25 @@ jobs:
           path: durations.json
           if-no-files-found: ignore
           retention-days: 3
+
+  # The subsystem pinned (gradle.properties' linuxRelease): a release, not a pull request's build. Tested with one, a
+  # pull request can't be merged so (see above); which one is said in the run's summary.
+  linux-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check the pinned subsystem
+        run: |
+          linux=$(sed -n 's/^linuxRelease=//p' gradle.properties | tr -d '\r')
+          repo=https://github.com/LukeMech-PlayStore/toolbox-linux-subsystem
+          if [[ "$linux" == pr-* ]]; then
+            echo "Subsystem: the pull request's build, [#${linux#pr-}]($repo/pull/${linux#pr-})." >> "$GITHUB_STEP_SUMMARY"
+            echo "::error file=gradle.properties::linuxRelease=$linux is the subsystem's pull request's build: once it's merged and released, pin the release (./gradlew updateLinuxRelease)"
+            exit 1
+          fi
+          echo "Subsystem: release [$linux]($repo/releases/tag/$linux)." >> "$GITHUB_STEP_SUMMARY"
 
   # The debug bundle and the tests' APK, built once for every leg
   build:
@@ -79,9 +120,12 @@ jobs:
 
       # Version name: the tested commit's short hash (a pull request's head, not its merge commit). Version code 1:
       # not a release (build-app.yml's come from tags).
+      # SUBSYSTEM_TOKEN: a subsystem's pull request's build pinned is an artifact, which GitHub's API gives only with a
+      # token reading that repository's actions (this run's own reads only this one)
       - name: Build the debug bundle and the tests
         env:
           COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+          SUBSYSTEM_TOKEN: ${{ secrets.SUBSYSTEM_TOKEN }}
         run: |
           chmod +x ./gradlew
           ./gradlew --build-cache :app:bundleDebug :app:assembleDebugAndroidTest \
@@ -297,17 +341,19 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
-      # For the next run's shards. A cache entry can't be overwritten, so one per run; the newest is restored. A pull
-      # request's stay its own, main's every branch reads. Saved only if merge.py updated them (almost nothing failed)
-      # and the run wasn't canceled (cut-short shards would be missing tests).
-      - name: Save the durations
+      # For the next runs' shards (plan takes the newest): kept as long as GitHub keeps artifacts, so a quiet month
+      # doesn't lose them. A pull request's durations are read by its own runs, main's by every branch's. Kept only
+      # if merge.py updated them (almost nothing failed) and the run wasn't canceled (cut-short shards would be
+      # missing tests).
+      - name: Keep the durations
         if: >-
           always() && !cancelled() && needs.test.result != 'cancelled'
           && steps.report.outputs.durations == 'updated'
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
+          name: durations
           path: durations.json
-          key: e2e-durations-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
 
   # On a pull request: both summaries in one comment (comment.py), whatever the jobs came to, the failed tests' logcat
   # errors in it (their screens and whole logcat in the failures' artifact, linked). Every run updates the same comment, found by its hidden marker. Skipped when the run is canceled

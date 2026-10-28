@@ -2,6 +2,7 @@ import groovy.json.JsonSlurper
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URI
+import java.util.zip.ZipInputStream
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
@@ -21,7 +22,8 @@ private val PACKAGE_LIB = Regex("""libpackage-(.+)\.tar\.xz\.so""")
 /**
  * The app's tasks for the Linux subsystem's release, the one gradle.properties pins (linuxRelease):
  * updateLinuxPackages puts it where it goes (before every build, only downloading it when it isn't there),
- * updateLinuxRelease pins the newest one. [parts]: the Play modules with a part's archive (features/<name>);
+ * updateLinuxRelease pins the newest one. A subsystem's pull request can be pinned instead (pr-<number>, see
+ * [PullRequestBuild]), to test the app with it; it's never released with one (build-app.yml, tests.yml). [parts]: the Play modules with a part's archive (features/<name>);
  * [prootLibsDir]: where PRoot goes (the core's module).
  */
 @Suppress("unused") // app/build.gradle.kts
@@ -63,16 +65,32 @@ fun Project.registerLinuxPackageTasks(parts: List<String>, prootLibsDir: File) {
         doLast {
             val filesExist = LINUX_ABIS.all { abi -> requiredLibs(abi).all { File(dirOf(it), "$abi/$it").exists() } }
             val current = if (filesExist) installed() else null
-            if (current == release) {
-                println("Linux packages are up to date ($release).")
-            } else {
-                println("Updating the Linux packages: ${current ?: "none"} -> $release")
-                tempFile.parentFile.mkdirs()
-                val url = "https://github.com/$LINUX_REPO/releases/download/$release/$ASSET"
+            // A pull request's: its head's build (its parts' version, pr-<number>.<commit>); offline, what's there of it
+            val pullRequest = PullRequestBuild.of(release)
+            val build = pullRequest?.let {
                 try {
-                    URI(url).toURL().openStream().use { input -> tempFile.outputStream().use { input.copyTo(it) } }
+                    it.newest()
                 } catch (e: Exception) {
-                    throw GradleException("Could not download $url (linuxRelease in gradle.properties)", e)
+                    if (current?.startsWith("$release.") != true) throw e
+                    logger.warn("Couldn't look for a newer build of $release (${e.message}): keeping $current")
+                    null
+                }
+            }
+            val wanted = build?.version ?: current.takeIf { pullRequest != null } ?: release
+            if (current == wanted) {
+                println("Linux packages are up to date ($wanted).")
+            } else {
+                println("Updating the Linux packages: ${current ?: "none"} -> $wanted")
+                tempFile.parentFile.mkdirs()
+                if (build != null) {
+                    build.download(tempFile)
+                } else {
+                    val url = "https://github.com/$LINUX_REPO/releases/download/$release/$ASSET"
+                    try {
+                        URI(url).toURL().openStream().use { input -> tempFile.outputStream().use { input.copyTo(it) } }
+                    } catch (e: Exception) {
+                        throw GradleException("Could not download $url (linuxRelease in gradle.properties)", e)
+                    }
                 }
                 (LINUX_ABIS.flatMap(::requiredLibs).map(::dirOf) + appLibsDir).distinct().forEach { dir ->
                     LINUX_ABIS.forEach { abi -> File(dir, abi).listFiles { f -> ownLib(f.name) }?.forEach { it.delete() } }
@@ -153,4 +171,79 @@ fun Project.registerLinuxPackageTasks(parts: List<String>, prootLibsDir: File) {
     }
 
     tasks.named("preBuild") { dependsOn("updateLinuxPackages") }
+}
+
+/**
+ * A subsystem's pull request's build, pinned as pr-<number> (linuxRelease): not released, its rootfs.tar.gz is the
+ * artifact (rootfs) of the subsystem's build.yml run for the pull request's head. Its parts that changed are of the
+ * version pr-<number>.<commit>, which its parts' list says too: a new push is a new build, downloaded again.
+ *
+ * GitHub's API wants a token for artifacts, even a public repository's: SUBSYSTEM_TOKEN (the tests' secret: one
+ * that reads this repository's actions), else GITHUB_TOKEN, else the GitHub CLI's (gh auth login).
+ */
+private class PullRequestBuild(private val number: String) {
+
+    /** A build: its parts' [version] and where its artifact is. */
+    inner class Build(val version: String, private val artifact: String) {
+        /** Its rootfs.tar.gz, out of the artifact's zip, into [into]. */
+        fun download(into: File) {
+            try {
+                // GitHub sends it on to its storage, which takes no token of GitHub's
+                val redirect = (URI(artifact).toURL().openConnection() as HttpURLConnection).apply {
+                    instanceFollowRedirects = false
+                    setRequestProperty("Authorization", "Bearer $token")
+                }
+                val location = redirect.getHeaderField("Location") ?: error("no artifact to download (HTTP ${redirect.responseCode})")
+                ZipInputStream(URI(location).toURL().openStream()).use { zip ->
+                    while (true) {
+                        val entry = zip.nextEntry ?: error("the artifact has no $ASSET")
+                        if (entry.name == ASSET) break
+                    }
+                    into.outputStream().use { zip.copyTo(it) }
+                }
+            } catch (e: Exception) {
+                throw GradleException("Could not download pr-$number's build $version: ${e.message}", e)
+            }
+        }
+    }
+
+    private val token: String by lazy {
+        listOf("SUBSYSTEM_TOKEN", "GITHUB_TOKEN").firstNotNullOfOrNull { System.getenv(it)?.takeIf(String::isNotBlank) }
+            ?: runCatching {
+                ProcessBuilder("gh", "auth", "token").start().run { inputStream.bufferedReader().readText().trim().takeIf { waitFor() == 0 } }
+            }.getOrNull()?.takeIf(String::isNotBlank)
+            ?: throw GradleException("pr-$number (linuxRelease) is downloaded from GitHub's API, which wants a token: set SUBSYSTEM_TOKEN or GITHUB_TOKEN, or log in to the GitHub CLI (gh auth login)")
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun api(path: String): Map<String, Any?> {
+        val connection = (URI("https://api.github.com/repos/$LINUX_REPO/$path").toURL().openConnection() as HttpURLConnection).apply {
+            setRequestProperty("Accept", "application/vnd.github+json")
+            setRequestProperty("Authorization", "Bearer $token")
+        }
+        return JsonSlurper().parseText(connection.inputStream.bufferedReader().use { it.readText() }) as Map<String, Any?>
+    }
+
+    /** The newest build of the pull request's head: there must be one, done and successful. */
+    @Suppress("UNCHECKED_CAST")
+    fun newest(): Build {
+        val pull = "https://github.com/$LINUX_REPO/pull/$number"
+        val head = (api("pulls/$number")["head"] as Map<String, Any?>)["sha"] as String
+        val run = (api("actions/runs?head_sha=$head&event=pull_request&per_page=50")["workflow_runs"] as List<Map<String, Any?>>)
+            .filter { (it["path"] as String?)?.startsWith(".github/workflows/build.yml") == true }
+            .maxByOrNull { it["created_at"] as String }
+            ?: throw GradleException("$pull has no build of its head (${head.take(7)}) yet: is build.yml running for it?")
+        val url = run["html_url"]
+        if (run["status"] != "completed") throw GradleException("$pull's build of ${head.take(7)} isn't done yet: $url")
+        if (run["conclusion"] != "success") throw GradleException("$pull's build of ${head.take(7)} failed (${run["conclusion"]}): $url")
+        val artifact = (api("actions/runs/${run["id"]}/artifacts?name=rootfs")["artifacts"] as List<Map<String, Any?>>)
+            .firstOrNull { it["expired"] != true }
+            ?: throw GradleException("$pull's build of ${head.take(7)} has no rootfs artifact (expired? run it again): $url")
+        return Build("pr-$number.${head.take(7)}", artifact["archive_download_url"] as String)
+    }
+
+    companion object {
+        /** [release] (linuxRelease) as a pull request's build, or null: a release. */
+        fun of(release: String) = Regex("""pr-(\d+)""").matchEntire(release)?.let { PullRequestBuild(it.groupValues[1]) }
+    }
 }

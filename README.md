@@ -211,6 +211,24 @@ published release (set `GITHUB_TOKEN` to avoid its rate limit). Commit that line
 To add a program, define it in the subsystem's `config.yaml` (a Termux or pip package in a part), let its
 workflow release it, pin that release, and use it from the module of the part it's in.
 
+#### Testing with a subsystem's pull request
+
+A change to both (e.g. a new tool and the packages it runs) is two pull requests, tested together before
+either is merged:
+
+1. Open the subsystem's pull request. Its workflow builds it as `main`'s, but doesn't release it: the run
+   keeps its `rootfs.tar.gz` as an artifact.
+2. In the app's pull request, pin it: `linuxRelease=pr-<number>` in `gradle.properties`. Its tests, and every
+   local build, use the newest successful build of that pull request's head, downloaded again only after a
+   new push there. Re-run the app's tests after one.
+3. Merge the subsystem's pull request. Once its release is out, run `./gradlew updateLinuxRelease`, commit
+   the pin, and merge the app's.
+
+GitHub's API gives artifacts only with a token: the tests use the `SUBSYSTEM_TOKEN` secret, a local build
+`SUBSYSTEM_TOKEN` or `GITHUB_TOKEN` if set, else the GitHub CLI's (`gh auth login`). While a `pr-` build is
+pinned, the tests' `linux-release` job fails and `build-app.yml` builds no release, so neither is merged nor
+shipped with a build that's no release.
+
 ### UI conventions
 
 - **Errors are told in one place**: the red line of the bottom bar (`TaskStatusBar`). Tapping it opens the
@@ -297,10 +315,9 @@ API 30, the oldest and its newest. No ARM: GitHub's runners can't run an ARM emu
 x86_64 images can't run the Linux subsystem.
 
 **How.** Each leg runs in 3 shards. Each test goes to the shard with the least work so far, longest first, by how long
-it took before (`durations.json`, kept in the Actions cache: the report job saves each run's, and the next run's plan job restores
-the newest its branch can see, its own or main's, for all its shards alike; [`cron.yml`](.github/workflows/cron.yml)
-restores main's every 3 days, before GitHub drops it unused), so the shards finish at about the same time. A new test counts as
-the median until it's measured. With no cache yet, the tests are dealt by the listing alone. On a shard,
+it took before (`durations.json`: the report job keeps each run's as its artifact for 90 days, and the next run's plan job takes
+the newest its branch can see, its pull request's or main's, for all its shards alike), so the shards finish at about the same
+time. A new test counts as the median until it's measured. With none yet, the tests are dealt by the listing alone. On a shard,
 [`instrument.py`](.github/scripts/tests/e2e/instrument.py) runs the tests class by class, each in a fresh
 process. After a crash, the tests it cut off are run one by one. A failed test runs once more; passing then
 counts as flaky, not failed.

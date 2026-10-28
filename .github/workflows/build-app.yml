@@ -60,6 +60,11 @@ jobs:
           fi
           # Nothing to publish without a release uploaded
           [[ "$release" != "true" ]] && { tracks=(); publish=""; }
+          # A release ships a released subsystem, never a pull request's build (pr-<number>, for its tests: tests.yml)
+          linux=$(sed -n 's/^linuxRelease=//p' gradle.properties | tr -d '\r')
+          if [[ "$release" == "true" && "$linux" == pr-* ]]; then
+            echo "::error file=gradle.properties::linuxRelease=$linux is the subsystem's pull request's build: pin a release (./gradlew updateLinuxRelease)"; exit 1
+          fi
           # The version from the tag (v<gplayCode>_<versionName>, e.g. v76_26.10.24), passed to Gradle. Run by hand
           # on a branch, there's none: the build is named as a local one (<YY.MM.DD>-b<n>, version code 1, buildSrc's
           # AppVersion.kt), which Play won't take
