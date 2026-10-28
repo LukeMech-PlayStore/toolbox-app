@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -63,6 +64,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.hypot
+import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.reference.common.Outline
 import org.lukemech.lmtoolbox.features.reference.common.Pin
@@ -101,8 +103,14 @@ fun PinoutView(sheet: PinoutSheet, query: String) {
     val shown = remember(sheet, q, descriptions) { sheet.pins.indices.filter(::matches) }
     val drawn = remember(sheet) { sheet.pins.fitted() }
     val scroll = rememberLazyListState()
+    val scope = rememberCoroutineScope()
     fun pick(i: Int) {
         selected = i.takeIf { it != selected }
+    }
+    // Tapped in the list, scrolled down: back up to the card telling about it (else nothing would seem to happen)
+    fun pickInList(i: Int) {
+        pick(i)
+        if (selected != null && scroll.firstVisibleItemIndex > 0) scope.launch { scroll.animateScrollToItem(0) }
     }
 
     LazyColumn(
@@ -124,7 +132,7 @@ fun PinoutView(sheet: PinoutSheet, query: String) {
             }
         }
         items(shown, key = { it }) { i ->
-            PinRow(sheet.pins[i], i == selected, Modifier.animateItem()) { pick(i) }
+            PinRow(sheet.pins[i], i == selected, Modifier.animateItem()) { pickInList(i) }
         }
         if (shown.isEmpty()) item(key = "none") { EmptyText(stringResource(R.string.search_no_results)) }
     }
