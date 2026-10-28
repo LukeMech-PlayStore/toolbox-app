@@ -19,9 +19,9 @@
 **One app, a drawer full of tools.** Measure with a ruler, a spirit level, a compass, a sound level meter, a
 light meter, a metal detector, a vibration meter and a stroboscope; work out a resistor's color code or a 555
 timer with 30 electronics calculators; look up pinouts and tables; convert currencies; download, convert and
-shrink videos, music and images; edit a photo's metadata; share a folder with any browser; or run your own
-Minecraft server, Vanilla to NeoForge, straight from your phone and reachable by your friends through Bore, a
-Cloudflare tunnel or Tailscale.
+shrink videos, music and images; edit a photo's metadata; share a folder with any browser; test your internet's
+speed, ping, trace and scan your network; or run your own Minecraft server, Vanilla to NeoForge, straight from
+your phone and reachable by your friends through Bore, a Cloudflare tunnel or Tailscale.
 
 The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared, bore) inside a
 PRoot-based Linux subsystem. You never set it up: the app installs it part by part, only when a tool you open
@@ -61,6 +61,7 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Media       | File size (a shortcut to the media or the image encoder)                                       | Android                                                                                                                                                                      | `app`               |
 | Media       | File hash (MD5, SHA-1, SHA-2, SHA-3, CRC32; checked against a hash or a checksum file)         | Android (`MessageDigest`, `CRC32`); SHA-3 the app's own (Android has none)                                                                                                   | `app`               |
 | Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
+| Network     | Network tools (speed test, ping, traceroute, LAN devices, port scan)                           | Android (its `ping`, sockets, HTTP, `NsdManager`); the speed test on Cloudflare's servers (speed.cloudflare.com)                                                             | `app`               |
 | Servers     | Folder share (a folder in any browser: ranges, ZIPs, uploads, a password; Bore, Cloudflare)    | Android (a web server of its own); bore or cloudflared once a tunnel is on (`features:bore`, `cloudflared`)                                                                  | `app`               |
 
 The electronics calculators: color code, SMD resistor code, Ohm's law, electric power, reactance and
@@ -306,7 +307,9 @@ the debug bundle with Play's local testing (so the tools' modules download as fr
 field and slider (`e2e/Explorer.kt`), installing the tool's Linux packages first if it's on the subsystem. The
 Minecraft server's test makes every type of server (Vanilla, Paper, Fabric, Forge, NeoForge) on every Java, each on
 the newest Minecraft made for it: starts it, uses its console and options, changes its loader, exports its world.
-The pages' own tests (home, search, navigation, settings, tasks) sit next to them.
+The pages' own tests (home, search, navigation, settings, tasks) sit next to them. What a tool parses or works
+out without the UI is checked on the device too, in a test of its own next to the tool's (`NetworkParsersTest`: ping's
+output, the speed test's ping, port ranges, subnets).
 
 **Where.** The legs come from what the app supports and what Google publishes, worked out on every run
 ([`matrix.py`](.github/scripts/tests/e2e/matrix.py)): for x86_64, the oldest Android the app supports (`sdkMin`,

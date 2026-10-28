@@ -46,6 +46,7 @@ import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaDownloaderFeature
 import org.lukemech.lmtoolbox.features.media.qr_gen.QrGenFeature
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoEncoderFeature
+import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
 import org.lukemech.lmtoolbox.features.reference.arduino.ArduinoFeature
 import org.lukemech.lmtoolbox.features.reference.audio_jack.AudioJackFeature
 import org.lukemech.lmtoolbox.features.reference.capacitor_code.CapacitorCodeFeature
@@ -96,6 +97,7 @@ object FeatureRegistry {
         FileSizeFeature,
         FileHashFeature,
         MinecraftServerFeature,
+        NetworkToolsFeature,
         FolderShareFeature,
         ColorCodeFeature,
         SmdCodeFeature,

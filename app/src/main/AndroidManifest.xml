@@ -5,6 +5,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Whether there's a connection (e.g. the currency converter updating outdated rates by itself) -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- The network tools' LAN scan: whether Wi-Fi is off, when the phone's on no local network -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- The network tools: Android 17 asks the user before an app reaches the local network's devices (LAN scan,
+         a local host's ping and ports; mDNS's names). Asked on their page -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 
     <!-- Background Linux subsystem tasks (unpacking, updating, commands) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

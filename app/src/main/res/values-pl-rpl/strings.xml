@@ -24,6 +24,7 @@
     <string name="cat_finance">Finanse</string>
     <string name="cat_media">Multimedia</string>
     <string name="cat_servers">Serwery</string>
+    <string name="cat_network">Sieć</string>
     <string name="search_features">Szukaj funkcji</string>
     <string name="search_settings">Szukaj w ustawieniach</string>
     <string name="search_no_results">Nic nie znaleziono</string>
@@ -98,6 +99,7 @@
     <string name="fm_jdk25">Java 25</string>
     <string name="fm_cloudflared">Tunel Cloudflare</string>
     <string name="fm_bore">Tunel Bore</string>
+    <string name="fm_iperf3">iperf3</string>
     <string name="s_ext_dialog_remove">Odinstalowanie funkcji (w jej ustawieniach) znów je usunie.</string>
     <string name="s_tasks_state_queued">Oczekuje</string>
     <string name="s_tasks_state_running">W toku</string>

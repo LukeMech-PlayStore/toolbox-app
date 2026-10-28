@@ -103,6 +103,7 @@
       <w>gfxstream</w>
       <w>gfxstream's</w>
       <w>gitleaks</w>
+      <w>googlecast</w>
       <w>gnddetect</w>
       <w>gplay</w>
       <w>gęślą</w>
@@ -114,6 +115,8 @@
       <w>henries</w>
       <w>hpwr</w>
       <w>hsync</w>
+      <w>iata</w>
+      <w>icmp</w>
       <w>icsp</w>
       <w>icspclk</w>
       <w>icspdat</w>
@@ -121,6 +124,7 @@
       <w>intr</w>
       <w>ioref</w>
       <w>iout</w>
+      <w>iputils</w>
       <w>isfile</w>
       <w>jaźń</w>
       <w>jline</w>
@@ -153,6 +157,7 @@
       <w>lstrip</w>
       <w>lukemech</w>
       <w>makedirs</w>
+      <w>mdev</w>
       <w>mbit</w>
       <w>mclr</w>
       <w>mdp</w>
@@ -197,6 +202,7 @@
       <w>nxdomain</w>
       <w>okhttp</w>
       <w>omtp</w>
+      <w>oneplus</w>
       <w>opamp</w>
       <w>oparty</w>
       <w>otwartego</w>
@@ -247,6 +253,7 @@
       <w>quecto</w>
       <w>quetta</w>
       <w>quickjs</w>
+      <w>raop</w>
       <w>rcon</w>
       <w>renesas</w>
       <w>resizer</w>
@@ -258,6 +265,7 @@
       <w>rsplit</w>
       <w>rstrip</w>
       <w>rtck</w>
+      <w>rtts</w>
       <w>rxc</w>
       <w>sclk</w>
       <w>scts</w>
@@ -298,6 +306,10 @@
       <w>tailnets</w>
       <w>tempco</w>
       <w>termuxie</w>
+      <w>tracepath</w>
+      <w>tracert</w>
+      <w>trunc</w>
+      <w>ttls</w>
       <w>TgtPwr</w>
       <w>tgtpwr</w>
       <w>threadtime</w>
@@ -309,7 +321,6 @@
       <w>tracedata</w>
       <w>traceswo</w>
       <w>trrs</w>
-      <w>trunc</w>
       <w>trycloudflare</w>
       <w>txc</w>
       <w>ubble</w>

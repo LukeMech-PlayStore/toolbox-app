@@ -2,7 +2,7 @@ import groovy.json.JsonSlurper
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URI
-import java.util.zip.ZipInputStream
+import java.util.zip.ZipFile
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
@@ -194,12 +194,16 @@ private class PullRequestBuild(private val number: String) {
                     setRequestProperty("Authorization", "Bearer $token")
                 }
                 val location = redirect.getHeaderField("Location") ?: error("no artifact to download (HTTP ${redirect.responseCode})")
-                ZipInputStream(URI(location).toURL().openStream()).use { zip ->
-                    while (true) {
-                        val entry = zip.nextEntry ?: error("the artifact has no $ASSET")
-                        if (entry.name == ASSET) break
+                // Read by its central directory: its entries are stored with data descriptors, which ZipInputStream refuses
+                val zipFile = File(into.parentFile, "${into.name}.zip")
+                try {
+                    URI(location).toURL().openStream().use { input -> zipFile.outputStream().use { input.copyTo(it) } }
+                    ZipFile(zipFile).use { zip ->
+                        val entry = zip.getEntry(ASSET) ?: error("the artifact has no $ASSET")
+                        zip.getInputStream(entry).use { input -> into.outputStream().use { input.copyTo(it) } }
                     }
-                    into.outputStream().use { zip.copyTo(it) }
+                } finally {
+                    zipFile.delete()
                 }
             } catch (e: Exception) {
                 throw GradleException("Could not download pr-$number's build $version: ${e.message}", e)

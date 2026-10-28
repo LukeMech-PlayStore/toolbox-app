@@ -25,6 +25,7 @@
     <string name="cat_finance">Finance</string>
     <string name="cat_media">Media</string>
     <string name="cat_servers">Servers</string>
+    <string name="cat_network">Network</string>
     <string name="search_features">Search features</string>
     <string name="search_settings">Search settings</string>
     <string name="search_no_results">Nothing found</string>
@@ -103,6 +104,7 @@
     <string name="fm_jdk25" tools:ignore="UnusedResources">Java 25</string>
     <string name="fm_cloudflared" tools:ignore="UnusedResources">Cloudflare Tunnel</string>
     <string name="fm_bore" tools:ignore="UnusedResources">Bore tunnel</string>
+    <string name="fm_iperf3" tools:ignore="UnusedResources">iperf3</string>
     <string name="s_ext_dialog_remove">Uninstalling the feature (in its settings) removes them again.</string>
     <string name="s_tasks_state_queued">Waiting</string>
     <string name="s_tasks_state_running">Running</string>
