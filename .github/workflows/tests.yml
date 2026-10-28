@@ -342,8 +342,9 @@ jobs:
           retention-days: 3
 
       # For the next runs' shards (plan takes the newest): kept as long as GitHub keeps artifacts, so a quiet month
-      # doesn't lose them. A pull request's are read by its own runs, main's by every branch. Kept only if merge.py
-      # updated them (almost nothing failed) and the run wasn't canceled (cut-short shards would be missing tests).
+      # doesn't lose them. A pull request's durations are read by its own runs, main's by every branch's. Kept only
+      # if merge.py updated them (almost nothing failed) and the run wasn't canceled (cut-short shards would be
+      # missing tests).
       - name: Keep the durations
         if: >-
           always() && !cancelled() && needs.test.result != 'cancelled'
