@@ -41,9 +41,6 @@ object PageRanges {
         }
     }
 
-    /** How many pages [groups] take (a page in two of them twice, as qpdf copies it twice). */
-    fun count(groups: List<Group>) = groups.sumOf { it.pages }
-
     private fun page(text: String, pageCount: Int): Int? {
         val n = when {
             text == "z" -> pageCount
@@ -54,8 +51,11 @@ object PageRanges {
     }
 }
 
-/** A PDF a command reads: its [path] (in the cache, under a plain name) and the [password] it opens with, if it needs one. */
-data class PdfInput(val path: String, val password: String? = null)
+/**
+ * A PDF a command reads: its [path] (in the cache, under a plain name). One opened without a password or restrictions:
+ * a protected file's copy is made so first ([PdfCommands.unlock]), so only [PdfCommands.inspect] and that take a password.
+ */
+data class PdfInput(val path: String)
 
 /** What [PdfCommands.inspect] found: its [pages] (null: it can't be opened without its password, or at all), and whether it's [encrypted]. */
 data class Inspection(val pages: Int?, val encrypted: Boolean, val needsPassword: Boolean)
@@ -90,14 +90,14 @@ object PdfCommands {
     private const val PASSWORD_LINE = "password="
 
     /**
-     * Whether [input] needs a password (or the one it has is right) and its page count, in one command
+     * Whether [input] needs a password (or [password] is the right one) and its page count, in one command
      * that ends well either way: qpdf's exit codes are the answer, not a failure (the bottom bar's red
      * line). --requires-password: 0 needs one (other than given), 2 isn't encrypted, 3 opens.
      */
-    fun inspect(input: PdfInput): List<String> = listOf(
+    fun inspect(input: PdfInput, password: String? = null): List<String> = listOf(
         "sh", "-c", "qpdf --requires-password \"$@\"; echo $PASSWORD_LINE$?; qpdf --show-npages \"$@\" || true",
         "sh"
-    ) + passwordArgs(input) + input.path
+    ) + passwordArgs(password) + input.path
 
     /** [inspect]'s output read; null if it's not what it prints (qpdf missing, a file it can't read at all). */
     fun parseInspection(stdout: String): Inspection? {
@@ -112,28 +112,26 @@ object PdfCommands {
 
     /**
      * [parts] one after another into [output]: each some pages of a file (its groups, in their order), a file as often
-     * as it comes; protected ones open with their passwords.
+     * as it comes.
      */
     fun arrange(parts: List<Pair<PdfInput, List<PageRanges.Group>>>, output: String): List<String> =
         listOf("qpdf", "--empty", "--pages") +
-            parts.flatMap { (input, groups) -> listOf("--file=${input.path}") + passwordArgs(input) + "--range=${PageRanges.join(groups)}" } +
+            parts.flatMap { (input, groups) -> listOf("--file=${input.path}", "--range=${PageRanges.join(groups)}") } +
             listOf("--", output)
 
-    /** [input] as it is into [output] (without its password, if it was opened with one). */
-    fun copy(input: PdfInput, output: String): List<String> =
-        listOf("qpdf") + passwordArgs(input) + decrypt(input) + listOf(input.path, output)
+    /** [input] as it is into [output]. */
+    fun copy(input: PdfInput, output: String): List<String> = listOf("qpdf", input.path, output)
 
     /** The pages of [groups] (in their order) of [input], into one file, [output]. */
     fun extract(input: PdfInput, groups: List<PageRanges.Group>, output: String): List<String> =
-        listOf("qpdf", "--empty", "--pages", "--file=${input.path}") + passwordArgs(input) +
-            listOf("--range=${PageRanges.join(groups)}", "--", output)
+        listOf("qpdf", "--empty", "--pages", "--file=${input.path}", "--range=${PageRanges.join(groups)}", "--", output)
 
     /**
      * Each page of [input] its own file: [output] with the page's number before ".pdf", zero-padded so they
      * sort ("doc-01.pdf" ... "doc-12.pdf"). Without the document's outline (as --split-pages makes them).
      */
     fun splitPages(input: PdfInput, output: String): List<String> =
-        listOf("qpdf") + passwordArgs(input) + decrypt(input) + listOf("--split-pages", input.path, output)
+        listOf("qpdf", "--split-pages", input.path, output)
 
     /** Each of [groups] its own file, named by [outputOf] (e.g. "doc-1-3.pdf"): a command each, see [script]. */
     fun splitRanges(input: PdfInput, groups: List<PageRanges.Group>, outputOf: (PageRanges.Group) -> String): List<List<String>> =
@@ -145,7 +143,7 @@ object PdfCommands {
      */
     fun rotate(input: PdfInput, turns: Map<Int, List<Int>>, output: String): List<String> {
         turns.keys.forEach { require(it in setOf(90, 180, 270)) { "Not a quarter turn: $it" } }
-        return listOf("qpdf") + passwordArgs(input) + decrypt(input) +
+        return listOf("qpdf") +
             turns.map { (angle, pages) -> "--rotate=+$angle:${PageRanges.join(PageRanges.of(pages))}" } + listOf(input.path, output)
     }
 
@@ -155,8 +153,7 @@ object PdfCommands {
      */
     fun images(input: PdfInput, type: ImageType, dpi: Int, output: String): List<String> =
         listOf("gs", "-dSAFER", "-dBATCH", "-dNOPAUSE") + type.device +
-            listOf("-r$dpi", "-dTextAlphaBits=4", "-dGraphicsAlphaBits=4") +
-            listOfNotNull(input.password?.let { "-sPDFPassword=$it" }) + listOf("-sOutputFile=$output", input.path)
+            listOf("-r$dpi", "-dTextAlphaBits=4", "-dGraphicsAlphaBits=4", "-sOutputFile=$output", input.path)
 
     /**
      * [input] made smaller into [output]: by Ghostscript's pdfwrite with [preset]'s settings (pictures scaled down and
@@ -168,12 +165,12 @@ object PdfCommands {
     fun compress(input: PdfInput, preset: Preset, output: String): List<String> {
         require(preset != Preset.AsIs) { "Nothing to compress by" }
         val setting = preset.setting
-            ?: return listOf("qpdf") + passwordArgs(input) + decrypt(input) +
-                listOf("--object-streams=generate", "--compress-streams=y", "--recompress-flate", "--compression-level=9", input.path, output)
+            ?: return listOf("qpdf", "--object-streams=generate", "--compress-streams=y", "--recompress-flate", "--compression-level=9", input.path, output)
         return listOf(
             "gs", "-dSAFER", "-dBATCH", "-dNOPAUSE", "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.5",
-            "-dPDFSETTINGS=$setting", "-sColorConversionStrategy=RGB", "-dAutoRotatePages=/None", "-dDetectDuplicateImages=true"
-        ) + listOfNotNull(input.password?.let { "-sPDFPassword=$it" }) + listOf("-sOutputFile=$output", input.path)
+            "-dPDFSETTINGS=$setting", "-sColorConversionStrategy=RGB", "-dAutoRotatePages=/None", "-dDetectDuplicateImages=true",
+            "-sOutputFile=$output", input.path
+        )
     }
 
     /**
@@ -182,12 +179,11 @@ object PdfCommands {
      * take the same one twice, or none, without calling it insecure.
      */
     fun protect(input: PdfInput, password: String, ownerPassword: String, output: String): List<String> =
-        listOf("qpdf") + passwordArgs(input) +
-            listOf("--encrypt", "--user-password=$password", "--owner-password=$ownerPassword", "--bits=256", "--", input.path, output)
+        listOf("qpdf", "--encrypt", "--user-password=$password", "--owner-password=$ownerPassword", "--bits=256", "--", input.path, output)
 
-    /** [input] without its password and restrictions (as it opens: with its password, if it needs one), into [output]. */
-    fun unlock(input: PdfInput, output: String): List<String> =
-        listOf("qpdf") + passwordArgs(input) + listOf("--decrypt", input.path, output)
+    /** [input] without its password and restrictions (opened with [password], if it needs one), into [output]. */
+    fun unlock(input: PdfInput, password: String?, output: String): List<String> =
+        listOf("qpdf") + passwordArgs(password) + listOf("--decrypt", input.path, output)
 
     /**
      * [steps] as one command: a single one as it is, several run one after another by sh, stopping at the first
@@ -208,8 +204,5 @@ object PdfCommands {
     fun progress(line: String, pages: Int): Float? =
         Regex("""^Page (\d+)$""").find(line.trim())?.let { (it.groupValues[1].toFloat() / pages.coerceAtLeast(1)).coerceIn(0f, 1f) }
 
-    private fun passwordArgs(input: PdfInput) = listOfNotNull(input.password?.let { "--password=$it" })
-
-    /** What qpdf writes of a protected file it was given the password of comes out without it, as Ghostscript's does. */
-    private fun decrypt(input: PdfInput) = if (input.password != null) listOf("--decrypt") else emptyList()
+    private fun passwordArgs(password: String?) = listOfNotNull(password?.let { "--password=$it" })
 }

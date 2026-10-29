@@ -154,7 +154,7 @@ object PdfJobs {
 
     /** [file] opened with [password]: with its pages, or null if that's not its password. */
     suspend fun unlock(context: Context, file: PdfFile, password: String): PdfFile? {
-        val result = LinuxTasks.run(context, PdfCommands.inspect(PdfInput(file.copy.absolutePath, password)), PdfToolsFeature)
+        val result = LinuxTasks.run(context, PdfCommands.inspect(PdfInput(file.copy.absolutePath), password), PdfToolsFeature)
         val pages = PdfCommands.parseInspection(result.stdout)?.takeIf { !it.needsPassword }?.pages ?: return null
         return decrypted(context, file.copy(pages = pages, password = password), password)
     }
@@ -162,7 +162,7 @@ object PdfJobs {
     /** [file]'s copy without its password and restrictions, in its place; null (its log in the task list) if it can't be. */
     private suspend fun decrypted(context: Context, file: PdfFile, password: String?): PdfFile? {
         val plain = File(file.copy.parentFile, "${file.id}-open.pdf")
-        val result = LinuxTasks.run(context, PdfCommands.unlock(PdfInput(file.copy.absolutePath, password), plain.absolutePath), PdfToolsFeature)
+        val result = LinuxTasks.run(context, PdfCommands.unlock(PdfInput(file.copy.absolutePath), password, plain.absolutePath), PdfToolsFeature)
         if (!result.isSuccess || !plain.exists()) {
             plain.delete()
             return null

@@ -12,7 +12,6 @@ import org.lukemech.lmtoolbox.features.media.pdf_tools.PageRanges.Group
  */
 class PdfCommandsTest {
     private val doc = PdfInput("/c/in.pdf")
-    private val locked = PdfInput("/c/in.pdf", "s3cret")
 
     @Test
     fun rangesAsTyped() {
@@ -20,7 +19,6 @@ class PdfCommandsTest {
         // The last pages counted from the end, spaces and capitals as they come
         assertEquals(listOf(Group(10, 12), Group(12, 1)), PageRanges.parse(" r3 - R1 , Z-1", 12))
         assertEquals("1-3,5,7-12", PageRanges.join(PageRanges.parse("1-3,5,7-z", 12)!!))
-        assertEquals(12, PageRanges.count(PageRanges.parse("z-1", 12)!!))
         // Pages in their order as ranges: a run upwards one
         assertEquals(listOf(Group(1, 3), Group(5, 5), Group(4, 4), Group(7, 8)), PageRanges.of(listOf(1, 2, 3, 5, 4, 7, 8)))
     }
@@ -46,7 +44,7 @@ class PdfCommandsTest {
                 "sh", "-c", "qpdf --requires-password \"$@\"; echo password=$?; qpdf --show-npages \"$@\" || true",
                 "sh", "--password=s3cret", "/c/in.pdf"
             ),
-            PdfCommands.inspect(locked)
+            PdfCommands.inspect(doc, "s3cret")
         )
         assertEquals(Inspection(12, encrypted = false, needsPassword = false), PdfCommands.parseInspection("password=2\n12\n"))
         assertEquals(Inspection(3, encrypted = true, needsPassword = false), PdfCommands.parseInspection("password=3\n3"))
@@ -61,12 +59,12 @@ class PdfCommandsTest {
     fun arranged() {
         assertEquals(
             listOf(
-                "qpdf", "--empty", "--pages", "--file=/c/a.pdf", "--range=1-3", "--file=/c/b.pdf", "--password=x y", "--range=2",
+                "qpdf", "--empty", "--pages", "--file=/c/a.pdf", "--range=1-3", "--file=/c/b.pdf", "--range=2",
                 "--file=/c/a.pdf", "--range=5", "--", "/o/out.pdf"
             ),
             PdfCommands.arrange(
                 listOf(
-                    PdfInput("/c/a.pdf") to listOf(Group(1, 3)), PdfInput("/c/b.pdf", "x y") to listOf(Group(2, 2)),
+                    PdfInput("/c/a.pdf") to listOf(Group(1, 3)), PdfInput("/c/b.pdf") to listOf(Group(2, 2)),
                     PdfInput("/c/a.pdf") to listOf(Group(5, 5)),
                 ),
                 "/o/out.pdf"
@@ -79,19 +77,15 @@ class PdfCommandsTest {
     fun split() {
         assertEquals(listOf("qpdf", "--split-pages", "/c/in.pdf", "/o/doc.pdf"), PdfCommands.splitPages(doc, "/o/doc.pdf"))
         assertEquals(
-            listOf("qpdf", "--password=s3cret", "--decrypt", "--split-pages", "/c/in.pdf", "/o/doc.pdf"),
-            PdfCommands.splitPages(locked, "/o/doc.pdf")
-        )
-        assertEquals(
             listOf("qpdf", "--empty", "--pages", "--file=/c/in.pdf", "--range=2-4,9", "--", "/o/doc.pdf"),
             PdfCommands.extract(doc, listOf(Group(2, 4), Group(9, 9)), "/o/doc.pdf")
         )
         assertEquals(
             listOf(
-                listOf("qpdf", "--empty", "--pages", "--file=/c/in.pdf", "--password=s3cret", "--range=1-3", "--", "/o/doc-1-3.pdf"),
-                listOf("qpdf", "--empty", "--pages", "--file=/c/in.pdf", "--password=s3cret", "--range=5", "--", "/o/doc-5.pdf"),
+                listOf("qpdf", "--empty", "--pages", "--file=/c/in.pdf", "--range=1-3", "--", "/o/doc-1-3.pdf"),
+                listOf("qpdf", "--empty", "--pages", "--file=/c/in.pdf", "--range=5", "--", "/o/doc-5.pdf"),
             ),
-            PdfCommands.splitRanges(locked, listOf(Group(1, 3), Group(5, 5))) { "/o/doc-$it.pdf" }
+            PdfCommands.splitRanges(doc, listOf(Group(1, 3), Group(5, 5))) { "/o/doc-$it.pdf" }
         )
     }
 
@@ -100,9 +94,10 @@ class PdfCommandsTest {
         assertEquals(
             listOf(
                 "gs", "-dSAFER", "-dBATCH", "-dNOPAUSE", "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.5", "-dPDFSETTINGS=/ebook",
-                "-sColorConversionStrategy=RGB", "-dAutoRotatePages=/None", "-dDetectDuplicateImages=true", "-sPDFPassword=s3cret", "-sOutputFile=/o/out.pdf", "/c/in.pdf"
+                "-sColorConversionStrategy=RGB", "-dAutoRotatePages=/None", "-dDetectDuplicateImages=true", "-sOutputFile=/o/out.pdf",
+                "/c/in.pdf"
             ),
-            PdfCommands.compress(locked, Preset.Ebook, "/o/out.pdf")
+            PdfCommands.compress(doc, Preset.Ebook, "/o/out.pdf")
         )
         assertEquals("-dPDFSETTINGS=/screen", PdfCommands.compress(doc, Preset.Screen, "/o/out.pdf")[6])
         assertEquals(
@@ -141,7 +136,7 @@ class PdfCommandsTest {
             listOf("qpdf", "--encrypt", "--user-password=open", "--owner-password=owner", "--bits=256", "--", "/c/in.pdf", "/o/out.pdf"),
             PdfCommands.protect(doc, "open", "owner", "/o/out.pdf")
         )
-        assertEquals(listOf("qpdf", "--password=s3cret", "--decrypt", "/c/in.pdf", "/o/out.pdf"), PdfCommands.unlock(locked, "/o/out.pdf"))
+        assertEquals(listOf("qpdf", "--password=s3cret", "--decrypt", "/c/in.pdf", "/o/out.pdf"), PdfCommands.unlock(doc, "s3cret", "/o/out.pdf"))
     }
 
     @Test
