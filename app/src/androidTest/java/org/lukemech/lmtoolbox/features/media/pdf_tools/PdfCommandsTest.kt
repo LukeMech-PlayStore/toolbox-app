@@ -14,6 +14,7 @@ class PdfCommandsTest {
     private val doc = PdfInput("/c/in.pdf")
 
     @Test
+    @Suppress("KotlinMisorderedAssertEqualsArguments") // expected first: it takes the calls for what's tested
     fun rangesAsTyped() {
         assertEquals(listOf(Group(1, 3), Group(5, 5), Group(7, 12)), PageRanges.parse("1-3,5,7-z", 12))
         // The last pages counted from the end, spaces and capitals as they come
@@ -38,13 +39,14 @@ class PdfCommandsTest {
     }
 
     @Test
+    @Suppress("KotlinMisorderedAssertEqualsArguments") // expected first: it takes the calls for what's tested
     fun inspectedInOneCommand() {
         assertEquals(
             listOf(
                 "sh", "-c", "qpdf --requires-password \"$@\"; echo password=$?; qpdf --show-npages \"$@\" || true",
-                "sh", "--password=s3cret", "/c/in.pdf"
+                "sh", "--password=secret", "/c/in.pdf"
             ),
-            PdfCommands.inspect(doc, "s3cret")
+            PdfCommands.inspect(doc, "secret")
         )
         assertEquals(Inspection(12, encrypted = false, needsPassword = false), PdfCommands.parseInspection("password=2\n12\n"))
         assertEquals(Inspection(3, encrypted = true, needsPassword = false), PdfCommands.parseInspection("password=3\n3"))
@@ -136,7 +138,7 @@ class PdfCommandsTest {
             listOf("qpdf", "--encrypt", "--user-password=open", "--owner-password=owner", "--bits=256", "--", "/c/in.pdf", "/o/out.pdf"),
             PdfCommands.protect(doc, "open", "owner", "/o/out.pdf")
         )
-        assertEquals(listOf("qpdf", "--password=s3cret", "--decrypt", "/c/in.pdf", "/o/out.pdf"), PdfCommands.unlock(doc, "s3cret", "/o/out.pdf"))
+        assertEquals(listOf("qpdf", "--password=secret", "--decrypt", "/c/in.pdf", "/o/out.pdf"), PdfCommands.unlock(doc, "secret", "/o/out.pdf"))
     }
 
     @Test
@@ -150,7 +152,7 @@ class PdfCommandsTest {
     }
 
     @Test
-    fun ghostscriptsPages() {
+    fun ghostscriptPages() {
         assertEquals(0.25f, PdfCommands.progress("Page 1", 4))
         assertEquals(1f, PdfCommands.progress("Page 9", 4))
         assertNull(PdfCommands.progress("Processing pages 1 through 4.", 4))

@@ -54,7 +54,7 @@ data class PdfPlan(val steps: List<List<String>>, val pages: Int)
 
 /**
  * [pages] made into [o] as commands, the files read as [inputs] (by their ids): pages of several files, or moved,
- * left out or turned, are put together first (into [workDir]); one file's every page as it is is read as it is (its
+ * left out or turned, are put together first (into [workDir]); one file's every page, unchanged, is read as it is (its
  * bookmarks kept). What's made goes to [outDir] as [name].pdf, as [name]-<pages>.pdf for each part of a split, or as
  * [name]-<page>.<type> for pictures. Null when [o] can't be made (see [PdfOptions.isReady]). [ownerPassword]: a
  * protected file's (see [PdfCommands.protect]).
@@ -71,9 +71,9 @@ fun plan(
     if (!whole) {
         // Each run of a file's pages one after another a part of it
         val parts = mutableListOf<Pair<Long, MutableList<Int>>>()
-        for (page in pages) {
+        for ((_, id, index) in pages) {
             val last = parts.lastOrNull()
-            if (last != null && last.first == page.file) last.second.add(page.index + 1) else parts.add(page.file to mutableListOf(page.index + 1))
+            if (last != null && last.first == id) last.second.add(index + 1) else parts.add(id to mutableListOf(index + 1))
         }
         source = PdfInput("$workDir/arranged.pdf")
         steps += PdfCommands.arrange(parts.map { (id, numbers) -> inputs.getValue(id) to PageRanges.of(numbers) }, source.path)

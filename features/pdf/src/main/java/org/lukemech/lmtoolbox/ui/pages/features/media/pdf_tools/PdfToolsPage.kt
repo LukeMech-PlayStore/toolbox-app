@@ -242,9 +242,9 @@ fun PdfToolsPage(providedInput: String? = "") {
     ) {
         Box(modifier = Modifier.weight(1f)) {
             val current = job
-            when {
+            when (step) {
                 // What was made and how it went up top; what it takes, or what to do next, at the bottom
-                step == Step.Result && current != null -> StepWithButtons(
+                Step.Result if current != null -> StepWithButtons(
                     content = {
                         PageHeading(steps = steps, title = title, onBack = { step = if (pages.isNotEmpty()) Step.Output else Step.Files }) {
                             Summary(current.files, current.pages.size)
@@ -270,7 +270,7 @@ fun PdfToolsPage(providedInput: String? = "") {
                     }
                 )
 
-                step == Step.Output && pages.isNotEmpty() -> StepWithButtons(
+                Step.Output if pages.isNotEmpty() -> StepWithButtons(
                     content = {
                         PageHeading(steps = steps, title = title, onBack = { step = Step.Pages }) {
                             Summary(files, made.size)
@@ -287,7 +287,7 @@ fun PdfToolsPage(providedInput: String? = "") {
                     }
                 )
 
-                step == Step.Pages && files.isNotEmpty() -> StepWithButtons(
+                Step.Pages if files.isNotEmpty() -> StepWithButtons(
                     content = {
                         PageHeading(
                             steps = steps, title = title, onBack = { step = Step.Files }, scrolls = false,
@@ -314,7 +314,7 @@ fun PdfToolsPage(providedInput: String? = "") {
                         }
                     },
                     buttons = {
-                        // More pages, as "Back to" is on the intro: right over the step's own button
+                        // More pages, as "Back to" is on the intro: over the step's own button
                         SecondaryButton(stringResource(R.string.f_Pdf_add), !busy) { pick() }
                         BigButton(
                             Icons.AutoMirrored.Default.ArrowForward, stringResource(R.string.f_Pdf_next),
@@ -697,7 +697,7 @@ private fun OutputForm(
                         }
                     ) { onChange(options.copy(splitMode = it)) }
                     RevealSection(o.splitMode == SplitMode.Ranges) {
-                        PagesField(o.ranges, pageCount, placeholder = "1-3,5,7-z") { onChange(options.copy(ranges = it)) }
+                        PagesField(o.ranges, pageCount) { onChange(options.copy(ranges = it)) }
                     }
                 }
             }
@@ -754,14 +754,14 @@ private fun OutputForm(
  * the [pageCount] there are is said under it.
  */
 @Composable
-private fun PagesField(value: String, pageCount: Int, placeholder: String, onChange: (String) -> Unit) {
+private fun PagesField(value: String, pageCount: Int, onChange: (String) -> Unit) {
     val wrong = value.isNotBlank() && PageRanges.parse(value, pageCount) == null
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         InputField(
             value = value,
             onValueChange = { onChange(PageRanges.filter(it).take(200)) },
             label = { Text(stringResource(R.string.f_Pdf_pages)) },
-            placeholder = { Text(placeholder) },
+            placeholder = { Text("1-3,5,7-z") },
             singleLine = true,
             isError = wrong,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done),

@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="f_Pdf_intro_title">Arrange, merge and convert PDFs</string>
     <string name="f_Pdf_intro_1">Choose PDFs or pictures, as many as you like</string>
     <string name="f_Pdf_intro_2">Arrange their pages: move, turn, copy or delete them</string>
@@ -51,7 +51,7 @@
         <item quantity="one">%d file, a page each</item>
         <item quantity="other">%d files, a page each</item>
     </plurals>
-    <string name="f_Pdf_split_ranges_note">Each range its own file: 1-3,5,7-z makes pages 1 to 3, page 5, and 7 to the last.</string>
+    <string name="f_Pdf_split_ranges_note" tools:ignore="TypographyDashes">Each range its own file: 1-3,5,7-z makes pages 1 to 3, page 5, and 7 to the last.</string>
     <string name="f_Pdf_pages">Pages</string>
     <string name="f_Pdf_pages_error">Pages 1 to %1$d, split by commas (z is the last one, r2 the one before it)</string>
     <string name="f_Pdf_preset">Compression</string>
@@ -73,7 +73,7 @@
     <string name="f_Pdf_png_note">Sharp, every pixel kept: for text and drawings.</string>
     <string name="f_Pdf_jpg_note">Smaller files: for photos and scans.</string>
     <string name="f_Pdf_dpi">Resolution</string>
-    <string name="f_Pdf_dpi_value">%1$d dpi</string>
+    <string name="f_Pdf_dpi_value" tools:ignore="PluralsCandidate">%1$d dpi</string>
     <string name="f_Pdf_file_name">File name</string>
     <string name="f_Pdf_parts_note">Each file gets this name, its pages after it.</string>
     <string name="f_Pdf_suffix_merged">merged</string>
