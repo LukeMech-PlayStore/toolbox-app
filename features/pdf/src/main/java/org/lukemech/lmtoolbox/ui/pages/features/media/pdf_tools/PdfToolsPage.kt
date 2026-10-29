@@ -27,7 +27,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
@@ -296,7 +295,6 @@ fun PdfToolsPage(providedInput: String? = "") {
                                     selected = selected.size,
                                     all = pages.size,
                                     enabled = !busy,
-                                    onAdd = ::pick,
                                     onTurn = { angle -> edit { all -> all.map { if (it.key in selected) it.turned(angle) else it } } },
                                     onDuplicate = { edit { all -> all.flatMap { if (it.key in selected) listOf(it, PdfJobs.copyOf(it)) else listOf(it) } } },
                                     onDelete = { if (canChange()) edit { all -> all.filter { it.key !in selected } } },
@@ -314,6 +312,8 @@ fun PdfToolsPage(providedInput: String? = "") {
                         }
                     },
                     buttons = {
+                        // More pages, as "Back to" is on the intro: right over the step's own button
+                        SecondaryButton(stringResource(R.string.f_Pdf_add), !busy) { pick() }
                         BigButton(
                             Icons.AutoMirrored.Default.ArrowForward, stringResource(R.string.f_Pdf_next),
                             enabled = !busy && pages.isNotEmpty()
@@ -387,7 +387,7 @@ private fun Summary(files: List<PdfFile>, pages: Int) {
 }
 
 /**
- * Over the grid: adding PDFs or pictures, then what's done to the [selected] pages (of [all]): turned either way,
+ * Over the grid: what's done to the [selected] pages (of [all]), how many there are first: turned either way,
  * duplicated, deleted; all of them selected, or none.
  */
 @Composable
@@ -395,7 +395,6 @@ private fun PageToolbar(
     selected: Int,
     all: Int,
     enabled: Boolean,
-    onAdd: () -> Unit,
     onTurn: (angle: Int) -> Unit,
     onDuplicate: () -> Unit,
     onDelete: () -> Unit,
@@ -403,13 +402,10 @@ private fun PageToolbar(
 ) {
     val some = enabled && selected > 0
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
-        IconButton(onClick = onAdd, enabled = enabled) {
-            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.f_Pdf_add))
-        }
         Text(
             if (selected > 0) pluralStringResource(R.plurals.f_Pdf_selected, selected, selected) else "",
             style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary,
-            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
         )
         IconButton(onClick = { onTurn(-90) }, enabled = some) {
             Icon(Icons.Default.Rotate90DegreesCcw, contentDescription = stringResource(R.string.f_Pdf_turn_left))
@@ -879,7 +875,7 @@ private fun JobResult(j: PdfJobs.Job) {
                     maxLines = 2,
                     overflow = TextOverflow.MiddleEllipsis
                 )
-                // A compression: the size before and after
+                // A compression: the size before and after, nothing more
                 if (done.options.output == PdfOutput.Pdf && done.options.preset != Preset.AsIs && done.sizeBefore > 0) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
@@ -890,12 +886,6 @@ private fun JobResult(j: PdfJobs.Job) {
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    val percent = ((done.sizeBefore - done.sizeAfter) * 100 / done.sizeBefore).toInt()
-                    if (percent > 0) {
-                        Text(stringResource(R.string.f_Pdf_smaller, percent), style = MaterialTheme.typography.bodyMedium)
-                    } else {
-                        ErrorText(stringResource(R.string.f_Pdf_not_smaller))
-                    }
                 }
             }
         }

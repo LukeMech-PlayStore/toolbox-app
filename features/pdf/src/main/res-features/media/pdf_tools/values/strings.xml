@@ -99,8 +99,6 @@
     <string name="f_Pdf_failed">That didn\'t work</string>
     <string name="f_Pdf_cancelled">Cancelled</string>
     <string name="f_Pdf_size_change">%1$s → %2$s</string>
-    <string name="f_Pdf_smaller">%1$d%% smaller</string>
-    <string name="f_Pdf_not_smaller">No smaller: it was as small as this compression makes it. Try a stronger one.</string>
     <string name="f_Pdf_change">Change options</string>
     <string name="f_Pdf_another">Other files</string>
     <string name="f_Pdf_open">Open</string>

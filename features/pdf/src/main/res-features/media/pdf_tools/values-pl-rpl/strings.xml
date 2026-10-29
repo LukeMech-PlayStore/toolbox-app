@@ -109,8 +109,6 @@
     <string name="f_Pdf_failed">Nie udało się</string>
     <string name="f_Pdf_cancelled">Anulowano</string>
     <string name="f_Pdf_size_change">%1$s → %2$s</string>
-    <string name="f_Pdf_smaller">Mniejszy o %1$d%%</string>
-    <string name="f_Pdf_not_smaller">Nie jest mniejszy: przy tej kompresji mniejszy już nie będzie. Spróbuj mocniejszej.</string>
     <string name="f_Pdf_change">Zmień opcje</string>
     <string name="f_Pdf_another">Inne pliki</string>
     <string name="f_Pdf_open">Otwórz</string>
