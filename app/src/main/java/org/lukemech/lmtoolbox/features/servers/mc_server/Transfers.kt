@@ -10,9 +10,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
@@ -22,9 +20,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.helpers.deleteTree
 import org.lukemech.lmtoolbox.helpers.displayName
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /**
  * A server's files in and out: its world or all of it as a zip (where the user picked), a world
@@ -45,7 +43,6 @@ object Transfers {
         val isActive get() = !done
     }
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val _state = MutableStateFlow<Transfer?>(null)
     val state: StateFlow<Transfer?> = _state.asStateFlow()
 
@@ -60,7 +57,7 @@ object Transfers {
      * Zips the world (its folders, see [Servers.worldDirs]) or the whole server (but the app's own
      * files: the tunnel's token) into [target]. A running server saves first and doesn't write meanwhile.
      */
-    fun export(context: Context, profile: ServerProfile, kind: Kind, target: Uri) = run(profile.id, kind) {
+    fun export(context: Context, profile: ServerProfile, kind: Kind, target: Uri) = run(context, profile, kind) {
         val app = context.applicationContext
         val dir = Servers.dir(app, profile.id)
         val roots = if (kind == Kind.ExportWorld) Servers.worldDirs(app, profile) else listOf(dir)
@@ -88,7 +85,7 @@ object Transfers {
                         file.inputStream().use { it.copyTo(zip) }
                         zip.closeEntry()
                         written += file.length()
-                        _state.update { it?.copy(bytes = written) }
+                        bytes(written)
                     }
                 }
             }
@@ -101,7 +98,7 @@ object Transfers {
      * Replaces the server's world (the level-name folder) with the one in [source], a zip with a
      * level.dat (in a folder or not); only while the server is stopped. The old world is deleted.
      */
-    fun importWorld(context: Context, profile: ServerProfile, source: Uri) = run(profile.id, Kind.ImportWorld) {
+    fun importWorld(context: Context, profile: ServerProfile, source: Uri) = run(context, profile, Kind.ImportWorld) {
         val app = context.applicationContext
         if (ServerRunner.isRunning(profile.id)) throw IOException(app.getString(R.string.f_Mc_stop_first))
         val dir = Servers.dir(app, profile.id)
@@ -124,7 +121,7 @@ object Transfers {
                             out.parentFile?.mkdirs()
                             out.outputStream().use { zip.copyTo(it) }
                             read += entry.compressedSize.coerceAtLeast(0)
-                            _state.update { it?.copy(bytes = read) }
+                            bytes(read)
                         }
                     }
                 }
@@ -142,15 +139,29 @@ object Transfers {
         }
     }
 
-    private fun run(serverId: String, kind: Kind, block: suspend () -> Unit) {
+    /** The transfer's task: it goes on as the page is left, in the bottom bar and the notification with how far it is. */
+    private var task: Long? = null
+
+    private fun run(context: Context, profile: ServerProfile, kind: Kind, block: suspend () -> Unit) {
         if (_state.value?.isActive == true) return
-        _state.value = Transfer(serverId, kind)
-        scope.launch {
-            val error = runCatching { block() }.exceptionOrNull()
-            _state.update { it?.copy(done = true, error = error?.let { e -> e.message ?: e.javaClass.simpleName }) }
-            // Told in the one place errors are, the bottom bar
-            error?.takeIf { it !is kotlinx.coroutines.CancellationException }?.let { e -> LinuxTasks.reportFailure(MinecraftServerFeature, "", e.message ?: e.javaClass.simpleName, e.stackTraceToString()) }
+        _state.value = Transfer(profile.id, kind)
+        AppTasks.launch(context, MinecraftServerFeature, profile.name, onStart = { task = it }) {
+            try {
+                block()
+                _state.update { it?.copy(done = true) }
+            } catch (e: Exception) {
+                // Told as the task's failure, in the one place errors are, the bottom bar
+                _state.update { it?.copy(done = true, error = e.message ?: e.javaClass.simpleName) }
+                throw e
+            }
         }
+    }
+
+    /** [n] bytes of it copied, of its total (if known). */
+    private fun bytes(n: Long) {
+        _state.update { it?.copy(bytes = n) }
+        val total = _state.value?.total?.takeIf { it > 0 }
+        task?.let { AppTasks.setProgress(it, total?.let { t -> n * 100f / t }) }
     }
 
     // Mods (a loader's) and plugins (Paper's): jars in their folder

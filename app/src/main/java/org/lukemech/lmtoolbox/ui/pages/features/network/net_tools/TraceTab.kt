@@ -22,7 +22,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
 import org.lukemech.lmtoolbox.features.network.net_tools.Ping
@@ -34,19 +33,20 @@ import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.FieldArrangement
+import org.lukemech.lmtoolbox.tasks.TaskRun
 
-/** The traceroute tab's host, its run and its hops; the page's, as the other tabs'. */
-internal class TraceState(private val context: Context, scope: CoroutineScope) {
+/** The traceroute tab's host, its run and its hops; the app's, as the other tabs' (see NetTabs). */
+internal class TraceState(private val context: Context) {
     var host by mutableStateOf(PreferenceHelper.get(context, NetworkToolsFeature.S_TRACE, ""))
     var result by mutableStateOf<Traceroute.Result?>(null)
-    private val run = TabRun(scope)
+    val run = TaskRun(NetworkToolsFeature, Tab.Trace.name)
     val running get() = run.running
 
     fun start() {
         if (host.isBlank() || running) return
         PreferenceHelper.put(context, NetworkToolsFeature.S_TRACE, host)
         result = Traceroute.Result()
-        run.start { Traceroute.run(host).collect { result = it } }
+        run.start(context, "${context.getString(R.string.f_Net_tab_trace)} · $host") { Traceroute.run(host).collect { result = it } }
     }
 
     fun stop() = run.stop()

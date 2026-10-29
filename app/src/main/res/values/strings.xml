@@ -33,6 +33,8 @@
     <string name="search_choices">Search the choices</string>
     <!-- A file a tool made (SavedFiles.kt) -->
     <string name="no_app_opens">No app can open this file</string>
+    <string name="no_app_opens_link">No app can open this link</string>
+    <string name="copied">Copied</string>
     <!-- A page's PDF of what it shows (PdfExport.kt): saved to Downloads, its pages numbered -->
     <string name="pdf_export">Export to PDF</string>
     <string name="pdf_saved">Saved to Downloads: %1$s</string>
@@ -40,6 +42,7 @@
     <string name="pdf_footer">%1$s · page %2$d</string>
 
     <!-- Shared by the measuring features and their widgets (the widgets' settings and service); each feature's own are in res-features/<Feature> -->
+    <string name="muted_sound">Media volume is off: no sound will be heard</string>
     <string name="f_missing_sensors_title">Initialization error</string>
     <!-- The meters' readings (sound, light, vibration) -->
     <string name="f_meter_min">Min</string>
@@ -80,7 +83,8 @@
     <string name="s_tasks_type_install">Unpacking Linux</string>
     <string name="s_tasks_type_update">Updating Linux</string>
     <string name="s_tasks_type_command">Command</string>
-    <string name="s_tasks_failed_bar">Failed: %1$s · tap to open</string>
+    <string name="s_tasks_failed">Failed: %1$s</string>
+    <string name="s_tasks_failed_open">Tap to open</string>
     <string name="s_tasks_type_extension">Unpacking…</string>
     <string name="s_ext_failed">Couldn\'t unpack the tool\'s programs</string>
     <string name="s_ext_gate_download">%1$s to download</string>

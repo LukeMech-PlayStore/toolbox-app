@@ -3,7 +3,6 @@ package org.lukemech.lmtoolbox.ui.pages.features.servers.mc_server
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Block
@@ -40,12 +39,14 @@ import org.lukemech.lmtoolbox.ui.components.ResourceTiles
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.withCode
-import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.AddressButton
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.ReachSection
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TunnelPhase
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TunnelStatus
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.uptime
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.StatusCard
+import org.lukemech.lmtoolbox.tasks.AppTasks
+import org.lukemech.lmtoolbox.linux.parts.ConnectionPhase
 
 /** How it's doing and what it takes, who's on, and the addresses to join it at (the network's, the tunnels', the tailnet's). */
 @Composable
@@ -60,24 +61,7 @@ internal fun StatusTab(profile: ServerProfile, run: ServerRunner.Run?, onTunnelS
     val hasToken = remember(profile.id, run?.phase) { ServerRunner.tunnelOf(context, profile).hasToken }
 
     Column(verticalArrangement = RowArrangement) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    PhaseDot(run, 18.dp)
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(phaseText(run), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
-                }
-                Text(
-                    profile.description + " · " + memoryText(profile.memoryMb),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+        StatusCard(health(run), phaseText(run), profile.description + " · " + memoryText(profile.memoryMb))
 
         // What it takes, while it runs (its run's processes: PRoot, Java), how long it's been up and who's on;
         // the last run's while it folds away
@@ -126,14 +110,14 @@ private fun Tunnels(profile: ServerProfile, bore: Bore.State?, tunnel: Tunnel.St
             Column(verticalArrangement = RowArrangement) {
                 // Starts with the server by itself: its address once it's connected (bore.pub's port: the same as last
                 // time while it's free), else how it's doing; why it failed in red (told here alone)
-                val address = bore?.address?.takeIf { bore.phase == Bore.Phase.Connected }
+                val address = bore?.address?.takeIf { bore.phase == ConnectionPhase.Connected }
                 Crossfade(address, animationSpec = tween(REVEAL_MS), label = "bore") { a ->
                     if (a != null) AddressButton(stringResource(R.string.f_Srv_through_bore), a, Icons.Default.Public, shareable = true)
                     else TunnelStatus(
                         stringResource(R.string.f_Srv_bore),
                         when (bore?.phase) {
-                            Bore.Phase.Connecting -> TunnelPhase.Connecting
-                            Bore.Phase.Failed -> TunnelPhase.Failed
+                            ConnectionPhase.Connecting -> TunnelPhase.Connecting
+                            ConnectionPhase.Failed -> TunnelPhase.Failed
                             else -> TunnelPhase.Off
                         },
                         bore?.error,
@@ -149,9 +133,9 @@ private fun Tunnels(profile: ServerProfile, bore: Bore.State?, tunnel: Tunnel.St
                 TunnelStatus(
                     stringResource(R.string.f_Srv_tunnel),
                     when (tunnel?.phase) {
-                        Tunnel.Phase.Connected -> TunnelPhase.Connected(stringResource(R.string.f_Mc_tunnel_connected, tunnel.connections))
-                        Tunnel.Phase.Connecting -> TunnelPhase.Connecting
-                        Tunnel.Phase.Failed -> TunnelPhase.Failed
+                        ConnectionPhase.Connected -> TunnelPhase.Connected(stringResource(R.string.f_Mc_tunnel_connected, tunnel.connections))
+                        ConnectionPhase.Connecting -> TunnelPhase.Connecting
+                        ConnectionPhase.Failed -> TunnelPhase.Failed
                         else -> TunnelPhase.Off
                     },
                     tunnel?.error,
@@ -172,7 +156,7 @@ private fun PlayerRow(name: String) {
     val scope = rememberCoroutineScope()
     var confirmBan by remember { mutableStateOf(false) }
     fun command(cmd: String) = scope.launch {
-        ServerRunner.console(cmd).onFailure { LinuxTasks.reportFailure(MinecraftServerFeature, name, "Couldn't $cmd: ${it.message}") }
+        ServerRunner.console(cmd).onFailure { AppTasks.reportFailure(MinecraftServerFeature, name, "Couldn't $cmd: ${it.message}") }
     }
     FeatureButton(
         title = name,

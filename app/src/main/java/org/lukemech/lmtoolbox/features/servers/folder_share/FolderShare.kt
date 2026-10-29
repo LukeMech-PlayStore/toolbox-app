@@ -21,9 +21,9 @@ import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.servers.common.ServerTunnels
 import org.lukemech.lmtoolbox.linux.InstallResult
-import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.linux.parts.Bore
 import org.lukemech.lmtoolbox.linux.parts.Tunnel
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /**
  * The folder shared, while it is: its server (FolderShareServer, kept going by [ShareService]), who's asked
@@ -78,7 +78,7 @@ object FolderShare {
 
     private var server: FolderShareServer? = null
     private var idleJob: Job? = null
-    /** Its entry in the bottom bar (see LinuxTasks.serviceStarted) while it's shared. */
+    /** Its entry in the bottom bar (see AppTasks.serviceStarted) while it's shared. */
     private var barService: Long? = null
     /** Requests being answered now (a long download is no idleness). */
     private val busy = AtomicInteger()
@@ -144,7 +144,7 @@ object FolderShare {
         busy.set(0)
         lastActivity = System.currentTimeMillis()
         _state.value = Run(Phase.Running, name, settings.port)
-        barService = LinuxTasks.serviceStarted(FolderShareFeature, name)
+        barService = AppTasks.serviceStarted(FolderShareFeature, name)
         ShareService.start(app)
         watchIdle(app)
         // Its tunnels turned on, each installed first if it's gone meanwhile (asked); not there after all, failed
@@ -166,7 +166,7 @@ object FolderShare {
         server = null
         tunnels.stopTunnel()
         tunnels.stopBore()
-        barService?.let(LinuxTasks::serviceEnded)
+        barService?.let(AppTasks::serviceEnded)
         barService = null
         _state.value = run.copy(phase = if (error != null) Phase.Failed else Phase.Stopped, error = error)
     }

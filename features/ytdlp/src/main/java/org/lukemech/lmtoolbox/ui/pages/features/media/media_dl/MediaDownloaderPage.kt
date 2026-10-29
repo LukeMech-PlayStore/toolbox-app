@@ -55,7 +55,6 @@ import org.lukemech.lmtoolbox.features.media.media_dl.MediaOutput
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaDownloads
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaInfo
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaOptions
-import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.ui.components.ActionButton
 import org.lukemech.lmtoolbox.ui.components.BigButton
 import org.lukemech.lmtoolbox.ui.components.PageHeading
@@ -71,6 +70,7 @@ import org.lukemech.lmtoolbox.helpers.shareFile
 import org.lukemech.lmtoolbox.helpers.openFile
 import org.lukemech.lmtoolbox.ui.components.InputField
 import org.lukemech.lmtoolbox.ui.components.ROW_SPACING
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 private enum class Step { Link, Options, Download }
 
@@ -132,7 +132,7 @@ fun MediaDownloaderPage(providedInput: String? = "") {
 
     // Left while downloading: it goes on, shown in the bottom bar
     DisposableEffect(Unit) {
-        onDispose { MediaDownloads.state.value?.takeIf { it.isActive }?.taskId?.let(LinuxTasks::detach) }
+        onDispose { MediaDownloads.state.value?.takeIf { it.isActive }?.taskId?.let(AppTasks::detach) }
     }
 
     BackHandler(enabled = step != Step.Link && !busy) { step = Step.Link }

@@ -25,7 +25,6 @@ import org.lukemech.lmtoolbox.features.servers.mc_server.ServerProfile
 import org.lukemech.lmtoolbox.features.servers.mc_server.ServerRunner
 import org.lukemech.lmtoolbox.features.servers.mc_server.Servers
 import org.lukemech.lmtoolbox.linux.InstallResult
-import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.linux.parts.Tunnel
 import org.lukemech.lmtoolbox.ui.components.ExpandableButton
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
@@ -37,6 +36,7 @@ import org.lukemech.lmtoolbox.features.servers.common.Reach
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.EditDialog
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.PartPackage
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TextSetting
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /**
  * Cloudflare's tunnel, turned on or off: on, cloudflared is installed (its row as the Java's table has
@@ -141,7 +141,7 @@ private fun TunnelSettings(profile: ServerProfile, onChanged: () -> Unit) {
                         scope.launch {
                             check = Network.checkDomain(hostname)
                             (check as? Network.DomainCheck.Failed)?.let {
-                                LinuxTasks.reportFailure(MinecraftServerFeature, hostname, "Couldn't check the domain: ${it.message}")
+                                AppTasks.reportFailure(MinecraftServerFeature, hostname, "Couldn't check the domain: ${it.message}")
                             }
                             checking = false
                         }

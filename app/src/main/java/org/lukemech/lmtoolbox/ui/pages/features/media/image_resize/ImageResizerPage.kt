@@ -1,6 +1,5 @@
 package org.lukemech.lmtoolbox.ui.pages.features.media.image_resize
 
-import org.lukemech.lmtoolbox.linux.LinuxTasks
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
@@ -71,6 +70,8 @@ import org.lukemech.lmtoolbox.helpers.shareFile
 import org.lukemech.lmtoolbox.helpers.openFile
 import org.lukemech.lmtoolbox.ui.components.InputField
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.tasks.AppTasks
+import org.lukemech.lmtoolbox.tasks.ShownWhile
 
 private enum class Step { File, Options, Done }
 
@@ -86,24 +87,22 @@ fun ImageResizerPage(providedInput: String? = "") {
     val focusManager = LocalFocusManager.current
 
     var step by rememberSaveable { mutableStateOf(if (ImageResize.saved != null) Step.Done else Step.File) }
-    // What's open, and what's picked for it, stays when the page is left (ImageResize.opened, ...)
-    var opened by remember { mutableStateOf(ImageResize.opened) }
+    // What's open, and what's picked for it, is ImageResize's: it stays when the page is left, a picture being made
+    // made on meanwhile (a task)
+    var opened by ImageResize::opened
     var options by remember { mutableStateOf(ImageResize.options ?: ResizeOptions.load(context)) }
-    var fileName by remember { mutableStateOf(ImageResize.fileName) }
-    var saved by remember { mutableStateOf(ImageResize.saved) }
-    SideEffect {
-        ImageResize.opened = opened
-        ImageResize.options = options
-        ImageResize.fileName = fileName
-        ImageResize.saved = saved
-    }
-    var busy by remember { mutableStateOf(false) }
+    SideEffect { ImageResize.options = options }
+    var fileName by ImageResize::fileName
+    var saved by ImageResize::saved
+    var opening by remember { mutableStateOf(false) }
+    val busy = opening || ImageResize.run.running
+    ShownWhile(ImageResize.run)
 
     fun open(uri: Uri) {
         coroutineScope.launch {
-            busy = true
+            opening = true
             val result = ImageResize.open(context, uri)
-            busy = false
+            opening = false
             result.onSuccess {
                 opened = it
                 fileName = resources.getString(R.string.f_ImgRes_default_name, it.baseName)
@@ -111,7 +110,7 @@ fun ImageResizerPage(providedInput: String? = "") {
                 step = Step.Options
             }.onFailure {
                 // In the app, not a command: told in the one place errors are, the bottom bar
-                LinuxTasks.reportFailure(ImageResizerFeature, "", "Couldn't open the picture", it.stackTraceToString())
+                AppTasks.reportFailure(ImageResizerFeature, "", "Couldn't open the picture", it.stackTraceToString())
             }
         }
     }
@@ -120,17 +119,18 @@ fun ImageResizerPage(providedInput: String? = "") {
         focusManager.clearFocus()
         val image = opened ?: return
         ResizeOptions.save(context, options)
-        coroutineScope.launch {
-            busy = true
-            val result = ImageResize.resize(context, image, options, fileName)
-            busy = false
+        val app = context.applicationContext
+        val picked = options
+        val name = fileName
+        ImageResize.run.start(app, name) {
+            val result = ImageResize.resize(app, image, picked, name)
             result.onSuccess {
                 saved = it
                 step = Step.Done
             }.onFailure { e ->
                 val message = if (e is OutOfMemoryError) ImageResize.TOO_BIG
                 else e.message ?: "Couldn't make the picture"
-                LinuxTasks.reportFailure(ImageResizerFeature, fileName, message, e.stackTraceToString())
+                AppTasks.reportFailure(ImageResizerFeature, name, message, e.stackTraceToString())
             }
         }
     }

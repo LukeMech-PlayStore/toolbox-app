@@ -7,24 +7,24 @@ import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.helpers.FeatureDelivery
 import org.lukemech.lmtoolbox.linux.LinuxParts
-import org.lukemech.lmtoolbox.linux.LinuxTask
-import org.lukemech.lmtoolbox.linux.LinuxTasks
+import org.lukemech.lmtoolbox.tasks.AppTask
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /**
  * The tools on the Linux subsystem: their Play modules installed as from Play (bundletool's local testing,
  * see tests.yml) and their packages unpacked, through their installation page; and what failed meanwhile.
  */
 class Linux(private val ui: Ui) {
-    private val known = LinuxTasks.tasks.value.map { it.id }.toMutableSet()
+    private val known = AppTasks.tasks.value.map { it.id }.toMutableSet()
 
     /** The tasks that failed since this was made (or since [acknowledge]), with why. */
-    fun newFailures(): List<LinuxTask> = LinuxTasks.tasks.value.filter { it.state == LinuxTask.State.Failed && it.id !in known }
+    fun newFailures(): List<AppTask> = AppTasks.tasks.value.filter { it.state == AppTask.State.Failed && it.id !in known }
 
     fun acknowledge() {
-        known += LinuxTasks.tasks.value.map { it.id }
+        known += AppTasks.tasks.value.map { it.id }
     }
 
-    fun describe(tasks: List<LinuxTask>) = tasks.joinToString("\n\n") { t ->
+    fun describe(tasks: List<AppTask>) = tasks.joinToString("\n\n") { t ->
         "${t.title(ui.context)} (${t.type}): ${t.message ?: "failed"}\n${t.log?.takeLast(3000).orEmpty()}"
     }
 

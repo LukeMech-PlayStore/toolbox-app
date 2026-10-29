@@ -1,7 +1,5 @@
 package org.lukemech.lmtoolbox.ui.widgets.helpers
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
@@ -20,10 +18,12 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.Choreographer
-import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.helpers.createChannel
+import org.lukemech.lmtoolbox.helpers.ongoingNotification
+import org.lukemech.lmtoolbox.helpers.SPECIAL_USE_SERVICE
 
 /**
  * Keeps a widget live (e.g. moving with the sensors): background apps get no sensor readings, so
@@ -217,21 +217,15 @@ abstract class LiveWidgetService : Service(), SensorEventListener {
     }
 
     private fun startInForeground() {
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(
-            NotificationChannel(CHANNEL, getString(R.string.w_channel), NotificationManager.IMPORTANCE_LOW)
-        )
-        val notification = NotificationCompat.Builder(this, CHANNEL)
-            .setSmallIcon(notificationIcon)
+        createChannel(this, CHANNEL, getString(R.string.w_channel))
+        val notification = ongoingNotification(this, CHANNEL, notificationIcon)
             .setContentTitle(getString(notificationTitle))
             .setContentText(getString(notificationText))
             .setContentIntent(widget.openFeatureIntent(this))
             .addAction(0, getString(R.string.w_turn_off), toggleIntent(this, javaClass, foreground = false))
-            .setOngoing(true)
             .setSilent(true)
-            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
-        val baseType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE else 0
+        val baseType = SPECIAL_USE_SERVICE
         val extraTypes = extraServiceTypes()
         hasExtraServiceTypes = extraTypes != 0 && try {
             ServiceCompat.startForeground(this, notificationId, notification, baseType or extraTypes)

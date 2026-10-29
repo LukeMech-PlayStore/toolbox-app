@@ -42,6 +42,7 @@ import org.lukemech.lmtoolbox.features.measure.magnetometer.toneFrequency
 import org.lukemech.lmtoolbox.helpers.ReadingFilter
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.MainResult
+import org.lukemech.lmtoolbox.ui.components.MutedWarning
 import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.OptionSetting
 import org.lukemech.lmtoolbox.ui.components.PageHeading
@@ -101,12 +102,12 @@ fun MagnetometerPage() {
     // The tone or the buzz only while detecting (not held) on a page in sight
     val scope = rememberCoroutineScope()
     LifecycleResumeEffect(detecting, feedback, holding) {
-        val job = if (!detecting || holding) null else when (feedback) {
-            Feedback.Off -> null
-            Feedback.Tone -> scope.launch { MagnetometerFeature.playTone { toneFrequency(latestDeviation[0]) } }
-            Feedback.Buzz -> scope.launch { MagnetometerFeature.buzz(context) { buzzInterval(latestDeviation[0]) } }
-        }
-        onPauseOrDispose { job?.cancel() }
+        val on = detecting && !holding
+        val jobs = listOfNotNull(
+            if (on && feedback.tone) scope.launch { MagnetometerFeature.playTone { toneFrequency(latestDeviation[0]) } } else null,
+            if (on && feedback.buzz) scope.launch { MagnetometerFeature.buzz(context) { buzzInterval(latestDeviation[0]) } } else null,
+        )
+        onPauseOrDispose { jobs.forEach { it.cancel() } }
     }
 
     val none = stringResource(R.string.f_meter_none)
@@ -115,6 +116,8 @@ fun MagnetometerPage() {
 
     PageHeading(title = stringResource(R.string.fp_magnetometer), action = { HoldAction(holding) { holding = it } }) {
         Column(verticalArrangement = RowArrangement) {
+            // The tone picked, but the media volume is off
+            MutedWarning(sound = detecting && feedback.tone)
             SensorWarning(
                 hasSensors = hasSensor,
                 calibrated = accuracy >= SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM,
@@ -178,7 +181,8 @@ fun MagnetometerPage() {
                     options = listOfNotNull(
                         Feedback.Off to stringResource(R.string.f_magnet_feedback_off),
                         Feedback.Tone to stringResource(R.string.f_magnet_feedback_tone),
-                        if (canBuzz) Feedback.Buzz to stringResource(R.string.f_magnet_feedback_buzz) else null
+                        if (canBuzz) Feedback.Buzz to stringResource(R.string.f_magnet_feedback_buzz) else null,
+                        if (canBuzz) Feedback.ToneAndBuzz to stringResource(R.string.f_magnet_feedback_both) else null
                     ),
                     onSelect = { feedback = it }
                 )

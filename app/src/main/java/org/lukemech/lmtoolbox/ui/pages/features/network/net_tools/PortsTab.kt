@@ -23,7 +23,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
 import org.json.JSONObject
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
@@ -40,18 +39,19 @@ import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.ChipChoice
 import org.lukemech.lmtoolbox.ui.components.FieldArrangement
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.tasks.TaskRun
 
 /** Which ports a scan knocks at. */
 internal enum class PortPreset { Common, WellKnown, All, Custom }
 
-/** The port scan's host, ports and timeout, its run and the open ports; the page's, as the other tabs'. */
-internal class PortsState(private val context: Context, scope: CoroutineScope) {
+/** The port scan's host, ports and timeout, its run and the open ports; the app's, as the other tabs' (see NetTabs). */
+internal class PortsState(private val context: Context) {
     var host by mutableStateOf("")
     var preset by mutableStateOf(PortPreset.Common)
     var custom by mutableStateOf("")
     var timeout by mutableStateOf("$TIMEOUT_MS")
     var result by mutableStateOf<PortScan.Result?>(null)
-    private val run = TabRun(scope)
+    val run = TaskRun(NetworkToolsFeature, Tab.Ports.name)
     val running get() = run.running
 
     init {
@@ -81,7 +81,7 @@ internal class PortsState(private val context: Context, scope: CoroutineScope) {
         )
         val ms = timeout.toIntOrNull()?.coerceIn(MIN_TIMEOUT_MS, MAX_TIMEOUT_MS) ?: TIMEOUT_MS
         result = PortScan.Result()
-        run.start { PortScan.run(host, ports, ms).collect { result = it } }
+        run.start(context, "${context.getString(R.string.f_Net_tab_ports)} · $host") { PortScan.run(host, ports, ms).collect { result = it; run.progress(it.progress.takeIf { _ -> it.total > 0 }) } }
     }
 
     fun stop() = run.stop()

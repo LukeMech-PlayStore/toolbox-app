@@ -7,40 +7,31 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.linux.LinuxParts
-import org.lukemech.lmtoolbox.linux.LinuxService
-import org.lukemech.lmtoolbox.linux.LinuxTask
+import org.lukemech.lmtoolbox.tasks.ToolService
+import org.lukemech.lmtoolbox.tasks.AppTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.helpers.Screen
 import org.lukemech.lmtoolbox.helpers.SettingsSubPage
+import org.lukemech.lmtoolbox.tasks.AppTasks
+import org.lukemech.lmtoolbox.ui.components.StepBar
 
 /** The bars come and go as anything in the app does (see Reveal). */
 private val barEnter = revealEnter()
@@ -73,130 +64,96 @@ fun TaskStatusBar(onOpenSetup: () -> Unit, modifier: Modifier = Modifier) {
         ?.takeIf { backStack?.destination?.route == Screen.Dynamic.route }
     // A tool's own page shows what it runs: not in the bar too while it's open
     fun onItsPage(source: AppFeature?) = source != null && source.route == pageRoute
-    // Its parts unpacking, though, only the bar shows the whole of (its page: each package's steps)
-    fun shownOnPage(task: LinuxTask) = task.type == LinuxTask.Type.Command && onItsPage(task.source)
-    val tasks by LinuxTasks.tasks.collectAsState()
+    // Its parts unpacking, though, only the bar shows the whole of (its page: each package's steps). One shown on a part of
+    // its page alone (a tab) is in the bar as another part is looked at: its page says when (AppTasks.setShown)
+    fun shownOnPage(task: AppTask) = task.type == AppTask.Type.Command && onItsPage(task.source) && task.page == null
+    val tasks by AppTasks.tasks.collectAsState()
     // Only installs/updates and commands whose page was left; page-bound work stays on its page
-    val current = remember(tasks, pageRoute) { LinuxTasks.barTask(tasks.filterNot(::shownOnPage)) }
+    val current = remember(tasks, pageRoute) { AppTasks.barTask(tasks.filterNot(::shownOnPage)) }
     val activeCount = tasks.count { it.isActive && (it.type.isEnvChange || it.detached) && !shownOnPage(it) }
     // Its last install/update failed (until one runs again: its own progress shows then)
     val setupFailed = remember(tasks) {
         tasks.none { it.type.isEnvChange && it.isActive } &&
-            tasks.firstOrNull { it.type.isEnvChange }?.state == LinuxTask.State.Failed && !LinuxParts.isUpToDate(context)
+            tasks.firstOrNull { it.type.isEnvChange }?.state == AppTask.State.Failed && !LinuxParts.isUpToDate(context)
     }
     // Else any other failure not looked at yet: what failed. Over whatever runs meanwhile, not hidden by it
-    val failure = remember(tasks) { if (setupFailed) null else LinuxTasks.barFailure(tasks) }
+    val failure = remember(tasks) { if (setupFailed) null else AppTasks.barFailure(tasks) }
     val error: String? = when {
         setupFailed -> stringResource(R.string.s_setup_failed)
         // The tool it was for (unpacking's title says just that)
         failure != null -> stringResource(
-            R.string.s_tasks_failed_bar, if (failure.type == LinuxTask.Type.Extension) failure.label else failure.title(context)
+            R.string.s_tasks_failed, if (failure.type == AppTask.Type.Extension) failure.label else failure.title(context)
         )
         else -> null
     }
     // Keeps showing the last one while the bar animates out
-    val lastError = remember { mutableStateOf<Pair<String, ImageVector?>?>(null) }
-    if (error != null) lastError.value = error to failure?.featureIcon
+    val lastError = remember { mutableStateOf<String?>(null) }
+    if (error != null) lastError.value = error
 
+    // As a task's bar (StepBar), but failed: in red, a ✕ where the percentage goes
     AnimatedVisibility(visible = error != null, enter = barEnter, exit = barExit, modifier = modifier) {
-        val (text, icon) = lastError.value ?: return@AnimatedVisibility
+        val text = lastError.value ?: return@AnimatedVisibility
         Surface(
-            color = MaterialTheme.colorScheme.error,
-            contentColor = MaterialTheme.colorScheme.onError,
+            color = MaterialTheme.colorScheme.background,
             modifier = Modifier.fillMaxWidth().clickable {
                 open {
-                    LinuxTasks.markFailuresSeen()
+                    AppTasks.markFailuresSeen()
                     // The task list, where what failed shows its log (the subsystem's, a retry too)
                     navController.openSettingsPage(SettingsSubPage.Tasks)
                 }
             }
         ) {
             // One failure after another: what it says changes smoothly
-            Crossfade(text to icon, animationSpec = tween(REVEAL_MS), label = "error") { (text, icon) ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Icon(icon ?: ImageVector.vectorResource(R.drawable.linux_penguin), null, modifier = Modifier.size(18.dp))
-                    Text(
-                        text,
-                        style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
-                    )
-                }
+            Crossfade(text, animationSpec = tween(REVEAL_MS), label = "error") { text ->
+                StepBar(count = 0, current = 0, loadingNext = false, caption = text, detail = stringResource(R.string.s_tasks_failed_open), failed = true)
             }
         }
     }
 
     // Keeps showing the last task while the bar animates out
-    val lastShown = remember { mutableStateOf<LinuxTask?>(null) }
+    val lastShown = remember { mutableStateOf<AppTask?>(null) }
     if (current != null) lastShown.value = current
 
+    // As the page's own steps show a task (StepBar): how far as a pill, the tool, what it's doing, and stopping it
     AnimatedVisibility(visible = current != null, enter = barEnter, exit = barExit, modifier = modifier) {
         val task = lastShown.value ?: return@AnimatedVisibility
         Surface(
-            // Like the surrounding app: only what it says and its progress stand out
             color = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
                     open {
-                        // The subsystem's own: its progress; else the page of the tool it's for, which shows how it goes
+                        // The subsystem's own: its progress; else the page of the tool it's for (at the part showing it)
                         if (task.type.isEnvChange) onOpenSetup()
-                        else if (!navController.openFeature(task.source)) navController.openSettingsPage(SettingsSubPage.Tasks)
+                        else if (!navController.openFeature(task.source, task.page)) navController.openSettingsPage(SettingsSubPage.Tasks)
                     }
                 }
         ) {
-            Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Icon(
-                        task.featureIcon ?: ImageVector.vectorResource(R.drawable.linux_penguin), null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        task.title(context),
-                        style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
-                    )
-                    Text(
-                        buildString {
-                            append(
-                                when {
-                                    task.state == LinuxTask.State.Queued -> stringResource(R.string.s_tasks_state_queued)
-                                    task.progress != null -> "${task.progress.toInt()}%"
-                                    else -> stringResource(R.string.s_tasks_state_running)
-                                }
-                            )
-                            if (activeCount > 1) append(" (+${activeCount - 1})")
-                        },
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-                val progress = task.progress
-                if (progress != null && task.state == LinuxTask.State.Running) {
-                    LinearProgressIndicator(progress = { progress / 100f }, modifier = Modifier.fillMaxWidth())
-                } else {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                }
-            }
+            val queued = task.state == AppTask.State.Queued
+            // A tool's parts installing: downloaded first (if they need to be), then unpacked, a step each
+            val steps = if (task.type == AppTask.Type.Extension && task.downloads.isNotEmpty()) 2 else 1
+            val step = if (steps == 2 && task.stage != R.string.s_tasks_downloading) 1 else 0
+            StepBar(
+                count = steps, current = step, loadingNext = false, working = true,
+                progress = task.progress?.takeIf { !queued }?.div(100f),
+                caption = task.title(context),
+                detail = listOfNotNull(
+                    if (queued) stringResource(R.string.s_tasks_state_queued) else task.detail?.ifBlank { null },
+                    "+${activeCount - 1}".takeIf { activeCount > 1 }
+                ).joinToString(" · ").ifEmpty { null },
+                // The subsystem's own isn't stopped halfway
+                onCancel = if (task.type.isEnvChange) null else ({ AppTasks.cancel(task.id) })
+            )
         }
     }
 
-    // What runs as a service: that it does, no progress (it has none: it runs until it's stopped)
-    val services by LinuxTasks.services.collectAsState()
+    // What runs as a service: that it does (it has no end of its own: no bar), in the same words as a task's
+    val services by AppTasks.services.collectAsState()
     // Not on its tool's own page, which shows it; one that's part of another (a server's tunnel) as that one, counted once
     val shown = services.filterNot { onItsPage(it.source) }
         .map { if (it.group != null) it.copy(label = it.group, group = null) else it }
         .distinctBy { it.source to it.label }
-    val lastService = remember { mutableStateOf<Pair<LinuxService, Int>?>(null) }
+    val lastService = remember { mutableStateOf<Pair<ToolService, Int>?>(null) }
     shown.firstOrNull()?.let { lastService.value = it to shown.size }
 
     // Under a task's bar too: a job going on (e.g. an encoding) doesn't hide that a server runs
@@ -204,26 +161,14 @@ fun TaskStatusBar(onOpenSetup: () -> Unit, modifier: Modifier = Modifier) {
         val (service, count) = lastService.value ?: return@AnimatedVisibility
         Surface(
             color = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.primary,
             modifier = Modifier.fillMaxWidth().clickable { open { navController.openFeature(service.source) } }
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Icon(service.featureIcon, null, modifier = Modifier.size(18.dp))
-                Text(
-                    stringResource(service.source.titleStringResId) + " · " + service.label,
-                    style = MaterialTheme.typography.labelLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
-                )
-                Text(
-                    stringResource(R.string.s_service_running) + if (count > 1) " (+${count - 1})" else "",
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
+            StepBar(
+                count = 0, current = 0, loadingNext = false,
+                caption = stringResource(service.source.titleStringResId),
+                detail = listOfNotNull(service.label, stringResource(R.string.s_service_running), "+${count - 1}".takeIf { count > 1 })
+                    .joinToString(" · ")
+            )
         }
     }
 }

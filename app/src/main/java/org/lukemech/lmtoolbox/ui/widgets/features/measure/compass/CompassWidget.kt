@@ -7,7 +7,6 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.view.View
 import android.widget.RemoteViews
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import org.lukemech.lmtoolbox.R
@@ -21,6 +20,9 @@ import org.lukemech.lmtoolbox.ui.pages.features.measure.compass.isDirectionAlign
 import org.lukemech.lmtoolbox.ui.pages.features.measure.compass.bandColor
 import org.lukemech.lmtoolbox.ui.pages.features.measure.compass.altitudeColor
 import org.lukemech.lmtoolbox.ui.pages.features.measure.compass.WarningColor
+import org.lukemech.lmtoolbox.ui.widgets.helpers.Glide
+import org.lukemech.lmtoolbox.ui.widgets.helpers.FrameClock
+import org.lukemech.lmtoolbox.ui.widgets.helpers.stepTowards
 
 /**
  * Compass on the home screen, on a transparent background. Tapping the dial switches it on:
@@ -228,12 +230,9 @@ class CompassWidgetService : LiveWidgetService() {
     private val state = CompassFeature.SensorState()
     private val altitude by lazy { CompassFeature.AltitudeTracker(this) {} }
 
-    private var shown = 0f
-    private var from = 0f
-    private var to = 0f
-    private var heading: Float? = null
-    private var startedAt = 0L
-    private var lastFrameAt = 0L
+    /** The dial's heading, as the page turns it (500ms, LinearOutSlowIn), the shortest way round. */
+    private val dial = Glide(ANIMATION_NS, CompassFeature::normalize)
+    private val clock = FrameClock()
     private var altitudeStatus = AltitudeStatus.Hidden
     private var altitudeCheckedAt = 0L
     private var fill = 0f
@@ -252,8 +251,7 @@ class CompassWidgetService : LiveWidgetService() {
 
     override fun onLiveStart() {
         frame = Frame(0f, null, true)
-        lastFrameAt = System.nanoTime()
-        startedAt = lastFrameAt
+        clock.start()
         followAltitude()
     }
 
@@ -286,20 +284,8 @@ class CompassWidgetService : LiveWidgetService() {
      */
     override fun onFrame(frameTimeNanos: Long) {
         // Going off: back to north, as it stands while off
-        val target = if (isStopping) 0f else state.heading
-        if (target != null && target != heading) {
-            heading = target
-            from = shown
-            to = shown + CompassFeature.shortestDelta(shown, target)
-            startedAt = frameTimeNanos
-        }
-        val progress = ((frameTimeNanos - startedAt) / ANIMATION_NS.toFloat()).coerceIn(0f, 1f)
-        shown = CompassFeature.normalize(from + (to - from) * LinearOutSlowInEasing.transform(progress))
-
-        // By the time passed, so a late frame doesn't slow the fill down
-        // Never back in time: the first display frame may be stamped before the start (System.nanoTime)
-        val passed = (frameTimeNanos - lastFrameAt).coerceAtLeast(0)
-        lastFrameAt = frameTimeNanos
+        val shown = dial.update(if (isStopping) 0f else state.heading, frameTimeNanos, CompassFeature::shortestDelta)
+        val passed = clock.passed(frameTimeNanos)
 
         // Settings and location state change rarely: checked once a second, not every frame
         val reading = altitude.altitude
@@ -312,20 +298,20 @@ class CompassWidgetService : LiveWidgetService() {
         }
 
         // Fading in when switched on, out when off
-        fade = step(fade, if (isStopping) 1f else 0f, passed, ANIMATION_NS)
+        fade = stepTowards(fade, if (isStopping) 1f else 0f, passed, ANIMATION_NS)
         // The ring lit up at a cardinal direction (not when going back to north while switching off)
-        ring = step(ring, if (!isStopping && isDirectionAligned(shown)) 1f else 0f, passed, ANIMATION_NS)
+        ring = stepTowards(ring, if (!isStopping && isDirectionAligned(shown)) 1f else 0f, passed, ANIMATION_NS)
 
         // Up from the tail towards the altitude, as fast as on the page (a whole scale a second),
         // and down again without one (or going off)
         val known = altitudeStatus == AltitudeStatus.Known && reading != null && !isStopping
         val levels = if (known) CompassFeature.altitudeBand(reading) else 0f to 0f
-        fill = step(fill, levels.first, passed, FILL_NS)
-        band = step(band, levels.second, passed, FILL_NS)
-        ticksAlpha = step(ticksAlpha, if (known) 1f else 0f, passed, ANIMATION_NS)
+        fill = stepTowards(fill, levels.first, passed, FILL_NS)
+        band = stepTowards(band, levels.second, passed, FILL_NS)
+        ticksAlpha = stepTowards(ticksAlpha, if (known) 1f else 0f, passed, ANIMATION_NS)
         // The head grows or shrinks to the scale (back to the usual one without), its color along
         val headTarget = if (known) CompassFeature.altitudeScale(reading.meters).toFloat() else CompassFeature.PLAIN_ARROW_HEAD
-        headScale = step(headScale, headTarget, passed, HEAD_NS)
+        headScale = stepTowards(headScale, headTarget, passed, HEAD_NS)
 
         val next = Frame(
             // The text keeps the last heading while the dial goes back to north
@@ -336,12 +322,6 @@ class CompassWidgetService : LiveWidgetService() {
         )
         frame = next
         widget.updateFrame(this, next)
-    }
-
-    /** [value] moved towards [target] by what [passed] ns allow, [perUnitNs] for each 1 of change. */
-    private fun step(value: Float, target: Float, passed: Long, perUnitNs: Long): Float {
-        val max = passed / perUnitNs.toFloat()
-        return value + (target - value).coerceIn(-max, max)
     }
 
     companion object {

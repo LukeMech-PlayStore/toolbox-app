@@ -6,6 +6,7 @@ import org.junit.Test
 import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.linux.LinuxParts
 import org.lukemech.lmtoolbox.linux.LinuxTasks
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /**
  * A tool of the app's own (the measuring tools, the calculators, the image resizer...): opened from the home
@@ -65,7 +66,7 @@ abstract class LinuxToolTest(val feature: AppFeature) : E2eTest() {
         Explorer(ui, feature.route, depth = 1, check = linux::failure).explore()
         // What it started in the background, to its end
         Device.waitFor("${feature.route}'s tasks to end", 10 * Device.MINUTE, failFast = linux::failure) {
-            LinuxTasks.tasks.value.none { it.isActive }
+            AppTasks.tasks.value.none { it.isActive }
         }
         linux.failure()?.let { throw AssertionError(it) }
     }

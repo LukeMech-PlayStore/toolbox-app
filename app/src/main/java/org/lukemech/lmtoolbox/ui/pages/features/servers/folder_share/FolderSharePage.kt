@@ -6,10 +6,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.CloudUpload
@@ -34,11 +32,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -80,6 +76,9 @@ import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TunnelPhase
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TunnelStatus
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.uptime
 import org.lukemech.lmtoolbox.features.servers.folder_share.FolderShareFeature as F
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.StatusCard
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.ServerHealth
+import org.lukemech.lmtoolbox.linux.parts.ConnectionPhase
 
 /** How many of the latest requests its page shows. */
 private const val SHOWN = 6
@@ -200,47 +199,22 @@ private fun Section(title: String) {
 /** How it's doing: shared or not (why it stopped, if by an error), the folder and port. */
 @Composable
 private fun StatusCard(run: FolderShare.Run?, folderName: String?) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                PhaseDot(run?.phase, 18.dp)
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    stringResource(
-                        when (run?.phase) {
-                            FolderShare.Phase.Running -> R.string.f_Fs_phase_running
-                            FolderShare.Phase.Failed -> R.string.f_Fs_phase_failed
-                            else -> R.string.f_Fs_phase_stopped
-                        }
-                    ),
-                    style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f)
-                )
+    val active = run?.takeIf { it.isActive }
+    StatusCard(
+        health = when (run?.phase) {
+            FolderShare.Phase.Running -> ServerHealth.Running
+            FolderShare.Phase.Failed -> ServerHealth.Failed
+            else -> ServerHealth.Stopped
+        },
+        title = stringResource(
+            when (run?.phase) {
+                FolderShare.Phase.Running -> R.string.f_Fs_phase_running
+                FolderShare.Phase.Failed -> R.string.f_Fs_phase_failed
+                else -> R.string.f_Fs_phase_stopped
             }
-            val name = run?.takeIf { it.isActive }?.name ?: folderName
-            name?.let {
-                Text(
-                    it + (run?.takeIf { r -> r.isActive }?.let { r -> " · ${r.port}" } ?: ""),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-/** A dot in the color of how it's doing: green shared, red stopped by an error, gray not shared. */
-@Composable
-private fun PhaseDot(phase: FolderShare.Phase?, size: Dp) {
-    val color = when (phase) {
-        FolderShare.Phase.Running -> Color(0xFF2E9E4F)
-        FolderShare.Phase.Failed -> MaterialTheme.colorScheme.error
-        else -> MaterialTheme.colorScheme.outline
-    }
-    Icon(Icons.Default.Circle, contentDescription = null, tint = color, modifier = Modifier.size(size))
+        ),
+        details = (active?.name ?: folderName)?.let { it + (active?.let { r -> " · ${r.port}" } ?: "") }
+    )
 }
 
 /** The app's network (all of it: Android counts it by app), how long it's been shared, who's connected and how many requests. */
@@ -330,7 +304,7 @@ private fun Addresses(port: Int, settings: ShareSettings) {
             // The tunnels, starting with the share by themselves: their address once connected, else how they're doing
             Column(verticalArrangement = RowArrangement) {
                 Reveal(visible = settings.bore) {
-                    val address = bore?.address?.takeIf { bore.phase == Bore.Phase.Connected }
+                    val address = bore?.address?.takeIf { bore.phase == ConnectionPhase.Connected }
                     Crossfade(address, animationSpec = tween(REVEAL_MS), label = "bore") { a ->
                         if (a != null) AddressButton(stringResource(R.string.f_Srv_through_bore), "http://$a/", Icons.Default.Public, shareable = true)
                         else TunnelStatus(
@@ -340,7 +314,7 @@ private fun Addresses(port: Int, settings: ShareSettings) {
                     }
                 }
                 Reveal(visible = settings.cloudflare) {
-                    val url = tunnel?.url?.takeIf { tunnel.phase == Tunnel.Phase.Connected }
+                    val url = tunnel?.url?.takeIf { tunnel.phase == ConnectionPhase.Connected }
                     Crossfade(url, animationSpec = tween(REVEAL_MS), label = "cloudflare") { u ->
                         if (u != null) AddressButton(stringResource(R.string.f_Srv_through_cloudflare), "$u/", Icons.Default.Public, shareable = true)
                         else TunnelStatus(

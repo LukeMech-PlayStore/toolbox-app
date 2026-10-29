@@ -66,6 +66,7 @@ import org.lukemech.lmtoolbox.ui.components.Steps
 import org.lukemech.lmtoolbox.ui.components.StepWithButtons
 import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 private enum class Step { File, Tags, Export }
 
@@ -131,7 +132,7 @@ fun MetadataEditorPage(providedInput: String? = "") {
             busy = false
             if (tags == null) {
                 // ExifTool's failure the bottom bar tells already; the copy's (not a command), told there too
-                if (!copied) LinuxTasks.reportFailure(MetadataEditorFeature, name, "Couldn't read the file")
+                if (!copied) AppTasks.reportFailure(MetadataEditorFeature, name, "Couldn't read the file")
                 return@launch
             }
             opened = Opened(uri, name, mimeType, copy)
@@ -173,7 +174,7 @@ fun MetadataEditorPage(providedInput: String? = "") {
             busy = false
             if (tags == null) {
                 // ExifTool's failure the bottom bar tells already (its log); it ran but changed nothing: told there too
-                if (result.isSuccess) LinuxTasks.reportFailure(MetadataEditorFeature, file.name, "ExifTool changed nothing")
+                if (result.isSuccess) AppTasks.reportFailure(MetadataEditorFeature, file.name, "ExifTool changed nothing")
                 return@launch
             }
             written += changes.size
@@ -507,7 +508,7 @@ private fun ExportStep(file: Opened, written: Int, steps: Steps, onBack: () -> U
             val ok = copyTo(context, file.copy, uri)
             // A failure, told in the one place errors are: the bottom bar
             if (ok) Toast.makeText(context, resources.getString(R.string.f_MdEd_saved), Toast.LENGTH_SHORT).show()
-            else LinuxTasks.reportFailure(MetadataEditorFeature, file.name, "Couldn't save the file")
+            else AppTasks.reportFailure(MetadataEditorFeature, file.name, "Couldn't save the file")
         }
     }
 

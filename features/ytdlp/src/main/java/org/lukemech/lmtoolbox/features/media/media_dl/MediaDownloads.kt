@@ -23,6 +23,7 @@ import org.lukemech.lmtoolbox.helpers.SavedFile
 import org.lukemech.lmtoolbox.helpers.displayName
 import org.lukemech.lmtoolbox.helpers.safeFileName
 import org.lukemech.lmtoolbox.helpers.saveToMediaStore
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /** What yt-dlp found at a link: enough to pick what to download. */
 data class MediaInfo(
@@ -207,7 +208,7 @@ object MediaDownloads {
             info != null -> Result.success(info)
             // Not a command's failure (a playlist): told in the one place errors are, the bottom bar
             json != null -> Result.failure<MediaInfo>(UnsupportedOperationException()).also {
-                LinuxTasks.reportFailure(MediaDownloaderFeature, url, "Playlists aren't supported")
+                AppTasks.reportFailure(MediaDownloaderFeature, url, "Playlists aren't supported")
             }
             // What yt-dlp said is in the task's log (the bottom bar's)
             else -> Result.failure(Exception())
@@ -229,10 +230,10 @@ object MediaDownloads {
                     onLine = { line ->
                         val updated = _state.updateAndGet { it?.let { d -> onLine(d, line) } }
                         val percent = updated?.overall?.toInt() ?: return@runInBackground
-                        updated.taskId?.let { LinuxTasks.setProgress(it, percent.toFloat()) }
+                        updated.taskId?.let { AppTasks.setProgress(it, percent.toFloat()) }
                     }
                 ).isSuccess
-            fun isCancelled() = LinuxTasks.isCancelled(_state.value?.taskId)
+            fun isCancelled() = AppTasks.isCancelled(_state.value?.taskId)
 
             val infoJson = infoFile(info, dir)
             var success = download(infoJson)
@@ -257,7 +258,7 @@ object MediaDownloads {
                         if (saved != null) it?.copy(phase = Phase.Done, saved = saved)
                         else it?.copy(phase = Phase.Failed, error = "Couldn't save the file")
                     }
-                    if (saved == null) LinuxTasks.reportFailure(MediaDownloaderFeature, "", "Couldn't save the file")
+                    if (saved == null) AppTasks.reportFailure(MediaDownloaderFeature, "", "Couldn't save the file")
                 }
             }
             dir.deleteRecursively()
@@ -265,7 +266,7 @@ object MediaDownloads {
     }
 
     fun cancel() {
-        _state.value?.taskId?.let { LinuxTasks.cancel(it) }
+        _state.value?.taskId?.let { AppTasks.cancel(it) }
     }
 
     /** Forgets a finished download (e.g. to download another). */

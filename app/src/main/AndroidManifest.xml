@@ -58,7 +58,7 @@
         tools:targetApi="33">
 
         <service
-            android:name=".linux.LinuxTaskService"
+            android:name=".tasks.TaskService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 

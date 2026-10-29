@@ -26,7 +26,6 @@
     <string name="f_Srv_uptime_hm">%1$d h %2$d min</string>
     <string name="f_Srv_uptime_m">%1$d min</string>
     <string name="f_Srv_copy">Copy</string>
-    <string name="f_Srv_copied">Copied</string>
     <string name="f_Srv_save">Save</string>
     <string name="f_Srv_saved">Saved</string>
     <string name="f_Srv_token_remove">Remove the token</string>

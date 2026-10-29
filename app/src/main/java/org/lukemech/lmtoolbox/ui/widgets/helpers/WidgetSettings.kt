@@ -1,7 +1,5 @@
 package org.lukemech.lmtoolbox.ui.widgets.helpers
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,6 +52,8 @@ import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.PreferenceHelper
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.helpers.copyText
+import org.lukemech.lmtoolbox.helpers.pastedText
 
 /** Feature setting: [widget]'s background, transparent or a picked color (read by [FeatureWidget.applyBackground]). */
 @Composable
@@ -118,7 +118,6 @@ private fun BackgroundEditor(initial: Int, onDismiss: () -> Unit, onConfirm: (In
         hue = hsv[0]; saturation = hsv[1]; value = hsv[2]
         alpha = android.graphics.Color.alpha(argb) / 255f
     }
-    val clipboard = remember { context.getSystemService(ClipboardManager::class.java) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -154,14 +153,10 @@ private fun BackgroundEditor(initial: Int, onDismiss: () -> Unit, onConfirm: (In
                 isError = parseHex(hex) == null,
                 modifier = Modifier.weight(1f)
             )
-            // No property: getPrimaryClip() is nullable, its setter isn't
-            @Suppress("UsePropertyAccessSyntax")
-            IconButton(onClick = { clipboard.setPrimaryClip(ClipData.newPlainText("color", hex)) }) {
+            IconButton(onClick = { copyText(context, hex, "color") }) {
                 Icon(Icons.Default.ContentCopy, stringResource(R.string.w_setting_background_copy))
             }
-            IconButton(onClick = {
-                clipboard.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString()?.let { typed(it.trim()) }
-            }) {
+            IconButton(onClick = { pastedText(context)?.let { typed(it) } }) {
                 Icon(Icons.Default.ContentPaste, stringResource(R.string.w_setting_background_paste))
             }
         }

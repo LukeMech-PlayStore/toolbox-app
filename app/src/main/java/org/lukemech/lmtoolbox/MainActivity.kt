@@ -40,7 +40,9 @@ import org.lukemech.lmtoolbox.helpers.*
 import org.lukemech.lmtoolbox.ui.ToolboxTheme
 import org.lukemech.lmtoolbox.ui.helpers.*
 import org.lukemech.lmtoolbox.linux.LinuxTasks
-import org.lukemech.lmtoolbox.linux.LinuxTaskService
+import org.lukemech.lmtoolbox.tasks.TaskService
+import org.lukemech.lmtoolbox.ui.helpers.requestSubPage
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 class MainActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
@@ -57,7 +59,8 @@ class MainActivity : ComponentActivity() {
     private fun handleOpenFeature(intent: Intent?) {
         val route = intent?.getStringExtra(EXTRA_OPEN_FEATURE) ?: return
         openFeatureRequest.value = OpenFeatureRequest(
-            (openFeatureRequest.value?.count ?: 0) + 1, route, intent.getBooleanExtra(EXTRA_OPEN_SETTINGS, false)
+            (openFeatureRequest.value?.count ?: 0) + 1, route, intent.getBooleanExtra(EXTRA_OPEN_SETTINGS, false),
+            intent.getStringExtra(EXTRA_OPEN_PAGE)
         )
     }
 
@@ -71,7 +74,7 @@ class MainActivity : ComponentActivity() {
         // The "Share to" / "Open in" entries follow what's installed: now, as each task (installing) ends and as tools are removed
         lifecycleScope.launch(Dispatchers.IO) {
             LinuxTasks.markUnlockedOnce(this@MainActivity)
-            combine(LinuxTasks.tasks.map { tasks -> tasks.count { !it.isActive } }, LinuxTasks.extensionsRemoved) { ended, removed -> ended to removed }
+            combine(AppTasks.tasks.map { tasks -> tasks.count { !it.isActive } }, LinuxTasks.extensionsRemoved) { ended, removed -> ended to removed }
                 .distinctUntilChanged()
                 .collect { SystemEntries.apply(this@MainActivity) }
         }
@@ -120,12 +123,12 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         FeatureDelivery.activity = WeakReference(this)
-        LinuxTaskService.onAppForegrounded()
+        TaskService.onAppForegrounded()
     }
 
     override fun onStop() {
         super.onStop()
-        LinuxTaskService.onAppBackgrounded(this)
+        TaskService.onAppBackgrounded(this)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -139,6 +142,7 @@ class MainActivity : ComponentActivity() {
         private const val EXTRA_OPEN_TASKS = "open_tasks"
         private const val EXTRA_OPEN_FEATURE = "open_feature"
         private const val EXTRA_OPEN_SETTINGS = "open_settings"
+        private const val EXTRA_OPEN_PAGE = "open_page"
 
         // Each with an identifier of its own: PendingIntents of intents differing only in their extras are one
         // and the same, the latest's extras for all (a server's notification opened the tasks, as the subsystem's)
@@ -151,12 +155,13 @@ class MainActivity : ComponentActivity() {
 
         /**
          * Brings the app to front (reusing the running activity) on the page of the feature with
-         * [route], or its [settings].
+         * [route] (at its part [page], e.g. a tab: see requestSubPage), or its [settings].
          */
-        fun openFeatureIntent(context: Context, route: String, settings: Boolean = false) = Intent(context, MainActivity::class.java)
-            .setIdentifier("$EXTRA_OPEN_FEATURE/$route" + if (settings) "/$EXTRA_OPEN_SETTINGS" else "")
+        fun openFeatureIntent(context: Context, route: String, settings: Boolean = false, page: String? = null) = Intent(context, MainActivity::class.java)
+            .setIdentifier("$EXTRA_OPEN_FEATURE/$route" + (if (settings) "/$EXTRA_OPEN_SETTINGS" else "") + (page?.let { "/$it" } ?: ""))
             .putExtra(EXTRA_OPEN_FEATURE, route)
             .putExtra(EXTRA_OPEN_SETTINGS, settings)
+            .putExtra(EXTRA_OPEN_PAGE, page)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
     }
 }
@@ -225,6 +230,7 @@ fun MainScreen(intent: String, sharedText: String?, openTasksRequests: Int = 0, 
             LaunchedEffect(openFeatureRequest) {
                 val request = openFeatureRequest ?: return@LaunchedEffect
                 val feature = FeatureRegistry.byRoute(request.route) ?: return@LaunchedEffect
+                requestSubPage(feature.route, request.page)
                 val screen = if (request.settings) Screen.SettingsFeatures else Screen.Dynamic
                 // Not launchSingleTop: it would keep another feature's page (same pattern, other route)
                 val current = navController.currentBackStackEntry
@@ -257,4 +263,4 @@ fun MainScreen(intent: String, sharedText: String?, openTasksRequests: Int = 0, 
 private const val NOT_READY_DEBOUNCE_MS = 1500L
 
 /** A feature page (or its [settings]) to open; [count] lets the same one be asked for again. */
-data class OpenFeatureRequest(val count: Int, val route: String, val settings: Boolean)
+data class OpenFeatureRequest(val count: Int, val route: String, val settings: Boolean, val page: String? = null)

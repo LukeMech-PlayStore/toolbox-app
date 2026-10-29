@@ -31,6 +31,11 @@ import org.lukemech.lmtoolbox.helpers.PreferenceHelper
 import org.lukemech.lmtoolbox.helpers.displayName
 import org.lukemech.lmtoolbox.helpers.safeFileName
 import org.lukemech.lmtoolbox.helpers.saveToMediaStore
+import org.lukemech.lmtoolbox.tasks.AppTasks
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import org.lukemech.lmtoolbox.tasks.TaskRun
 
 /** How a picture goes into a box of another shape. */
 enum class Fit {
@@ -128,7 +133,7 @@ data class ResizeOptions(
  * saves it in Pictures (or the folder picked for it).
  */
 object ImageResize {
-    /** Its failure for a picture too big to make (the bottom bar tells it, see LinuxTasks.reportFailure). */
+    /** Its failure for a picture too big to make (the bottom bar tells it, see AppTasks.reportFailure). */
     const val TOO_BIG = "Too big to fit in memory"
 
     /** A picked picture: its size as it's shown (its EXIF turning applied), and a small copy to show. */
@@ -149,10 +154,13 @@ object ImageResize {
     )
 
     /** The open picture, its options, the new name and the last result: back to them after the page was left. */
-    var opened: Opened? = null
-    var options: ResizeOptions? = null
-    var fileName: String = ""
-    var saved: Saved? = null
+    var opened by mutableStateOf<Opened?>(null)
+    var options by mutableStateOf<ResizeOptions?>(null)
+    var fileName by mutableStateOf("")
+    var saved by mutableStateOf<Saved?>(null)
+
+    /** Making the picture, a task: it goes on as the page is left. */
+    val run = TaskRun(ImageResizerFeature)
 
     private val output = OutputFolder(ImageResizerFeature.S_OUTPUT)
     private const val PREVIEW_PX = 720

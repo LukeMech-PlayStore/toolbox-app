@@ -48,7 +48,7 @@ import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.listBox
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TextSetting
-import org.lukemech.lmtoolbox.ui.pages.features.servers.common.copy
+import org.lukemech.lmtoolbox.helpers.copyText
 
 /**
  * Its options: its settings (server.properties, memory, the config file itself), the tunnels, and its
@@ -141,7 +141,7 @@ internal fun OptionsTab(
                 buttonContent = if (seed != null) {
                     { Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.f_Srv_copy), tint = MaterialTheme.colorScheme.primary) }
                 } else null,
-                onClick = { seed?.let { copy(context, it) } }
+                onClick = { seed?.let { copyText(context, it) } }
             )
         }
         Reveal(visible = !worldMade) {

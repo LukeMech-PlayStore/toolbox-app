@@ -1,11 +1,9 @@
-package org.lukemech.lmtoolbox.linux
+package org.lukemech.lmtoolbox.tasks
 
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -32,6 +30,9 @@ import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.MainActivity
 import org.lukemech.lmtoolbox.R
 import kotlin.time.Duration.Companion.milliseconds
+import org.lukemech.lmtoolbox.helpers.createChannel
+import org.lukemech.lmtoolbox.helpers.ongoingNotification
+import org.lukemech.lmtoolbox.helpers.openActivity
 
 /**
  * Foreground service that keeps the app process alive while the app is in the background and a
@@ -39,13 +40,13 @@ import kotlin.time.Duration.Companion.milliseconds
  * there is no service and no notification (the bottom bar shows progress instead); it stops as soon
  * as the app comes back or nothing is running.
  */
-class LinuxTaskService : Service() {
+class TaskService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var collecting = false
     /** Env tasks seen running, to post a result notification when they finish. */
     private val watchedEnvTasks = mutableSetOf<Long>()
     /** Last progress notification posted (see [onTasksChanged]) and a throttled one waiting. */
-    private var lastNotified: Triple<Long, LinuxTask.State, Int?>? = null
+    private var lastNotified: Triple<Long, AppTask.State, Int?>? = null
     private var lastNotifiedAt = 0L
     private var pendingNotify: Job? = null
 
@@ -53,7 +54,7 @@ class LinuxTaskService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // startForeground must follow every startForegroundService call
-        val current = LinuxTasks.current(LinuxTasks.tasks.value)
+        val current = AppTasks.current(AppTasks.tasks.value)
         ServiceCompat.startForeground(
             this, NOTIFICATION_ID, progressNotification(current),
             ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
@@ -62,7 +63,7 @@ class LinuxTaskService : Service() {
         if (!collecting) {
             collecting = true
             scope.launch {
-                combine(LinuxTasks.tasks, appInForeground) { tasks, foreground -> tasks to foreground }
+                combine(AppTasks.tasks, appInForeground) { tasks, foreground -> tasks to foreground }
                     // Only react to changes that alter what the notification shows
                     .distinctUntilChanged { old, new ->
                         old.second == new.second && notificationKey(old.first) == notificationKey(new.first)
@@ -74,7 +75,7 @@ class LinuxTaskService : Service() {
     }
 
     @SuppressLint("MissingPermission") // guarded by canNotify()
-    private fun onTasksChanged(tasks: List<LinuxTask>, foreground: Boolean) {
+    private fun onTasksChanged(tasks: List<AppTask>, foreground: Boolean) {
         if (foreground) {
             // Back in the app: the process stays alive anyway, progress is in the bottom bar
             pendingNotify?.cancel()
@@ -90,7 +91,7 @@ class LinuxTaskService : Service() {
             notifyResult(it)
         }
 
-        val current = LinuxTasks.current(tasks)
+        val current = AppTasks.current(tasks)
         pendingNotify?.cancel()
         if (current == null) {
             ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
@@ -107,13 +108,13 @@ class LinuxTaskService : Service() {
         } else {
             pendingNotify = scope.launch {
                 delay(wait.milliseconds)
-                LinuxTasks.current(LinuxTasks.tasks.value)?.let { postProgress(it) }
+                AppTasks.current(AppTasks.tasks.value)?.let { postProgress(it) }
             }
         }
     }
 
     @SuppressLint("MissingPermission") // guarded by canNotify()
-    private fun postProgress(task: LinuxTask) {
+    private fun postProgress(task: AppTask) {
         if (!canNotify()) return
         NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, progressNotification(task))
         lastNotified = notificationKey(listOf(task))
@@ -131,21 +132,26 @@ class LinuxTaskService : Service() {
         super.onDestroy()
     }
 
-    private fun progressNotification(task: LinuxTask?): Notification {
-        val builder = baseBuilder(CHANNEL_PROGRESS)
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
-            // Android 12+ otherwise holds it back ~10s, so tasks shorter than that showed nothing
-            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+    private fun progressNotification(task: AppTask?): Notification {
+        val builder = ongoingNotification(this, CHANNEL_PROGRESS, R.drawable.linux_penguin)
+            .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setContentTitle(task?.title(this) ?: getString(R.string.s_tasks))
             .setContentText(task?.detail)
+            // A tool's command opens its tool (at the part showing it, see AppTask.page), as the bottom bar does; else the task list
+            .setContentIntent(
+                openActivity(
+                    this,
+                    task?.source?.takeIf { task.type == AppTask.Type.Command }?.let { MainActivity.openFeatureIntent(this, it.route, page = task.page) }
+                        ?: MainActivity.openTasksIntent(this)
+                )
+            )
         when {
             task == null -> builder.setProgress(0, 0, true)
             // Commands keep their command line as the text, with their progress if they report it
-            task.type == LinuxTask.Type.Command -> task.progress
+            task.type == AppTask.Type.Command -> task.progress
                 ?.let { builder.setProgress(100, it.toInt(), false) }
                 ?: builder.setProgress(0, 0, true)
-            task.state == LinuxTask.State.Queued -> builder
+            task.state == AppTask.State.Queued -> builder
                 .setContentText(getString(R.string.s_tasks_state_queued))
                 .setProgress(0, 0, true)
             task.progress != null -> builder
@@ -157,13 +163,16 @@ class LinuxTaskService : Service() {
     }
 
     @SuppressLint("MissingPermission") // guarded by canNotify()
-    private fun notifyResult(task: LinuxTask) {
-        if (!canNotify() || task.state == LinuxTask.State.Cancelled) return
+    private fun notifyResult(task: AppTask) {
+        if (!canNotify() || task.state == AppTask.State.Cancelled) return
         val text = when (task.state) {
-            LinuxTask.State.Done -> getString(R.string.s_tasks_state_done)
+            AppTask.State.Done -> getString(R.string.s_tasks_state_done)
             else -> getString(R.string.s_tasks_state_failed) + (task.message?.let { ": $it" } ?: "")
         }
-        val notification = baseBuilder(CHANNEL_RESULT)
+        val notification = NotificationCompat.Builder(this, CHANNEL_RESULT)
+            .setSmallIcon(R.drawable.linux_penguin)
+            .setCategory(NotificationCompat.CATEGORY_PROGRESS)
+            .setContentIntent(openActivity(this, MainActivity.openTasksIntent(this)))
             .setContentTitle(task.title(this))
             .setContentText(text)
             .setAutoCancel(true)
@@ -171,22 +180,12 @@ class LinuxTaskService : Service() {
         NotificationManagerCompat.from(this).notify(RESULT_NOTIFICATION_ID, notification)
     }
 
-    private fun baseBuilder(channel: String) = NotificationCompat.Builder(this, channel)
-        .setSmallIcon(R.drawable.linux_penguin)
-        .setCategory(NotificationCompat.CATEGORY_PROGRESS)
-        .setContentIntent(
-            PendingIntent.getActivity(
-                this, 0, MainActivity.openTasksIntent(this),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        )
-
     private fun canNotify() = NotificationManagerCompat.from(this).areNotificationsEnabled() &&
         (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
 
     companion object {
-        private const val TAG = "LinuxTaskService"
+        private const val TAG = "TaskService"
         private const val CHANNEL_PROGRESS = "linux_tasks"
         private const val CHANNEL_RESULT = "linux_task_results"
         private const val NOTIFICATION_ID = 1
@@ -195,8 +194,8 @@ class LinuxTaskService : Service() {
 
         private val appInForeground = MutableStateFlow(false)
 
-        private fun notificationKey(tasks: List<LinuxTask>) =
-            LinuxTasks.current(tasks)?.let { Triple(it.id, it.state, it.progress?.toInt()) }
+        private fun notificationKey(tasks: List<AppTask>) =
+            AppTasks.current(tasks)?.let { Triple(it.id, it.state, it.progress?.toInt()) }
 
         /** MainActivity is visible: no service or notification needed. */
         fun onAppForegrounded() {
@@ -211,13 +210,13 @@ class LinuxTaskService : Service() {
 
         /** Starts the service if the app is in the background and a task is active. */
         fun startIfInBackground(context: Context) {
-            if (!appInForeground.value && LinuxTasks.tasks.value.any { it.isActive }) start(context)
+            if (!appInForeground.value && AppTasks.tasks.value.any { it.isActive }) start(context)
         }
 
         private fun start(context: Context) {
             createChannels(context)
             try {
-                ContextCompat.startForegroundService(context, Intent(context, LinuxTaskService::class.java))
+                ContextCompat.startForegroundService(context, Intent(context, TaskService::class.java))
             } catch (e: IllegalStateException) {
                 // Started while the app is in the background (Android 12+): the task still runs
                 // as long as the process lives, just without the notification.
@@ -226,13 +225,8 @@ class LinuxTaskService : Service() {
         }
 
         private fun createChannels(context: Context) {
-            val manager = context.getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(
-                NotificationChannel(CHANNEL_PROGRESS, context.getString(R.string.s_tasks_channel_progress), NotificationManager.IMPORTANCE_LOW)
-            )
-            manager.createNotificationChannel(
-                NotificationChannel(CHANNEL_RESULT, context.getString(R.string.s_tasks_channel_result), NotificationManager.IMPORTANCE_DEFAULT)
-            )
+            createChannel(context, CHANNEL_PROGRESS, context.getString(R.string.s_tasks_channel_progress))
+            createChannel(context, CHANNEL_RESULT, context.getString(R.string.s_tasks_channel_result), NotificationManager.IMPORTANCE_DEFAULT)
         }
     }
 }

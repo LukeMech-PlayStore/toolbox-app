@@ -2,13 +2,10 @@ package org.lukemech.lmtoolbox.ui.pages.features.network.net_tools
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
@@ -35,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,11 +42,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
+import org.lukemech.lmtoolbox.ui.helpers.SubPageRequest
 import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
 import org.lukemech.lmtoolbox.helpers.PreferenceHelper
 import org.lukemech.lmtoolbox.ui.components.FIELD_SPACING
@@ -64,8 +57,11 @@ import org.lukemech.lmtoolbox.ui.components.Steps
 import org.lukemech.lmtoolbox.ui.components.listBox
 import org.lukemech.lmtoolbox.ui.components.revealEnter
 import org.lukemech.lmtoolbox.ui.pages.features.measure.compass.WarningColor
+import org.lukemech.lmtoolbox.tasks.AppTask
+import org.lukemech.lmtoolbox.tasks.ShownWhile
 
-private enum class Tab(val title: Int) {
+/** The page's tabs; their names are the parts of the page a task shows on (AppTask.page). */
+internal enum class Tab(val title: Int) {
     Speed(R.string.f_Net_tab_speed),
     Ping(R.string.f_Net_tab_ping),
     Trace(R.string.f_Net_tab_trace),
@@ -75,22 +71,27 @@ private enum class Tab(val title: Int) {
 
 /**
  * Network tools, a tab each at the bottom: the internet's speed, ping, traceroute, the LAN's devices, a host's ports. Each tab's
- * work goes on while another is looked at, and stops as the page is left (its scope's).
+ * work is a task (see TaskRun): it goes on while another tab is looked at, the page is left or the app goes to the back, in
+ * the bottom bar (but on its own tab) and the notification with how far it is; tapped, they open its tab. Back on the
+ * page, each tab is as it was left.
  */
 @Composable
 fun NetworkToolsPage() {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
-    // The page's: leaving it cancels what any tab runs
-    val scope = rememberCoroutineScope()
     var tab by remember {
         mutableStateOf(Tab.entries.firstOrNull { it.name == PreferenceHelper.get(context, NetworkToolsFeature.S_TAB, "") } ?: Tab.Speed)
     }
-    val ping = remember { PingState(context, scope) }
-    val trace = remember { TraceState(context, scope) }
-    val lan = remember { LanState(context, scope) }
-    val ports = remember { PortsState(context, scope) }
-    val speed = remember { SpeedState(scope) }
+    val tabs = remember { NetTabs.of(context) }
+    val ping = tabs.ping
+    val trace = tabs.trace
+    val lan = tabs.lan
+    val ports = tabs.ports
+    val speed = tabs.speed
+    // A tab asked for (the bottom bar's, a notification's)
+    SubPageRequest(NetworkToolsFeature) { page -> Tab.entries.firstOrNull { it.name == page }?.let { tab = it } }
+    // What a tab runs shows on it: in the bottom bar as another tab is looked at, as all are once the page is left
+    tabs.runs.forEach { (t, run) -> ShownWhile(run, t == tab) }
     var permissionDialog by remember { mutableStateOf(false) }
     val localAllowed = localNetworkAllowed()
 
@@ -190,26 +191,20 @@ private fun LocalNetworkDialog(onDismiss: () -> Unit) {
     )
 }
 
-/**
- * A tab's run, one at a time: [running] from its start until it's over, stopped or not. Observed, as a Job's isActive
- * isn't (stopped, the tab stayed "Stop"); and only once it's over, not as soon as it's canceled, so a new one can't
- * start while the last still lets go of what it held (a scan's sockets).
- */
-internal class TabRun(private val scope: CoroutineScope) {
-    private var job by mutableStateOf<Job?>(null)
-    val running get() = job != null
+/** The tabs' fields, runs and results: the app's, made once, so the page finds them as they were (their runs going on). */
+internal class NetTabs private constructor(app: Context) {
+    val speed = SpeedState(app)
+    val ping = PingState(app)
+    val trace = TraceState(app)
+    val lan = LanState(app)
+    val ports = PortsState(app)
+    /** Each tab's run. */
+    val runs = listOf(Tab.Speed to speed.run, Tab.Ping to ping.run, Tab.Trace to trace.run, Tab.Lan to lan.run, Tab.Ports to ports.run)
 
-    fun start(block: suspend CoroutineScope.() -> Unit) {
-        if (running) return
-        // Started once it's the job: one over at once would else clear the last's
-        val launched = scope.launch(start = CoroutineStart.LAZY, block = block)
-        job = launched
-        launched.invokeOnCompletion { if (job === launched) job = null }
-        launched.start()
-    }
+    companion object {
+        private var tabs: NetTabs? = null
 
-    fun stop() {
-        job?.cancel()
+        fun of(context: Context) = tabs ?: NetTabs(context.applicationContext).also { tabs = it }
     }
 }
 
@@ -286,14 +281,6 @@ internal fun LinesCard(content: @Composable ColumnScope.() -> Unit) {
 internal fun Appearing(content: @Composable () -> Unit) {
     val state = remember { MutableTransitionState(false).apply { targetState = true } }
     AnimatedVisibility(visibleState = state, enter = revealEnter()) { content() }
-}
-
-/** Copies [text] (an address), saying so. */
-// A setter: primaryClip is a val in Kotlin (its getter is nullable, the setter isn't)
-@Suppress("UsePropertyAccessSyntax")
-internal fun copy(context: Context, text: String) {
-    context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText(text, text))
-    Toast.makeText(context, R.string.f_Net_copied, Toast.LENGTH_SHORT).show()
 }
 
 /** A round trip, e.g. "12.3 ms" ("0.045 ms" under one). */

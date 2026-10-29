@@ -5,13 +5,7 @@ import android.content.Context
 import java.io.File
 import java.net.InetAddress
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.linux.LinuxParts
@@ -29,57 +23,42 @@ import org.lukemech.lmtoolbox.R
  * [source] is its title, as its tasks show it.
  */
 class Bore(
-    private val source: AppFeature,
+    source: AppFeature,
     /** A bore server's secret (its own server's, `bore server --secret`), read by bore from there: never in a command line, nor a task's log. */
     val secretFile: File,
-    /** What the bottom bar shows of it while it runs (a service, see LinuxTasks.runService), e.g. "My server · bore". */
-    private val label: String = "bore",
-    /** The service it's part of, as its label (e.g. its server's name): one with it in the bottom bar. */
-    private val group: String? = null,
-) {
-    enum class Phase { Connecting, Connected, Stopped, Failed }
-
+    label: String = "bore",
+    group: String? = null,
+) : TunnelPart<Bore.State>(source, label, group) {
     data class State(
-        val phase: Phase = Phase.Connecting,
-        /** Its run's (see LinuxTasks.runService), for stopping it. */
-        val taskId: Long? = null,
+        override val phase: ConnectionPhase = ConnectionPhase.Connecting,
+        override val taskId: Long? = null,
         /** Where players join, once it's connected: e.g. bore.pub:41234. */
         val address: String? = null,
         /** The bore server's port it has (or had last). */
         val port: Int = 0,
         /** Why it couldn't connect, as bore said (e.g. the server's unreachable). */
-        val error: String? = null,
-    ) {
-        val isActive get() = phase == Phase.Connecting || phase == Phase.Connected
-    }
+        override val error: String? = null,
+    ) : TunnelState
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val _state = MutableStateFlow<State?>(null)
-    /** Null until it's started. */
-    val state: StateFlow<State?> = _state.asStateFlow()
-
-    @Volatile
-    private var stopping = false
-
-    val hasSecret get() = secretFile.let { it.exists() && it.length() > 0 }
+    val hasSecret get() = hasSecret(secretFile)
 
     /**
      * Connects [localPort] to [server] (unless it is), asking for [port] (0: any); [onLine] gets each
      * line bore prints. Lost once connected, it connects again; the port taken meanwhile, it takes any.
      */
     fun start(context: Context, localPort: Int, server: String = SERVER, port: Int = 0, onLine: (String) -> Unit = {}) {
-        if (_state.value?.isActive == true) return
+        if (mutableState.value?.isActive == true) return
         val app = context.applicationContext
         stopping = false
-        _state.value = State(port = port)
+        mutableState.value = State(port = port)
         scope.launch {
             var want = port
             var lastError: String? = null
             while (!stopping) {
                 var connected = false
-                val result = LinuxTasks.runService(
-                    app, command(localPort, server, want), source, label, group = group,
-                    onStart = { id -> _state.update { it?.copy(taskId = id) } },
+                val result = runService(
+                    app, command(localPort, server, want),
+                    onStart = { id -> mutableState.update { it?.copy(taskId = id) } },
                     onLine = { raw ->
                         val line = raw.replace(ANSI, "")
                         // Why it ended ("Error: ..."): told once, as its state's error (see the end), not in the log
@@ -87,7 +66,7 @@ class Bore(
                         LISTENING.find(line)?.let { m ->
                             connected = true
                             want = m.groupValues[2].toInt()
-                            _state.update { it?.copy(phase = Phase.Connected, address = "${m.groupValues[1]}:$want", port = want, error = null) }
+                            mutableState.update { it?.copy(phase = ConnectionPhase.Connected, address = "${m.groupValues[1]}:$want", port = want, error = null) }
                         }
                         if (" ERROR " in line || line.startsWith("Error: ")) lastError = line.substringAfter("ERROR ").substringAfter("Error: ").trim()
                     }
@@ -97,7 +76,7 @@ class Bore(
                 when {
                     // Lost (the network changed, the server restarted): again, on the same port
                     connected -> {
-                        _state.update { it?.copy(phase = Phase.Connecting, address = null) }
+                        mutableState.update { it?.copy(phase = ConnectionPhase.Connecting, address = null) }
                         delay(RETRY)
                     }
                     // Its port someone else's now: any other
@@ -107,21 +86,14 @@ class Bore(
             }
             // bore says only "could not connect": the DNS's doing (a blocker's answer) told as such
             if (!stopping && lastError?.startsWith("could not connect") == true && dnsBlocks(server)) lastError = app.getString(R.string.f_Srv_bore_dns_blocked, server)
-            _state.update {
+            mutableState.update {
                 it?.copy(
-                    phase = if (stopping) Phase.Stopped else Phase.Failed,
+                    phase = if (stopping) ConnectionPhase.Stopped else ConnectionPhase.Failed,
                     address = null,
                     error = if (stopping) null else lastError
                 )
             }
         }
-    }
-
-    /** Disconnects (the server frees its port as it's stopped). */
-    fun stop() {
-        val s = _state.value?.takeIf { it.isActive } ?: return
-        stopping = true
-        s.taskId?.let(LinuxTasks::cancel)
     }
 
     private fun command(localPort: Int, server: String, port: Int): List<String> {
@@ -133,16 +105,7 @@ class Bore(
     }
 
     /** Saves [secret] to [secretFile], readable by the app alone (null: removes it). */
-    fun setSecret(secret: String?) {
-        if (secret.isNullOrBlank()) {
-            secretFile.delete()
-            return
-        }
-        secretFile.parentFile?.mkdirs()
-        secretFile.writeText(secret.trim())
-        secretFile.setReadable(false, false)
-        secretFile.setReadable(true, true)
-    }
+    fun setSecret(secret: String?) = saveSecret(secretFile, secret)
 
     /**
      * Whether a DNS blocker answers for [server] (Private DNS, e.g. AdGuard's, or a Pi-hole): with nowhere

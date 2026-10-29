@@ -55,6 +55,7 @@ import org.lukemech.lmtoolbox.features.finance.currencyconv.CurrencyConverterFea
 import org.lukemech.lmtoolbox.features.finance.currencyconv.EcbRates
 import org.lukemech.lmtoolbox.ui.components.InputField
 import org.lukemech.lmtoolbox.ui.components.RowColors
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 @Composable
 fun CurrencyConverterPage(sharedValue: String?) {
@@ -89,7 +90,7 @@ fun CurrencyConverterPage(sharedValue: String?) {
 
                 if (currencyList.isEmpty()) {
                     // Told in the one place errors are, the bottom bar
-                    LinuxTasks.reportFailure(CurrencyConverterFeature, "", "No currencies in the rates")
+                    AppTasks.reportFailure(CurrencyConverterFeature, "", "No currencies in the rates")
                     initPhase = "error"
                 } else {
                     // The shared currencies as from and to, once (a single one as from, the sides swapped if they'd match)
@@ -109,7 +110,7 @@ fun CurrencyConverterPage(sharedValue: String?) {
             // The page left while loading: nothing went wrong
             throw e
         } catch (e: Exception) {
-            LinuxTasks.reportFailure(CurrencyConverterFeature, "", e.message ?: e.javaClass.simpleName, e.stackTraceToString())
+            AppTasks.reportFailure(CurrencyConverterFeature, "", e.message ?: e.javaClass.simpleName, e.stackTraceToString())
             initPhase = "error"
         }
     }
