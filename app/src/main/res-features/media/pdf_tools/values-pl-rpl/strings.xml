@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_PdfTools">Narzędzia PDF</string>
-    <string name="fk_PdfTools">pdf, dokument, dokumenty, scal, połącz, złącz, podziel, rozdziel, strony, wyodrębnij, wytnij, kompresja, kompresuj, zmniejsz, rozmiar, obróć, hasło, zabezpiecz, zaszyfruj, odblokuj, odszyfruj, usuń hasło, qpdf, ghostscript, narzędzia pdf, edytor pdf</string>
-    <string name="fd_PdfTools">Scal, podziel, zmniejsz PDF-y</string>
-    <string name="f_Pdf_share_desc">Udostępniaj PDF-y do narzędzi PDF z innych aplikacji</string>
+    <string name="fk_PdfTools">pdf, dokument, dokumenty, scal, połącz, złącz, podziel, rozdziel, strony, wyodrębnij, wytnij, kompresja, kompresuj, zmniejsz, rozmiar, obróć, hasło, zabezpiecz, zaszyfruj, odblokuj, odszyfruj, usuń hasło, qpdf, ghostscript, narzędzia pdf, edytor pdf, układaj, kolejność, strony, miniatury, obrazy, zdjęcia, png, jpg, jpeg, konwertuj, pdf na obraz, obraz na pdf, skan</string>
+    <string name="fd_PdfTools">Układaj, scalaj, dziel PDF-y</string>
+    <string name="f_Pdf_share_desc">Udostępniaj PDF-y i zdjęcia do narzędzi PDF z innych aplikacji</string>
 </resources>

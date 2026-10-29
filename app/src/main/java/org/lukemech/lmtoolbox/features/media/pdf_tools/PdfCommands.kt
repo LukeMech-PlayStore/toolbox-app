@@ -33,6 +33,14 @@ object PageRanges {
     /** All of [groups] as one qpdf range, e.g. "1-3,5,7-12". */
     fun join(groups: List<Group>) = groups.joinToString(",")
 
+    /** [pages] (numbers from 1, in their order) as groups: each run of them one after another a range ("1-3,5"). */
+    fun of(pages: List<Int>): List<Group> = buildList {
+        for (page in pages) {
+            val last = lastOrNull()
+            if (last != null && last.first <= last.last && page == last.last + 1) set(lastIndex, last.copy(last = page)) else add(Group(page, page))
+        }
+    }
+
     /** How many pages [groups] take (a page in two of them twice, as qpdf copies it twice). */
     fun count(groups: List<Group>) = groups.sumOf { it.pages }
 
@@ -53,15 +61,23 @@ data class PdfInput(val path: String, val password: String? = null)
 data class Inspection(val pages: Int?, val encrypted: Boolean, val needsPassword: Boolean)
 
 /**
- * Ghostscript's pdfwrite settings (its -dPDFSETTINGS), from the smallest file to the most faithful, or
- * qpdf's lossless pass ([Lossless]): streams compressed again and objects packed, nothing else changed.
+ * How a PDF made is compressed: not at all ([AsIs]), by qpdf's lossless pass ([Lossless]: streams compressed again and
+ * objects packed, nothing else changed), or by Ghostscript's pdfwrite with its settings (its -dPDFSETTINGS), from the
+ * smallest file to the most faithful.
  */
 enum class Preset(val setting: String?) {
+    AsIs(null),
+    Lossless(null),
     Screen("/screen"),
     Ebook("/ebook"),
     Printer("/printer"),
     Prepress("/prepress"),
-    Lossless(null),
+}
+
+/** What pages are saved as by [PdfCommands.images]: Ghostscript's [device] for them. */
+enum class ImageType(val extension: String, val mimeType: String, val device: List<String>) {
+    Png("png", "image/png", listOf("-sDEVICE=png16m")),
+    Jpg("jpg", "image/jpeg", listOf("-sDEVICE=jpeg", "-dJPEGQ=90")),
 }
 
 /**
@@ -94,11 +110,18 @@ object PdfCommands {
         return Inspection(pages, encrypted = code != 2, needsPassword = code == 0)
     }
 
-    /** [inputs] one after another, all their pages, into [output]; protected ones open with their passwords. */
-    fun merge(inputs: List<PdfInput>, output: String): List<String> =
+    /**
+     * [parts] one after another into [output]: each some pages of a file (its groups, in their order), a file as often
+     * as it comes; protected ones open with their passwords.
+     */
+    fun arrange(parts: List<Pair<PdfInput, List<PageRanges.Group>>>, output: String): List<String> =
         listOf("qpdf", "--empty", "--pages") +
-            inputs.flatMap { listOf("--file=${it.path}") + passwordArgs(it) } +
+            parts.flatMap { (input, groups) -> listOf("--file=${input.path}") + passwordArgs(input) + "--range=${PageRanges.join(groups)}" } +
             listOf("--", output)
+
+    /** [input] as it is into [output] (without its password, if it was opened with one). */
+    fun copy(input: PdfInput, output: String): List<String> =
+        listOf("qpdf") + passwordArgs(input) + decrypt(input) + listOf(input.path, output)
 
     /** The pages of [groups] (in their order) of [input], into one file, [output]. */
     fun extract(input: PdfInput, groups: List<PageRanges.Group>, output: String): List<String> =
@@ -117,14 +140,23 @@ object PdfCommands {
         groups.map { extract(input, listOf(it), outputOf(it)) }
 
     /**
-     * [input]'s pages turned clockwise by [angle] (90, 180, 270; added to how they're turned already), those of
-     * [groups] only, or all without; into [output].
+     * [input]'s pages turned clockwise: by each angle of [turns] (90, 180, 270; added to how they're turned already) its
+     * pages (numbers from 1); into [output].
      */
-    fun rotate(input: PdfInput, angle: Int, groups: List<PageRanges.Group>?, output: String): List<String> {
-        require(angle in setOf(90, 180, 270)) { "Not a quarter turn: $angle" }
-        val range = groups?.let { ":${PageRanges.join(it)}" }.orEmpty()
-        return listOf("qpdf") + passwordArgs(input) + decrypt(input) + listOf("--rotate=+$angle$range", input.path, output)
+    fun rotate(input: PdfInput, turns: Map<Int, List<Int>>, output: String): List<String> {
+        turns.keys.forEach { require(it in setOf(90, 180, 270)) { "Not a quarter turn: $it" } }
+        return listOf("qpdf") + passwordArgs(input) + decrypt(input) +
+            turns.map { (angle, pages) -> "--rotate=+$angle:${PageRanges.join(PageRanges.of(pages))}" } + listOf(input.path, output)
     }
+
+    /**
+     * Each page of [input] a picture of [type] at [dpi], by Ghostscript: [output] a pattern of their names, its "%03d"
+     * the page's number ("doc-001.png"). It prints "Page n" as it goes (see [progress]).
+     */
+    fun images(input: PdfInput, type: ImageType, dpi: Int, output: String): List<String> =
+        listOf("gs", "-dSAFER", "-dBATCH", "-dNOPAUSE") + type.device +
+            listOf("-r$dpi", "-dTextAlphaBits=4", "-dGraphicsAlphaBits=4") +
+            listOfNotNull(input.password?.let { "-sPDFPassword=$it" }) + listOf("-sOutputFile=$output", input.path)
 
     /**
      * [input] made smaller into [output]: by Ghostscript's pdfwrite with [preset]'s settings (pictures scaled down and
@@ -132,6 +164,7 @@ object PdfCommands {
      * (pdfwrite turns them by their text otherwise); Ghostscript prints "Page n" as it goes (see [progress]).
      */
     fun compress(input: PdfInput, preset: Preset, output: String): List<String> {
+        require(preset != Preset.AsIs) { "Nothing to compress by" }
         val setting = preset.setting
             ?: return listOf("qpdf") + passwordArgs(input) + decrypt(input) +
                 listOf("--object-streams=generate", "--compress-streams=y", "--recompress-flate", "--compression-level=9", input.path, output)

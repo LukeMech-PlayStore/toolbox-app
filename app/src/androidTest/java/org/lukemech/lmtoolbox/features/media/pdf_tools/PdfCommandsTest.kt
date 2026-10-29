@@ -21,6 +21,8 @@ class PdfCommandsTest {
         assertEquals(listOf(Group(10, 12), Group(12, 1)), PageRanges.parse(" r3 - R1 , Z-1", 12))
         assertEquals("1-3,5,7-12", PageRanges.join(PageRanges.parse("1-3,5,7-z", 12)!!))
         assertEquals(12, PageRanges.count(PageRanges.parse("z-1", 12)!!))
+        // Pages in their order as ranges: a run upwards one
+        assertEquals(listOf(Group(1, 3), Group(5, 5), Group(4, 4), Group(7, 8)), PageRanges.of(listOf(1, 2, 3, 5, 4, 7, 8)))
     }
 
     @Test
@@ -56,11 +58,21 @@ class PdfCommandsTest {
     }
 
     @Test
-    fun merged() {
+    fun arranged() {
         assertEquals(
-            listOf("qpdf", "--empty", "--pages", "--file=/c/a.pdf", "--file=/c/b.pdf", "--password=x y", "--", "/o/out.pdf"),
-            PdfCommands.merge(listOf(PdfInput("/c/a.pdf"), PdfInput("/c/b.pdf", "x y")), "/o/out.pdf")
+            listOf(
+                "qpdf", "--empty", "--pages", "--file=/c/a.pdf", "--range=1-3", "--file=/c/b.pdf", "--password=x y", "--range=2",
+                "--file=/c/a.pdf", "--range=5", "--", "/o/out.pdf"
+            ),
+            PdfCommands.arrange(
+                listOf(
+                    PdfInput("/c/a.pdf") to listOf(Group(1, 3)), PdfInput("/c/b.pdf", "x y") to listOf(Group(2, 2)),
+                    PdfInput("/c/a.pdf") to listOf(Group(5, 5)),
+                ),
+                "/o/out.pdf"
+            )
         )
+        assertEquals(listOf("qpdf", "/c/in.pdf", "/o/out.pdf"), PdfCommands.copy(doc, "/o/out.pdf"))
     }
 
     @Test
@@ -104,12 +116,23 @@ class PdfCommandsTest {
 
     @Test
     fun rotated() {
-        assertEquals(listOf("qpdf", "--rotate=+90", "/c/in.pdf", "/o/out.pdf"), PdfCommands.rotate(doc, 90, null, "/o/out.pdf"))
         assertEquals(
-            listOf("qpdf", "--rotate=+270:2,4-6", "/c/in.pdf", "/o/out.pdf"),
-            PdfCommands.rotate(doc, 270, listOf(Group(2, 2), Group(4, 6)), "/o/out.pdf")
+            listOf("qpdf", "--rotate=+90:1", "--rotate=+270:2,4-6", "/c/in.pdf", "/o/out.pdf"),
+            PdfCommands.rotate(doc, mapOf(90 to listOf(1), 270 to listOf(2, 4, 5, 6)), "/o/out.pdf")
         )
-        assertThrows(IllegalArgumentException::class.java) { PdfCommands.rotate(doc, 45, null, "/o/out.pdf") }
+        assertThrows(IllegalArgumentException::class.java) { PdfCommands.rotate(doc, mapOf(45 to listOf(1)), "/o/out.pdf") }
+    }
+
+    @Test
+    fun pictures() {
+        assertEquals(
+            listOf(
+                "gs", "-dSAFER", "-dBATCH", "-dNOPAUSE", "-sDEVICE=jpeg", "-dJPEGQ=90", "-r150", "-dTextAlphaBits=4",
+                "-dGraphicsAlphaBits=4", "-sOutputFile=/o/doc-%03d.jpg", "/c/in.pdf"
+            ),
+            PdfCommands.images(doc, ImageType.Jpg, 150, "/o/doc-%03d.jpg")
+        )
+        assertEquals("-sDEVICE=png16m", PdfCommands.images(doc, ImageType.Png, 72, "/o/doc-%03d.png")[4])
     }
 
     @Test
@@ -139,56 +162,63 @@ class PdfCommandsTest {
     }
 
     @Test
-    fun actionsForTheFiles() {
-        assertEquals(listOf(PdfAction.Split, PdfAction.Compress, PdfAction.Rotate, PdfAction.Protect), PdfOptions.actions(1, encrypted = false))
-        assertEquals(PdfAction.Unlock, PdfOptions.actions(1, encrypted = true).last())
-        assertEquals(PdfAction.Merge, PdfOptions.actions(2, encrypted = true).first())
-        assertEquals(PdfAction.Split, PdfOptions(action = PdfAction.Merge).effective(1, encrypted = false).action)
-        // Unlocking takes one file
-        assertEquals(PdfAction.Merge, PdfOptions(action = PdfAction.Unlock).effective(2, encrypted = true).action)
-        // No files yet (the page's intro): nothing to do with them, what's picked kept
-        assertEquals(PdfAction.Merge, PdfOptions(action = PdfAction.Merge).effective(0, encrypted = false).action)
+    fun pagesTurned() {
+        val page = PageRef(1, 1, 0)
+        assertEquals(270, page.turned(-90).rotation)
+        assertEquals(0, page.turned(90).turned(270).rotation)
+        assertEquals(180, page.turned(540).rotation)
     }
 
     @Test
     fun readyOnceTyped() {
-        assertEquals(false, PdfOptions(action = PdfAction.Split, splitMode = SplitMode.Ranges, ranges = "1-20").isReady(12))
-        assertEquals(true, PdfOptions(action = PdfAction.Split, splitMode = SplitMode.Ranges, ranges = "1-2").isReady(12))
-        assertEquals(true, PdfOptions(action = PdfAction.Split, ranges = "nonsense").isReady(12))
-        assertEquals(true, PdfOptions(action = PdfAction.Rotate).isReady(12))
-        assertEquals(false, PdfOptions(action = PdfAction.Rotate, rotatePages = "13").isReady(12))
-        assertEquals(false, PdfOptions(action = PdfAction.Protect).isReady(12))
+        assertEquals(false, PdfOptions(output = PdfOutput.Split, splitMode = SplitMode.Ranges, ranges = "1-20").isReady(12))
+        assertEquals(true, PdfOptions(output = PdfOutput.Split, splitMode = SplitMode.Ranges, ranges = "1-2").isReady(12))
+        assertEquals(true, PdfOptions(output = PdfOutput.Split, ranges = "nonsense").isReady(12))
+        assertEquals(false, PdfOptions(protect = true).isReady(12))
+        assertEquals(true, PdfOptions(protect = true, password = "x").isReady(12))
+        // No pages: nothing to make
+        assertEquals(false, PdfOptions().isReady(0))
     }
 
     @Test
     fun planned() {
-        val a = PdfInput("/c/a.pdf")
-        val b = PdfInput("/c/b.pdf", "pw")
-        // Several files: joined first, then compressed (the joined one has no password)
+        val inputs = mapOf(1L to PdfInput("/c/a.pdf"), 2L to PdfInput("/c/b.pdf"))
+        val counts = mapOf(1L to 3, 2L to 4)
+        val a = (0..2).map { PageRef(it + 1L, 1, it) }
+        val b = (0..3).map { PageRef(it + 10L, 2, it) }
+        fun plan(pages: List<PageRef>, o: PdfOptions) = plan(pages, inputs, counts, o, "/w", "/o", "doc", "owner")
+
+        // One file's every page as it is: read as it is
+        assertEquals(PdfPlan(listOf(PdfCommands.copy(inputs.getValue(1), "/o/doc.pdf")), 3), plan(a, PdfOptions()))
+        // Two files, a page of the first moved after the second's and turned: put together, turned, then compressed
+        val arranged = PdfInput("/w/arranged.pdf")
+        val turned = PdfInput("/w/turned.pdf")
         assertEquals(
-            PdfPlan(
-                listOf(
-                    PdfCommands.merge(listOf(a, b), "/w/joined.pdf"),
-                    PdfCommands.compress(PdfInput("/w/joined.pdf"), Preset.Printer, "/o/doc.pdf"),
+            listOf(
+                PdfCommands.arrange(
+                    listOf(inputs.getValue(1) to listOf(Group(2, 3)), inputs.getValue(2) to listOf(Group(1, 4)), inputs.getValue(1) to listOf(Group(1, 1))),
+                    arranged.path
                 ),
-                7
+                PdfCommands.rotate(arranged, mapOf(90 to listOf(7)), turned.path),
+                PdfCommands.compress(turned, Preset.Printer, "/w/compressed.pdf"),
+                PdfCommands.protect(PdfInput("/w/compressed.pdf"), "open", "owner", "/o/doc.pdf"),
             ),
-            plan(listOf(a, b), 7, PdfOptions(action = PdfAction.Compress, preset = Preset.Printer), "/w", "/o", "doc", "owner")
+            plan(a.drop(1) + b + a[0].turned(90), PdfOptions(preset = Preset.Printer, protect = true, password = "open"))?.steps
+        )
+        // A page left out: put together too; a range typed twice is one file
+        assertEquals(
+            listOf(
+                PdfCommands.arrange(listOf(inputs.getValue(2) to listOf(Group(1, 3))), arranged.path),
+            ) + PdfCommands.splitRanges(arranged, listOf(Group(1, 2), Group(3, 3))) { "/o/doc-$it.pdf" },
+            plan(b.take(3), PdfOptions(output = PdfOutput.Split, splitMode = SplitMode.Ranges, ranges = "1-2,3-z,1-2"))?.steps
         )
         assertEquals(
-            listOf(PdfCommands.merge(listOf(a, b), "/o/doc.pdf")),
-            plan(listOf(a, b), 7, PdfOptions(action = PdfAction.Merge), "/w", "/o", "doc", "owner")?.steps
+            listOf(PdfCommands.images(inputs.getValue(2), ImageType.Png, 300, "/o/doc-%03d.png")),
+            plan(b, PdfOptions(output = PdfOutput.Images, dpi = 300))?.steps
         )
-        // A range typed twice is one file
-        assertEquals(
-            PdfCommands.splitRanges(b, listOf(Group(1, 2), Group(3, 7))) { "/o/doc-$it.pdf" },
-            plan(listOf(b), 7, PdfOptions(action = PdfAction.Split, splitMode = SplitMode.Ranges, ranges = "1-2,3-z,1-2"), "/w", "/o", "doc", "owner")?.steps
-        )
-        assertEquals(
-            listOf(PdfCommands.protect(a, "open", "owner", "/o/doc.pdf")),
-            plan(listOf(a), 3, PdfOptions(action = PdfAction.Protect, password = "open"), "/w", "/o", "doc", "owner")?.steps
-        )
-        assertNull(plan(listOf(a), 3, PdfOptions(action = PdfAction.Split, splitMode = SplitMode.Extract, ranges = "4"), "/w", "/o", "doc", "owner"))
-        assertNull(plan(emptyList(), 0, PdfOptions(), "/w", "/o", "doc", "owner"))
+        assertNull(plan(a, PdfOptions(output = PdfOutput.Split, splitMode = SplitMode.Ranges, ranges = "4")))
+        assertNull(plan(emptyList(), PdfOptions()))
+        // A page of a file not open
+        assertNull(plan(listOf(PageRef(99, 3, 0)), PdfOptions()))
     }
 }

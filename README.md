@@ -19,8 +19,8 @@
 **One app, a drawer full of tools.** Measure with a ruler, a spirit level, a compass, a sound level meter, a
 light meter, a metal detector, a vibration meter and a stroboscope; work out a resistor's color code or a 555
 timer with 30 electronics calculators; look up pinouts and tables; convert currencies; download, convert and
-shrink videos, music and images; merge, split and shrink PDFs; edit a photo's metadata; share a folder with any
-browser; test your internet's speed, ping, trace and scan your network; or run your own Minecraft server,
+shrink videos, music and images; arrange, merge, split and shrink PDFs; edit a photo's metadata; share a folder
+with any browser; test your internet's speed, ping, trace and scan your network; or run your own Minecraft server,
 Vanilla to NeoForge, straight from your phone and reachable by your friends through Bore, a Cloudflare tunnel or
 Tailscale.
 
@@ -61,7 +61,7 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Media       | Media encoder (video, GIF, sound; cut, resize, a target file size)                             | FFmpeg                                                                                                                                                                       | `features:ffmpeg`   |
 | Media       | Image encoder (resizing, a target file size)                                                   | Android (`ImageDecoder`, `Bitmap`)                                                                                                                                           | `app`               |
 | Media       | File size (a shortcut to the media or the image encoder)                                       | Android                                                                                                                                                                      | `app`               |
-| Media       | PDF tools (merge, split, compress, rotate, add or remove a password)                           | qpdf, Ghostscript                                                                                                                                                            | `features:pdf`      |
+| Media       | PDF tools (pages arranged, merged, split, compressed, protected, as pictures)                  | qpdf, Ghostscript                                                                                                                                                            | `features:pdf`      |
 | Media       | File hash (MD5, SHA-1, SHA-2, SHA-3, CRC32; checked against a hash or a checksum file)         | Android (`MessageDigest`, `CRC32`); SHA-3 the app's own (Android has none)                                                                                                   | `app`               |
 | Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
 | Network     | Network tools (speed test, ping, traceroute, LAN devices, port scan)                           | Android (its `ping`, sockets, HTTP, `NsdManager`); the speed test on Cloudflare's servers (speed.cloudflare.com)                                                             | `app`               |
@@ -147,7 +147,7 @@ checks that the routes are unique.
   has anymore go with the subsystem's update).
 - What a tool makes is saved with [`helpers/SavedFiles.kt`](app/src/main/java/org/lukemech/lmtoolbox/helpers/SavedFiles.kt):
   into the folder picked in its settings (`OutputFolder`), else into MediaStore (`saveToMediaStore`). Its page
-  then opens or shares it (`openFile`, `shareFile`, which leaves the tool's own "Share to" out).
+  then opens or shares it (`openFile`, `shareFile` or `shareFiles`, which leave the tool's own "Share to" out).
 - "Share to" and "Open in" entries are `<activity-alias>`es in the manifest, listed in `SystemEntries` (a
   test checks the two match). Several files shared at once (the PDF tools' `SEND_MULTIPLE`) come to the tool
   as their URIs, a line each. Each is switched on or off in the system section of the tool's settings
@@ -271,7 +271,9 @@ shipped with a build that's no release.
 - **The shared pieces are used, not rebuilt**: `InputField` for every text field (the app's corners, Done closing
   the keyboard), `RowColors` for a row's colors (`default`, `danger`, `alert`, `changed`, `highlighted`,
   `tinted`), `PermissionDialog` for every permission asked, `PromptBar` for a bar asking for something on top of
-  a page (`SensorWarning` for the measuring tools' sensors), `ConfirmDialog` before what can't be undone.
+  a page (`SensorWarning` for the measuring tools' sensors), `ConfirmDialog` before what can't be undone,
+  `Images` for pictures (`rememberPdfPage` for a PDF's page drawn, `loadUri` for one of the phone's), `writePicturePdf`
+  for a picture as a PDF page.
 - **A page is a plain function** named `<Name>Page`, in its tool's own package (so its helpers' names never
   clash with another tool's). A settings sub-page is a `…Page` too; a part of the main settings page is a
   `…Section`.

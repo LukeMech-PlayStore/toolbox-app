@@ -26,10 +26,15 @@ import org.lukemech.lmtoolbox.helpers.SavedFile
 import org.lukemech.lmtoolbox.helpers.displayName
 import org.lukemech.lmtoolbox.helpers.safeFileName
 import org.lukemech.lmtoolbox.helpers.saveToMediaStore
+import org.lukemech.lmtoolbox.helpers.writePicturePdf
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.tasks.AppTasks
+import org.lukemech.lmtoolbox.ui.helpers.Images
 
-/** A PDF being worked on: where it's from, its name, its copy qpdf and Ghostscript read, and what's in it. */
+/**
+ * A PDF being worked on (or a picture added, made one: [picture]): where it's from, its name, its copy qpdf,
+ * Ghostscript and the page grid read (one without its password or restrictions, once it's opened), and its pages.
+ */
 data class PdfFile(
     val id: Long,
     val uri: Uri,
@@ -38,13 +43,14 @@ data class PdfFile(
     val size: Long,
     /** Null while it can't be opened without its [password]. */
     val pages: Int?,
-    /** With a password or restrictions (see [PdfOptions.actions]). */
+    /** Had a password (typed, [password]) or restrictions: its copy has neither. */
     val encrypted: Boolean,
     val password: String? = null,
+    val picture: Boolean = false,
 ) {
     val needsPassword get() = pages == null
     val baseName get() = name.substringBeforeLast('.').ifBlank { name }
-    val input get() = PdfInput(copy.absolutePath, password)
+    val input get() = PdfInput(copy.absolutePath)
 }
 
 /**
@@ -55,8 +61,13 @@ data class PdfFile(
 object PdfJobs {
     const val MIME_TYPE = "application/pdf"
 
+    /** A picture added is drawn at most this big (pixels on its longer side): an A4 page's width at 300 dpi. */
+    private const val PICTURE_SIZE = 2480
+
     data class Job(
         val files: List<PdfFile>,
+        /** The pages made into it, in their order. */
+        val pages: List<PageRef>,
         val options: PdfOptions,
         val fileName: String,
         val taskId: Long? = null,
@@ -77,10 +88,13 @@ object PdfJobs {
     private val ids = AtomicLong()
 
     /**
-     * The open files, the new name and what's picked are the page's, kept here: back to them after the page was
-     * left, or redrawn afresh (e.g. back from the file picker). [fileName] null: not typed (the action's follows).
+     * The open files, their pages as arranged and those selected, the new name and what's picked are the page's, kept
+     * here: back to them after the page was left, or redrawn afresh (e.g. back from the file picker). [fileName] null:
+     * not typed (the output's follows).
      */
     var files by mutableStateOf<List<PdfFile>>(emptyList())
+    var pages by mutableStateOf<List<PageRef>>(emptyList())
+    var selected by mutableStateOf<Set<Long>>(emptySet())
     var fileName by mutableStateOf<String?>(null)
     var options by mutableStateOf(PdfOptions())
 
@@ -92,38 +106,47 @@ object PdfJobs {
     private fun outputDir(context: Context) = File(PdfToolsFeature.cacheDir(context), "out")
 
     /**
-     * Copies each of [uris] in (qpdf reads files) and reads what's in it: those it can't read are left out, the
-     * bottom bar telling why. Empty when none could be, or the subsystem isn't ready.
+     * Copies each of [uris] in (qpdf reads files) and reads what's in it, a picture made a page; those it can't read
+     * are left out, the bottom bar telling why. Empty when none could be, or the subsystem isn't ready.
      */
     suspend fun open(context: Context, uris: List<Uri>): List<PdfFile> = buildList {
         for (uri in uris) {
             val name = displayName(context, uri) ?: "document.pdf"
             val id = ids.incrementAndGet()
             // A plain name keeps odd characters out of its commands
-            val copy = withContext(Dispatchers.IO) {
-                runCatching {
-                    File(inputDir(context).apply { mkdirs() }, "$id.pdf").also { file ->
-                        context.contentResolver.openInputStream(uri)!!.use { input -> file.outputStream().use { input.copyTo(it) } }
-                    }
-                }.getOrNull()
+            val file = File(inputDir(context).apply { mkdirs() }, "$id.pdf")
+            if (context.contentResolver.getType(uri)?.startsWith("image/") == true) {
+                val made = Images.loadUri(context, uri, PICTURE_SIZE)?.let { picture ->
+                    withContext(Dispatchers.IO) { runCatching { file.outputStream().use { writePicturePdf(picture, it) } }.isSuccess }
+                } == true
+                if (made) add(PdfFile(id, uri, name, file, file.length(), pages = 1, encrypted = false, picture = true))
+                else AppTasks.reportFailure(PdfToolsFeature, name, "Couldn't read the picture")
+                continue
             }
-            if (copy == null) {
+            val copied = withContext(Dispatchers.IO) {
+                runCatching {
+                    context.contentResolver.openInputStream(uri)!!.use { input -> file.outputStream().use { input.copyTo(it) } }
+                }.isSuccess
+            }
+            if (!copied) {
                 // Not a command's: told in the one place errors are, the bottom bar
                 AppTasks.reportFailure(PdfToolsFeature, name, "Couldn't read the file")
                 continue
             }
-            val result = LinuxTasks.run(context, PdfCommands.inspect(PdfInput(copy.absolutePath)), PdfToolsFeature)
+            val result = LinuxTasks.run(context, PdfCommands.inspect(PdfInput(file.absolutePath)), PdfToolsFeature)
             if (result.isEnvNotReady) {
-                copy.delete()
+                file.delete()
                 break
             }
             val inspection = PdfCommands.parseInspection(result.stdout)
             if (inspection == null) {
-                copy.delete()
+                file.delete()
                 AppTasks.reportFailure(PdfToolsFeature, name, "Not a PDF qpdf can read", result.output)
                 continue
             }
-            add(PdfFile(id, uri, name, copy, copy.length(), inspection.pages, inspection.encrypted))
+            val opened = PdfFile(id, uri, name, file, file.length(), inspection.pages, inspection.encrypted)
+            // Restrictions only: opened without them right away (the grid's pages are drawn by Android, which can't)
+            add(if (opened.encrypted && !opened.needsPassword) decrypted(context, opened, null) ?: continue else opened)
         }
     }
 
@@ -131,23 +154,85 @@ object PdfJobs {
     suspend fun unlock(context: Context, file: PdfFile, password: String): PdfFile? {
         val result = LinuxTasks.run(context, PdfCommands.inspect(PdfInput(file.copy.absolutePath, password)), PdfToolsFeature)
         val pages = PdfCommands.parseInspection(result.stdout)?.takeIf { !it.needsPassword }?.pages ?: return null
-        return file.copy(pages = pages, password = password)
+        return decrypted(context, file.copy(pages = pages, password = password), password)
+    }
+
+    /** [file]'s copy without its password and restrictions, in its place; null (its log in the task list) if it can't be. */
+    private suspend fun decrypted(context: Context, file: PdfFile, password: String?): PdfFile? {
+        val plain = File(file.copy.parentFile, "${file.id}-open.pdf")
+        val result = LinuxTasks.run(context, PdfCommands.unlock(PdfInput(file.copy.absolutePath, password), plain.absolutePath), PdfToolsFeature)
+        if (!result.isSuccess || !plain.exists()) {
+            plain.delete()
+            return null
+        }
+        file.copy.delete()
+        return file.copy(copy = plain, size = plain.length())
+    }
+
+    /** [opened] added after the open files, their pages after the pages (a protected one's once it's opened). */
+    fun add(opened: List<PdfFile>) {
+        files = files + opened
+        pages = pages + opened.flatMap(::pagesOf)
+    }
+
+    /** [file] opened with its password (see [unlock]): in its place, its pages after the others. */
+    fun unlocked(file: PdfFile) {
+        files = files.map { if (it.id == file.id) file else it }
+        pages = pages + pagesOf(file)
+    }
+
+    private fun pagesOf(file: PdfFile) = (0 until (file.pages ?: 0)).map { PageRef(ids.incrementAndGet(), file.id, it) }
+
+    /** A copy of [page] (its own key), for the grid's "duplicate". */
+    fun copyOf(page: PageRef) = page.copy(key = ids.incrementAndGet())
+
+    /**
+     * The files none of the [pages] are of anymore closed (their copies deleted), but those still to be opened with
+     * their passwords; not while a job reads them.
+     */
+    fun prune() {
+        if (isBusy()) return
+        val used = pages.mapTo(HashSet()) { it.file }
+        val (kept, gone) = files.partition { it.id in used || it.needsPassword }
+        files = kept
+        close(gone)
+    }
+
+    /** [file] closed (one still to be opened with its password: it has no pages). */
+    fun remove(file: PdfFile) {
+        files = files - file
+        pages = pages.filter { it.file != file.id }
+        close(listOf(file))
+    }
+
+    /** Every open file closed, its pages with it. */
+    fun closeAll() {
+        close(files)
+        files = emptyList()
+        pages = emptyList()
+        selected = emptySet()
     }
 
     /** Deletes the copies of [gone] (closed files, not being read now). */
     fun close(gone: List<PdfFile>) = gone.forEach { it.copy.delete() }
 
-    fun start(context: Context, files: List<PdfFile>, options: PdfOptions, fileName: String) {
+    /** The pages [o] is made of: those selected (in their order), or all. */
+    fun pagesFor(o: PdfOptions) = if (o.selectedOnly && selected.isNotEmpty()) pages.filter { it.key in selected } else pages
+
+    fun start(context: Context, o: PdfOptions, fileName: String) {
         if (_state.value?.isActive == true) return
         val app = context.applicationContext
-        val o = options.effective(files.size, files.any { it.encrypted })
-        _state.value = Job(files, o, fileName)
+        val made = pagesFor(o)
+        val used = made.mapTo(HashSet()) { it.file }
+        val files = files.filter { it.id in used }
+        _state.value = Job(files, made, o, fileName)
         scope.launch {
             val work = workDir(app).apply { deleteRecursively(); mkdirs() }
             val out = outputDir(app).apply { deleteRecursively(); mkdirs() }
             val name = safeFileName(fileName, "document")
             val plan = plan(
-                files.map { it.input }, files.sumOf { it.pages ?: 0 }, o, work.absolutePath, out.absolutePath, name, ownerPassword()
+                made, files.associate { it.id to it.input }, files.associate { it.id to (it.pages ?: 0) }, o,
+                work.absolutePath, out.absolutePath, name, ownerPassword()
             )
             if (plan == null) {
                 _state.update { it?.copy(phase = Phase.Failed) }
@@ -166,15 +251,15 @@ object PdfJobs {
                 }
             )
             val cancelled = AppTasks.isCancelled(_state.value?.taskId)
-            // What it made, in order (a split's parts by their pages)
-            val made = out.listFiles()?.filter { it.isFile && it.length() > 0 }?.sortedBy { it.name }.orEmpty()
+            // What it made, in order (a split's parts, pictures, by their pages)
+            val madeFiles = out.listFiles()?.filter { it.isFile && it.length() > 0 }?.sortedBy { it.name }.orEmpty()
             when {
                 cancelled -> _state.update { it?.copy(phase = Phase.Cancelled) }
                 // The card says it failed; what qpdf or Ghostscript said is in the task's log
-                !result.isSuccess || made.isEmpty() -> _state.update { it?.copy(phase = Phase.Failed) }
+                !result.isSuccess || madeFiles.isEmpty() -> _state.update { it?.copy(phase = Phase.Failed) }
                 else -> {
-                    _state.update { it?.copy(phase = Phase.Saving, fraction = null, sizeAfter = made.sumOf { f -> f.length() }) }
-                    val saved = runCatching { save(app, made, name) }.getOrNull()
+                    _state.update { it?.copy(phase = Phase.Saving, fraction = null, sizeAfter = madeFiles.sumOf { f -> f.length() }) }
+                    val saved = runCatching { save(app, madeFiles, name, o.mimeType) }.getOrNull()
                     _state.update {
                         if (saved != null) it?.copy(phase = Phase.Done, saved = saved)
                         else it?.copy(phase = Phase.Failed)
@@ -203,6 +288,8 @@ object PdfJobs {
     fun forget() {
         cancel()
         files = emptyList()
+        pages = emptyList()
+        selected = emptySet()
         fileName = null
         options = PdfOptions()
         _state.value = null
@@ -219,21 +306,24 @@ object PdfJobs {
     val output = OutputFolder(PdfToolsFeature.S_OUTPUT)
 
     /**
-     * Copies [files] into the folder picked ([output]), else Downloads, a split's parts together in a folder of
-     * their [name] there.
+     * Copies [files] (of [mimeType]) into the folder picked ([output]), else Downloads, several (a split's parts,
+     * pictures) together in a folder of their [name] there.
      */
-    private suspend fun save(context: Context, files: List<File>, name: String): List<SavedFile> = withContext(Dispatchers.IO) {
+    private suspend fun save(context: Context, files: List<File>, name: String, mimeType: String): List<SavedFile> = withContext(Dispatchers.IO) {
         val downloads = context.getString(R.string.f_Pdf_downloads)
         val picked = output.name(context, downloads)
         val folder = if (files.size > 1) "${Environment.DIRECTORY_DOWNLOADS}/$name" else Environment.DIRECTORY_DOWNLOADS
         files.map { file ->
-            output.save(context, file, MIME_TYPE)?.let { uri ->
-                return@map SavedFile(uri, displayName(context, uri) ?: file.name, MIME_TYPE, picked)
+            output.save(context, file, mimeType)?.let { uri ->
+                return@map SavedFile(uri, displayName(context, uri) ?: file.name, mimeType, picked)
             }
             val uri = saveToMediaStore(
-                context, MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), folder, file.name, MIME_TYPE
+                context, MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), folder, file.name, mimeType
             ) { out -> file.inputStream().use { it.copyTo(out) } }
-            SavedFile(uri, displayName(context, uri) ?: file.name, MIME_TYPE, if (files.size > 1) "$downloads/$name" else downloads)
+            SavedFile(uri, displayName(context, uri) ?: file.name, mimeType, if (files.size > 1) "$downloads/$name" else downloads)
         }
     }
 }
+
+/** What [PdfOptions] makes is saved as. */
+val PdfOptions.mimeType get() = if (output == PdfOutput.Images) imageType.mimeType else PdfJobs.MIME_TYPE

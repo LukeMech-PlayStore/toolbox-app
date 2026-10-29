@@ -1,8 +1,10 @@
 package org.lukemech.lmtoolbox.helpers
 
 import android.content.res.Resources
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.text.Layout
@@ -113,5 +115,23 @@ open class PdfPages(protected val resources: Resources, private val title: Strin
         const val TILE_EDGE = 0xFFD5DADD.toInt()
         // The app's teal, as its tiles' icons
         const val ACCENT = 0xFF00897B.toInt()
+    }
+}
+
+/**
+ * [picture] as a one-page PDF written to [out]: an A4 page's width, as tall as the picture is for it (a page
+ * as wide as A4 for a landscape one too, so pages added to others line up), the picture filling it.
+ */
+fun writePicturePdf(picture: Bitmap, out: OutputStream) {
+    val width = PdfPages.A4_WIDTH
+    val height = width * picture.height / picture.width.coerceAtLeast(1)
+    val document = PdfDocument()
+    try {
+        val page = document.startPage(PdfDocument.PageInfo.Builder(width.toInt(), height.toInt().coerceAtLeast(1), 1).create())
+        page.canvas.drawBitmap(picture, null, RectF(0f, 0f, width, height), Paint(Paint.FILTER_BITMAP_FLAG))
+        document.finishPage(page)
+        document.writeTo(out)
+    } finally {
+        document.close()
     }
 }
