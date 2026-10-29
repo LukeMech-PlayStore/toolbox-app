@@ -1,11 +1,9 @@
 ✨ New
-• Folder share: a phone folder in any browser, even from afar
-• Meters: sound level, light, metal detector, vibration, stroboscope
-• Electronics: five new calculators, RL/RLC filters
-• Reference: tables and pinouts, Arduino to ESP32 and STM32 boards
-• File hash: checksums of a file or text, checked against a hash
-• PDF export of pinouts, tables and meter readings
+• PDF tools: arrange, merge, split, compress, add a password
+• PDF pages in a grid: move, turn, copy, delete; pictures in and out
+• Network tools: speed test, ping, traceroute, LAN devices, port scan
 
 ⚡ Improvements
-• Meters get Hold; turning the screen keeps your page
-• Batteries: life and sizes in one tool; fixes and more
+• Tools keep working in the background, progress in the bottom bar
+• Metal detector heard in silent mode; sensor warnings on top
+• Install page opens faster; fixes and more

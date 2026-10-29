@@ -1,11 +1,9 @@
 ✨ Nowości
-• Udostępnianie folderu: folder telefonu w przeglądarce, też z daleka
-• Mierniki: dźwięk, światło, wykrywacz metalu, drgania, stroboskop
-• Elektronika: pięć nowych kalkulatorów, filtry RL/RLC
-• Ściągawki: tabele i pinouty, Arduino, ESP32, STM32
-• Suma kontrolna: hashe pliku lub tekstu i ich sprawdzanie
-• Eksport PDF pinoutów, tabel i odczytów mierników
+• Narzędzia PDF: układanie, scalanie, dzielenie, kompresja, hasło
+• Strony PDF w siatce: przesuń, obróć, skopiuj, usuń; też zdjęcia
+• Narzędzia sieciowe: test łącza, ping, trasa, urządzenia w sieci, porty
 
 ⚡ Ulepszenia
-• Mierniki mają Zatrzymaj; obrót ekranu zachowuje stronę
-• Baterie: czas pracy i rozmiary w jednym; poprawki i inne
+• Narzędzia pracują w tle, z postępem na dolnym pasku
+• Wykrywacz metalu słychać w trybie cichym; ostrzeżenia czujników u góry
+• Strona instalacji otwiera się szybciej; poprawki i inne
