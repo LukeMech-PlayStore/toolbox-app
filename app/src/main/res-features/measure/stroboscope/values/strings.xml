@@ -14,7 +14,7 @@
     <string name="f_strobe_flash">Flash</string>
     <string name="f_strobe_flash_desc">Off when you leave</string>
     <string name="f_strobe_no_torch">This device has no torch.</string>
-    <string name="f_strobe_torch_busy">The torch is busy: another app may be using the camera.</string>
+    <string name="f_strobe_torch_busy">The torch is busy (another app may be using it) · tap to try again</string>
     <string name="f_strobe_note">Change the rate until what turns seems to stand still. Up to %1$s Hz (%2$s RPM).</string>
     <string name="f_strobe_warning">Flashing light can trigger seizures in people with photosensitive epilepsy.</string>
 </resources>

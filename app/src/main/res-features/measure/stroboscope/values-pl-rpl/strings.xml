@@ -14,7 +14,7 @@
     <string name="f_strobe_flash">Błyskaj</string>
     <string name="f_strobe_flash_desc">Gaśnie po wyjściu</string>
     <string name="f_strobe_no_torch">To urządzenie nie ma latarki.</string>
-    <string name="f_strobe_torch_busy">Latarka jest zajęta: być może używa jej inna aplikacja.</string>
+    <string name="f_strobe_torch_busy">Latarka jest zajęta (może używa jej inna aplikacja) · dotknij, aby spróbować ponownie</string>
     <string name="f_strobe_note">Zmieniaj częstotliwość, aż to, co się kręci, wyda się nieruchome. Do %1$s Hz (%2$s obr/min).</string>
     <string name="f_strobe_warning">Migające światło może wywołać napad u osób z padaczką fotogenną.</string>
 </resources>
