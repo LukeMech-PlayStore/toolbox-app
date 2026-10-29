@@ -1,8 +1,5 @@
 package org.lukemech.lmtoolbox.ui.pages.features.reference.common
 
-import android.content.ClipData
-import android.os.Build
-import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ScrollState
@@ -29,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,13 +34,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
@@ -52,7 +46,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.reference.common.TableSheet
 import org.lukemech.lmtoolbox.features.reference.common.Txt
@@ -62,6 +55,7 @@ import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.edgeFade
 import org.lukemech.lmtoolbox.ui.components.fadeEnter
 import org.lukemech.lmtoolbox.ui.components.fadeExit
+import org.lukemech.lmtoolbox.helpers.copyText
 
 /** The widest a column gets: a longer cell (a description) wraps. */
 private val MAX_COLUMN = 240.dp
@@ -216,18 +210,15 @@ fun Swatch(colors: List<Color>, size: Dp = SWATCH) {
  */
 @Composable
 fun rememberCopy(): (String) -> Unit {
-    val clipboard = LocalClipboard.current
     val haptics = LocalHapticFeedback.current
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val copied = stringResource(R.string.rf_copied)
-    return remember(clipboard, context) {
+    return remember(context) {
         copy@{ text ->
             // An empty cell (ASCII's names past the controls): nothing to copy
             if (text.isBlank()) return@copy
             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-            scope.launch { clipboard.setClipEntry(ClipData.newPlainText(text, text).toClipEntry()) }
-            if (Build.VERSION.SDK_INT < 33) Toast.makeText(context, copied.format(text), Toast.LENGTH_SHORT).show()
+            copyText(context, text, confirm = copied.format(text))
         }
     }
 }

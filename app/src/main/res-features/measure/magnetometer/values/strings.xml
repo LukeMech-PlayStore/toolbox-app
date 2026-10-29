@@ -17,6 +17,7 @@
     <string name="f_magnet_feedback_off">None</string>
     <string name="f_magnet_feedback_tone">Tone</string>
     <string name="f_magnet_feedback_buzz">Vibration</string>
+    <string name="f_magnet_feedback_both">Tone and vibration</string>
     <string name="f_magnet_detector_note">Move the phone\'s top slowly over the surface. It finds iron, steel and magnets, not aluminum or copper.</string>
     <string name="f_magnet_note">The Earth\'s field: 25–65 µT.</string>
 </resources>

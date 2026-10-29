@@ -197,11 +197,12 @@ fun BottomNavigationBar() {
 }
 
 /**
- * Opens [feature]'s page (e.g. a task's tool, see `LinuxTask.source`), unless it's open already; false
- * without one (e.g. the subsystem's own task).
+ * Opens [feature]'s page (e.g. a task's tool, see `AppTask.source`), unless it's open already, at its part [page]
+ * (e.g. a tab, see [SubPageRequest]); false without one (e.g. the subsystem's own task).
  */
-fun NavController.openFeature(feature: AppFeature?): Boolean {
+fun NavController.openFeature(feature: AppFeature?, page: String? = null): Boolean {
     if (feature == null) return false
+    requestSubPage(feature.route, page)
     val entry = currentBackStackEntry
     if (entry?.destination?.route == Screen.Dynamic.route && entry.arguments?.getString(Screen.Dynamic.ARG) == feature.route) return true
     navigate(Screen.Dynamic.createRoute(feature))
@@ -215,4 +216,26 @@ fun NavController.openFeature(feature: AppFeature?): Boolean {
 fun NavController.openSettingsPage(page: SettingsSubPage) {
     if (currentBackStackEntry?.arguments?.getString("subpage") == page.name.lowercase()) return
     navigate(page.route)
+}
+
+/** The part of a tool's page to show (its route, the part's name), asked for as it's opened: its page takes it ([SubPageRequest]). */
+private val subPageRequest = kotlinx.coroutines.flow.MutableStateFlow<Pair<String, String>?>(null)
+
+/** Asks the page of the tool with [route] to show its part [page] (e.g. a tab; null: as it is), now or as it's opened. */
+fun requestSubPage(route: String, page: String?) {
+    if (page != null) subPageRequest.value = route to page
+}
+
+/**
+ * A page with parts (tabs) taking what [requestSubPage] asked of [feature]'s: [open] gets the part's name (from the
+ * bottom bar, a notification), once.
+ */
+@Composable
+fun SubPageRequest(feature: AppFeature, open: (String) -> Unit) {
+    val request by subPageRequest.collectAsState()
+    LaunchedEffect(request) {
+        val (_, page) = request?.takeIf { it.first == feature.route } ?: return@LaunchedEffect
+        subPageRequest.value = null
+        open(page)
+    }
 }

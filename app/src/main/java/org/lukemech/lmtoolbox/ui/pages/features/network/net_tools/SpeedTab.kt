@@ -1,5 +1,6 @@
 package org.lukemech.lmtoolbox.ui.pages.features.network.net_tools
 
+import android.content.Context
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +19,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.network.net_tools.SpeedTest
 import org.lukemech.lmtoolbox.ui.components.BigButton
@@ -31,17 +31,19 @@ import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.resultCard
+import org.lukemech.lmtoolbox.tasks.TaskRun
+import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
 
-/** The speed test's run and its result; the page's, as the other tabs'. */
-internal class SpeedState(scope: CoroutineScope) {
+/** The speed test's run and its result; the app's, as the other tabs' (see NetTabs). */
+internal class SpeedState(private val context: Context) {
     var result by mutableStateOf<SpeedTest.Result?>(null)
-    private val run = TabRun(scope)
+    val run = TaskRun(NetworkToolsFeature, Tab.Speed.name)
     val running get() = run.running
 
     fun start() {
         if (running) return
         result = SpeedTest.Result()
-        run.start { SpeedTest.run().collect { result = it } }
+        run.start(context, context.getString(R.string.f_Net_tab_speed)) { SpeedTest.run().collect { result = it; run.progress(it.progress) } }
     }
 
     fun stop() = run.stop()

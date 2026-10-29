@@ -1,7 +1,5 @@
 package org.lukemech.lmtoolbox.ui.pages.features.media.file_hash
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -51,8 +49,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.media.file_hash.Checksums
@@ -62,7 +58,6 @@ import org.lukemech.lmtoolbox.features.media.file_hash.FileHashFeature
 import org.lukemech.lmtoolbox.features.media.file_hash.HashAlgorithm
 import org.lukemech.lmtoolbox.features.media.file_hash.HashMode
 import org.lukemech.lmtoolbox.features.media.file_hash.MultiDigest
-import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.ui.components.ActionButton
 import org.lukemech.lmtoolbox.ui.components.BigButton
 import org.lukemech.lmtoolbox.ui.components.Chip
@@ -79,6 +74,10 @@ import org.lukemech.lmtoolbox.ui.components.SecondaryButton
 import org.lukemech.lmtoolbox.ui.components.StepWithButtons
 import org.lukemech.lmtoolbox.ui.components.Steps
 import org.lukemech.lmtoolbox.ui.components.ToolIntro
+import org.lukemech.lmtoolbox.helpers.copyText
+import org.lukemech.lmtoolbox.helpers.pastedText
+import org.lukemech.lmtoolbox.tasks.AppTasks
+import org.lukemech.lmtoolbox.tasks.ShownWhile
 
 private enum class Step { File, Options, Results }
 
@@ -97,30 +96,22 @@ fun FileHashPage(providedInput: String? = "") {
     val focusManager = LocalFocusManager.current
 
     var step by rememberSaveable { mutableStateOf(Step.File) }
-    // What's open stays when the page is left (FileHash.file, ...); a file being read then is read again
-    var mode by remember { mutableStateOf(FileHash.mode) }
-    var file by remember { mutableStateOf(FileHash.file?.let { if (it.state == FileHash.State.Hashing) it.copy(state = FileHash.State.Waiting) else it }) }
-    var text by remember { mutableStateOf(FileHash.text) }
+    // What's open is FileHash's: it stays when the page is left, a file being read goes on meanwhile (a task)
+    var mode by FileHash::mode
+    var file by FileHash::file
+    var text by FileHash::text
     // The settings' default ones, changed here for this time only
     var algorithms by remember { mutableStateOf(FileHash.algorithms(context)) }
-    var expectedText by remember { mutableStateOf(FileHash.expectedText) }
-    var expectedFile by remember { mutableStateOf(FileHash.expectedFile) }
+    var expectedText by FileHash::expectedText
+    var expectedFile by FileHash::expectedFile
     // Another file to check against (not a checksum file): its own hashes, by the same algorithms
-    var reference by remember { mutableStateOf(FileHash.reference?.let { if (it.state == FileHash.State.Hashing) it.copy(state = FileHash.State.Waiting) else it }) }
-    SideEffect {
-        FileHash.mode = mode
-        FileHash.file = file
-        FileHash.text = text
-        FileHash.expectedText = expectedText
-        FileHash.expectedFile = expectedFile
-        FileHash.reference = reference
-    }
+    var reference by FileHash::reference
 
     // The files' reading: the one at it (the file, or the one it's checked against), and how far
-    var job by remember { mutableStateOf<Job?>(null) }
-    var reading by remember { mutableStateOf<FileHash.Item?>(null) }
-    var readBytes by remember { mutableLongStateOf(0L) }
-    val hashing = job != null
+    var reading by FileHash::reading
+    var readBytes by FileHash::readBytes
+    val hashing = FileHash.run.running
+    ShownWhile(FileHash.run)
 
     /** The open file, or the one it's checked against, changed, if it's still [uri] (not another one opened meanwhile). */
     fun update(uri: Uri, change: (FileHash.Item) -> FileHash.Item) {
@@ -131,23 +122,25 @@ fun FileHashPage(providedInput: String? = "") {
     /**
      * What's missing of the [algorithms] read (none read twice): the file's (not the text's: hashed as it's shown), then
      * the one it's checked against; one at a time, then anything asked for meanwhile. A file that couldn't be read
-     * is left alone (calculate() tries it again).
+     * is left alone (calculate() tries it again). A task: it goes on as the page is left.
      */
     fun hashMissing() {
-        if (job != null) return
-        val todo = listOfNotNull(file.takeIf { mode == HashMode.Files }, reference)
-            .filter { it.state != FileHash.State.Failed && (algorithms - it.hashes.keys).isNotEmpty() }
-        if (todo.isEmpty()) return
-        val wanted = algorithms
-        lateinit var started: Job
-        started = coroutineScope.launch(start = CoroutineStart.LAZY) {
+        fun next() = listOfNotNull(file.takeIf { mode == HashMode.Files }, reference)
+            .firstOrNull { it.state != FileHash.State.Failed && (algorithms - it.hashes.keys).isNotEmpty() }
+        val first = next() ?: return
+        val app = context.applicationContext
+        FileHash.run.start(app, first.name) {
             try {
-                for (item in todo) {
+                while (true) {
+                    val item = next() ?: break
                     reading = item
                     readBytes = 0
                     try {
                         update(item.uri) { it.copy(state = FileHash.State.Hashing, error = null) }
-                        val hashes = FileHash.hash(context, item.uri, wanted - item.hashes.keys) { readBytes = it }
+                        val hashes = FileHash.hash(app, item.uri, algorithms - item.hashes.keys) { read ->
+                            readBytes = read
+                            FileHash.run.progress(if (item.size > 0) read.toFloat() / item.size else null)
+                        }
                         update(item.uri) { it.copy(hashes = it.hashes + hashes, state = FileHash.State.Done) }
                     } catch (e: CancellationException) {
                         // What it had before stays
@@ -158,16 +151,9 @@ fun FileHashPage(providedInput: String? = "") {
                     }
                 }
             } finally {
-                // Not another one's, started as this one was canceled
-                if (job === started) {
-                    job = null
-                    reading = null
-                }
+                reading = null
             }
-            hashMissing()
         }
-        job = started
-        started.start()
     }
 
     /** The hashes shown: what's missing of them read, a file that couldn't be read tried again. */
@@ -181,8 +167,7 @@ fun FileHashPage(providedInput: String? = "") {
 
     /** [uri] in place of the open file (its reading stopped), its algorithms next. */
     fun open(uri: Uri) {
-        job?.cancel()
-        job = null
+        FileHash.run.stop()
         coroutineScope.launch {
             file = FileHash.describe(context, uri)
             mode = HashMode.Files
@@ -221,7 +206,7 @@ fun FileHashPage(providedInput: String? = "") {
         coroutineScope.launch {
             runCatching { FileHash.write(context, uri, content) }
                 .onSuccess { Toast.makeText(context, resources.getString(R.string.f_FileHash_saved, ".${alg.fileTag}"), Toast.LENGTH_SHORT).show() }
-                .onFailure { LinuxTasks.reportFailure(FileHashFeature, "", "Couldn't save the checksum file", it.stackTraceToString()) }
+                .onFailure { AppTasks.reportFailure(FileHashFeature, "", "Couldn't save the checksum file", it.stackTraceToString()) }
         }
     }
 
@@ -256,7 +241,7 @@ fun FileHashPage(providedInput: String? = "") {
         working = hashing,
         progress = if (hashing && size > 0) (readBytes.toFloat() / size).coerceIn(0f, 1f) else null,
         caption = reading?.takeIf { hashing }?.let { stringResource(R.string.f_FileHash_reading, it.name) },
-        onCancel = if (hashing) ({ job?.cancel() }) else null,
+        onCancel = if (hashing) FileHash.run::stop else null,
     )
     val title = stringResource(R.string.fp_FileHash)
     Column(
@@ -281,7 +266,7 @@ fun FileHashPage(providedInput: String? = "") {
                                 onLoad = { checksumPicker.launch(arrayOf("*/*")) },
                                 onUnload = {
                                     // Not read on for nothing
-                                    if (reading != null && reading?.uri == reference?.uri) job?.cancel()
+                                    if (reading != null && reading?.uri == reference?.uri) FileHash.run.stop()
                                     reference = null
                                     expectedText = ""
                                     expectedFile = null
@@ -503,7 +488,7 @@ private fun ResultsStep(
                             in verdict.mismatched -> false
                             else -> null
                         }
-                    ) { copy(context, alg.label, last[0].orEmpty()) }
+                    ) { copyText(context, last[0].orEmpty(), alg.label, context.getString(R.string.f_FileHash_copied, alg.label)) }
                 }
             }
         }
@@ -537,7 +522,7 @@ private fun VerifyInput(
                     placeholder = { Text(stringResource(R.string.f_FileHash_expected_hint)) },
                     trailingIcon = {
                         Row {
-                            IconButton(onClick = { pasted(context)?.let(onExpectedText) }) {
+                            IconButton(onClick = { pastedText(context)?.let(onExpectedText) }) {
                                 Icon(Icons.Default.ContentPaste, contentDescription = stringResource(R.string.f_FileHash_paste))
                             }
                             IconButton(onClick = onLoad) {
@@ -667,14 +652,3 @@ private fun shareText(context: Context, text: String) {
     )
 }
 
-// A setter: primaryClip is a val in Kotlin (its getter is nullable, the setter isn't)
-@Suppress("UsePropertyAccessSyntax")
-private fun copy(context: Context, label: String, hash: String) {
-    context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText(label, hash))
-    Toast.makeText(context, context.getString(R.string.f_FileHash_copied, label), Toast.LENGTH_SHORT).show()
-}
-
-/** What's on the clipboard, as text. */
-private fun pasted(context: Context): String? =
-    context.getSystemService(ClipboardManager::class.java)?.primaryClip?.takeIf { it.itemCount > 0 }
-        ?.getItemAt(0)?.coerceToText(context)?.toString()?.trim()?.takeIf { it.isNotEmpty() }

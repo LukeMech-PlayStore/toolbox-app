@@ -45,6 +45,7 @@ import org.lukemech.lmtoolbox.ui.helpers.LocalAppNav
 import org.lukemech.lmtoolbox.ui.widgets.helpers.WidgetBackgroundSetting
 import org.lukemech.lmtoolbox.ui.pages.all
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.ui.components.installsKey
 
 /** Features whose settings are offered: the ones opened at least once. */
 val settingsFeatures: List<AppFeature>
@@ -116,12 +117,11 @@ fun ToolSettingsPage() {
 fun FeatureSettingsPage(feature: AppFeature?) {
     val feat = feature ?: return PageHeading(stringResource(R.string.undefined), back = true) {}
     val context = LocalContext.current
-    // Until its packages are installed and unpacked, only what doesn't need them (again once a task changes)
-    val tasks by LinuxTasks.tasks.collectAsState()
-    val ready = remember(tasks) { feat.linuxExtensions.isEmpty() || LinuxParts.missingExtensions(context, feat.linuxExtensions).isEmpty() }
+    // Until its packages are installed and unpacked, only what doesn't need them (again once an installation ends)
+    val ready = remember(installsKey()) { feat.linuxExtensions.isEmpty() || LinuxParts.missingExtensions(context, feat.linuxExtensions).isEmpty() }
     // Its own (its packages may stay for another tool), again as tools are removed
     val removed by LinuxTasks.extensionsRemoved.collectAsState()
-    val installed = remember(tasks, removed) { feat.isInstalled(context) }
+    val installed = remember(installsKey(), removed) { feat.isInstalled(context) }
     PageHeading(stringResource(feat.titleStringResId), back = true) {
         ExtensionStatus(feat)
         // Every feature's, always first

@@ -22,7 +22,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
 import org.json.JSONObject
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
@@ -38,9 +37,10 @@ import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.FieldArrangement
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.tasks.TaskRun
 
-/** The ping tab's fields, its run and its results; the page's (its [scope]), so it goes on as the tabs change. */
-internal class PingState(private val context: Context, private val scope: CoroutineScope) {
+/** The ping tab's fields, its run and its results; the app's (see NetTabs), so it goes on as the tabs change or the page is left. */
+internal class PingState(private val context: Context) {
     var host by mutableStateOf("")
     var count by mutableStateOf("4")
     var interval by mutableStateOf("1")
@@ -48,7 +48,7 @@ internal class PingState(private val context: Context, private val scope: Corout
     var result by mutableStateOf<PingResult?>(null)
     /** Android's ping ran (else Java's check, timed by the app). */
     var native by mutableStateOf(true)
-    private val run = TabRun(scope)
+    val run = TaskRun(NetworkToolsFeature, Tab.Ping.name)
     val running get() = run.running
 
     init {
@@ -75,8 +75,13 @@ internal class PingState(private val context: Context, private val scope: Corout
             JSONObject().put("host", host).put("count", count).put("interval", interval).put("size", size).toString()
         )
         result = PingResult()
-        run.start {
-            Ping.run(host, options) { native = it }.collect { result = it }
+        val count = options.count
+        run.start(context, "${context.getString(R.string.f_Net_tab_ping)} · $host") {
+            Ping.run(host, options) { native = it }.collect {
+                result = it
+                // Each probe's reply (or loss) of those asked for
+                run.progress((it.rows.size.toFloat() / count).coerceAtMost(1f))
+            }
         }
     }
 

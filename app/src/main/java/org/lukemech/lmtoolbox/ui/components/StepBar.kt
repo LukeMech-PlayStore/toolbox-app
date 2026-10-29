@@ -67,12 +67,12 @@ class Steps(
  * step, filled up to the [current] one; the next one runs while it's being made ([loadingNext]).
  * Under the page's title (see [PageHeading]'s steps). [caption]: what its work is at, right under
  * the bars (how far first: [progress] as a percentage; [detail] after it), [onCancel]'s button at
- * its end.
+ * its end. [failed]: what it tells failed (the bottom bar's error): the caption in red, a ✕ where the percentage goes.
  */
 @Composable
 fun StepBar(
     count: Int, current: Int, loadingNext: Boolean, working: Boolean = false, progress: Float? = null,
-    caption: String? = null, detail: String? = null, onCancel: (() -> Unit)? = null,
+    caption: String? = null, detail: String? = null, onCancel: (() -> Unit)? = null, failed: Boolean = false,
 ) {
     // The last ones, while they fade or fold away
     val last = remember { Last() }
@@ -84,20 +84,24 @@ fun StepBar(
         // What it's at over the bars
         Reveal(visible = caption != null) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).heightIn(min = 32.dp)) {
-                // How far first, as a pill in the bars' color
-                AnimatedVisibility(visible = working && progress != null, enter = sideEnter, exit = sideExit) {
+                // How far first, as a pill in the bars' color; failed, a ✕ in the error's
+                AnimatedVisibility(visible = failed || working && progress != null, enter = sideEnter, exit = sideExit) {
                     Surface(
                         shape = RoundedCornerShape(50),
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = if (failed) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = if (failed) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        Text(
-                            "${(last.progress * 100).toInt()}%",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontFamily = FontFamily.Monospace,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp)
-                        )
+                        if (failed) {
+                            Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp).size(20.dp))
+                        } else {
+                            Text(
+                                "${(last.progress * 100).toInt()}%",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontFamily = FontFamily.Monospace,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp)
+                            )
+                        }
                     }
                 }
                 // Its words take what's left: the buttons stay at the end
@@ -107,7 +111,7 @@ fun StepBar(
                     Text(
                         last.caption,
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = if (failed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

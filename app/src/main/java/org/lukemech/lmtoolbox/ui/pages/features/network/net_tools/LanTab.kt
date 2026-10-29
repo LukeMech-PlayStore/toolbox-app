@@ -32,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import kotlinx.coroutines.CoroutineScope
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.network.net_tools.LanScan
 import org.lukemech.lmtoolbox.features.network.net_tools.Services
@@ -45,17 +44,19 @@ import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.RowColors
 import org.lukemech.lmtoolbox.ui.components.SectionTitle
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.networkChanges
+import org.lukemech.lmtoolbox.tasks.TaskRun
+import org.lukemech.lmtoolbox.features.network.net_tools.NetworkToolsFeature
 
-/** The LAN scan's run and the devices it found; the page's, as the other tabs'. */
-internal class LanState(private val context: Context, scope: CoroutineScope) {
+/** The LAN scan's run and the devices it found; the app's, as the other tabs' (see NetTabs). */
+internal class LanState(private val context: Context) {
     var result by mutableStateOf<LanScan.Result?>(null)
-    private val run = TabRun(scope)
+    val run = TaskRun(NetworkToolsFeature, Tab.Lan.name)
     val running get() = run.running
 
     fun start(lan: LanScan.Lan) {
         if (running) return
         result = LanScan.Result(lan)
-        run.start { LanScan.run(context, lan).collect { result = it } }
+        run.start(context, context.getString(R.string.f_Net_tab_lan)) { LanScan.run(context, lan).collect { result = it; run.progress(it.progress) } }
     }
 
     fun stop() = run.stop()

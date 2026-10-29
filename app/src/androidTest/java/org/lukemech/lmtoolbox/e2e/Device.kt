@@ -7,9 +7,9 @@ import androidx.compose.ui.test.MainTestClock
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
-import org.lukemech.lmtoolbox.linux.LinuxTask
-import org.lukemech.lmtoolbox.linux.LinuxTasks
+import org.lukemech.lmtoolbox.tasks.AppTask
 import java.io.File
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /** The device under test: screenshots, waiting, the system's dialogs. */
 object Device {
@@ -75,7 +75,7 @@ object Device {
         }
     }
 
-    private fun running() = LinuxTasks.tasks.value.filter { it.state == LinuxTask.State.Running }
+    private fun running() = AppTasks.tasks.value.filter { it.state == AppTask.State.Running }
         .joinToString("") { "\n  ${it.type} ${it.label}" + (it.progress?.let { p -> " ${p.toInt()}%" } ?: "") }
 
     const val MINUTE = 60_000L

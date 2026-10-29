@@ -1,6 +1,5 @@
 package org.lukemech.lmtoolbox.ui.pages.settings
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -13,7 +12,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.core.net.toUri
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.SettingsSubPage
@@ -21,6 +19,7 @@ import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.helpers.LocalAppNav
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.helpers.openLink
 
 @Composable
 fun OpenSourceLicensesSection() {
@@ -43,10 +42,7 @@ fun OpenSourceLicensesSection() {
 fun OpenSourceLicensesPage() {
     val context = LocalContext.current
 
-    val openUrl: (String) -> Unit = { url ->
-        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-        context.startActivity(intent)
-    }
+    val openUrl: (String) -> Unit = { openLink(context, it) }
 
     PageHeading(
         title = stringResource(id = R.string.s_osl_title),

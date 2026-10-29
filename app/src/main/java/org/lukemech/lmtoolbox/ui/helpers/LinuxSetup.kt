@@ -37,10 +37,11 @@ import androidx.compose.ui.unit.dp
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.linux.LinuxParts
 import org.lukemech.lmtoolbox.linux.LinuxInstaller
-import org.lukemech.lmtoolbox.linux.LinuxTask
+import org.lukemech.lmtoolbox.tasks.AppTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.helpers.SettingsSubPage
 import org.lukemech.lmtoolbox.ui.components.SystemStats
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /**
  * Updates what's unpacked of the Linux subsystem when the app ships a new image (and deletes what
@@ -65,7 +66,7 @@ fun LinuxSetupStarter() {
 @Composable
 fun LinuxSetupScreen(onClose: () -> Unit) {
     val context = LocalContext.current
-    val tasks by LinuxTasks.tasks.collectAsState()
+    val tasks by AppTasks.tasks.collectAsState()
     val envTask = tasks.firstOrNull { it.type.isEnvChange }
     // Re-read from disk whenever the installation/update changes state
     val envTaskState = envTask?.let { it.id to it.state }
@@ -78,7 +79,7 @@ fun LinuxSetupScreen(onClose: () -> Unit) {
     LaunchedEffect(failed) {
         if (failed) {
             onClose()
-            LinuxTasks.markFailuresSeen()
+            AppTasks.markFailuresSeen()
             navController.openSettingsPage(SettingsSubPage.Tasks)
         }
     }
@@ -94,9 +95,9 @@ fun LinuxSetupScreen(onClose: () -> Unit) {
 }
 
 @Composable
-private fun SetupProgress(task: LinuxTask?) {
+private fun SetupProgress(task: AppTask?) {
     val context = LocalContext.current
-    val progress = task?.progress?.takeIf { task.state == LinuxTask.State.Running }
+    val progress = task?.progress?.takeIf { task.state == AppTask.State.Running }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 32.dp),
@@ -124,7 +125,7 @@ private fun SetupProgress(task: LinuxTask?) {
         Text(
             when {
                 progress != null -> "${progress.toInt()}%"
-                task?.state == LinuxTask.State.Running -> stringResource(R.string.s_tasks_state_running)
+                task?.state == AppTask.State.Running -> stringResource(R.string.s_tasks_state_running)
                 else -> stringResource(R.string.s_tasks_state_queued)
             },
             style = MaterialTheme.typography.bodyMedium,

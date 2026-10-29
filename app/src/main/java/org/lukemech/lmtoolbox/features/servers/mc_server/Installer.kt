@@ -15,10 +15,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
@@ -26,7 +23,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
 import org.json.JSONArray
@@ -34,7 +30,7 @@ import org.json.JSONObject
 import org.lukemech.lmtoolbox.BuildConfig
 import org.lukemech.lmtoolbox.linux.parts.Java
 import org.lukemech.lmtoolbox.helpers.deleteTree
-import org.lukemech.lmtoolbox.linux.LinuxTasks
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /** HTTP for the version lists and the servers' files. */
 internal object Http {
@@ -204,12 +200,12 @@ object Installer {
      */
     private val INSTALLER_NET_TIMEOUTS = listOf("-Dsun.net.client.defaultConnectTimeout=15000", "-Dsun.net.client.defaultReadTimeout=30000")
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     // By kind, and with snapshots or not
     private val versionCache = ConcurrentHashMap<Pair<ServerType, Boolean>, List<String>>()
     private var mojangCache: List<Pair<String, String>>? = null
     private val javaCache = ConcurrentHashMap<String, Int>()
-    private var job: Job? = null
+    /** The installation's task (it goes on as the page is left, in the bottom bar and the notification): for [cancel]. */
+    private var task: Long? = null
 
     /** Minecraft's versions (id, Mojang's type: release, snapshot, ...) that run on the subsystem's Java, newest first. */
     private suspend fun mojangVersions(): List<Pair<String, String>> = mojangCache ?: run {
@@ -382,7 +378,7 @@ object Installer {
             id, draft, stage = if (javaThere) Stage.Downloading else Stage.InstallingJava,
             stages = stages(draft.type, backup = false)
         )
-        job = scope.launch {
+        AppTasks.launch(app, MinecraftServerFeature, draft.name, onStart = { task = it }) {
             val dir = Servers.dir(app, id).apply { mkdirs() }
             try {
                 if (!Java.isInstalled(app, draft.jdk)) {
@@ -411,9 +407,7 @@ object Installer {
                 _state.update { it?.copy(stage = Stage.Done) }
             } catch (e: Exception) {
                 dir.deleteTree()
-                val cancelled = e is kotlinx.coroutines.CancellationException
-                _state.update { it?.copy(stage = Stage.Failed, error = if (cancelled) null else e.message ?: e.javaClass.simpleName) }
-                if (!cancelled) report(e, draft.name)
+                failed(e)
             }
         }
     }
@@ -431,7 +425,7 @@ object Installer {
         val draft = Draft(profile.name, profile.type, version, profile.memoryMb, Java.forNeeds(app, profile.needs) ?: current ?: return, profile.needs, loader)
         val backup = version != profile.version && Servers.worldDirs(app, profile).isNotEmpty()
         _state.value = Install(profile.id, draft, existing = true, stages = stages(profile.type, backup))
-        job = scope.launch {
+        AppTasks.launch(app, MinecraftServerFeature, profile.name, onStart = { task = it }) {
             val dir = Servers.dir(app, profile.id)
             try {
                 // Its Java: the one the version is made for
@@ -459,9 +453,7 @@ object Installer {
                 // The Java it ran on, if no other server does now
                 if (jdk != current) ServerRunner.pruneJava(app)
             } catch (e: Exception) {
-                val cancelled = e is kotlinx.coroutines.CancellationException
-                _state.update { it?.copy(stage = Stage.Failed, error = if (cancelled) null else e.message ?: e.javaClass.simpleName) }
-                if (!cancelled) report(e, draft.name)
+                failed(e)
             }
         }
     }
@@ -499,15 +491,20 @@ object Installer {
     /** A failure a task told already (Java's installation, the loader's installer): the bottom bar shows it. */
     private class Reported(message: String) : IOException(message)
 
-    /** Tells a failure in the one place errors are told, the bottom bar ([LinuxTasks.reportFailure]); unless a task did. */
-    private fun report(e: Exception, label: String) {
-        if (e !is Reported) LinuxTasks.reportFailure(MinecraftServerFeature, label, e.message ?: e.javaClass.simpleName, e.stackTraceToString())
+    /**
+     * The installation failed (or was canceled): told as its task's failure, in the one place errors are told, the
+     * bottom bar; but one another task told already (Java's installation), not twice.
+     */
+    private fun failed(e: Exception) {
+        val cancelled = e is kotlinx.coroutines.CancellationException
+        _state.update { it?.copy(stage = Stage.Failed, error = if (cancelled) null else e.message ?: e.javaClass.simpleName) }
+        if (e !is Reported) throw e
     }
 
     /** Stops the installation (its download, or the loader's installer). */
     fun cancel() {
-        _state.value?.taskId?.let(LinuxTasks::cancel)
-        job?.cancel()
+        _state.value?.taskId?.let(AppTasks::cancel)
+        task?.let(AppTasks::cancel)
         _state.update { if (it?.isActive == true) it.copy(stage = Stage.Failed) else it }
     }
 
@@ -516,7 +513,10 @@ object Installer {
         if (_state.value?.isActive != true) _state.value = null
     }
 
-    private fun progress(p: Float?) = _state.update { it?.copy(progress = p) }
+    private fun progress(p: Float?) {
+        _state.update { it?.copy(progress = p) }
+        task?.let { AppTasks.setProgress(it, p?.times(100)) }
+    }
 
     /** Downloads (and installs) the server into [dir]: its loader's version, and how it's started. */
     private suspend fun install(context: Context, d: Draft, dir: File): Pair<String?, List<String>> = when (d.type) {
@@ -588,7 +588,7 @@ object Installer {
                 onStart = { id -> _state.update { it?.copy(taskId = id) } },
                 retried = ::retried,
             )
-            if (LinuxTasks.isCancelled(_state.value?.taskId)) throw kotlinx.coroutines.CancellationException()
+            if (AppTasks.isCancelled(_state.value?.taskId)) throw kotlinx.coroutines.CancellationException()
             if (result.isSuccess) break
             if (retried(result)) {
                 delay(Http.RETRY_DELAY * ++tries)

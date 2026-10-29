@@ -31,6 +31,7 @@ import org.lukemech.lmtoolbox.helpers.deleteTree
 import org.lukemech.lmtoolbox.linux.parts.Java
 import org.lukemech.lmtoolbox.linux.LinuxParts
 import org.lukemech.lmtoolbox.linux.LinuxTasks
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /**
  * The running server (one at a time): Java in the subsystem as a service of the tool's (not a task:
@@ -262,7 +263,7 @@ object ServerRunner {
             }
             // Crashed: told in the one place errors are, the bottom bar (its console's last lines as the log)
             _state.value?.takeIf { it.serverId == profile.id && it.phase == Phase.Crashed }?.let { run ->
-                LinuxTasks.reportFailure(MinecraftServerFeature, profile.name, run.error ?: "", _log.value.takeLast(100).joinToString("\n"))
+                AppTasks.reportFailure(MinecraftServerFeature, profile.name, run.error ?: "", _log.value.takeLast(100).joinToString("\n"))
             }
             // A Java no server runs on anymore (its own changed meanwhile, or it's gone); the tunnel's, turned off meanwhile
             pruneJava(app)
@@ -281,7 +282,7 @@ object ServerRunner {
         _state.update { it?.copy(phase = Phase.Stopping) }
         stopTunnel()
         stopBore()
-        run.taskId?.let(LinuxTasks::cancel)
+        run.taskId?.let(AppTasks::cancel)
         // Not started yet (its Java installing): the run itself, and what its end would do
         if (run.taskId == null) {
             val job = runJob
@@ -520,7 +521,7 @@ object ServerRunner {
         scope.launch {
             val told = runCatching { Rcon(run.rconPort, run.rconPassword).command("stop") }.isSuccess
             val stopped = told && withTimeoutOrNull(STOP_TIMEOUT) { _state.first { it?.isActive != true } } != null
-            if (!stopped) _state.value?.taskId?.let(LinuxTasks::cancel)
+            if (!stopped) _state.value?.taskId?.let(AppTasks::cancel)
         }
     }
 

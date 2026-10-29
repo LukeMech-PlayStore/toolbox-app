@@ -14,7 +14,6 @@
     <string name="f_Net_stop">Zatrzymaj</string>
     <string name="f_Net_failed">Nie udało się</string>
     <string name="f_Net_address">Adres</string>
-    <string name="f_Net_copied">Skopiowano</string>
 
     <string name="f_Net_local_needed">Zezwól na dostęp do urządzeń w sieci</string>
     <string name="f_Net_local_title">Urządzenia w Twojej sieci</string>
