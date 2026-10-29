@@ -1,15 +1,21 @@
 package org.lukemech.lmtoolbox.helpers
 
 import android.content.res.Resources
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import androidx.core.graphics.applyCanvas
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withTranslation
+import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.util.Locale
 import org.lukemech.lmtoolbox.R
 
 /**
@@ -114,4 +120,55 @@ open class PdfPages(protected val resources: Resources, private val title: Strin
         // The app's teal, as its tiles' icons
         const val ACCENT = 0xFF00897B.toInt()
     }
+}
+
+/**
+ * [picture] as a one-page PDF written to [out]: an A4 page's width, as tall as the picture is for it (a page as wide
+ * as A4 for a landscape one too, so pages added to others line up), the picture filling it. The picture goes in as a
+ * JPEG of [quality] (as `img2pdf` puts one in), not as Android's PdfDocument would: its every pixel, deflated, tens of
+ * megabytes for a photo. Transparent parts on white.
+ */
+fun writePicturePdf(picture: Bitmap, out: OutputStream, quality: Int = 90) {
+    val opaque = if (!picture.hasAlpha()) picture else
+        createBitmap(picture.width, picture.height).applyCanvas {
+            drawColor(Color.WHITE)
+            drawBitmap(picture, 0f, 0f, null)
+        }
+    val jpeg = ByteArrayOutputStream().also { opaque.compress(Bitmap.CompressFormat.JPEG, quality, it) }.toByteArray()
+    val width = PdfPages.A4_WIDTH
+    val height = width * picture.height / picture.width.coerceAtLeast(1)
+    val w = "%.2f".format(Locale.ROOT, width)
+    val h = "%.2f".format(Locale.ROOT, height)
+    // The picture (a 1x1 unit square) stretched over the page
+    val content = "q $w 0 0 $h 0 0 cm /Im0 Do Q".toByteArray()
+
+    // A PDF by hand: its objects one after another, then where each starts (the xref), then where that is
+    val pdf = ByteArrayOutputStream()
+    val offsets = mutableListOf<Int>()
+    fun write(text: String) = pdf.write(text.toByteArray(Charsets.ISO_8859_1))
+    fun obj(body: String, stream: ByteArray? = null) {
+        offsets += pdf.size()
+        write("${offsets.size} 0 obj\n$body\n")
+        if (stream != null) {
+            write("stream\n")
+            pdf.write(stream)
+            write("\nendstream\n")
+        }
+        write("endobj\n")
+    }
+    write("%PDF-1.4\n")
+    obj("<< /Type /Catalog /Pages 2 0 R >>")
+    obj("<< /Type /Pages /Kids [3 0 R] /Count 1 >>")
+    obj("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 $w $h] /Resources << /XObject << /Im0 5 0 R >> >> /Contents 4 0 R >>")
+    obj("<< /Length ${content.size} >>", content)
+    obj(
+        "<< /Type /XObject /Subtype /Image /Width ${opaque.width} /Height ${opaque.height} /ColorSpace /DeviceRGB " +
+            "/BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.size} >>",
+        jpeg
+    )
+    val xref = pdf.size()
+    write("xref\n0 ${offsets.size + 1}\n0000000000 65535 f \n")
+    offsets.forEach { write("%010d 00000 n \n".format(it)) }
+    write("trailer\n<< /Size ${offsets.size + 1} /Root 1 0 R >>\nstartxref\n$xref\n%%EOF\n")
+    pdf.writeTo(out)
 }

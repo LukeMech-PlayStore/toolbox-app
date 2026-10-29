@@ -19,13 +19,15 @@
 **One app, a drawer full of tools.** Measure with a ruler, a spirit level, a compass, a sound level meter, a
 light meter, a metal detector, a vibration meter and a stroboscope; work out a resistor's color code or a 555
 timer with 30 electronics calculators; look up pinouts and tables; convert currencies; download, convert and
-shrink videos, music and images; edit a photo's metadata; share a folder with any browser; test your internet's
-speed, ping, trace and scan your network; or run your own Minecraft server, Vanilla to NeoForge, straight from
-your phone and reachable by your friends through Bore, a Cloudflare tunnel or Tailscale.
+shrink videos, music and images; arrange, merge, split and shrink PDFs; edit a photo's metadata; share a folder
+with any browser; test your internet's speed, ping, trace and scan your network; or run your own Minecraft server,
+Vanilla to NeoForge, straight from your phone and reachable by your friends through Bore, a Cloudflare tunnel or
+Tailscale.
 
-The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, Java, cloudflared, bore) inside a
-PRoot-based Linux subsystem. You never set it up: the app installs it part by part, only when a tool you open
-needs it, and removes what no tool uses anymore. No root, no terminal, and in English and Polish.
+The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, qpdf, Ghostscript, Java,
+cloudflared, bore) inside a PRoot-based Linux subsystem. You never set it up: the app installs it part by part,
+only when a tool you open needs it, and removes what no tool uses anymore. No root, no terminal, and in English
+and Polish.
 
 <a href="https://play.google.com/store/apps/details?id=org.lukemech.lmtoolbox"><img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="80"></a>
 
@@ -59,6 +61,7 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Media       | Media encoder (video, GIF, sound; cut, resize, a target file size)                             | FFmpeg                                                                                                                                                                       | `features:ffmpeg`   |
 | Media       | Image encoder (resizing, a target file size)                                                   | Android (`ImageDecoder`, `Bitmap`)                                                                                                                                           | `app`               |
 | Media       | File size (a shortcut to the media or the image encoder)                                       | Android                                                                                                                                                                      | `app`               |
+| Media       | PDF tools (pages arranged, merged, split, compressed, protected, as pictures)                  | qpdf, Ghostscript                                                                                                                                                            | `features:pdf`      |
 | Media       | File hash (MD5, SHA-1, SHA-2, SHA-3, CRC32; checked against a hash or a checksum file)         | Android (`MessageDigest`, `CRC32`); SHA-3 the app's own (Android has none)                                                                                                   | `app`               |
 | Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
 | Network     | Network tools (speed test, ping, traceroute, LAN devices, port scan)                           | Android (its `ping`, sockets, HTTP, `NsdManager`); the speed test on Cloudflare's servers (speed.cloudflare.com)                                                             | `app`               |
@@ -130,7 +133,9 @@ checks that the routes are unique.
   holding only what the app needs before its module is installed: title, icon, keywords, preference keys.
   It lists the parts it runs on (`linuxExtensions`, each with what it builds on). Its pages are a `FeatureUi`
   object in the part's module (`uiClass`, loaded by name through `FeatureDelivery`). Until its parts are
-  there, `ExtensionGate` shows what they take and installs them.
+  there, `ExtensionGate` shows what they take and installs them. What its tests check without running it
+  (e.g. the PDF tools' qpdf and Ghostscript commands, `PdfCommands`) is next to it in the app: the tests
+  don't see a module's code.
 - A tool on several parts (the Minecraft server) is the app's: there's no module of code alone. The parts it
   picks among or turns on (`extraExtensions`: a Java version, cloudflared, bore) have their API in the app
   (`linux/parts/`: `Java`, `Tunnel`, `Bore`), and their modules are just their archives. So a tool gets one only once
@@ -142,9 +147,10 @@ checks that the routes are unique.
   has anymore go with the subsystem's update).
 - What a tool makes is saved with [`helpers/SavedFiles.kt`](app/src/main/java/org/lukemech/lmtoolbox/helpers/SavedFiles.kt):
   into the folder picked in its settings (`OutputFolder`), else into MediaStore (`saveToMediaStore`). Its page
-  then opens or shares it (`openFile`, `shareFile`, which leaves the tool's own "Share to" out).
+  then opens or shares it (`openFile`, `shareFile` or `shareFiles`, which leave the tool's own "Share to" out).
 - "Share to" and "Open in" entries are `<activity-alias>`es in the manifest, listed in `SystemEntries` (a
-  test checks the two match). Each is switched on or off in the system section of the tool's settings
+  test checks the two match). Several files shared at once (the PDF tools' `SEND_MULTIPLE`) come to the tool
+  as their URIs, a line each. Each is switched on or off in the system section of the tool's settings
   (`AppEntrySetting`), on only while the tool is installed.
 - A tool's preferences are listed in its `preferenceKeys`, and its files in `dataFiles`, so that "Delete
   data" in its settings removes everything it keeps.
@@ -173,7 +179,7 @@ standards named in each one's notes.
 ### The Linux subsystem
 
 The subsystem is a Termux-based rootfs, split into parts (`core`, `python`, `pypkgs`, `ffmpeg`, `exiftool`,
-`ytdlp`, `jdk8`, `jdk17`, `jdk21`, `jdk25`, `cloudflared`, `bore`), plus PRoot. Each part is an on-demand Play module under
+`ytdlp`, `jdk8`, `jdk17`, `jdk21`, `jdk25`, `cloudflared`, `bore`, `pdf`), plus PRoot. Each part is an on-demand Play module under
 `features/`, installed with the first tool that needs it (the core, with PRoot, comes with the first one). A
 part may not be built for every ABI (`jdk25`: no OpenJDK 25 for x86); a tool none of whose parts are there
 says it isn't available. Its commands run as argv lists through PRoot, with the Termux prefix bound to
@@ -265,7 +271,9 @@ shipped with a build that's no release.
 - **The shared pieces are used, not rebuilt**: `InputField` for every text field (the app's corners, Done closing
   the keyboard), `RowColors` for a row's colors (`default`, `danger`, `alert`, `changed`, `highlighted`,
   `tinted`), `PermissionDialog` for every permission asked, `PromptBar` for a bar asking for something on top of
-  a page (`SensorWarning` for the measuring tools' sensors), `ConfirmDialog` before what can't be undone.
+  a page (`SensorWarning` for the measuring tools' sensors), `ConfirmDialog` before what can't be undone,
+  `Images` for pictures (`rememberPdfPage` for a PDF's page drawn, `loadUri` for one of the phone's), `writePicturePdf`
+  for a picture as a PDF page.
 - **A page is a plain function** named `<Name>Page`, in its tool's own package (so its helpers' names never
   clash with another tool's). A settings sub-page is a `…Page` too; a part of the main settings page is a
   `…Section`.

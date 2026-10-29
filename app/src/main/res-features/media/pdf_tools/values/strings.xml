@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fp_PdfTools">PDF tools</string>
+    <string name="fk_PdfTools" tools:ignore="Typos">PDF, document, documents, merge, join, combine, split, pages, extract, compress, shrink, smaller, reduce, size, rotate, turn, password, protect, encrypt, unlock, decrypt, qpdf, ghostscript, PDF tools, PDF editor, arrange, reorder, pages, thumbnails, pictures, images, photos, PNG, JPG, JPEG, convert, PDF to image, image to PDF, scan</string>
+    <string name="fd_PdfTools">Arrange, merge, split PDFs</string>
+    <string name="f_Pdf_share_desc">Share PDFs and pictures to the PDF tools from other apps</string>
+</resources>

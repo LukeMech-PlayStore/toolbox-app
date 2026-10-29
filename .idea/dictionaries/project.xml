@@ -57,12 +57,14 @@
       <w>devkitc</w>
       <w>devnull</w>
       <w>dexed</w>
+      <w>didn</w>
       <w>doesn</w>
       <w>doit</w>
       <w>domyślne</w>
       <w>dorg</w>
       <w>dout</w>
       <w>downvtresh</w>
+      <w>dpis</w>
       <w>dshkey</w>
       <w>dsrs</w>
       <w>dusen</w>
@@ -74,6 +76,8 @@
       <w>electronvolt</w>
       <w>endgroup</w>
       <w>endlocal</w>
+      <w>endobj</w>
+      <w>endstream</w>
       <w>eobd</w>
       <w>errorlevel</w>
       <w>eseries</w>
@@ -120,6 +124,7 @@
       <w>icsp</w>
       <w>icspclk</w>
       <w>icspdat</w>
+      <w>img2pdf</w>
       <w>inodesteal</w>
       <w>intr</w>
       <w>ioref</w>
@@ -208,6 +213,9 @@
       <w>otwartego</w>
       <w>pagecache</w>
       <w>pageoutrun</w>
+      <w>pdfarranger</w>
+      <w>pdfarranger's</w>
+      <w>pdfwrite</w>
       <w>pgactivate</w>
       <w>pgalloc</w>
       <w>pgdeactivate</w>
@@ -248,6 +256,8 @@
       <w>pycache</w>
       <w>pypkgs</w>
       <w>pythonunbuffered</w>
+      <w>qpdf</w>
+      <w>qpdf's</w>
       <w>qrcode</w>
       <w>qrcodegen</w>
       <w>quecto</w>
@@ -291,6 +301,7 @@
       <w>ssrx</w>
       <w>sstx</w>
       <w>startswith</w>
+      <w>startxref</w>
       <w>stillimage</w>
       <w>stime</w>
       <w>stxd</w>
