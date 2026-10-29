@@ -30,7 +30,6 @@ import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.ui.pages.SettingsPage
 import org.lukemech.lmtoolbox.ui.pages.FeaturesPage
 import org.lukemech.lmtoolbox.ui.pages.CategoryPage
-import org.lukemech.lmtoolbox.tasks.AppTask
 
 // ----------------------------
 // Navigation Host
@@ -235,7 +234,7 @@ fun requestSubPage(route: String, page: String?) {
 fun SubPageRequest(feature: AppFeature, open: (String) -> Unit) {
     val request by subPageRequest.collectAsState()
     LaunchedEffect(request) {
-        val (route, page) = request?.takeIf { it.first == feature.route } ?: return@LaunchedEffect
+        val (_, page) = request?.takeIf { it.first == feature.route } ?: return@LaunchedEffect
         subPageRequest.value = null
         open(page)
     }

@@ -65,6 +65,6 @@ class ShareService : KeepAwakeService() {
 
         /** Started with the share. */
         fun start(context: Context) =
-            KeepAwakeService.start(context, ShareService::class.java, CHANNEL, context.getString(R.string.fp_FolderShare))
+            start(context, ShareService::class.java, CHANNEL, context.getString(R.string.fp_FolderShare))
     }
 }

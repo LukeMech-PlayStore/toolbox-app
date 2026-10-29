@@ -200,7 +200,7 @@ fun ExtensionStatus(feature: AppFeature) {
     val installs = installsKey()
     val missing = remember(installs) { feature.linuxExtensions.takeIf { it.isNotEmpty() }?.let { LinuxParts.missingExtensions(context, it) }.orEmpty() }
     // Slow to tell (see ExtensionGate): off the main thread
-    val toDownloadNames by produceState(emptySet<String>(), missing) { value = withContext(Dispatchers.IO) { toDownload(context, missing) } }
+    val toDownloadNames by produceState(emptySet(), missing) { value = withContext(Dispatchers.IO) { toDownload(context, missing) } }
     val toDownload = missing.filter { it.name in toDownloadNames }
     val download = toDownload.isNotEmpty()
     // As the installation page: downloaded, their archives too, then unpacking each (already downloaded: what it unpacks to)

@@ -96,7 +96,7 @@ fun FileHashPage(providedInput: String? = "") {
     val focusManager = LocalFocusManager.current
 
     var step by rememberSaveable { mutableStateOf(Step.File) }
-    // What's open is FileHash's: it stays when the page is left, a file being read read on meanwhile (a task)
+    // What's open is FileHash's: it stays when the page is left, a file being read goes on meanwhile (a task)
     var mode by FileHash::mode
     var file by FileHash::file
     var text by FileHash::text

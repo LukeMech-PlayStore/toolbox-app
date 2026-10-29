@@ -88,7 +88,7 @@ fun ImageResizerPage(providedInput: String? = "") {
 
     var step by rememberSaveable { mutableStateOf(if (ImageResize.saved != null) Step.Done else Step.File) }
     // What's open, and what's picked for it, is ImageResize's: it stays when the page is left, a picture being made
-    // made on meanwhile (a task)
+    // goes on meanwhile (a task)
     var opened by ImageResize::opened
     var options by remember { mutableStateOf(ImageResize.options ?: ResizeOptions.load(context)) }
     SideEffect { ImageResize.options = options }

@@ -10,7 +10,7 @@ import android.os.Build
 import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationCompat
 
-/** Makes (or keeps as it is) notification channel [id], named [name]; quiet by default, as ongoing work's are. */
+/** Makes (or keeps as it is) notification channel [id], named [name]; quiet by default, as those of ongoing work are. */
 fun createChannel(context: Context, id: String, name: String, importance: Int = NotificationManager.IMPORTANCE_LOW) =
     context.getSystemService(NotificationManager::class.java).createNotificationChannel(NotificationChannel(id, name, importance))
 

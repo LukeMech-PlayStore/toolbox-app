@@ -200,7 +200,7 @@ page from the bottom bar.
 
 Everything a tool does in the background is an app task (`tasks/AppTasks.kt`), on the subsystem or not: listed
 in the task list, in the bottom bar with its progress once its page (or the tab showing it, `AppTask.page`) is
-left, in the notification (`TaskService`) while the app's in the back, cancelled from any of them. A tool's own
+left, in the notification (`TaskService`) while the app's in the back, canceled from any of them. A tool's own
 work (a speed test, a scan, hashing a file) is `AppTasks.launch`; what runs until it's stopped (a server) is a
 service (`AppTasks.serviceStarted`); a failure outside a task is `AppTasks.reportFailure`. Each command gets its task's id in its environment (`LMTOOLBOX_TASK`); that's how
 what it takes is measured (`ResourceScope.Task`).

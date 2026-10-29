@@ -36,7 +36,7 @@ import org.lukemech.lmtoolbox.helpers.openActivity
 
 /**
  * Foreground service that keeps the app process alive while the app is in the background and a
- * [LinuxTasks] task is active, mirroring its progress in a notification. While the app is open
+ * [org.lukemech.lmtoolbox.linux.LinuxTasks] task is active, mirroring its progress in a notification. While the app is open
  * there is no service and no notification (the bottom bar shows progress instead); it stops as soon
  * as the app comes back or nothing is running.
  */

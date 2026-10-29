@@ -27,7 +27,7 @@ data class AppTask(
     val source: AppFeature? = null,
     /** Full command line, for copying and reports. */
     val command: String = "",
-    /** Short form of [command] shown in the UI, see [displayCommand]. */
+    /** Short form of [command] shown in the UI, see [org.lukemech.lmtoolbox.linux.displayCommand]. */
     val label: String = "",
     val state: State = State.Queued,
     /** 0..100, or null when the progress is unknown. */
@@ -60,7 +60,7 @@ data class AppTask(
     enum class Type(@param:StringRes val titleRes: Int, val isEnvChange: Boolean) {
         Update(R.string.s_tasks_type_update, true),
         Command(R.string.s_tasks_type_command, false),
-        /** A feature's tools unpacked on its first use (see [LinuxInstaller.installExtension]). */
+        /** A feature's tools unpacked on its first use (see [org.lukemech.lmtoolbox.linux.LinuxInstaller.installExtension]). */
         Extension(R.string.s_tasks_type_extension, false),
     }
 
@@ -93,11 +93,7 @@ data class ToolService(
     val label: String,
     /** What it's part of, as that one's [label] (e.g. a server's, for its tunnels): one with it in the bottom bar. */
     val group: String? = null,
-) {
-    /** The icon of the tool running it. */
-    val featureIcon: ImageVector
-        @Composable get() = source.icon
-}
+)
 
 /**
  * The app's tasks: what a tool does in the background, the Linux subsystem's commands (LinuxTasks) and a tool's own work

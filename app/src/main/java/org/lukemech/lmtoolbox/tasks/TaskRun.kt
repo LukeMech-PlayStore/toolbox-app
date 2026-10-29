@@ -17,8 +17,8 @@ import org.lukemech.lmtoolbox.helpers.AppFeature
  * far it is ([progress]); tapped, they open [source]'s page, at its part [page] (e.g. a tab) if it has one. Kept by the
  * tool (an object of its own, not a page), so its page finds it as it was.
  *
- * [running] from its start until it's over, stopped or not, and only once it's over, not as soon as it's canceled, so a
- * new one can't start while the last still lets go of what it held (a scan's sockets, a file).
+ * [running] from its start until it's over, stopped or not. It's over once it has let go of what it held (a scan's
+ * sockets, a file), not as soon as it's canceled, so a new one can't start before that.
  */
 class TaskRun(private val source: AppFeature, private val page: String? = null) {
     private var task by mutableStateOf<Long?>(null)

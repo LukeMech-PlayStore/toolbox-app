@@ -4,8 +4,6 @@ import android.content.Context
 import kotlinx.coroutines.flow.combine
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.KeepAwakeService
-import org.lukemech.lmtoolbox.linux.parts.Bore
-import org.lukemech.lmtoolbox.linux.parts.Tunnel
 import org.lukemech.lmtoolbox.linux.parts.ConnectionPhase
 
 /**
@@ -56,6 +54,6 @@ class ServerService : KeepAwakeService() {
 
         /** Started with the server. */
         fun start(context: Context) =
-            KeepAwakeService.start(context, ServerService::class.java, CHANNEL, context.getString(R.string.f_Mc_channel))
+            start(context, ServerService::class.java, CHANNEL, context.getString(R.string.f_Mc_channel))
     }
 }

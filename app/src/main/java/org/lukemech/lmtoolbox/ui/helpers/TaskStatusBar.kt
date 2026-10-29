@@ -20,14 +20,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.linux.LinuxParts
 import org.lukemech.lmtoolbox.tasks.ToolService
 import org.lukemech.lmtoolbox.tasks.AppTask
-import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.helpers.Screen
 import org.lukemech.lmtoolbox.helpers.SettingsSubPage
 import org.lukemech.lmtoolbox.tasks.AppTasks

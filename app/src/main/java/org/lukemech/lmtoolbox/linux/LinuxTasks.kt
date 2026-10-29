@@ -145,10 +145,10 @@ object LinuxTasks {
 
     /**
      * Command that keeps running when its page is left (it then shows up in the bottom bar).
-     * Cancelling the caller doesn't stop it; use [cancel] for that. Refused like [run] while the
+     * Cancelling the caller doesn't stop it; use [AppTasks.cancel] for that. Refused like [run] while the
      * subsystem is being set up.
      *
-     * [onStart] gets the task's id (for [cancel], [detach], [setProgress]); [onLine] each line
+     * [onStart] gets the task's id (for [AppTasks.cancel], [AppTasks.detach], [AppTasks.setProgress]); [onLine] each line
      * the command prints, as it comes. [label] is what the UI shows of it (e.g. a file's name).
      * [maxOutput]: how much of its output is kept (see [LinuxEnv.exec]). [retried]: whether the caller runs it
      * again after this result (a download it couldn't make): then it's done, not failed, the next run the one to tell.
@@ -200,11 +200,11 @@ object LinuxTasks {
     /**
      * A tool's program running until it's stopped (a server, its tunnel), its tool keeping it going
      * with a service of its own (and its notification): not a task. It's in neither the task list nor
-     * the subsystem's notification, and in the bottom bar as what runs ([services]), without progress. It
+     * the subsystem's notification, and in the bottom bar as what runs ([AppTasks.services]), without progress. It
      * holds the subsystem as any command does (an update waits for it; other commands don't).
      * Refused like [run] while the subsystem is set up; its tool's parts unpacked first, as a task.
      *
-     * [onStart] gets its id (for [cancel], which stops it); [onLine] each line it prints. Cancelling
+     * [onStart] gets its id (for [AppTasks.cancel], which stops it); [onLine] each line it prints. Cancelling
      * the caller doesn't stop it. Of its output only the last [maxOutput] characters are kept. [group]:
      * the label of the service it's part of (see [ToolService.group]).
      */

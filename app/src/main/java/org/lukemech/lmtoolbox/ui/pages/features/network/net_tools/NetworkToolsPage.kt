@@ -57,7 +57,6 @@ import org.lukemech.lmtoolbox.ui.components.Steps
 import org.lukemech.lmtoolbox.ui.components.listBox
 import org.lukemech.lmtoolbox.ui.components.revealEnter
 import org.lukemech.lmtoolbox.ui.pages.features.measure.compass.WarningColor
-import org.lukemech.lmtoolbox.tasks.AppTask
 import org.lukemech.lmtoolbox.tasks.ShownWhile
 
 /** The page's tabs; their names are the parts of the page a task shows on (AppTask.page). */

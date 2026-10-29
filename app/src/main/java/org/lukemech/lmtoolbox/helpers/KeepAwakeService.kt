@@ -33,7 +33,7 @@ abstract class KeepAwakeService : Service() {
     /** What the notification shows: opening [route]'s tool, a Stop button labeled [stop] (none: null). */
     data class Shown(val title: String, val text: String, val route: String, val stop: String?)
 
-    /** Not another's: the subsystem's are 1 and 2. */
+    /** Not another's: the subsystem's notifications are 1 and 2. */
     protected abstract val notificationId: Int
     protected abstract val channel: String
     @get:DrawableRes protected abstract val icon: Int
