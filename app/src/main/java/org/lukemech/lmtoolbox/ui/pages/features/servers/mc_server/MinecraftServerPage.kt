@@ -2,14 +2,12 @@ package org.lukemech.lmtoolbox.ui.pages.features.servers.mc_server
 
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import android.content.Context
-import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Extension
@@ -29,8 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import kotlin.math.roundToInt
 import org.lukemech.lmtoolbox.features.servers.mc_server.Installer
 import org.lukemech.lmtoolbox.features.servers.mc_server.Memory
@@ -42,7 +40,7 @@ import org.lukemech.lmtoolbox.features.servers.mc_server.Servers
 import org.lukemech.lmtoolbox.helpers.ResourceScope
 import org.lukemech.lmtoolbox.linux.parts.Java
 import org.lukemech.lmtoolbox.linux.LinuxParts
-import org.lukemech.lmtoolbox.linux.LinuxTask
+import org.lukemech.lmtoolbox.tasks.AppTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.ui.components.PackageTable
 import org.lukemech.lmtoolbox.ui.components.PackageTableRow
@@ -62,6 +60,11 @@ import org.lukemech.lmtoolbox.features.servers.mc_server.MinecraftServerFeature
 import org.lukemech.lmtoolbox.ui.components.InputField
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import kotlin.coroutines.cancellation.CancellationException
+import org.lukemech.lmtoolbox.helpers.openLink
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.PhaseDot
+import org.lukemech.lmtoolbox.ui.pages.features.servers.common.ServerHealth
+import org.lukemech.lmtoolbox.tasks.AppTasks
+import org.lukemech.lmtoolbox.ui.components.installsKey
 
 private const val LIST = "list"
 private const val NEW = "new"
@@ -160,7 +163,7 @@ private fun ServerList(servers: List<ServerProfile>, running: ServerRunner.Run?,
                                 title = s.name,
                                 subtitle = s.description + " · " + phaseText(run),
                                 icon = ImageVector.vectorResource(R.drawable.mc_block),
-                                buttonContent = { PhaseDot(run) },
+                                buttonContent = { PhaseDot(health(run)) },
                                 onClick = { onOpen(s.id) }
                             )
                         }
@@ -186,16 +189,12 @@ internal fun phaseText(run: ServerRunner.Run?): String = stringResource(
     }
 )
 
-/** A dot in the color of how it's doing: green running, amber on its way, red crashed, gray stopped. */
-@Composable
-internal fun PhaseDot(run: ServerRunner.Run?, size: androidx.compose.ui.unit.Dp = 14.dp) {
-    val color = when (run?.phase) {
-        ServerRunner.Phase.Running -> androidx.compose.ui.graphics.Color(0xFF2E9E4F)
-        ServerRunner.Phase.Starting, ServerRunner.Phase.Stopping -> androidx.compose.ui.graphics.Color(0xFFE0A100)
-        ServerRunner.Phase.Crashed -> MaterialTheme.colorScheme.error
-        else -> MaterialTheme.colorScheme.outline
-    }
-    Icon(Icons.Default.Circle, contentDescription = null, tint = color, modifier = Modifier.size(size))
+/** How it's doing, as its dot shows it: running, on its way (starting, stopping), crashed or stopped. */
+internal fun health(run: ServerRunner.Run?) = when (run?.phase) {
+    ServerRunner.Phase.Running -> ServerHealth.Running
+    ServerRunner.Phase.Starting, ServerRunner.Phase.Stopping -> ServerHealth.Busy
+    ServerRunner.Phase.Crashed -> ServerHealth.Failed
+    else -> ServerHealth.Stopped
 }
 
 /**
@@ -240,7 +239,7 @@ private fun NewServer(onBack: () -> Unit, onCreated: (String) -> Unit) {
                 if (e is CancellationException) throw e
                 versionsError = true
                 // Told in the one place errors are, the bottom bar
-                LinuxTasks.reportFailure(MinecraftServerFeature, type.label, "Couldn't get the versions: ${e.message ?: e.javaClass.simpleName}")
+                AppTasks.reportFailure(MinecraftServerFeature, type.label, "Couldn't get the versions: ${e.message ?: e.javaClass.simpleName}")
             }
     }
 
@@ -348,10 +347,14 @@ private fun NewServer(onBack: () -> Unit, onCreated: (String) -> Unit) {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth().clickable(enabled = !busy) { eula = !eula }
                     ) {
-                        Checkbox(checked = eula, onCheckedChange = { eula = it }, enabled = !busy)
+                        // At the edges, as the rows above: the row takes the taps, so neither needs its touch padding
+                        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+                            Checkbox(checked = eula, onCheckedChange = { eula = it }, enabled = !busy)
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(stringResource(R.string.f_Mc_eula), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                        TextButton(onClick = {
-                            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, "https://aka.ms/MinecraftEULA".toUri())) }
+                        TextButton(contentPadding = PaddingValues(start = 12.dp), onClick = {
+                            openLink(context, "https://aka.ms/MinecraftEULA")
                         }) { Text(stringResource(R.string.f_Mc_eula_read)) }
                     }
 
@@ -448,14 +451,14 @@ internal fun SnapshotsSetting(checked: Boolean, enabled: Boolean, onChange: (Boo
 internal fun JavaSetting(needs: Int?) {
     val context = LocalContext.current
     // Again once it's installed or removed
-    val tasks by LinuxTasks.tasks.collectAsState()
+    val tasks by AppTasks.tasks.collectAsState()
     val removed by LinuxTasks.extensionsRemoved.collectAsState()
     val jdk = remember(needs) { needs?.let { Java.forNeeds(context, it) } }
-    val onPhone = remember(tasks, removed) { LinuxParts.installedParts(context) }
+    val onPhone = remember(installsKey(), removed) { LinuxParts.installedParts(context) }
     val states by LinuxTasks.packages.collectAsState()
-    val installing = tasks.firstOrNull { it.isActive && it.type == LinuxTask.Type.Extension && it.source == MinecraftServerFeature }
+    val installing = tasks.firstOrNull { it.isActive && it.type == AppTask.Type.Extension && it.source == MinecraftServerFeature }
         ?.takeIf { jdk != null && jdk.part in it.packages }
-    // As on the phone, or what getting it takes; while it installs, as it was when that started (see LinuxTask.packages)
+    // As on the phone, or what getting it takes; while it installs, as it was when that started (see AppTask.packages)
     val row = jdk?.let { LinuxParts.parts(context)[it.part] }?.let { ext ->
         val there = onPhone.firstOrNull { it.part.name == ext.name }?.takeIf { it.unpacked }
         when {

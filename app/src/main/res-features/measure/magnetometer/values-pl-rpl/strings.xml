@@ -16,6 +16,7 @@
     <string name="f_magnet_feedback_off">Brak</string>
     <string name="f_magnet_feedback_tone">Dźwięk</string>
     <string name="f_magnet_feedback_buzz">Wibracje</string>
+    <string name="f_magnet_feedback_both">Dźwięk i wibracje</string>
     <string name="f_magnet_detector_note">Przesuwaj górę telefonu powoli nad powierzchnią. Wykrywa żelazo, stal i magnesy, ale nie aluminium ani miedź.</string>
     <string name="f_magnet_note">Pole Ziemi: 25–65 µT.</string>
 </resources>

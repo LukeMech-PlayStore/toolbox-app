@@ -31,7 +31,6 @@ import org.lukemech.lmtoolbox.features.servers.mc_server.ServerProfile
 import org.lukemech.lmtoolbox.features.servers.mc_server.ServerRunner
 import org.lukemech.lmtoolbox.features.servers.mc_server.Servers
 import org.lukemech.lmtoolbox.features.servers.mc_server.Transfers
-import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.ui.components.BigButton
 import org.lukemech.lmtoolbox.ui.components.ErrorText
 import org.lukemech.lmtoolbox.ui.components.PageHeading
@@ -39,6 +38,7 @@ import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.StepWithButtons
 import org.lukemech.lmtoolbox.ui.components.Steps
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 private enum class Tab(val title: Int, val icon: ImageVector) {
     Status(R.string.f_Mc_tab_status, Icons.Default.Dashboard),
@@ -78,7 +78,7 @@ internal fun ServerPage(profile: ServerProfile, onBack: () -> Unit, onChanged: (
         scope.launch {
             // Not sent: told in the one place errors are, the bottom bar
             ServerRunner.console(c).onFailure {
-                LinuxTasks.reportFailure(MinecraftServerFeature, profile.name, "Couldn't send /$c: ${it.message ?: it.javaClass.simpleName}")
+                AppTasks.reportFailure(MinecraftServerFeature, profile.name, "Couldn't send /$c: ${it.message ?: it.javaClass.simpleName}")
             }
         }
     }

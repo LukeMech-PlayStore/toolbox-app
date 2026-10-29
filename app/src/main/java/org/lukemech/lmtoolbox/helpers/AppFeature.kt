@@ -7,6 +7,7 @@ import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.DeveloperBoard
 import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.Lan
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ enum class FeatureCategory(@param:StringRes val titleRes: Int, val icon: ImageVe
     Finance(R.string.cat_finance, Icons.Default.AccountBalance),
     Media(R.string.cat_media, Icons.Default.VideoLibrary),
     Servers(R.string.cat_servers, Icons.Default.Dns),
+    Network(R.string.cat_network, Icons.Default.Lan),
 }
 
 /**

@@ -1,9 +1,11 @@
 ✨ New
-• Folder share: open a folder of your phone in any browser, nearby or from anywhere
-• Measurement: sound level, light, magnetic field with a metal detector, vibration and stroboscope
-• Electronics: five new calculators, RL/RLC filters, a Reference of tables and pinouts
-• File hash: checksums of a file or text, checked against a hash or another file
+• Folder share: a phone folder in any browser, even from afar
+• Meters: sound level, light, metal detector, vibration, stroboscope
+• Electronics: five new calculators, RL/RLC filters
+• Reference: tables and pinouts, Arduino to ESP32 and STM32 boards
+• File hash: checksums of a file or text, checked against a hash
+• PDF export of pinouts, tables and meter readings
 
 ⚡ Improvements
-• Every meter gets Hold and one layout; turning the screen keeps your page
-• Addresses shown as QR codes, fixes and more
+• Meters get Hold; turning the screen keeps your page
+• Batteries: life and sizes in one tool; fixes and more

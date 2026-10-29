@@ -2,13 +2,8 @@ package org.lukemech.lmtoolbox.features.measure.magnetometer
 
 import android.content.Context
 import android.hardware.Sensor
-import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.runtime.Composable
@@ -24,6 +19,9 @@ import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.measure.common.hasSensor
 import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.helpers.FeatureCategory
+import org.lukemech.lmtoolbox.helpers.SIGNAL_AUDIO
+import org.lukemech.lmtoolbox.helpers.buzz
+import org.lukemech.lmtoolbox.helpers.vibrator
 import org.lukemech.lmtoolbox.ui.pages.features.measure.magnetometer.MagnetometerPage
 
 /** Magnetic field: the magnetometer's strength and components, and a metal detector on it. */
@@ -44,8 +42,10 @@ object MagnetometerFeature : AppFeature {
     /** Whether the device has a magnetometer (the compass's, which most phones have). */
     fun hasSensors(context: Context) = hasSensor(context, Sensor.TYPE_MAGNETIC_FIELD)
 
-    /** How the detector tells of metal: not at all, by a tone rising in pitch, or by buzzes coming faster. */
-    enum class Feedback { Off, Tone, Buzz }
+    /** How the detector tells of metal: not at all, by a tone rising in pitch, by buzzes coming faster, or both. */
+    enum class Feedback(val tone: Boolean, val buzz: Boolean) {
+        Off(false, false), Tone(true, false), Buzz(false, true), ToneAndBuzz(true, true)
+    }
 
     /**
      * Plays the detector's tone until canceled: a sine at [frequency] (Hz, read as it plays; null: silent),
@@ -54,12 +54,7 @@ object MagnetometerFeature : AppFeature {
     suspend fun playTone(frequency: () -> Double?) = withContext(Dispatchers.Default) {
         val minBuffer = AudioTrack.getMinBufferSize(TONE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
         val track = AudioTrack.Builder()
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build()
-            )
+            .setAudioAttributes(SIGNAL_AUDIO)
             .setAudioFormat(
                 AudioFormat.Builder()
                     .setSampleRate(TONE_RATE)
@@ -96,11 +91,11 @@ object MagnetometerFeature : AppFeature {
 
     /** Buzzes until canceled, [interval] ms apart (read before each; null: still for now). */
     suspend fun buzz(context: Context, interval: () -> Long?) {
-        val vibrator = vibrator(context)?.takeIf { it.hasVibrator() } ?: return
+        val vibrator = vibrator(context) ?: return
         try {
             while (currentCoroutineContext().isActive) {
                 val wait = interval()
-                if (wait != null) vibrator.vibrate(VibrationEffect.createOneShot(BUZZ_MS, VibrationEffect.DEFAULT_AMPLITUDE))
+                if (wait != null) vibrator.buzz(BUZZ_MS)
                 delay((wait ?: IDLE_MS).milliseconds)
             }
         } finally {
@@ -109,11 +104,7 @@ object MagnetometerFeature : AppFeature {
     }
 
     /** Whether the device can buzz at all (a tablet may not). */
-    fun canBuzz(context: Context) = vibrator(context)?.hasVibrator() == true
-
-    private fun vibrator(context: Context): Vibrator? =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) context.getSystemService(VibratorManager::class.java)?.defaultVibrator
-        else context.getSystemService(Vibrator::class.java)
+    fun canBuzz(context: Context) = vibrator(context) != null
 
     private const val TONE_RATE = 22050
     /** 20 ms of the tone at a time: a new pitch is heard that soon. */
@@ -121,6 +112,7 @@ object MagnetometerFeature : AppFeature {
     private const val TONE_VOLUME = 0.4
     /** How far towards a new pitch or volume each sample goes: about 10 ms to get there. */
     private const val GLIDE = 0.005
-    private const val BUZZ_MS = 20L
+    /** Long enough for any motor to be felt: a phone's slower ones barely start in 20 ms. */
+    private const val BUZZ_MS = 40L
     private const val IDLE_MS = 100L
 }

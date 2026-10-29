@@ -39,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -48,15 +49,23 @@ import androidx.compose.ui.unit.sp
  */
 val ROW_SPACING = 4.dp
 
+/** The space between a form's fields (and between a form and the rows under it). */
+val FIELD_SPACING = 16.dp
+
 /**
  * Rows [ROW_SPACING] apart, as spacedBy, but none for what shows nothing (a [Reveal] hidden: else two
  * spaces where it is); one coming in gets its space as it grows (at most as tall as it is so far).
  */
-val RowArrangement = object : Arrangement.Vertical {
-    override val spacing = ROW_SPACING
+val RowArrangement = revealArrangement(ROW_SPACING)
+
+/** A form's fields [FIELD_SPACING] apart, as [RowArrangement] its rows. */
+val FieldArrangement = revealArrangement(FIELD_SPACING)
+
+private fun revealArrangement(gap: Dp) = object : Arrangement.Vertical {
+    override val spacing = gap
 
     override fun Density.arrange(totalSize: Int, sizes: IntArray, outPositions: IntArray) {
-        val space = ROW_SPACING.roundToPx()
+        val space = gap.roundToPx()
         var y = 0
         var any = false
         sizes.forEachIndexed { i, size ->
@@ -67,7 +76,7 @@ val RowArrangement = object : Arrangement.Vertical {
         }
     }
 
-    override fun toString() = "RowArrangement"
+    override fun toString() = "RevealArrangement($gap)"
 }
 
 @Composable

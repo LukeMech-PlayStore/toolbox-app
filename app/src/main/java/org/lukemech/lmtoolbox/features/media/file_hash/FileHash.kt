@@ -9,6 +9,11 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.lukemech.lmtoolbox.helpers.PreferenceHelper
 import org.lukemech.lmtoolbox.helpers.displayName
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import org.lukemech.lmtoolbox.tasks.TaskRun
 
 /** What's hashed: a file picked or shared in, or text typed. */
 enum class HashMode { Files, Text }
@@ -31,15 +36,21 @@ object FileHash {
 
     enum class State { Waiting, Hashing, Done, Failed }
 
-    // The page's, while it's left (see FileHashPage): one file at a time, as the video encoder has it
-    var mode = HashMode.Files
-    var file: Item? = null
-    var text = ""
+    // The page's, kept as it's left (see FileHashPage), its files read on meanwhile: one file at a time, as the video
+    // encoder has it
+    var mode by mutableStateOf(HashMode.Files)
+    var file by mutableStateOf<Item?>(null)
+    var text by mutableStateOf("")
     /** The hashes to check against, as pasted or loaded (and the checksum file's name, which can tell their algorithm). */
-    var expectedText = ""
-    var expectedFile: String? = null
+    var expectedText by mutableStateOf("")
+    var expectedFile by mutableStateOf<String?>(null)
     /** Another file checked against (not a checksum file), with its own hashes. */
-    var reference: Item? = null
+    var reference by mutableStateOf<Item?>(null)
+
+    /** The files' reading, a task (it goes on as the page is left): the one at it (the file, or the one it's checked against), and how far. */
+    val run = TaskRun(FileHashFeature)
+    var reading by mutableStateOf<Item?>(null)
+    var readBytes by mutableLongStateOf(0L)
 
     /** [uri] as a file to hash: its name and size, as its provider has them. */
     suspend fun describe(context: Context, uri: Uri): Item = withContext(Dispatchers.IO) {

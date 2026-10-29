@@ -72,7 +72,6 @@ import org.lukemech.lmtoolbox.features.ffmpeg.R
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoCodec
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoJobs
 import org.lukemech.lmtoolbox.features.media.file_size.FileSizeRequest
-import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.ui.components.ActionButton
 import org.lukemech.lmtoolbox.ui.components.BigButton
 import org.lukemech.lmtoolbox.ui.components.PageHeading
@@ -87,6 +86,7 @@ import org.lukemech.lmtoolbox.helpers.SavedFile
 import org.lukemech.lmtoolbox.helpers.shareFile
 import org.lukemech.lmtoolbox.helpers.openFile
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 private enum class Step { File, Output, Cut, Encode }
 
@@ -167,7 +167,7 @@ fun VideoEncoderPage(providedInput: String? = "") {
 
     // Left while encoding: it goes on, shown in the bottom bar
     DisposableEffect(Unit) {
-        onDispose { VideoJobs.state.value?.takeIf { it.isActive }?.taskId?.let(LinuxTasks::detach) }
+        onDispose { VideoJobs.state.value?.takeIf { it.isActive }?.taskId?.let(AppTasks::detach) }
     }
 
     BackHandler(enabled = step != Step.File && !busy) {

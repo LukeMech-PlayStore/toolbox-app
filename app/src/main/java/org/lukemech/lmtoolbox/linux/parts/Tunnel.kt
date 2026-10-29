@@ -3,12 +3,6 @@ package org.lukemech.lmtoolbox.linux.parts
 import org.lukemech.lmtoolbox.linux.InstallResult
 import android.content.Context
 import java.io.File
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.linux.LinuxParts
@@ -26,39 +20,24 @@ import org.lukemech.lmtoolbox.helpers.AppFeature
  * [source] is its title, as its tasks show it.
  */
 class Tunnel(
-    private val source: AppFeature,
+    source: AppFeature,
     /** cloudflared reads the token from there: never in a command line, nor a task's log. Null: quick tunnels alone. */
     val tokenFile: File?,
-    /** What the bottom bar shows of it while it runs (a service, see LinuxTasks.runService), e.g. "My server · tunnel". */
-    private val label: String = "cloudflared",
-    /** The service it's part of, as its label (e.g. its server's name): one with it in the bottom bar. */
-    private val group: String? = null,
-) {
-    enum class Phase { Connecting, Connected, Stopped, Failed }
-
+    label: String = "cloudflared",
+    group: String? = null,
+) : TunnelPart<Tunnel.State>(source, label, group) {
     data class State(
-        val phase: Phase = Phase.Connecting,
-        /** Its run's (see LinuxTasks.runService), for stopping it. */
-        val taskId: Long? = null,
+        override val phase: ConnectionPhase = ConnectionPhase.Connecting,
+        override val taskId: Long? = null,
         /** Connections to Cloudflare's edge (it keeps up to four, in nearby data centers). */
         val connections: Int = 0,
         /** A quick tunnel's address, once cloudflared has it: e.g. https://some-random-words.trycloudflare.com. */
         val url: String? = null,
         /** Why it couldn't connect, as cloudflared said (e.g. the token's not valid). */
-        val error: String? = null,
-    ) {
-        val isActive get() = phase == Phase.Connecting || phase == Phase.Connected
-    }
+        override val error: String? = null,
+    ) : TunnelState
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val _state = MutableStateFlow<State?>(null)
-    /** Null until it's started. */
-    val state: StateFlow<State?> = _state.asStateFlow()
-
-    @Volatile
-    private var stopping = false
-
-    val hasToken get() = tokenFile?.let { it.exists() && it.length() > 0 } == true
+    val hasToken get() = hasSecret(tokenFile)
 
     /** Connects (unless it is, or there's no token); [onLine] gets each line cloudflared prints. */
     fun start(context: Context, onLine: (String) -> Unit = {}) {
@@ -74,31 +53,31 @@ class Tunnel(
         run(context, listOf("cloudflared", "tunnel", "--no-autoupdate", "--url", localUrl), onLine)
 
     private fun run(context: Context, command: List<String>, onLine: (String) -> Unit) {
-        if (_state.value?.isActive == true) return
+        if (mutableState.value?.isActive == true) return
         val app = context.applicationContext
         stopping = false
-        _state.value = State()
+        mutableState.value = State()
         scope.launch {
             var lastError: String? = null
             // Until it's stopped: a service of its tool's, not a task
-            val result = LinuxTasks.runService(
-                app, command, source, label, group = group,
-                onStart = { id -> _state.update { it?.copy(taskId = id) } },
+            val result = runService(
+                app, command,
+                onStart = { id -> mutableState.update { it?.copy(taskId = id) } },
                 onLine = { line ->
                     onLine(line)
-                    QUICK_URL.find(line)?.let { m -> _state.update { it?.copy(url = m.value) } }
+                    QUICK_URL.find(line)?.let { m -> mutableState.update { it?.copy(url = m.value) } }
                     when {
                         "Registered tunnel connection" in line ->
-                            _state.update { it?.copy(phase = Phase.Connected, connections = it.connections + 1, error = null) }
+                            mutableState.update { it?.copy(phase = ConnectionPhase.Connected, connections = it.connections + 1, error = null) }
                         "Unregistered tunnel connection" in line || "Connection terminated" in line ->
-                            _state.update { it?.copy(connections = (it.connections - 1).coerceAtLeast(0)) }
+                            mutableState.update { it?.copy(connections = (it.connections - 1).coerceAtLeast(0)) }
                         " ERR " in line -> lastError = line.substringAfter(" ERR ").trim()
                     }
                 }
             )
-            _state.update {
+            mutableState.update {
                 it?.copy(
-                    phase = if (stopping) Phase.Stopped else Phase.Failed,
+                    phase = if (stopping) ConnectionPhase.Stopped else ConnectionPhase.Failed,
                     connections = 0,
                     url = null,
                     error = if (stopping) null else lastError ?: result.stderr.lineSequence().lastOrNull { l -> l.isNotBlank() }
@@ -107,24 +86,9 @@ class Tunnel(
         }
     }
 
-    /** Disconnects (cloudflared ends its connections as it's stopped). */
-    fun stop() {
-        val s = _state.value?.takeIf { it.isActive } ?: return
-        stopping = true
-        s.taskId?.let(LinuxTasks::cancel)
-    }
-
     /** Saves [token] to [tokenFile], readable by the app alone (null: removes it). */
     fun setToken(token: String?) {
-        val tokenFile = checkNotNull(tokenFile) { "A quick tunnel has no token" }
-        if (token.isNullOrBlank()) {
-            tokenFile.delete()
-            return
-        }
-        tokenFile.parentFile?.mkdirs()
-        tokenFile.writeText(token.trim())
-        tokenFile.setReadable(false, false)
-        tokenFile.setReadable(true, true)
+        saveSecret(checkNotNull(tokenFile) { "A quick tunnel has no token" }, token)
     }
 
     companion object {

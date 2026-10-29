@@ -20,8 +20,9 @@
 light meter, a metal detector, a vibration meter and a stroboscope; work out a resistor's color code or a 555
 timer with 30 electronics calculators; look up pinouts and tables; convert currencies; download, convert and
 shrink videos, music and images; merge, split and shrink PDFs; edit a photo's metadata; share a folder with any
-browser; or run your own Minecraft server, Vanilla to NeoForge, straight from your phone and reachable by your
-friends through Bore, a Cloudflare tunnel or Tailscale.
+browser; test your internet's speed, ping, trace and scan your network; or run your own Minecraft server,
+Vanilla to NeoForge, straight from your phone and reachable by your friends through Bore, a Cloudflare tunnel or
+Tailscale.
 
 The heavier tools run real Linux programs (Python, FFmpeg, yt-dlp, ExifTool, qpdf, Ghostscript, Java,
 cloudflared, bore) inside a PRoot-based Linux subsystem. You never set it up: the app installs it part by part,
@@ -63,6 +64,7 @@ Written in Kotlin with Jetpack Compose (Material 3). The Linux subsystem is buil
 | Media       | PDF tools (merge, split, compress, rotate, add or remove a password)                           | qpdf, Ghostscript                                                                                                                                                            | `features:pdf`      |
 | Media       | File hash (MD5, SHA-1, SHA-2, SHA-3, CRC32; checked against a hash or a checksum file)         | Android (`MessageDigest`, `CRC32`); SHA-3 the app's own (Android has none)                                                                                                   | `app`               |
 | Servers     | Minecraft server (Vanilla, Paper, Fabric, Forge, NeoForge; Bore, Cloudflare tunnel, Tailscale) | The core; the Java its Minecraft is made for (`features:jdk8`, `jdk17`, `jdk21`, `jdk25`); bore or cloudflared once a server's tunnel is on (`features:bore`, `cloudflared`) | `app`               |
+| Network     | Network tools (speed test, ping, traceroute, LAN devices, port scan)                           | Android (its `ping`, sockets, HTTP, `NsdManager`); the speed test on Cloudflare's servers (speed.cloudflare.com)                                                             | `app`               |
 | Servers     | Folder share (a folder in any browser: ranges, ZIPs, uploads, a password; Bore, Cloudflare)    | Android (a web server of its own); bore or cloudflared once a tunnel is on (`features:bore`, `cloudflared`)                                                                  | `app`               |
 
 The electronics calculators: color code, SMD resistor code, Ohm's law, electric power, reactance and
@@ -191,14 +193,22 @@ The code is in [`app/…/linux/`](app/src/main/java/org/lukemech/lmtoolbox/linux
 | `LinuxInstaller.kt` | Unpacks a part from its module's archive, updates the outdated ones, deletes them                       |
 | `PartUsers.kt`      | Which tool uses which part (or was unlocked by another's installation): a part goes once none uses it   |
 | `LinuxEnv.kt`       | Runs a command through PRoot (`exec`), with the environment Termux's programs expect                    |
-| `LinuxTasks.kt`     | Every command, installation and update as a task: the bottom bar, the notification, cancelling          |
+| `LinuxTasks.kt`     | Every command, installation and update of the subsystem, each an app task (see below)                   |
 | `LinuxScripts.kt`   | Installs the tools' scripts (their modules' assets) into the subsystem                                  |
 | `InstallPrompt.kt`  | Asks before installing what a tool needs now                                                            |
 | `parts/`            | `Java`, `Tunnel` and `Bore`: the APIs of the parts a tool picks among or turns on                       |
 
 From UI code, use `LinuxTasks.run` or `runInBackground` (and `runService` for what runs until it's stopped,
-e.g. a server). A task carries the tool that started it (`LinuxTask.source`), which titles it and opens its
-page from the bottom bar. Each command gets its task's id in its environment (`LMTOOLBOX_TASK`); that's how
+e.g. a server). A task carries the tool that started it (`AppTask.source`), which titles it and opens its
+page from the bottom bar.
+
+#### App tasks
+
+Everything a tool does in the background is an app task (`tasks/AppTasks.kt`), on the subsystem or not: listed
+in the task list, in the bottom bar with its progress once its page (or the tab showing it, `AppTask.page`) is
+left, in the notification (`TaskService`) while the app's in the back, canceled from any of them. A tool's own
+work (a speed test, a scan, hashing a file) is `AppTasks.launch`; what runs until it's stopped (a server) is a
+service (`AppTasks.serviceStarted`); a failure outside a task is `AppTasks.reportFailure`. Each command gets its task's id in its environment (`LMTOOLBOX_TASK`); that's how
 what it takes is measured (`ResourceScope.Task`).
 
 A tool can install parts itself when it needs them (`LinuxTasks.installParts`, e.g. the server's Java
@@ -239,7 +249,7 @@ shipped with a build that's no release.
 - **Errors are told in one place**: the red line of the bottom bar (`TaskStatusBar`). Tapping it opens the
   tool that failed; the log is in the task list. A failed command shows there on its own. A failure outside a
   command (a download of the tool's own, a file it couldn't save, a server that crashed) goes through
-  `LinuxTasks.reportFailure`. Pages never show an error themselves. Error messages are short English text in
+  `AppTasks.reportFailure`. Pages never show an error themselves. Error messages are short English text in
   code, not string resources, to keep the app small. Cancelling isn't an error.
 - **Progress is the steps' bar**, at the bottom of the app over its other bars. A page's `Steps` (given to its
   `PageHeading`) are shown by `StepBarSlot`: what the work is at, how far (a percentage) and a short detail
@@ -311,7 +321,9 @@ the debug bundle with Play's local testing (so the tools' modules download as fr
 field and slider (`e2e/Explorer.kt`), installing the tool's Linux packages first if it's on the subsystem. The
 Minecraft server's test makes every type of server (Vanilla, Paper, Fabric, Forge, NeoForge) on every Java, each on
 the newest Minecraft made for it: starts it, uses its console and options, changes its loader, exports its world.
-The pages' own tests (home, search, navigation, settings, tasks) sit next to them.
+The pages' own tests (home, search, navigation, settings, tasks) sit next to them. What a tool parses or works
+out without the UI is checked on the device too, in a test of its own next to the tool's (`NetworkParsersTest`: ping's
+output, the speed test's ping, port ranges, subnets).
 
 **Where.** The legs come from what the app supports and what Google publishes, worked out on every run
 ([`matrix.py`](.github/scripts/tests/e2e/matrix.py)): for x86_64, the oldest Android the app supports (`sdkMin`,

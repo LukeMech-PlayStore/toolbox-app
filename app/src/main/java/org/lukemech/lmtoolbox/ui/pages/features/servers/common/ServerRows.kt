@@ -1,7 +1,5 @@
 package org.lukemech.lmtoolbox.ui.pages.features.servers.common
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -9,7 +7,6 @@ import android.net.LinkProperties
 import android.net.Network as AndroidNetwork
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,7 +48,7 @@ import org.lukemech.lmtoolbox.features.servers.common.Reach
 import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.helpers.QrCode
 import org.lukemech.lmtoolbox.linux.LinuxParts
-import org.lukemech.lmtoolbox.linux.LinuxTask
+import org.lukemech.lmtoolbox.tasks.AppTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.linux.parts.Bore
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
@@ -61,6 +58,9 @@ import org.lukemech.lmtoolbox.ui.components.PackageTableRow
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.RowColors
+import org.lukemech.lmtoolbox.helpers.copyText
+import org.lukemech.lmtoolbox.tasks.AppTasks
+import org.lukemech.lmtoolbox.ui.components.installsKey
 
 // The rows of the tools serving something from the phone (the Minecraft server, the folder share): where it's
 // reached (its addresses, its tunnels as they're doing), the tunnels' parts and settings, and their dialogs.
@@ -164,7 +164,7 @@ internal fun AddressButton(title: String, address: String, icon: ImageVector, sh
             }
         } else null,
         buttonsInColumn = !shareable,
-        onClick = { copy(context, address) }
+        onClick = { copyText(context, address) }
     )
     if (qr) QrDialog(title, address) { qr = false }
 }
@@ -195,7 +195,7 @@ internal fun QrDialog(title: String, text: String, onDismiss: () -> Unit) {
                         }
                     }
                 }
-                Text(text, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, modifier = Modifier.clickable { copy(context, text) })
+                Text(text, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, modifier = Modifier.clickable { copyText(context, text) })
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(android.R.string.ok)) } }
@@ -217,13 +217,6 @@ internal fun openTailscale(context: Context) {
 
 private const val TAILSCALE = "com.tailscale.ipn"
 
-// A setter: primaryClip is a val in Kotlin (its getter is nullable, the setter isn't)
-@Suppress("UsePropertyAccessSyntax")
-internal fun copy(context: Context, text: String) {
-    context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText(text, text))
-    Toast.makeText(context, R.string.f_Srv_copied, Toast.LENGTH_SHORT).show()
-}
-
 /**
  * A tunnel's part's row (cloudflared's, bore's), as the Minecraft server's Java table has them: on the phone (its
  * version), or what getting it takes, each step as it installs for [source]'s tunnel.
@@ -232,13 +225,13 @@ internal fun copy(context: Context, text: String) {
 internal fun PartPackage(source: AppFeature, part: String) {
     val context = LocalContext.current
     // Again once it's installed or removed
-    val tasks by LinuxTasks.tasks.collectAsState()
+    val tasks by AppTasks.tasks.collectAsState()
     val removed by LinuxTasks.extensionsRemoved.collectAsState()
     val states by LinuxTasks.packages.collectAsState()
     val ext = remember(part) { LinuxParts.parts(context)[part] } ?: return
-    val installing = tasks.firstOrNull { it.isActive && it.type == LinuxTask.Type.Extension && it.source == source }
+    val installing = tasks.firstOrNull { it.isActive && it.type == AppTask.Type.Extension && it.source == source }
         ?.takeIf { part in it.packages }
-    val there = remember(tasks, removed) { LinuxParts.installedParts(context).firstOrNull { it.part.name == part }?.takeIf { it.unpacked } }
+    val there = remember(installsKey(), removed) { LinuxParts.installedParts(context).firstOrNull { it.part.name == part }?.takeIf { it.unpacked } }
     // While it installs, as it was when it started (its download's size too, unpacking), each step as it goes: as the Java's table
     val row = when {
         installing != null -> PackageTableRow(ext, archive = part in installing.downloads, state = states[part])

@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.linux.InstalledPart
 import org.lukemech.lmtoolbox.linux.LinuxParts
-import org.lukemech.lmtoolbox.linux.LinuxTask
+import org.lukemech.lmtoolbox.tasks.AppTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.helpers.SettingsSubPage
 import org.lukemech.lmtoolbox.ui.components.EmptyText
@@ -32,21 +32,24 @@ import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.helpers.LocalAppNav
 import org.lukemech.lmtoolbox.ui.helpers.openSettingsPage
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.tasks.AppTasks
+import org.lukemech.lmtoolbox.ui.components.installsKey
 
 /** What of the Linux subsystem is on the device, read again as tasks change (e.g. once something's unpacked or deleted). */
 @Composable
 private fun rememberInstalledParts(): List<InstalledPart> {
     val context = LocalContext.current
-    val tasks by LinuxTasks.tasks.collectAsState()
     val removed by LinuxTasks.extensionsRemoved.collectAsState()
-    return remember(tasks, removed) { LinuxParts.installedParts(context) }
+    // Not with every task's progress: it looks through what's installed
+    val installs = installsKey()
+    return remember(installs, removed) { LinuxParts.installedParts(context) }
 }
 
 /** [this] as an installed package's row: whether it's unpacked, whether Play is to remove it. */
 @Composable
 private fun InstalledPart.row(): PackageTableRow {
-    val tasks by LinuxTasks.tasks.collectAsState()
-    val installing = tasks.any { it.type == LinuxTask.Type.Extension && it.isActive }
+    val tasks by AppTasks.tasks.collectAsState()
+    val installing = tasks.any { it.type == AppTask.Type.Extension && it.isActive }
     return PackageTableRow(part, archive = archive, unpacked = unpacked, removalQueued = archive && !unpacked && !installing, version = version)
 }
 

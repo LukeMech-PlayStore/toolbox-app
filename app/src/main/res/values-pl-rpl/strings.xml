@@ -24,6 +24,7 @@
     <string name="cat_finance">Finanse</string>
     <string name="cat_media">Multimedia</string>
     <string name="cat_servers">Serwery</string>
+    <string name="cat_network">Sieć</string>
     <string name="search_features">Szukaj funkcji</string>
     <string name="search_settings">Szukaj w ustawieniach</string>
     <string name="search_no_results">Nic nie znaleziono</string>
@@ -31,6 +32,8 @@
     <string name="search_choices">Szukaj w opcjach</string>
     <!-- A file a tool made (SavedFiles.kt) -->
     <string name="no_app_opens">Żadna aplikacja nie otworzy tego pliku</string>
+    <string name="no_app_opens_link">Żadna aplikacja nie otworzy tego linku</string>
+    <string name="copied">Skopiowano</string>
     <!-- A page's PDF of what it shows (PdfExport.kt): saved to Downloads, its pages numbered -->
     <string name="pdf_export">Eksportuj do PDF</string>
     <string name="pdf_saved">Zapisano w Pobranych: %1$s</string>
@@ -38,6 +41,7 @@
     <string name="pdf_footer">%1$s · strona %2$d</string>
 
     <!-- Shared by the measuring features and their widgets (the widgets' settings and service); each feature's own are in res-features/<Feature> -->
+    <string name="muted_sound">Głośność multimediów wyłączona: dźwięku nie będzie słychać</string>
     <string name="f_missing_sensors_title">Błąd uruchomienia</string>
     <!-- The meters' readings (sound, light, vibration) -->
     <string name="f_meter_min">Min</string>
@@ -75,7 +79,8 @@
     <string name="s_tasks_type_install">Rozpakowywanie Linuxa</string>
     <string name="s_tasks_type_update">Aktualizowanie Linuxa</string>
     <string name="s_tasks_type_command">Polecenie</string>
-    <string name="s_tasks_failed_bar">Błąd: %1$s · dotknij, by otworzyć</string>
+    <string name="s_tasks_failed">Błąd: %1$s</string>
+    <string name="s_tasks_failed_open">Dotknij, by otworzyć</string>
     <string name="s_tasks_type_extension">Rozpakowywanie…</string>
     <string name="s_ext_failed">Nie udało się rozpakować programów narzędzia</string>
     <string name="s_ext_gate_download">%1$s do pobrania</string>
@@ -98,6 +103,7 @@
     <string name="fm_jdk25">Java 25</string>
     <string name="fm_cloudflared">Tunel Cloudflare</string>
     <string name="fm_bore">Tunel Bore</string>
+    <string name="fm_iperf3">iperf3</string>
     <string name="s_ext_dialog_remove">Odinstalowanie funkcji (w jej ustawieniach) znów je usunie.</string>
     <string name="s_tasks_state_queued">Oczekuje</string>
     <string name="s_tasks_state_running">W toku</string>

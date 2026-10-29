@@ -72,6 +72,7 @@ import org.lukemech.lmtoolbox.helpers.saveToMediaStore
 import org.lukemech.lmtoolbox.helpers.shareFile
 import org.lukemech.lmtoolbox.features.media.qr_gen.QrStyle
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 private enum class Step { Types, Form, Result }
 
@@ -121,7 +122,7 @@ fun QrGenPage(providedInput: String? = "") {
                 step = Step.Result
             } else if (result.isSuccess) {
                 // It ran but made nothing: told in the one place errors are, the bottom bar (a failed run, it tells already)
-                LinuxTasks.reportFailure(QrGenFeature, "", "No code was made")
+                AppTasks.reportFailure(QrGenFeature, "", "No code was made")
             }
         }
     }
@@ -310,7 +311,7 @@ private fun QrResult(type: QrType, values: Map<String, String>, file: File?, ste
                 saved = uri != null
                 // A failure, told in the one place errors are: the bottom bar
                 if (saved) Toast.makeText(context, resources.getString(R.string.f_QREncode_Saved), Toast.LENGTH_SHORT).show()
-                else LinuxTasks.reportFailure(QrGenFeature, name, "Couldn't save the code")
+                else AppTasks.reportFailure(QrGenFeature, name, "Couldn't save the code")
             }
             ActionButton(Icons.Default.Share, stringResource(R.string.qr_share), enabled = file != null) {
                 file?.let { share(context, it) }

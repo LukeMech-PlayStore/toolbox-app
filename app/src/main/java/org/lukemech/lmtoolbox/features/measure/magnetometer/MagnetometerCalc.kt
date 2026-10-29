@@ -67,4 +67,4 @@ fun buzzInterval(deviation: Double): Long? {
 private const val TONE_LOW = 300.0
 private const val TONE_HIGH = 1500.0
 private const val BUZZ_SLOW = 600.0
-private const val BUZZ_FAST = 60.0
+private const val BUZZ_FAST = 80.0

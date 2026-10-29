@@ -40,8 +40,14 @@ import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.AppFeature
 import org.lukemech.lmtoolbox.helpers.FeatureDelivery
 import org.lukemech.lmtoolbox.linux.LinuxParts
-import org.lukemech.lmtoolbox.linux.LinuxTask
+import org.lukemech.lmtoolbox.tasks.AppTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
+import org.lukemech.lmtoolbox.tasks.AppTasks
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.produceState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.lukemech.lmtoolbox.linux.LinuxExtension
 
 /**
  * [feature]'s page (see [AppFeature.uiClass]), behind [ExtensionGate]. Should its module's code still be
@@ -49,13 +55,13 @@ import org.lukemech.lmtoolbox.linux.LinuxTasks
  */
 @Composable
 fun ModulePage(feature: AppFeature, arguments: Map<String, String?>?) = ExtensionGate(feature) {
-    val tasks by LinuxTasks.tasks.collectAsState()
     // Again once its module is installed (a task finishing)
-    val ui = remember(tasks) { FeatureDelivery.ui(feature) }
+    val installs = installsKey()
+    val ui = remember(installs) { FeatureDelivery.ui(feature) }
     if (ui != null) return@ExtensionGate ui.Content(arguments)
-    val task = tasks.firstOrNull { it.type == LinuxTask.Type.Extension && it.source == feature }
+    val task = extensionTask(feature)
     PageHeading(stringResource(feature.titleStringResId), verticalArrangement = Arrangement.Center) {
-        if (task?.state == LinuxTask.State.Failed) {
+        if (task?.state == AppTask.State.Failed) {
             task.message?.let { EmptyText(it) }
         } else if (task?.isActive != true) {
             LaunchedEffect(Unit) { Log.e("ModulePage", "${feature.uiClass}: its module's pages aren't loaded") }
@@ -78,29 +84,33 @@ fun ExtensionGate(feature: AppFeature, content: @Composable () -> Unit) {
         }
         return
     }
-    val tasks by LinuxTasks.tasks.collectAsState()
-    // Again whenever a task changes, e.g. once they're unpacked
-    val missingNow = remember(tasks) { feature.linuxExtensions.takeIf { it.isNotEmpty() }?.let { LinuxParts.missingExtensions(context, it) }.orEmpty() }
+    // Again as an installation starts or ends, e.g. once they're unpacked
+    val installs = installsKey()
+    val missingNow = remember(installs) { feature.linuxExtensions.takeIf { it.isNotEmpty() }?.let { LinuxParts.missingExtensions(context, it) }.orEmpty() }
     if (missingNow.isEmpty()) {
         content()
         return
     }
-    val task = tasks.firstOrNull { it.type == LinuxTask.Type.Extension && it.source == feature }
+    val task = extensionTask(feature)
     // While they install, the packages stay listed as they were when it started (each with how it's doing),
     // the page left and opened again too
     val busy = task?.isActive == true
     val missing = if (busy) remember(task.id) { task.packages.mapNotNull { LinuxParts.parts(context)[it] } } else missingNow
     val states by LinuxTasks.packages.collectAsState()
     // Downloaded first (from Play), or just unpacked (e.g. after the core was unpacked again); as it was when
-    // the installation started, while it runs
-    val toDownloadNow = remember(missingNow) { missingNow.filterNot { LinuxParts.isExtensionDownloaded(context, it.name) }.map { it.name }.toSet() }
-    val toDownload = if (busy) task.downloads else toDownloadNow
+    // the installation started, while it runs. Both slow to tell (Play's modules looked through, the system's
+    // caches counted): off the main thread, the page shown meanwhile and what they take unfolding once known
+    val known by produceState<Pair<Set<String>, Long>?>(null, missingNow) {
+        value = withContext(Dispatchers.IO) { toDownload(context, missingNow) to freeSpace(context) }
+    }
+    val ready = known != null
+    val toDownload = if (busy) task.downloads else known?.first.orEmpty()
     val download = toDownload.isNotEmpty()
     // What they take, as their rows tell: downloaded, their archives (kept with them), then unpacking
     // each (already downloaded: just what it unpacks to)
     val archives = missing.filter { it.name in toDownload }.sumOf { it.archiveSize }
     val size = Formatter.formatShortFileSize(context, archives + missing.sumOf { if (it.name in toDownload) it.unpackSize else it.size })
-    val free = Formatter.formatShortFileSize(context, freeSpace(context))
+    val free = Formatter.formatShortFileSize(context, known?.second ?: 0)
 
     // As every tool's first page: what it takes in the middle (scrolling), its button at the bottom
     StepWithButtons(
@@ -116,6 +126,8 @@ fun ExtensionGate(feature: AppFeature, content: @Composable () -> Unit) {
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
+                    Reveal(visible = ready) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                     // How much, first: in all (downloaded and unpacked), then what of it is downloaded, and what's free
                     Text(size, style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.primary)
                     // Of it, what's downloaded (if anything is)
@@ -157,6 +169,8 @@ fun ExtensionGate(feature: AppFeature, content: @Composable () -> Unit) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
+                    }
+                    }
                 }
             }
         },
@@ -171,7 +185,7 @@ fun ExtensionGate(feature: AppFeature, content: @Composable () -> Unit) {
                     download -> stringResource(R.string.s_ext_install)
                     else -> stringResource(R.string.s_ext_unpack)
                 },
-                enabled = !busy
+                enabled = !busy && ready
             ) {
                 LinuxTasks.unpack(context, feature)
             }
@@ -183,9 +197,11 @@ fun ExtensionGate(feature: AppFeature, content: @Composable () -> Unit) {
 @Composable
 fun ExtensionStatus(feature: AppFeature) {
     val context = LocalContext.current
-    val tasks by LinuxTasks.tasks.collectAsState()
-    val missing = remember(tasks) { feature.linuxExtensions.takeIf { it.isNotEmpty() }?.let { LinuxParts.missingExtensions(context, it) }.orEmpty() }
-    val toDownload = remember(missing) { missing.filterNot { LinuxParts.isExtensionDownloaded(context, it.name) } }
+    val installs = installsKey()
+    val missing = remember(installs) { feature.linuxExtensions.takeIf { it.isNotEmpty() }?.let { LinuxParts.missingExtensions(context, it) }.orEmpty() }
+    // Slow to tell (see ExtensionGate): off the main thread
+    val toDownloadNames by produceState(emptySet(), missing) { value = withContext(Dispatchers.IO) { toDownload(context, missing) } }
+    val toDownload = missing.filter { it.name in toDownloadNames }
     val download = toDownload.isNotEmpty()
     // As the installation page: downloaded, their archives too, then unpacking each (already downloaded: what it unpacks to)
     val size = missing.sumOf { it.size } + toDownload.sumOf { it.archiveSize + it.extractedSize }
@@ -215,7 +231,30 @@ fun ExtensionStatus(feature: AppFeature) {
     }
 }
 
-/** Space the tools may take: what's free, and what the system would clear of apps' caches for them. */
+/**
+ * Changes as a part's installation or the subsystem's update starts or ends (what's installed may have changed then):
+ * not with every task's progress, so what's installed isn't looked through again many times a second.
+ */
+@Composable
+fun installsKey(): List<Pair<Long, AppTask.State>> {
+    val tasks = AppTasks.tasks.collectAsState()
+    val key by remember { derivedStateOf { tasks.value.filter { it.type == AppTask.Type.Extension || it.type.isEnvChange }.map { it.id to it.state } } }
+    return key
+}
+
+/** [feature]'s parts' installation (the running or last one), as it goes. */
+@Composable
+private fun extensionTask(feature: AppFeature): AppTask? {
+    val tasks = AppTasks.tasks.collectAsState()
+    val task by remember(feature) { derivedStateOf { tasks.value.firstOrNull { it.type == AppTask.Type.Extension && it.source == feature } } }
+    return task
+}
+
+/** Of [missing], those to download first (their Play modules aren't there): slow, it looks through the installed modules. */
+private fun toDownload(context: Context, missing: List<LinuxExtension>) =
+    missing.filterNot { LinuxParts.isExtensionDownloaded(context, it.name) }.map { it.name }.toSet()
+
+/** Space the tools may take: what's free, and what the system would clear of apps' caches for them (slow: it counts them). */
 private fun freeSpace(context: Context): Long {
     val storage = context.getSystemService(StorageManager::class.java)
     return runCatching { storage.getAllocatableBytes(storage.getUuidForPath(context.filesDir)) }

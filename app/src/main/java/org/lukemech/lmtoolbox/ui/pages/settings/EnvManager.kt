@@ -17,11 +17,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import org.lukemech.lmtoolbox.R
-import org.lukemech.lmtoolbox.linux.LinuxTask
+import org.lukemech.lmtoolbox.tasks.AppTask
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.helpers.SettingsSubPage
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.helpers.LocalAppNav
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /**
  * Status of the Linux subsystem, opening its task list. It isn't there until a tool needs it (its
@@ -34,15 +35,15 @@ fun EnvManagerSection() {
     val navController = LocalAppNav.current.controller
 
     // State lives in LinuxTasks, so it survives leaving this page
-    val tasks by LinuxTasks.tasks.collectAsState()
+    val tasks by AppTasks.tasks.collectAsState()
     val envTask = tasks.firstOrNull { it.type.isEnvChange }
     val runningTask = envTask?.takeIf { it.isActive }
-    val failedTask = envTask?.takeIf { it.state == LinuxTask.State.Failed }
+    val failedTask = envTask?.takeIf { it.state == AppTask.State.Failed }
 
     val subtitle = when {
         runningTask != null -> {
             val prefix = stringResource(
-                if (runningTask.type == LinuxTask.Type.Update) R.string.s_env_manager_updating
+                if (runningTask.type == AppTask.Type.Update) R.string.s_env_manager_updating
                 else R.string.s_env_manager_unpacking
             )
             runningTask.progress?.let { "$prefix: ${it.toInt()}%" } ?: "$prefix..."

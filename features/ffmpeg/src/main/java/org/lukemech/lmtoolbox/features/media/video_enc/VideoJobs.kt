@@ -28,6 +28,7 @@ import org.lukemech.lmtoolbox.helpers.SavedFile
 import org.lukemech.lmtoolbox.helpers.displayName
 import org.lukemech.lmtoolbox.helpers.safeFileName
 import org.lukemech.lmtoolbox.helpers.saveToMediaStore
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /** What ffprobe tells of a file: enough to show it, cut it and pick what to make of it. */
 data class Probe(
@@ -362,7 +363,7 @@ object VideoJobs {
             }.getOrNull()
         } ?: return Result.failure<Opened>(Exception()).also {
             // Not a command's: told in the one place errors are, the bottom bar
-            LinuxTasks.reportFailure(VideoEncoderFeature, name, "Couldn't read the file")
+            AppTasks.reportFailure(VideoEncoderFeature, name, "Couldn't read the file")
         }
         val result = LinuxTasks.run(
             context,
@@ -374,7 +375,7 @@ object VideoJobs {
         val probe = json?.let(Probe::parse)
             // What FFprobe said is in the task's log (the bottom bar's); read fine, but nothing to encode in it: told there too
             ?: return Result.failure<Opened>(if (json != null) UnsupportedOperationException() else Exception()).also {
-                if (json != null) LinuxTasks.reportFailure(VideoEncoderFeature, name, "No video or sound in the file")
+                if (json != null) AppTasks.reportFailure(VideoEncoderFeature, name, "No video or sound in the file")
             }
         if (encoders == null) encoders = readEncoders(context)
         return Result.success(Opened(uri, name, copy, probe))
@@ -413,10 +414,10 @@ object VideoJobs {
                     onLine = { line ->
                         val updated = _state.updateAndGet { it?.let { j -> onLine(j, line) } }
                         val percent = updated?.fraction?.let { (it * 100).toInt() } ?: return@runInBackground
-                        updated.taskId?.let { LinuxTasks.setProgress(it, percent.toFloat()) }
+                        updated.taskId?.let { AppTasks.setProgress(it, percent.toFloat()) }
                     }
                 )
-                val cancelled = LinuxTasks.isCancelled(_state.value?.taskId)
+                val cancelled = AppTasks.isCancelled(_state.value?.taskId)
                 val size = output.takeIf { it.exists() }?.length() ?: 0L
                 if (!cancelled && result.isSuccess && target != null && size > target && attempt < TARGET_ATTEMPTS) {
                     attempt++
@@ -446,13 +447,13 @@ object VideoJobs {
                     if (saved != null) it?.copy(phase = Phase.Done, saved = saved)
                     else it?.copy(phase = Phase.Failed, error = "Couldn't save the file")
                 }
-                if (saved == null) LinuxTasks.reportFailure(VideoEncoderFeature, "", "Couldn't save the file")
+                if (saved == null) AppTasks.reportFailure(VideoEncoderFeature, "", "Couldn't save the file")
             }
         }
     }
 
     fun cancel() {
-        _state.value?.taskId?.let { LinuxTasks.cancel(it) }
+        _state.value?.taskId?.let { AppTasks.cancel(it) }
     }
 
     /** Forgets a finished job (e.g. to make another). */

@@ -17,6 +17,8 @@ import org.lukemech.lmtoolbox.linux.LinuxParts
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.linux.parts.Bore
 import org.lukemech.lmtoolbox.linux.parts.Tunnel
+import org.lukemech.lmtoolbox.tasks.AppTasks
+import org.lukemech.lmtoolbox.linux.parts.ConnectionPhase
 
 /**
  * The tunnels a tool's server is reached through from anywhere, Cloudflare's ([Tunnel]) and bore's ([Bore]),
@@ -80,8 +82,8 @@ class ServerTunnels(private val source: AppFeature, private val log: (String) ->
             tunnel.state.collect { state ->
                 state ?: return@collect
                 // Failed (not stopped): told in the one place errors are, the bottom bar
-                if (state.phase == Tunnel.Phase.Failed && _tunnel.value?.state?.phase != Tunnel.Phase.Failed) {
-                    LinuxTasks.reportFailure(source, label, "Cloudflare tunnel: ${state.error ?: "failed"}")
+                if (state.phase == ConnectionPhase.Failed && _tunnel.value?.state?.phase != ConnectionPhase.Failed) {
+                    AppTasks.reportFailure(source, label, "Cloudflare tunnel: ${state.error ?: "failed"}")
                 }
                 _tunnel.value = ServerTunnel(serverId, state)
             }
@@ -112,7 +114,7 @@ class ServerTunnels(private val source: AppFeature, private val log: (String) ->
             bore.state.collect { state ->
                 state ?: return@collect
                 // Failed: told in its status row alone (the server runs on without it), not as the server's failed task
-                if (state.phase == Bore.Phase.Connected) onConnected(state.port)
+                if (state.phase == ConnectionPhase.Connected) onConnected(state.port)
                 _bore.value = ServerBore(serverId, state)
             }
         }
@@ -139,11 +141,11 @@ class ServerTunnels(private val source: AppFeature, private val log: (String) ->
 
     /** Shown as failed (e.g. its part couldn't be installed), for server [serverId]: [error] says why. */
     fun tunnelFailed(serverId: String, error: String) {
-        _tunnel.value = ServerTunnel(serverId, Tunnel.State(Tunnel.Phase.Failed, error = error))
+        _tunnel.value = ServerTunnel(serverId, Tunnel.State(ConnectionPhase.Failed, error = error))
     }
 
     fun boreFailed(serverId: String, error: String) {
-        _bore.value = ServerBore(serverId, Bore.State(Bore.Phase.Failed, error = error))
+        _bore.value = ServerBore(serverId, Bore.State(ConnectionPhase.Failed, error = error))
     }
 
     /**

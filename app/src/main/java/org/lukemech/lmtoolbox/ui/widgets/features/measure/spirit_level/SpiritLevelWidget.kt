@@ -7,7 +7,6 @@ import android.hardware.SensorEvent
 import android.os.Build
 import android.util.TypedValue
 import android.widget.RemoteViews
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import org.lukemech.lmtoolbox.R
@@ -20,6 +19,9 @@ import kotlin.math.roundToInt
 import org.lukemech.lmtoolbox.ui.pages.features.measure.spirit_level.tiltFraction
 import org.lukemech.lmtoolbox.ui.pages.features.measure.spirit_level.isNearCenter
 import org.lukemech.lmtoolbox.ui.pages.features.measure.spirit_level.BUBBLE_TRAVEL
+import org.lukemech.lmtoolbox.ui.widgets.helpers.Glide
+import org.lukemech.lmtoolbox.ui.widgets.helpers.FrameClock
+import org.lukemech.lmtoolbox.ui.widgets.helpers.stepTowards
 
 /**
  * Spirit level on the home screen, on a transparent background. Tapping it switches it on:
@@ -173,36 +175,19 @@ class SpiritLevelWidgetService : LiveWidgetService() {
     // Shared with the page, so both show the same tilt and accuracy state
     private val state = SpiritLevelFeature.SensorState()
 
-    private val x = Axis()
-    private val y = Axis()
+    // The bubble's coordinates, each animated towards its target as the page's animateFloatAsState (400ms, LinearOutSlowIn)
+    private val x = Glide(BUBBLE_ANIMATION_NS)
+    private val y = Glide(BUBBLE_ANIMATION_NS)
     private var ring = 0f
     private var fade = 1f
-    private var lastFrameAt = 0L
+    private val clock = FrameClock()
 
     // Switched off: back to how it looks off (bubble in the middle, dimmed) first
     override fun stoppingMs() = BUBBLE_ANIMATION_NS / 1_000_000 + 50
 
-    /** One coordinate of the bubble, animated towards its target like animateFloatAsState. */
-    private class Axis {
-        var shown = 0f
-        private var from = 0f
-        private var to = 0f
-        private var startedAt = 0L
-
-        fun update(target: Float, now: Long) {
-            if (target != to) {
-                from = shown
-                to = target
-                startedAt = now
-            }
-            val progress = ((now - startedAt) / BUBBLE_ANIMATION_NS.toFloat()).coerceIn(0f, 1f)
-            shown = from + (to - from) * LinearOutSlowInEasing.transform(progress)
-        }
-    }
-
     override fun onLiveStart() {
         frame = Frame(0f, 0f, 0f, 0f, 0f, true)
-        lastFrameAt = System.nanoTime()
+        clock.start()
     }
 
     override fun onLiveStop() {
@@ -227,16 +212,11 @@ class SpiritLevelWidgetService : LiveWidgetService() {
         x.update(if (isStopping) 0f else tiltFraction(state.roll), frameTimeNanos)
         y.update(if (isStopping) 0f else tiltFraction(state.pitch), frameTimeNanos)
 
-        // By the time passed, so a late frame doesn't slow the fades down
-        // Never back in time: the first display frame may be stamped before the start (System.nanoTime)
-        val passed = (frameTimeNanos - lastFrameAt).coerceAtLeast(0)
-        val ringStep = passed / RING_ANIMATION_NS.toFloat()
+        val passed = clock.passed(frameTimeNanos)
         val centered = !isStopping && isNearCenter(x.shown, y.shown)
-        ring = (ring + if (centered) ringStep else -ringStep).coerceIn(0f, 1f)
+        ring = stepTowards(ring, if (centered) 1f else 0f, passed, RING_ANIMATION_NS)
         // Fading in when switched on, out when off
-        val fadeStep = passed / BUBBLE_ANIMATION_NS.toFloat()
-        fade = (fade + if (isStopping) fadeStep else -fadeStep).coerceIn(0f, 1f)
-        lastFrameAt = frameTimeNanos
+        fade = stepTowards(fade, if (isStopping) 1f else 0f, passed, BUBBLE_ANIMATION_NS)
 
         val next = Frame(x.shown, y.shown, ring, state.roll, state.pitch, state.isCalibrated, fade)
         frame = next
