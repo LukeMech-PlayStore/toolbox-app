@@ -96,7 +96,7 @@
         <item quantity="one">%1$d file saved to %2$s</item>
         <item quantity="other">%1$d files saved to %2$s</item>
     </plurals>
-    <string name="f_Pdf_failed">That didn\'t work</string>
+    <string name="f_Pdf_failed">That didn’t work</string>
     <string name="f_Pdf_cancelled">Cancelled</string>
     <string name="f_Pdf_size_change">%1$s → %2$s</string>
     <string name="f_Pdf_change">Change options</string>

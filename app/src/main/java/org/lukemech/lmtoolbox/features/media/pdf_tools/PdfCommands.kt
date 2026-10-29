@@ -3,8 +3,8 @@ package org.lukemech.lmtoolbox.features.media.pdf_tools
 import kotlin.math.abs
 
 /**
- * Pages as typed ("1-3,5,7-z"): groups split by commas, each a page or a range of them; a page is its
- * number, `z` (the last) or `r<n>` (the n-th from the end), as qpdf takes them. Spaces don't count.
+ * Pages as typed ("1-3,5,7-z"): groups split by commas, each a page or a range of them; a page is given by
+ * its number, `z` (the last) or `r<n>` (the n-th from the end), as qpdf takes them. Spaces don't count.
  */
 object PageRanges {
     /** Pages [first] to [last], counting down when [last] is lower (as qpdf reads "7-3"). */
@@ -81,7 +81,7 @@ enum class ImageType(val extension: String, val mimeType: String, val device: Li
 }
 
 /**
- * The qpdf and Ghostscript commands the PDF tools run, as argument lists (nothing here runs them: the pdf
+ * The qpdf and Ghostscript commands the PDF tools run, as argument lists (nothing here runs them: the PDF
  * module's PdfJobs does): plain functions of what's picked, in the app for its tests (PdfCommandsTest).
  * Outputs are paths in the cache.
  */

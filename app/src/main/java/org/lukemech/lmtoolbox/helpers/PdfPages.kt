@@ -125,7 +125,7 @@ open class PdfPages(protected val resources: Resources, private val title: Strin
 /**
  * [picture] as a one-page PDF written to [out]: an A4 page's width, as tall as the picture is for it (a page as wide
  * as A4 for a landscape one too, so pages added to others line up), the picture filling it. The picture goes in as a
- * JPEG of [quality] (as img2pdf puts one in), not as Android's PdfDocument would: its every pixel, deflated, tens of
+ * JPEG of [quality] (as `img2pdf` puts one in), not as Android's PdfDocument would: its every pixel, deflated, tens of
  * megabytes for a photo. Transparent parts on white.
  */
 fun writePicturePdf(picture: Bitmap, out: OutputStream, quality: Int = 90) {

@@ -7,7 +7,7 @@ import org.lukemech.lmtoolbox.helpers.FeatureCategory
 import org.lukemech.lmtoolbox.helpers.ModuleFeature
 import org.lukemech.lmtoolbox.helpers.ResourceTile
 
-/** PDF tools: their pages and qpdf's and Ghostscript's use are in the pdf module (features/pdf, its media/pdf_tools). */
+/** PDF tools: their pages and qpdf's and Ghostscript's use are in the PDF module (features/pdf, its media/pdf_tools). */
 object PdfToolsFeature : ModuleFeature(
     route = "pdf_tools",
     titleStringResId = R.string.fp_PdfTools,
