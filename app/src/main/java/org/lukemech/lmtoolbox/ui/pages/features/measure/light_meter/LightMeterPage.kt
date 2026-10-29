@@ -22,7 +22,6 @@ import org.lukemech.lmtoolbox.features.measure.light_meter.LightMeterFeature
 import org.lukemech.lmtoolbox.features.measure.light_meter.LightReference
 import org.lukemech.lmtoolbox.features.measure.light_meter.footCandles
 import org.lukemech.lmtoolbox.features.measure.light_meter.referenceFor
-import org.lukemech.lmtoolbox.ui.components.EmptyText
 import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.ReadingResult
@@ -30,6 +29,7 @@ import org.lukemech.lmtoolbox.ui.components.ResultRow
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SectionTitle
+import org.lukemech.lmtoolbox.ui.components.SensorWarning
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterActions
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.SensorUpdates
 
@@ -103,11 +103,8 @@ fun LightMeterPage() {
             }
         }
     ) {
-        if (!hasSensor) {
-            EmptyText(stringResource(R.string.f_light_missing))
-            return@PageHeading
-        }
         Column(verticalArrangement = RowArrangement) {
+            SensorWarning(hasSensors = hasSensor, missingMessage = R.string.f_light_missing)
             Results(apart = false) {
                 ReadingResult(shown?.let(::formatLux) ?: none, unit, held = holding)
                 rows.forEach { (label, value) -> ResultRow(label, value) }

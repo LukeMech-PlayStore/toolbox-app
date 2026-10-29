@@ -48,22 +48,25 @@ fun PromptBar(visible: Boolean, title: String, color: Color, icon: ImageVector, 
 }
 
 /**
- * A measuring tool's sensors' warning, on top of its page: a red bar while the device lacks them ([hasSensors]
- * false, [missingMessage]) or they aren't [calibrated] ([calibrationTitle], [calibrationMessage], [calibrationIcon]),
- * explained in a dialog when it's tapped.
+ * A measuring tool's sensors' (or other hardware's, e.g. a torch's) warning, on top of its page: a red bar while the
+ * device lacks them ([hasSensors] false, [missingMessage]) or they aren't [calibrated] ([calibrationTitle],
+ * [calibrationMessage], [calibrationIcon]; left out for what has nothing to calibrate), explained in a dialog when
+ * it's tapped.
  */
 @Composable
 fun SensorWarning(
     hasSensors: Boolean,
-    calibrated: Boolean,
-    @StringRes calibrationTitle: Int,
-    @StringRes calibrationMessage: Int,
-    calibrationIcon: ImageVector,
     @StringRes missingMessage: Int,
+    calibrated: Boolean = true,
+    @StringRes calibrationTitle: Int? = null,
+    @StringRes calibrationMessage: Int? = null,
+    calibrationIcon: ImageVector = Icons.Default.SyncDisabled,
 ) {
     var explained by remember { mutableStateOf(false) }
-    val warning = !hasSensors || !calibrated
-    val title = stringResource(if (hasSensors) calibrationTitle else R.string.f_missing_sensors_title)
+    // Uncalibrated only where there's a calibration to tell of
+    val calibrating = hasSensors && calibrationTitle != null && calibrationMessage != null
+    val warning = !hasSensors || (calibrating && !calibrated)
+    val title = stringResource(if (calibrating) calibrationTitle else R.string.f_missing_sensors_title)
     if (warning && explained) {
         AlertDialog(
             onDismissRequest = { explained = false },
@@ -73,14 +76,14 @@ fun SensorWarning(
                 }
             },
             title = { Text(title) },
-            text = { Text(stringResource(if (hasSensors) calibrationMessage else missingMessage)) }
+            text = { Text(stringResource(if (calibrating) calibrationMessage else missingMessage)) }
         )
     }
     PromptBar(
         visible = warning,
         title = title,
         color = MaterialTheme.colorScheme.error,
-        icon = if (hasSensors) calibrationIcon else Icons.Default.SyncDisabled,
+        icon = if (calibrating) calibrationIcon else Icons.Default.SyncDisabled,
         icon2 = Icons.AutoMirrored.Default.ContactSupport,
         onClick = { explained = true }
     )

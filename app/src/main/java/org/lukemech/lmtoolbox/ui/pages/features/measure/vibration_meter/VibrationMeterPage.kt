@@ -3,8 +3,6 @@ package org.lukemech.lmtoolbox.ui.pages.features.measure.vibration_meter
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Storm
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,9 +33,9 @@ import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.ResultRow
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
-import org.lukemech.lmtoolbox.ui.components.SensorWarning
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.LiveGraph
 import org.lukemech.lmtoolbox.ui.components.ReadingResult
+import org.lukemech.lmtoolbox.ui.components.SensorWarning
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.MeterActions
 import org.lukemech.lmtoolbox.ui.pages.features.measure.common.SensorUpdates
 
@@ -150,13 +148,7 @@ fun VibrationMeterPage() {
         Column(verticalArrangement = RowArrangement) {
             // Only the missing sensor: the motion's readings have no calibration to ask for (the spirit
             // level's strings stand in, never shown)
-            SensorWarning(
-                hasSensors = hasSensor, calibrated = true,
-                calibrationTitle = R.string.f_level_accuracy_title,
-                calibrationMessage = R.string.f_level_accuracy_message,
-                calibrationIcon = Icons.Default.Storm,
-                missingMessage = R.string.f_vibration_missing_sensors_message
-            )
+            SensorWarning(hasSensors = hasSensor, missingMessage = R.string.f_vibration_missing_sensors_message)
             Results(apart = false) {
                 // The RMS, large on top: the reading
                 ReadingResult(reading, unit, held = holding)

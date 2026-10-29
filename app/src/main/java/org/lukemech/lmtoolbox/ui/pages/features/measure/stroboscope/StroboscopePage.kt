@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,15 +38,16 @@ import org.lukemech.lmtoolbox.features.measure.stroboscope.fieldText
 import org.lukemech.lmtoolbox.features.measure.stroboscope.hzOfRpm
 import org.lukemech.lmtoolbox.features.measure.stroboscope.rpm
 import org.lukemech.lmtoolbox.features.measure.stroboscope.tapTempo
-import org.lukemech.lmtoolbox.ui.components.ErrorText
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.MainResult
 import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.PageHeading
+import org.lukemech.lmtoolbox.ui.components.PromptBar
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.ResultRow
 import org.lukemech.lmtoolbox.ui.components.Results
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.ui.components.SensorWarning
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.pages.features.electronics.common.UnitChoiceField
 
@@ -60,7 +64,8 @@ fun StroboscopePage() {
     var unit by rememberSaveable { mutableStateOf(HZ) }
     var text by rememberSaveable { mutableStateOf("5") }
     var flashing by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+    // The torch taken (another app using the camera): said so on top, tapped to try again
+    var busy by remember { mutableStateOf(false) }
     var measured by remember { mutableStateOf<Double?>(null) }
     val taps = remember { mutableListOf<Long>() }
 
@@ -74,12 +79,11 @@ fun StroboscopePage() {
         text = fieldText(if (unit == RPM) rpm(clamped) else clamped)
     }
 
-    val unavailable = stringResource(R.string.f_strobe_torch_busy)
     val strobe = remember(cameraId) {
         cameraId?.let { id ->
             StroboscopeFeature.Strobe(context, id) {
                 flashing = false
-                error = unavailable
+                busy = true
             }
         }
     }
@@ -106,6 +110,18 @@ fun StroboscopePage() {
 
     PageHeading(title = stringResource(R.string.fp_stroboscope)) {
         Column(verticalArrangement = RowArrangement) {
+            SensorWarning(hasSensors = cameraId != null, missingMessage = R.string.f_strobe_no_torch)
+            PromptBar(
+                visible = cameraId != null && busy,
+                title = stringResource(R.string.f_strobe_torch_busy),
+                color = MaterialTheme.colorScheme.error,
+                icon = Icons.Default.FlashOff,
+                icon2 = Icons.Default.Refresh,
+                onClick = {
+                    busy = false
+                    flashing = hz != null
+                }
+            )
             Results(apart = false) {
                 MainResult(
                     stringResource(R.string.f_strobe_rate),
@@ -172,11 +188,10 @@ fun StroboscopePage() {
                 checked = flashing,
                 enabled = cameraId != null && hz != null,
                 onCheckedChange = {
-                    error = null
+                    busy = false
                     flashing = it
                 }
             )
-            ErrorText(if (cameraId == null) stringResource(R.string.f_strobe_no_torch) else error)
             Note(stringResource(R.string.f_strobe_note, fieldText(MAX_HZ), fieldText(rpm(MAX_HZ))))
             Note(stringResource(R.string.f_strobe_warning))
         }
