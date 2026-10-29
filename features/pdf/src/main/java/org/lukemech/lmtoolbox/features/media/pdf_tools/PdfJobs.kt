@@ -4,6 +4,9 @@ import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import java.io.File
 import java.security.SecureRandom
 import java.util.concurrent.atomic.AtomicLong
@@ -24,6 +27,7 @@ import org.lukemech.lmtoolbox.helpers.displayName
 import org.lukemech.lmtoolbox.helpers.safeFileName
 import org.lukemech.lmtoolbox.helpers.saveToMediaStore
 import org.lukemech.lmtoolbox.linux.LinuxTasks
+import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /** A PDF being worked on: where it's from, its name, its copy qpdf and Ghostscript read, and what's in it. */
 data class PdfFile(
@@ -73,12 +77,12 @@ object PdfJobs {
     private val ids = AtomicLong()
 
     /**
-     * The open files, the new name and what's picked: back to them after the page was left, or redrawn afresh
-     * (e.g. back from the file picker). No [options] yet: the defaults.
+     * The open files, the new name and what's picked are the page's, kept here: back to them after the page was
+     * left, or redrawn afresh (e.g. back from the file picker). [fileName] null: not typed (the action's follows).
      */
-    var files: List<PdfFile> = emptyList()
-    var fileName: String = ""
-    var options: PdfOptions? = null
+    var files by mutableStateOf<List<PdfFile>>(emptyList())
+    var fileName by mutableStateOf<String?>(null)
+    var options by mutableStateOf(PdfOptions())
 
     private val _state = MutableStateFlow<Job?>(null)
     val state: StateFlow<Job?> = _state.asStateFlow()
@@ -105,7 +109,7 @@ object PdfJobs {
             }
             if (copy == null) {
                 // Not a command's: told in the one place errors are, the bottom bar
-                LinuxTasks.reportFailure(PdfToolsFeature, name, "Couldn't read the file")
+                AppTasks.reportFailure(PdfToolsFeature, name, "Couldn't read the file")
                 continue
             }
             val result = LinuxTasks.run(context, PdfCommands.inspect(PdfInput(copy.absolutePath)), PdfToolsFeature)
@@ -116,7 +120,7 @@ object PdfJobs {
             val inspection = PdfCommands.parseInspection(result.stdout)
             if (inspection == null) {
                 copy.delete()
-                LinuxTasks.reportFailure(PdfToolsFeature, name, "Not a PDF qpdf can read", result.output)
+                AppTasks.reportFailure(PdfToolsFeature, name, "Not a PDF qpdf can read", result.output)
                 continue
             }
             add(PdfFile(id, uri, name, copy, copy.length(), inspection.pages, inspection.encrypted))
@@ -147,7 +151,7 @@ object PdfJobs {
             )
             if (plan == null) {
                 _state.update { it?.copy(phase = Phase.Failed) }
-                LinuxTasks.reportFailure(PdfToolsFeature, name, "Nothing to do with these pages")
+                AppTasks.reportFailure(PdfToolsFeature, name, "Nothing to do with these pages")
                 return@launch
             }
             val result = LinuxTasks.runInBackground(
@@ -158,10 +162,10 @@ object PdfJobs {
                 onLine = { line ->
                     val fraction = PdfCommands.progress(line, plan.pages) ?: return@runInBackground
                     val updated = _state.updateAndGet { it?.copy(fraction = fraction) }
-                    updated?.taskId?.let { LinuxTasks.setProgress(it, fraction * 100) }
+                    updated?.taskId?.let { AppTasks.setProgress(it, fraction * 100) }
                 }
             )
-            val cancelled = LinuxTasks.isCancelled(_state.value?.taskId)
+            val cancelled = AppTasks.isCancelled(_state.value?.taskId)
             // What it made, in order (a split's parts by their pages)
             val made = out.listFiles()?.filter { it.isFile && it.length() > 0 }?.sortedBy { it.name }.orEmpty()
             when {
@@ -175,7 +179,7 @@ object PdfJobs {
                         if (saved != null) it?.copy(phase = Phase.Done, saved = saved)
                         else it?.copy(phase = Phase.Failed)
                     }
-                    if (saved == null) LinuxTasks.reportFailure(PdfToolsFeature, name, "Couldn't save the file")
+                    if (saved == null) AppTasks.reportFailure(PdfToolsFeature, name, "Couldn't save the file")
                 }
             }
             work.deleteRecursively()
@@ -184,7 +188,7 @@ object PdfJobs {
     }
 
     fun cancel() {
-        _state.value?.taskId?.let { LinuxTasks.cancel(it) }
+        _state.value?.taskId?.let { AppTasks.cancel(it) }
     }
 
     /** Forgets a finished job (e.g. to make another). */
@@ -199,8 +203,8 @@ object PdfJobs {
     fun forget() {
         cancel()
         files = emptyList()
-        fileName = ""
-        options = null
+        fileName = null
+        options = PdfOptions()
         _state.value = null
     }
 

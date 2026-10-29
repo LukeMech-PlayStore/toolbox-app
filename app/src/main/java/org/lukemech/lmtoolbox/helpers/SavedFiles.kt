@@ -67,10 +67,13 @@ fun openFile(context: Context, uri: Uri, mimeType: String) {
 }
 
 /** Shares [uri] (of [mimeType]) with other apps, but [alias] (the tool's own "Share to" entry: not back to it). */
-fun shareFile(context: Context, uri: Uri, mimeType: String, alias: String) {
-    val send = Intent(Intent.ACTION_SEND)
+fun shareFile(context: Context, uri: Uri, mimeType: String, alias: String) = shareFiles(context, listOf(uri), mimeType, alias)
+
+/** As [shareFile], several files together (e.g. a split's parts). */
+fun shareFiles(context: Context, uris: List<Uri>, mimeType: String, alias: String) {
+    val send = (uris.singleOrNull()?.let { Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_STREAM, it) }
+        ?: Intent(Intent.ACTION_SEND_MULTIPLE).putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris)))
         .setType(mimeType)
-        .putExtra(Intent.EXTRA_STREAM, uri)
         .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     context.startActivity(
         Intent.createChooser(send, null)

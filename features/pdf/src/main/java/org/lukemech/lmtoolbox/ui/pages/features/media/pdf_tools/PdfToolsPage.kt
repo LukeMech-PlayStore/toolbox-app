@@ -1,8 +1,5 @@
 package org.lukemech.lmtoolbox.ui.pages.features.media.pdf_tools
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.text.format.Formatter
 import android.widget.Toast
@@ -71,17 +68,22 @@ import org.lukemech.lmtoolbox.features.pdf.R
 import org.lukemech.lmtoolbox.helpers.ResourceScope
 import org.lukemech.lmtoolbox.helpers.SavedFile
 import org.lukemech.lmtoolbox.helpers.openFile
-import org.lukemech.lmtoolbox.helpers.shareFile
-import org.lukemech.lmtoolbox.linux.LinuxTasks
+import org.lukemech.lmtoolbox.helpers.shareFiles
+import org.lukemech.lmtoolbox.tasks.AppTasks
 import org.lukemech.lmtoolbox.ui.components.ActionButton
 import org.lukemech.lmtoolbox.ui.components.BigButton
+import org.lukemech.lmtoolbox.ui.components.ChipChoice
+import org.lukemech.lmtoolbox.ui.components.ChipGroup
 import org.lukemech.lmtoolbox.ui.components.ClearAction
 import org.lukemech.lmtoolbox.ui.components.ErrorText
 import org.lukemech.lmtoolbox.ui.components.InputField
 import org.lukemech.lmtoolbox.ui.components.LIST_MAX_HEIGHT
+import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.ResourceTiles
 import org.lukemech.lmtoolbox.ui.components.Reveal
+import org.lukemech.lmtoolbox.ui.components.RevealSection
+import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.ui.components.SecondaryButton
 import org.lukemech.lmtoolbox.ui.components.StepWithButtons
 import org.lukemech.lmtoolbox.ui.components.Steps
@@ -110,17 +112,11 @@ fun PdfToolsPage(providedInput: String? = "") {
     var step by rememberSaveable {
         mutableStateOf(if (PdfJobs.state.value?.isActive == true) Step.Result else Step.Files)
     }
-    // What's open, and what's picked for it, stays when the page is left or redrawn (PdfJobs.files, fileName,
-    // options): kept there as it changes, not once the page settles. A name not typed follows the action
-    var files by remember { mutableStateOf(PdfJobs.files) }
-    var typedName by remember { mutableStateOf(PdfJobs.fileName) }
-    var nameTyped by remember { mutableStateOf(PdfJobs.fileName.isNotEmpty()) }
-    var options by remember { mutableStateOf(PdfJobs.options ?: PdfOptions()) }
-    SideEffect {
-        PdfJobs.files = files
-        PdfJobs.fileName = if (nameTyped) typedName else ""
-        PdfJobs.options = options
-    }
+    // What's open, and what's picked for it, is PdfJobs': it stays when the page is left or redrawn, what's being
+    // made goes on meanwhile (a task). A name not typed follows the action
+    var files by PdfJobs::files
+    var typedName by PdfJobs::fileName
+    var options by PdfJobs::options
     var busy by remember { mutableStateOf(false) }
     var unlocking by remember { mutableStateOf<PdfFile?>(null) }
 
@@ -128,7 +124,7 @@ fun PdfToolsPage(providedInput: String? = "") {
     val o = options.effective(files.size, encrypted)
     val pageCount = files.sumOf { it.pages ?: 0 }
     val suggestedName = files.firstOrNull()?.let { "${it.baseName}-${stringResource(suffixOf(o))}" }.orEmpty()
-    val fileName = if (nameTyped) typedName else suggestedName
+    val fileName = typedName ?: suggestedName
 
     /** Whether the open files may change: not while a job reads their copies (its card a tap away). */
     fun canChange(): Boolean {
@@ -146,7 +142,7 @@ fun PdfToolsPage(providedInput: String? = "") {
             busy = false
             // None read: the bottom bar tells (see PdfJobs.open)
             if (opened.isEmpty()) return@launch
-            if (files.isEmpty()) nameTyped = false
+            if (files.isEmpty()) typedName = null
             files = files + opened
             PdfJobs.clear()
             step = Step.Files
@@ -181,7 +177,7 @@ fun PdfToolsPage(providedInput: String? = "") {
 
     // Left while working: it goes on, shown in the bottom bar
     DisposableEffect(Unit) {
-        onDispose { PdfJobs.state.value?.takeIf { it.isActive }?.taskId?.let(LinuxTasks::detach) }
+        onDispose { PdfJobs.state.value?.takeIf { it.isActive }?.taskId?.let(AppTasks::detach) }
     }
 
     BackHandler(enabled = step != Step.Files && !busy) {
@@ -244,10 +240,7 @@ fun PdfToolsPage(providedInput: String? = "") {
                         PageHeading(steps = steps, title = title, onBack = { step = Step.Files }) {
                             Summary(files)
                             Spacer(modifier = Modifier.height(16.dp))
-                            ActionForm(files.size, encrypted, pageCount, options, { options = it }, fileName) {
-                                typedName = it
-                                nameTyped = true
-                            }
+                            ActionForm(files.size, encrypted, pageCount, options, { options = it }, fileName) { typedName = it }
                         }
                     },
                     buttons = {
@@ -428,74 +421,68 @@ private fun ActionForm(
     fileName: String,
     onFileNameChange: (String) -> Unit,
 ) {
+    // Each action's own choices are kept in [options] while another's picked: folding away, they show as they were
     val o = options.effective(count, encrypted)
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(horizontal = 16.dp)) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(stringResource(R.string.f_Pdf_action), style = MaterialTheme.typography.labelLarge)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PdfOptions.actions(count, encrypted).forEach { action ->
-                        FilterChip(
-                            selected = action == o.action,
-                            onClick = { onChange(options.copy(action = action)) },
-                            label = { Text(stringResource(labelOf(action))) },
-                            leadingIcon = { Icon(iconOf(action), contentDescription = null, modifier = Modifier.size(18.dp)) }
-                        )
-                    }
+        Column(verticalArrangement = RowArrangement, modifier = Modifier.padding(horizontal = 16.dp)) {
+            ChipGroup(stringResource(R.string.f_Pdf_action)) {
+                PdfOptions.actions(count, encrypted).forEach { action ->
+                    FilterChip(
+                        selected = action == o.action,
+                        onClick = { onChange(options.copy(action = action)) },
+                        label = { Text(stringResource(labelOf(action))) },
+                        leadingIcon = { Icon(iconOf(action), contentDescription = null, modifier = Modifier.size(18.dp)) }
+                    )
                 }
             }
 
-            // Each action's own choices (the last ones it had while they fold away)
-            ActionChoices(PdfAction.Merge, o) { Note(stringResource(R.string.f_Pdf_merge_note)) }
-            ActionChoices(PdfAction.Split, o) { k ->
-                Segments(
+            RevealSection(o.action == PdfAction.Merge) { Note(stringResource(R.string.f_Pdf_merge_note), inset = false) }
+            RevealSection(o.action == PdfAction.Split) {
+                ChipChoice(
+                    null,
                     listOf(
-                        SplitMode.Pages to R.string.f_Pdf_split_pages,
-                        SplitMode.Ranges to R.string.f_Pdf_split_ranges,
-                        SplitMode.Extract to R.string.f_Pdf_split_extract,
+                        SplitMode.Pages to stringResource(R.string.f_Pdf_split_pages),
+                        SplitMode.Ranges to stringResource(R.string.f_Pdf_split_ranges),
+                        SplitMode.Extract to stringResource(R.string.f_Pdf_split_extract),
                     ),
-                    k.splitMode
-                ) { onChange(options.copy(splitMode = it)) }
-                Reveal(visible = k.splitMode != SplitMode.Pages) {
-                    PagesField(k.ranges, pageCount, placeholder = "1-3,5,7-z") { onChange(options.copy(ranges = it)) }
-                }
-                Note(
-                    when (k.splitMode) {
+                    o.splitMode,
+                    note = when (o.splitMode) {
                         SplitMode.Pages -> pluralStringResource(R.plurals.f_Pdf_split_pages_note, pageCount, pageCount)
                         SplitMode.Ranges -> stringResource(R.string.f_Pdf_split_ranges_note)
                         SplitMode.Extract -> stringResource(R.string.f_Pdf_split_extract_note)
                     }
-                )
-            }
-            ActionChoices(PdfAction.Compress, o) { k ->
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(stringResource(R.string.f_Pdf_preset), style = MaterialTheme.typography.labelLarge)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Preset.entries.forEach { preset ->
-                            FilterChip(
-                                selected = preset == k.preset,
-                                onClick = { onChange(options.copy(preset = preset)) },
-                                label = { Text(stringResource(presetLabel(preset))) }
-                            )
-                        }
-                    }
+                ) { onChange(options.copy(splitMode = it)) }
+                RevealSection(o.splitMode != SplitMode.Pages) {
+                    PagesField(o.ranges, pageCount, placeholder = "1-3,5,7-z") { onChange(options.copy(ranges = it)) }
                 }
-                Note(stringResource(presetNote(k.preset)))
             }
-            ActionChoices(PdfAction.Rotate, o) { k ->
-                Segments(
-                    listOf(90 to R.string.f_Pdf_angle_90, 180 to R.string.f_Pdf_angle_180, 270 to R.string.f_Pdf_angle_270),
-                    k.angle
+            RevealSection(o.action == PdfAction.Compress) {
+                ChipChoice(
+                    stringResource(R.string.f_Pdf_preset),
+                    Preset.entries.map { it to stringResource(presetLabel(it)) },
+                    o.preset,
+                    note = stringResource(presetNote(o.preset))
+                ) { onChange(options.copy(preset = it)) }
+            }
+            RevealSection(o.action == PdfAction.Rotate) {
+                ChipChoice(
+                    null,
+                    listOf(
+                        90 to stringResource(R.string.f_Pdf_angle_90),
+                        180 to stringResource(R.string.f_Pdf_angle_180),
+                        270 to stringResource(R.string.f_Pdf_angle_270),
+                    ),
+                    o.angle
                 ) { onChange(options.copy(angle = it)) }
-                PagesField(k.rotatePages, pageCount, placeholder = stringResource(R.string.f_Pdf_pages_all)) {
+                PagesField(o.rotatePages, pageCount, placeholder = stringResource(R.string.f_Pdf_pages_all)) {
                     onChange(options.copy(rotatePages = it))
                 }
             }
-            ActionChoices(PdfAction.Protect, o) { k ->
-                PasswordField(k.password, stringResource(R.string.f_Pdf_password)) { onChange(options.copy(password = it)) }
-                Note(stringResource(R.string.f_Pdf_protect_note))
+            RevealSection(o.action == PdfAction.Protect) {
+                PasswordField(o.password, stringResource(R.string.f_Pdf_password)) { onChange(options.copy(password = it)) }
+                Note(stringResource(R.string.f_Pdf_protect_note), inset = false)
             }
-            ActionChoices(PdfAction.Unlock, o) { Note(stringResource(R.string.f_Pdf_unlock_note)) }
+            RevealSection(o.action == PdfAction.Unlock) { Note(stringResource(R.string.f_Pdf_unlock_note), inset = false) }
 
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(stringResource(R.string.f_Pdf_file_name), style = MaterialTheme.typography.labelLarge)
@@ -508,38 +495,11 @@ private fun ActionForm(
                     modifier = Modifier.fillMaxWidth()
                 )
                 // A split's parts: the name and their pages
-                Note(stringResource(R.string.f_Pdf_parts_note), visible = o.action == PdfAction.Split && o.splitMode != SplitMode.Extract)
+                Note(stringResource(R.string.f_Pdf_parts_note), visible = o.action == PdfAction.Split && o.splitMode != SplitMode.Extract, inset = false)
             }
         }
         // Where it goes (for the next ones too), as in the settings
         FolderSetting()
-    }
-}
-
-/**
- * [content] of the choices only [action] has, while [o] is of it; the last options it had are kept while they
- * fold away (the next action's unfolding in their place).
- */
-@Composable
-private fun ActionChoices(action: PdfAction, o: PdfOptions, content: @Composable (PdfOptions) -> Unit) {
-    val last = remember { arrayOfNulls<PdfOptions>(1) }
-    if (o.action == action) last[0] = o
-    Reveal(visible = o.action == action) {
-        last[0]?.let { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { content(it) } }
-    }
-}
-
-@Composable
-private fun <T> Segments(values: List<Pair<T, Int>>, selected: T, onSelect: (T) -> Unit) {
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        values.forEachIndexed { i, (value, label) ->
-            SegmentedButton(
-                selected = value == selected,
-                onClick = { onSelect(value) },
-                shape = SegmentedButtonDefaults.itemShape(i, values.size),
-                icon = {}
-            ) { Text(stringResource(label), maxLines = 1) }
-        }
     }
 }
 
@@ -732,7 +692,9 @@ private fun JobButtons(j: PdfJobs.Job, onAnother: () -> Unit, onChange: () -> Un
                         openFile(context, saved[0].uri, saved[0].mimeType)
                     }
                 }
-                ActionButton(Icons.Default.Share, stringResource(R.string.f_Pdf_share)) { share(context, saved) }
+                ActionButton(Icons.Default.Share, stringResource(R.string.f_Pdf_share)) {
+                    shareFiles(context, saved.map { it.uri }, PdfJobs.MIME_TYPE, SHARE_ALIAS)
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 ActionButton(Icons.Default.Tune, stringResource(R.string.f_Pdf_change), onClick = onChange)
@@ -747,27 +709,6 @@ private fun JobButtons(j: PdfJobs.Job, onAnother: () -> Unit, onChange: () -> Un
             ActionButton(Icons.Default.FolderOpen, stringResource(R.string.f_Pdf_another), onClick = onAnother)
         }
     }
-}
-
-/** Shares what was saved with other apps (not back to the tools): one file, or a split's parts together. */
-private fun share(context: Context, saved: List<SavedFile>) {
-    saved.singleOrNull()?.let { return shareFile(context, it.uri, it.mimeType, SHARE_ALIAS) }
-    val send = Intent(Intent.ACTION_SEND_MULTIPLE)
-        .setType(PdfJobs.MIME_TYPE)
-        .putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(saved.map { it.uri }))
-        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    context.startActivity(
-        Intent.createChooser(send, null)
-            .putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, arrayOf(ComponentName(context, SHARE_ALIAS)))
-    )
-}
-
-@Composable
-private fun Note(text: String, visible: Boolean = true) = Reveal(visible) {
-    Text(
-        text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(vertical = 2.dp)
-    )
 }
 
 private fun labelOf(action: PdfAction) = when (action) {
