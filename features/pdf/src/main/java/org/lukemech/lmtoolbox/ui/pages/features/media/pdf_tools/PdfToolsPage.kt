@@ -83,7 +83,7 @@ import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.ResourceTiles
 import org.lukemech.lmtoolbox.ui.components.Reveal
 import org.lukemech.lmtoolbox.ui.components.RevealSection
-import org.lukemech.lmtoolbox.ui.components.RowArrangement
+import org.lukemech.lmtoolbox.ui.components.FieldArrangement
 import org.lukemech.lmtoolbox.ui.components.SecondaryButton
 import org.lukemech.lmtoolbox.ui.components.StepWithButtons
 import org.lukemech.lmtoolbox.ui.components.Steps
@@ -108,10 +108,12 @@ fun PdfToolsPage(providedInput: String? = "") {
     val focusManager = LocalFocusManager.current
     val job by PdfJobs.state.collectAsState()
 
-    // Back on the page while something's being made: straight to it; else the files (or the intro)
+    // Back on the page while something's being made: straight to it; else the intro, as the metadata editor's (the
+    // files open a tap away), the list of them once they're added or gone back to
     var step by rememberSaveable {
         mutableStateOf(if (PdfJobs.state.value?.isActive == true) Step.Result else Step.Files)
     }
+    var listed by rememberSaveable { mutableStateOf(false) }
     // What's open, and what's picked for it, is PdfJobs': it stays when the page is left or redrawn, what's being
     // made goes on meanwhile (a task). A name not typed follows the action
     var files by PdfJobs::files
@@ -146,6 +148,7 @@ fun PdfToolsPage(providedInput: String? = "") {
             files = files + opened
             PdfJobs.clear()
             step = Step.Files
+            listed = true
             // The first protected one asks for its password right away
             opened.firstOrNull { it.needsPassword }?.let { unlocking = it }
         }
@@ -180,8 +183,12 @@ fun PdfToolsPage(providedInput: String? = "") {
         onDispose { PdfJobs.state.value?.takeIf { it.isActive }?.taskId?.let(AppTasks::detach) }
     }
 
-    BackHandler(enabled = step != Step.Files && !busy) {
-        step = if (step == Step.Result && files.isNotEmpty()) Step.Action else Step.Files
+    BackHandler(enabled = (step != Step.Files || listed) && !busy) {
+        when {
+            step == Step.Result && files.isNotEmpty() -> step = Step.Action
+            step != Step.Files -> step = Step.Files
+            else -> listed = false
+        }
     }
 
     // The work's progress is the last step's bar
@@ -252,10 +259,10 @@ fun PdfToolsPage(providedInput: String? = "") {
                     }
                 )
 
-                files.isNotEmpty() -> StepWithButtons(
+                files.isNotEmpty() && listed -> StepWithButtons(
                     content = {
                         PageHeading(
-                            steps = steps, title = title,
+                            steps = steps, title = title, onBack = { listed = false },
                             action = {
                                 ClearAction {
                                     if (canChange()) {
@@ -303,9 +310,13 @@ fun PdfToolsPage(providedInput: String? = "") {
                         }
                     },
                     buttons = {
-                        // The current (or last) work stays a tap away
-                        if (current != null) {
-                            SecondaryButton(stringResource(R.string.f_Pdf_back_to, current.fileName), !busy) { step = Step.Result }
+                        // The files open stay a tap away, else the last work
+                        when {
+                            files.isNotEmpty() -> SecondaryButton(
+                                stringResource(R.string.f_Pdf_back_to, files.singleOrNull()?.name ?: "${files.first().name} +${files.size - 1}"),
+                                !busy
+                            ) { listed = true }
+                            current != null -> SecondaryButton(stringResource(R.string.f_Pdf_back_to, current.fileName), !busy) { step = Step.Result }
                         }
                         BigButton(Icons.Default.FolderOpen, stringResource(R.string.f_Pdf_pick), enabled = !busy) {
                             picker.launch(arrayOf(PdfJobs.MIME_TYPE))
@@ -424,7 +435,7 @@ private fun ActionForm(
     // Each action's own choices are kept in [options] while another's picked: folding away, they show as they were
     val o = options.effective(count, encrypted)
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Column(verticalArrangement = RowArrangement, modifier = Modifier.padding(horizontal = 16.dp)) {
+        Column(verticalArrangement = FieldArrangement, modifier = Modifier.padding(horizontal = 16.dp)) {
             ChipGroup(stringResource(R.string.f_Pdf_action)) {
                 PdfOptions.actions(count, encrypted).forEach { action ->
                     FilterChip(
@@ -437,23 +448,25 @@ private fun ActionForm(
             }
 
             RevealSection(o.action == PdfAction.Merge) { Note(stringResource(R.string.f_Pdf_merge_note), inset = false) }
-            RevealSection(o.action == PdfAction.Split) {
-                ChipChoice(
-                    null,
-                    listOf(
-                        SplitMode.Pages to stringResource(R.string.f_Pdf_split_pages),
-                        SplitMode.Ranges to stringResource(R.string.f_Pdf_split_ranges),
-                        SplitMode.Extract to stringResource(R.string.f_Pdf_split_extract),
-                    ),
-                    o.splitMode,
-                    note = when (o.splitMode) {
-                        SplitMode.Pages -> pluralStringResource(R.plurals.f_Pdf_split_pages_note, pageCount, pageCount)
-                        SplitMode.Ranges -> stringResource(R.string.f_Pdf_split_ranges_note)
-                        SplitMode.Extract -> stringResource(R.string.f_Pdf_split_extract_note)
+            Reveal(o.action == PdfAction.Split) {
+                Column(verticalArrangement = FieldArrangement) {
+                    ChipChoice(
+                        null,
+                        listOf(
+                            SplitMode.Pages to stringResource(R.string.f_Pdf_split_pages),
+                            SplitMode.Ranges to stringResource(R.string.f_Pdf_split_ranges),
+                            SplitMode.Extract to stringResource(R.string.f_Pdf_split_extract),
+                        ),
+                        o.splitMode,
+                        note = when (o.splitMode) {
+                            SplitMode.Pages -> pluralStringResource(R.plurals.f_Pdf_split_pages_note, pageCount, pageCount)
+                            SplitMode.Ranges -> stringResource(R.string.f_Pdf_split_ranges_note)
+                            SplitMode.Extract -> stringResource(R.string.f_Pdf_split_extract_note)
+                        }
+                    ) { onChange(options.copy(splitMode = it)) }
+                    RevealSection(o.splitMode != SplitMode.Pages) {
+                        PagesField(o.ranges, pageCount, placeholder = "1-3,5,7-z") { onChange(options.copy(ranges = it)) }
                     }
-                ) { onChange(options.copy(splitMode = it)) }
-                RevealSection(o.splitMode != SplitMode.Pages) {
-                    PagesField(o.ranges, pageCount, placeholder = "1-3,5,7-z") { onChange(options.copy(ranges = it)) }
                 }
             }
             RevealSection(o.action == PdfAction.Compress) {
@@ -464,23 +477,27 @@ private fun ActionForm(
                     note = stringResource(presetNote(o.preset))
                 ) { onChange(options.copy(preset = it)) }
             }
-            RevealSection(o.action == PdfAction.Rotate) {
-                ChipChoice(
-                    null,
-                    listOf(
-                        90 to stringResource(R.string.f_Pdf_angle_90),
-                        180 to stringResource(R.string.f_Pdf_angle_180),
-                        270 to stringResource(R.string.f_Pdf_angle_270),
-                    ),
-                    o.angle
-                ) { onChange(options.copy(angle = it)) }
-                PagesField(o.rotatePages, pageCount, placeholder = stringResource(R.string.f_Pdf_pages_all)) {
-                    onChange(options.copy(rotatePages = it))
+            Reveal(o.action == PdfAction.Rotate) {
+                Column(verticalArrangement = FieldArrangement) {
+                    ChipChoice(
+                        null,
+                        listOf(
+                            90 to stringResource(R.string.f_Pdf_angle_90),
+                            180 to stringResource(R.string.f_Pdf_angle_180),
+                            270 to stringResource(R.string.f_Pdf_angle_270),
+                        ),
+                        o.angle
+                    ) { onChange(options.copy(angle = it)) }
+                    PagesField(o.rotatePages, pageCount, placeholder = stringResource(R.string.f_Pdf_pages_all)) {
+                        onChange(options.copy(rotatePages = it))
+                    }
                 }
             }
-            RevealSection(o.action == PdfAction.Protect) {
-                PasswordField(o.password, stringResource(R.string.f_Pdf_password)) { onChange(options.copy(password = it)) }
-                Note(stringResource(R.string.f_Pdf_protect_note), inset = false)
+            Reveal(o.action == PdfAction.Protect) {
+                Column(verticalArrangement = FieldArrangement) {
+                    PasswordField(o.password, stringResource(R.string.f_Pdf_password)) { onChange(options.copy(password = it)) }
+                    Note(stringResource(R.string.f_Pdf_protect_note), inset = false)
+                }
             }
             RevealSection(o.action == PdfAction.Unlock) { Note(stringResource(R.string.f_Pdf_unlock_note), inset = false) }
 
