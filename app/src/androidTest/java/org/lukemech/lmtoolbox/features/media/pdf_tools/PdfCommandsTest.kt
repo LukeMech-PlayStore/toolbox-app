@@ -146,6 +146,8 @@ class PdfCommandsTest {
         assertEquals(PdfAction.Split, PdfOptions(action = PdfAction.Merge).effective(1, encrypted = false).action)
         // Unlocking takes one file
         assertEquals(PdfAction.Merge, PdfOptions(action = PdfAction.Unlock).effective(2, encrypted = true).action)
+        // No files yet (the page's intro): nothing to do with them, what's picked kept
+        assertEquals(PdfAction.Merge, PdfOptions(action = PdfAction.Merge).effective(0, encrypted = false).action)
     }
 
     @Test

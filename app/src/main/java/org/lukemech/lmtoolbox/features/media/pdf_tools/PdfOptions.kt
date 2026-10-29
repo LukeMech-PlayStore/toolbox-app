@@ -20,9 +20,11 @@ data class PdfOptions(
     /** What a protected file opens with. */
     val password: String = "",
 ) {
-    /** [action], or the first there is for these files when it isn't (see [actions]). */
-    fun effective(files: Int, encrypted: Boolean): PdfOptions =
-        if (action in actions(files, encrypted)) this else copy(action = actions(files, encrypted).first())
+    /** [action], or the first there is for these files when it isn't (see [actions]); no files, none: as it is. */
+    fun effective(files: Int, encrypted: Boolean): PdfOptions {
+        val actions = actions(files, encrypted)
+        return if (action in actions) this else actions.firstOrNull()?.let { copy(action = it) } ?: this
+    }
 
     /** The pages typed for [action] (a split's, a turn's of some pages), as groups of a document of [pageCount] pages; null: none needed or not pages there. */
     fun groups(pageCount: Int): List<PageRanges.Group>? = when {
