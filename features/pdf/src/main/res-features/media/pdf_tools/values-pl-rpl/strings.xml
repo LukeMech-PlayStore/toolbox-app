@@ -73,7 +73,7 @@
     <string name="f_Pdf_preset_screen_note">Obrazy w 72 dpi: na ekran, najmniejszy plik.</string>
     <string name="f_Pdf_preset_ebook_note">Obrazy w 150 dpi: wystarczająco ostre do czytania, dużo mniejszy plik.</string>
     <string name="f_Pdf_preset_printer_note">Obrazy w 300 dpi: do drukowania.</string>
-    <string name="f_Pdf_preset_prepress_note">Obrazy w 300 dpi z zachowanymi kolorami: do profesjonalnego druku.</string>
+    <string name="f_Pdf_preset_prepress_note">Obrazy w 300 dpi, najmniej skompresowane: do profesjonalnego druku.</string>
     <string name="f_Pdf_preset_lossless_note">Nic nie ginie, tylko ciaśniej upakowane: często trochę mniejszy.</string>
     <string name="f_Pdf_protect">Hasło</string>
     <string name="f_Pdf_protect_note">Przy otwieraniu zapyta o to hasło. Bez niego pliku nie da się otworzyć.</string>

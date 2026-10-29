@@ -112,7 +112,7 @@ import org.lukemech.lmtoolbox.ui.components.ToolIntro
 import org.lukemech.lmtoolbox.ui.components.edgeFade
 import org.lukemech.lmtoolbox.ui.helpers.rememberPdfPage
 
-private enum class Step { Pages, Output, Result }
+private enum class Step { Files, Pages, Output, Result }
 
 /** Its own "Share to" entry (the manifest's alias): what's made isn't shared back to it. */
 private const val SHARE_ALIAS = "share.Pdf.Tools"
@@ -124,7 +124,7 @@ private val PAGE_WIDTH = 104.dp
 private const val PAGE_ASPECT = 0.72f
 
 /**
- * PDF tools in three steps, like the video encoder: the pages (of PDFs and pictures opened: copied in, protected
+ * PDF tools in four steps, like the metadata editor and the video encoder: the intro, the pages (of PDFs and pictures opened: copied in, protected
  * ones opened with their passwords), arranged in a grid as pdfarranger's (moved, turned, copied, deleted); what's
  * made of them (one PDF, compressed or protected; a split; pictures); and the work, which goes on in the background
  * when the page is left (see [PdfJobs]). [providedInput]: PDFs or pictures shared in, a URI a line.
@@ -136,12 +136,11 @@ fun PdfToolsPage(providedInput: String? = "") {
     val focusManager = LocalFocusManager.current
     val job by PdfJobs.state.collectAsState()
 
-    // Back on the page while something's being made: straight to it; else the intro, as the metadata editor's (the
-    // pages open a tap away), the grid of them once they're added or gone back to
+    // Back on the page while something's being made: straight to it; else the intro, the first step as the metadata
+    // editor's (the pages open a tap away), the grid of them the second once they're added or gone back to
     var step by rememberSaveable {
-        mutableStateOf(if (PdfJobs.state.value?.isActive == true) Step.Result else Step.Pages)
+        mutableStateOf(if (PdfJobs.state.value?.isActive == true) Step.Result else Step.Files)
     }
-    var listed by rememberSaveable { mutableStateOf(false) }
     // What's open, how it's arranged and what's picked for it is PdfJobs': it stays when the page is left or redrawn,
     // what's being made goes on meanwhile (a task). A name not typed follows the output
     val files = PdfJobs.files
@@ -178,7 +177,6 @@ fun PdfToolsPage(providedInput: String? = "") {
             PdfJobs.add(opened)
             PdfJobs.clear()
             step = Step.Pages
-            listed = true
             // The first protected one asks for its password right away
             opened.firstOrNull { it.needsPassword }?.let { unlocking = it }
         }
@@ -212,11 +210,16 @@ fun PdfToolsPage(providedInput: String? = "") {
         onDispose { PdfJobs.state.value?.takeIf { it.isActive }?.taskId?.let(AppTasks::detach) }
     }
 
-    BackHandler(enabled = (step != Step.Pages || listed) && !busy) {
-        when {
-            step == Step.Result && pages.isNotEmpty() -> step = Step.Output
-            step != Step.Pages -> step = Step.Pages
-            else -> listed = false
+    // Every file closed (cleared, or each locked one taken off): back to the intro, the step bar's first
+    LaunchedEffect(files.isEmpty()) {
+        if (files.isEmpty() && (step == Step.Pages || step == Step.Output)) step = Step.Files
+    }
+
+    BackHandler(enabled = step != Step.Files && !busy) {
+        step = when (step) {
+            Step.Result -> if (pages.isNotEmpty()) Step.Output else Step.Files
+            Step.Output -> Step.Pages
+            else -> Step.Files
         }
     }
 
@@ -243,7 +246,7 @@ fun PdfToolsPage(providedInput: String? = "") {
                 // What was made and how it went up top; what it takes, or what to do next, at the bottom
                 step == Step.Result && current != null -> StepWithButtons(
                     content = {
-                        PageHeading(steps = steps, title = title, onBack = { step = if (pages.isNotEmpty()) Step.Output else Step.Pages }) {
+                        PageHeading(steps = steps, title = title, onBack = { step = if (pages.isNotEmpty()) Step.Output else Step.Files }) {
                             Summary(current.files, current.pages.size)
                             Spacer(modifier = Modifier.height(24.dp))
                             JobResult(current)
@@ -255,14 +258,13 @@ fun PdfToolsPage(providedInput: String? = "") {
                             onAnother = {
                                 PdfJobs.clear()
                                 if (canChange()) PdfJobs.closeAll()
-                                step = Step.Pages
-                                listed = false
+                                step = Step.Files
                             },
-                            // The same pages again, made another way
+                            // The same pages again, arranged or made another way: from their grid
                             onChange = {
                                 PdfJobs.clear()
                                 options = current.options
-                                step = if (pages.isNotEmpty()) Step.Output else Step.Pages
+                                step = if (pages.isNotEmpty()) Step.Pages else Step.Files
                             }
                         )
                     }
@@ -285,10 +287,10 @@ fun PdfToolsPage(providedInput: String? = "") {
                     }
                 )
 
-                files.isNotEmpty() && listed -> StepWithButtons(
+                step == Step.Pages && files.isNotEmpty() -> StepWithButtons(
                     content = {
                         PageHeading(
-                            steps = steps, title = title, onBack = { listed = false }, scrolls = false,
+                            steps = steps, title = title, onBack = { step = Step.Files }, scrolls = false,
                             action = { ClearAction { if (canChange()) PdfJobs.closeAll() } },
                             header = {
                                 PageToolbar(
@@ -341,7 +343,7 @@ fun PdfToolsPage(providedInput: String? = "") {
                             files.isNotEmpty() -> SecondaryButton(
                                 stringResource(R.string.f_Pdf_back_to, files.singleOrNull()?.name ?: "${files.first().name} +${files.size - 1}"),
                                 !busy
-                            ) { listed = true }
+                            ) { step = Step.Pages }
                             current != null -> SecondaryButton(stringResource(R.string.f_Pdf_back_to, current.fileName), !busy) { step = Step.Result }
                         }
                         BigButton(Icons.Default.FolderOpen, stringResource(R.string.f_Pdf_pick), enabled = !busy) { pick() }
@@ -875,8 +877,8 @@ private fun JobResult(j: PdfJobs.Job) {
                     maxLines = 2,
                     overflow = TextOverflow.MiddleEllipsis
                 )
-                // A compression: the size before and after, nothing more
-                if (done.options.output == PdfOutput.Pdf && done.options.preset != Preset.AsIs && done.sizeBefore > 0) {
+                // The size before (the files') and after (what was made, together), whatever it was
+                if (done.sizeBefore > 0) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         stringResource(

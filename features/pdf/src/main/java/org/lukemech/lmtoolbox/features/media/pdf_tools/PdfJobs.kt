@@ -110,6 +110,8 @@ object PdfJobs {
      * are left out, the bottom bar telling why. Empty when none could be, or the subsystem isn't ready.
      */
     suspend fun open(context: Context, uris: List<Uri>): List<PdfFile> = buildList {
+        // Nothing open: what's left of files opened before the app was closed goes
+        if (files.isEmpty() && !isBusy()) withContext(Dispatchers.IO) { inputDir(context).deleteRecursively() }
         for (uri in uris) {
             val name = displayName(context, uri) ?: "document.pdf"
             val id = ids.incrementAndGet()

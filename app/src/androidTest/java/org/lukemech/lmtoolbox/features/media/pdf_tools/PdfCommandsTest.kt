@@ -100,7 +100,7 @@ class PdfCommandsTest {
         assertEquals(
             listOf(
                 "gs", "-dSAFER", "-dBATCH", "-dNOPAUSE", "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.5", "-dPDFSETTINGS=/ebook",
-                "-dAutoRotatePages=/None", "-dDetectDuplicateImages=true", "-sPDFPassword=s3cret", "-sOutputFile=/o/out.pdf", "/c/in.pdf"
+                "-sColorConversionStrategy=RGB", "-dAutoRotatePages=/None", "-dDetectDuplicateImages=true", "-sPDFPassword=s3cret", "-sOutputFile=/o/out.pdf", "/c/in.pdf"
             ),
             PdfCommands.compress(locked, Preset.Ebook, "/o/out.pdf")
         )

@@ -65,7 +65,7 @@
     <string name="f_Pdf_preset_screen_note">Pictures at 72 dpi: for the screen, the smallest file.</string>
     <string name="f_Pdf_preset_ebook_note">Pictures at 150 dpi: sharp enough to read, a much smaller file.</string>
     <string name="f_Pdf_preset_printer_note">Pictures at 300 dpi: for printing.</string>
-    <string name="f_Pdf_preset_prepress_note">Pictures at 300 dpi with their colors kept: for professional printing.</string>
+    <string name="f_Pdf_preset_prepress_note">Pictures at 300 dpi, compressed the least: for professional printing.</string>
     <string name="f_Pdf_preset_lossless_note">Nothing lost, only packed tighter: often a little smaller.</string>
     <string name="f_Pdf_protect">Password</string>
     <string name="f_Pdf_protect_note">It asks for this password to open. Forgotten, there\'s no opening it.</string>

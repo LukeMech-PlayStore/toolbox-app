@@ -161,7 +161,9 @@ object PdfCommands {
     /**
      * [input] made smaller into [output]: by Ghostscript's pdfwrite with [preset]'s settings (pictures scaled down and
      * compressed again, fonts subset), or by qpdf alone, losslessly ([Preset.Lossless]). Pages keep how they're turned
-     * (pdfwrite turns them by their text otherwise); Ghostscript prints "Page n" as it goes (see [progress]).
+     * (pdfwrite turns them by their text otherwise); Ghostscript prints "Page n" as it goes (see [progress]). Colors
+     * made RGB: a JPEG with an ICC profile (a scanner app's, every page) kept as it is is drawn again by pdfwrite instead,
+     * at its 720 dpi in strips, uncompressed (a 1 MB page 120 MB); made RGB, it's a JPEG again.
      */
     fun compress(input: PdfInput, preset: Preset, output: String): List<String> {
         require(preset != Preset.AsIs) { "Nothing to compress by" }
@@ -170,7 +172,7 @@ object PdfCommands {
                 listOf("--object-streams=generate", "--compress-streams=y", "--recompress-flate", "--compression-level=9", input.path, output)
         return listOf(
             "gs", "-dSAFER", "-dBATCH", "-dNOPAUSE", "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.5",
-            "-dPDFSETTINGS=$setting", "-dAutoRotatePages=/None", "-dDetectDuplicateImages=true"
+            "-dPDFSETTINGS=$setting", "-sColorConversionStrategy=RGB", "-dAutoRotatePages=/None", "-dDetectDuplicateImages=true"
         ) + listOfNotNull(input.password?.let { "-sPDFPassword=$it" }) + listOf("-sOutputFile=$output", input.path)
     }
 
