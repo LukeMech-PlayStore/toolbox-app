@@ -65,8 +65,11 @@ object Images {
     suspend fun loadUri(context: Context, uri: Uri, maxSizePx: Int): Bitmap? = withContext(Dispatchers.IO) {
         try {
             ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri)) { decoder, info, _ ->
-                val side = maxOf(info.size.width, info.size.height)
-                if (side > maxSizePx) decoder.setTargetSampleSize(Integer.highestOneBit(side / maxSizePx).coerceAtLeast(1))
+                // Scaled down to it exactly (a sample size halves only, leaving a 4000 px photo as it is)
+                val scale = maxSizePx.toFloat() / maxOf(info.size.width, info.size.height)
+                if (scale < 1) {
+                    decoder.setTargetSize((info.size.width * scale).toInt().coerceAtLeast(1), (info.size.height * scale).toInt().coerceAtLeast(1))
+                }
                 decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
             }
         } catch (e: Exception) {
