@@ -66,7 +66,6 @@
     <string name="s_shareTo" tools:ignore="UnusedResources">Share to…</string>
     <string name="s_shareTo_desc" tools:ignore="UnusedResources">In the system\'s Share list</string>
 
-    <string name="s_env_manager">Linux subsystem</string>
     <string name="s_env_manager_unpacking">Unpacking</string>
     <string name="s_env_manager_updating">Updating</string>
     <string name="s_tasks">Tasks</string>
@@ -119,8 +118,8 @@
     <string name="s_tasks_cancelled_no_output">Cancelled before the command printed anything.</string>
     <string name="s_tasks_no_output">The command printed nothing.</string>
     <string name="s_tasks_exit_code">exit code %1$d</string>
-    <string name="s_tasks_channel_progress">Linux subsystem tasks</string>
-    <string name="s_tasks_channel_result">Linux subsystem task results</string>
+    <string name="s_tasks_channel_progress">Tasks</string>
+    <string name="s_tasks_channel_result">Task results</string>
     <string name="s_bug_report">Report a bug</string>
     <string name="s_bug_report_choose_method">Report method</string>
     <string name="s_bug_report_email">E-mail</string>
@@ -196,7 +195,8 @@
     <string name="sk_default_tool">default, favourite, pin, pinned, bottom bar, navigation, tab</string>
     <string name="sk_feature_settings">features, tools, options, preferences</string>
     <string name="sk_app_version">version, about, app, update, play store, package</string>
-    <string name="sk_env_manager">linux, subsystem, environment, proot, termux, tasks, commands, logs, python, perl</string>
+    <string name="sk_env_manager">tasks, commands, logs, progress, failed, running</string>
+    <string name="sk_packages">packages, linux, subsystem, environment, proot, termux, python, perl, ffmpeg, java, storage, size, installed</string>
     <string name="sk_licenses">licenses, open source, legal, credits</string>
     <string name="sk_discussion_group">discussion, group, community, forum, feedback, google</string>
     <string name="sk_bug_report">bug, report, error, crash, problem, feedback, email</string>

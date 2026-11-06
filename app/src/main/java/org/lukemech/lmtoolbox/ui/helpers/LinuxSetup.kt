@@ -105,7 +105,7 @@ private fun SetupProgress(task: AppTask?) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            ImageVector.vectorResource(R.drawable.linux_penguin), null,
+            ImageVector.vectorResource(R.drawable.ic_tasks), null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(72.dp)
         )

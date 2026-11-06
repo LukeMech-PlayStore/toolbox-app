@@ -62,7 +62,6 @@
     <string name="s_shareTo">Udostępnij do…</string>
     <string name="s_shareTo_desc">Na liście „Udostępnij”</string>
 
-    <string name="s_env_manager">Podsystem Linuxa</string>
     <string name="s_env_manager_unpacking">Rozpakowywanie</string>
     <string name="s_env_manager_updating">Aktualizowanie</string>
     <string name="s_tasks">Zadania</string>
@@ -114,8 +113,8 @@
     <string name="s_tasks_cancelled_no_output">Anulowano, zanim polecenie cokolwiek wypisało.</string>
     <string name="s_tasks_no_output">Polecenie nic nie wypisało.</string>
     <string name="s_tasks_exit_code">kod wyjścia %1$d</string>
-    <string name="s_tasks_channel_progress">Zadania podsystemu Linuxa</string>
-    <string name="s_tasks_channel_result">Wyniki zadań podsystemu Linuxa</string>
+    <string name="s_tasks_channel_progress">Zadania</string>
+    <string name="s_tasks_channel_result">Wyniki zadań</string>
     <string name="s_bug_report">Zgłoś błąd</string>
     <string name="s_bug_report_choose_method">Metoda zgłoszenia</string>
     <string name="s_bug_report_email">E-mail</string>
@@ -191,7 +190,8 @@
     <string name="sk_default_tool">domyślna, ulubiona, przypnij, przypięta, dolny pasek, nawigacja, karta</string>
     <string name="sk_feature_settings">funkcje, narzędzia, opcje, preferencje</string>
     <string name="sk_app_version">wersja, o aplikacji, aplikacja, aktualizacja, sklep play, pakiet</string>
-    <string name="sk_env_manager">linux, podsystem, środowisko, proot, termux, zadania, polecenia, logi, python, perl</string>
+    <string name="sk_env_manager">zadania, polecenia, logi, postęp, błąd, nieudane, działające</string>
+    <string name="sk_packages">pakiety, linux, podsystem, środowisko, proot, termux, python, perl, ffmpeg, java, miejsce, rozmiar, zainstalowane</string>
     <string name="sk_licenses">licencje, open source, otwarte oprogramowanie, prawne, autorzy</string>
     <string name="sk_discussion_group">dyskusja, grupa, społeczność, forum, opinie, google</string>
     <string name="sk_bug_report">błąd, zgłoś, raport, awaria, problem, opinie, e-mail</string>

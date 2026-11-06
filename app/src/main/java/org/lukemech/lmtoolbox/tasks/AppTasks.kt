@@ -73,7 +73,7 @@ data class AppTask(
         context.getString(stage ?: if (type == Type.Command) sourceTitle else type.titleRes)
 
     /** The title of the tool that started it, or the subsystem's (its manager's) for its own. */
-    @get:StringRes val sourceTitle: Int get() = source?.titleStringResId ?: R.string.s_env_manager
+    @get:StringRes val sourceTitle: Int get() = source?.titleStringResId ?: R.string.s_tasks
 
     /** The short command line for commands, the tool whose programs are unpacked, null for installs/updates. */
     val detail: String? get() = if (type == Type.Command || type == Type.Extension) label else null
