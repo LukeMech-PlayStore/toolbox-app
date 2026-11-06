@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.util.Collections
 
-/** Bytes read anywhere in them, as a file's are: an ISO, a file in it. */
+/** Bytes read at any position, as in a file: an ISO, or a file inside one. */
 interface RandomSource {
     val size: Long
 
@@ -87,7 +87,11 @@ class BytesContent(val bytes: ByteArray) : Content {
 class ZeroContent(override val length: Long) : Content {
     override fun open(): InputStream = object : InputStream() {
         private var left = length
-        override fun read(): Int = if (left-- > 0) 0 else -1.also { left = 0 }
+        override fun read(): Int {
+            if (left <= 0) return -1
+            left--
+            return 0
+        }
         override fun read(b: ByteArray, off: Int, len: Int): Int {
             if (left <= 0) return -1
             val n = minOf(len.toLong(), left).toInt()

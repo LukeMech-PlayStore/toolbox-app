@@ -23,7 +23,7 @@ object WimSplit {
     private const val HDR_SPANNED = 0x08
     private const val HDR_WRITE_IN_PROGRESS = 0x40
 
-    /** A part's file name ([base].swm, [base]2.swm...) and its bytes. */
+    /** A part's file name (install.swm, install2.swm...) and its bytes. */
     class Part(val name: String, val content: Content)
 
     /** A resource header: [size] bytes stored at [offset], its [flags]; [originalSize] uncompressed. */
@@ -47,7 +47,7 @@ object WimSplit {
 
     /**
      * [wim] in parts of [maxPart] bytes at most (3800 MiB, as WoeUSB and Rufus have it: under FAT32's 4 GiB), named
-     * after [base]. Throws [UnsupportedImageException] for a WIM it can't split as it is (solid, an ESD, split already).
+     * after [base] (base.swm, base2.swm...). Throws [UnsupportedImageException] for a WIM it can't split as it is (solid, an ESD, split already).
      */
     fun split(wim: RandomSource, base: String = "install", maxPart: Long = 3800L shl 20): List<Part> {
         val header = ByteArray(HEADER_SIZE).also { wim.readFully(0, it) }

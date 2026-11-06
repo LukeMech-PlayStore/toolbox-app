@@ -27,8 +27,15 @@ object UsbWriterFeature : AppFeature {
      */
     override val resourceTiles = listOf(ResourceTile.Usb, ResourceTile.Disk, ResourceTile.Cpu)
 
+    /** Off switches of its "Open file in…" and "Share to…" entries (see SystemEntries). */
+    const val S_DONKEY = "UsbWriter_!OpenIn"
+    const val S_DSHKEY = "UsbWriter_!ShareTo"
+
+    override val preferenceKeys = listOf(S_DONKEY, S_DSHKEY)
+
+    /** An image opened or shared in from another app: straight to choosing the drive. */
     @Composable
     override fun Content(arguments: Map<String, String?>?) {
-        UsbWriterPage()
+        UsbWriterPage(arguments?.get("sharedText"))
     }
 }

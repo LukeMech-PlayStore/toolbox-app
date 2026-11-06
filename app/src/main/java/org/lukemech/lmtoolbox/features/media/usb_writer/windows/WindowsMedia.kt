@@ -9,7 +9,7 @@ import org.lukemech.lmtoolbox.features.media.usb_writer.RandomSource
  * ([WimSplit]) when it's over FAT32's 4 GiB. No BIOS boot (Windows 11 needs UEFI anyway).
  */
 object WindowsMedia {
-    /** The CPUs UEFI boots an ISO on, by its boot loader (efi/boot/boot<arch>.efi): nothing here depends on which. */
+    /** The CPUs UEFI boots an ISO on, by its bootloader (efi/boot/boot<arch>.efi): nothing here depends on which. */
     enum class Architecture(val loader: String, val label: String) {
         X64("bootx64.efi", "x64"),
         ARM64("bootaa64.efi", "ARM64"),
@@ -18,10 +18,17 @@ object WindowsMedia {
 
     /**
      * What's to say of an ISO: its volume's name, its files' size, whether its install.wim is split, which CPUs it
-     * boots on (none: it has no UEFI boot loader, so it won't boot from the drive).
+     * boots on (none: it has no UEFI bootloader, so it will not boot from the drive).
      */
     class Inspection(
         val udf: Udf, val label: String, val filesSize: Long, val splitsWim: Boolean, val architectures: List<Architecture>,
+        /** The parts install.wim's split into (0: it isn't). */
+        val wimParts: Int = 0,
+        /**
+         * A file over FAT32's 4 GiB that can't be split, so the drive can't be made (e.g. a Media Creation Tool ISO's
+         * install.esd: solid, one LZMS block for all), or null.
+         */
+        val tooLarge: String? = null,
     )
 
     /** [iso] as Windows' installation media, or null when it isn't (no UDF, or not Windows' files on it). */
@@ -30,7 +37,11 @@ object WindowsMedia {
         if (udf.root.find("sources/boot.wim") == null) return null
         val files = udf.root.walk().filter { !it.isDirectory }
         val architectures = Architecture.entries.filter { udf.root.find("efi/boot/${it.loader}")?.isDirectory == false }
-        return Inspection(udf, udf.volumeName, files.sumOf { it.size }, (installWim(udf)?.size ?: 0) > Fat32.MAX_FILE, architectures)
+        val wim = installWim(udf)?.takeIf { it.size > Fat32.MAX_FILE }
+        // Laid out only (its header and lookup table read), nothing copied
+        val parts = wim?.let { runCatching { WimSplit.split(it.data!!).size }.getOrDefault(0) } ?: 0
+        val tooLarge = files.firstOrNull { it.size > Fat32.MAX_FILE && !(it === wim && parts > 0) }?.name
+        return Inspection(udf, udf.volumeName, files.sumOf { it.size }, wim != null, architectures, parts, tooLarge)
     }
 
     private fun installWim(udf: Udf) = udf.root.find("sources/install.wim")?.takeIf { !it.isDirectory }

@@ -47,7 +47,6 @@ object Fat32 {
         val reservedSectors: Int,
         val fatSectors: Long,
         val sectorsPerCluster: Int,
-        val clusterCount: Long,
         val usedClusters: Long,
     ) {
         val clusterSize get() = sectorsPerCluster * sectorSize
@@ -67,7 +66,7 @@ object Fat32 {
         require(sectorSize in setOf(512, 1024, 2048, 4096)) { "Sector size $sectorSize" }
         val sectors = deviceSize / sectorSize
         val mib = MIB / sectorSize
-        val partitionStart = mib
+        val partitionStart = MIB / sectorSize
         // It ends a MiB before the drive does at least (where a GPT's backup was, wiped), on a MiB, in the MBR's 32 bits
         val partitionEnd = minOf((sectors - mib) / mib * mib, partitionStart + 0xFFFFFFFFL / mib * mib)
         val partitionSectors = partitionEnd - partitionStart
@@ -119,7 +118,7 @@ object Fat32 {
         val used = next - 2
         if (used > clusterCount) throw NotEnoughSpaceException(dataStart * sectorSize + used * clusterSize, deviceSize)
 
-        val layout = Layout(sectorSize, partitionStart, partitionSectors, reserved, fatSectors, spc, clusterCount, used)
+        val layout = Layout(sectorSize, partitionStart, partitionSectors, reserved, fatSectors, spc, used)
 
         // The FAT: the media byte, then the chains, each to the next cluster in a row
         val fat = java.nio.ByteBuffer.allocate((next * 4).toInt()).order(java.nio.ByteOrder.LITTLE_ENDIAN)
@@ -277,7 +276,7 @@ object Fat32 {
     private fun clean(part: String) = part.uppercase(Locale.ROOT).filter { it != ' ' && it != '.' }
         .map { if (shortChar(it)) it else '_' }.joinToString("")
 
-    /** How many bytes [dir]'s entries take: its label (the root) or its "." and "..", its children's. */
+    /** How many bytes [dir]'s entries take: its label (the root) or its dot entries (itself, its parent), its children's. */
     private fun directorySize(dir: FatDir, isRoot: Boolean, names: Names) =
         32 * ((if (isRoot) 1 else 2) + named(dir, names).sumOf { it.second.entries })
 

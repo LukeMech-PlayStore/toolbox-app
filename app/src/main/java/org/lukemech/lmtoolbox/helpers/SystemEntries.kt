@@ -16,6 +16,7 @@ import org.lukemech.lmtoolbox.features.media.md_edit.MetadataEditorFeature
 import org.lukemech.lmtoolbox.features.media.media_dl.MediaDownloaderFeature
 import org.lukemech.lmtoolbox.features.media.pdf_tools.PdfToolsFeature
 import org.lukemech.lmtoolbox.features.media.qr_gen.QrGenFeature
+import org.lukemech.lmtoolbox.features.media.usb_writer.UsbWriterFeature
 import org.lukemech.lmtoolbox.features.media.video_enc.VideoEncoderFeature
 
 /**
@@ -49,6 +50,10 @@ object SystemEntries {
         ImageResizerFeature.route to listOf(shareTo("share.Image.Resize", ImageResizerFeature.S_DSHKEY, R.string.f_ImgRes_share_desc)),
         PdfToolsFeature.route to listOf(shareTo("share.Pdf.Tools", PdfToolsFeature.S_DSHKEY, R.string.f_Pdf_share_desc)),
         FileHashFeature.route to listOf(shareTo("share.File.Hash", FileHashFeature.S_DSHKEY, R.string.f_FileHash_share_desc)),
+        UsbWriterFeature.route to listOf(
+            SystemEntry("openIn.Usb.Writer", UsbWriterFeature.S_DONKEY, R.string.s_openIn, R.string.s_openIn_desc, Icons.Default.FileOpen),
+            shareTo("share.Usb.Writer", UsbWriterFeature.S_DSHKEY, R.string.f_UsbWriter_share_desc),
+        ),
     )
 
     /** The tool an entry ([SystemEntry.aliasName]) opens. */

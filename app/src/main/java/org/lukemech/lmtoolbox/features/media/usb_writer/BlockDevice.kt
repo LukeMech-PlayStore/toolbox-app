@@ -6,7 +6,7 @@ import java.io.RandomAccessFile
 
 /**
  * A drive as its blocks: written and read whole blocks at a time, by their number (LBA). A USB drive's
- * ([UsbBlockDevice]), or a file's ([FileBlockDevice]: the tests', a drive's image).
+ * ([UsbMassStorage]), or a file's ([FileBlockDevice]: the tests', a drive's image).
  */
 interface BlockDevice : Closeable {
     val blockSize: Int

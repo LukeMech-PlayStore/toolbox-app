@@ -4,6 +4,8 @@
     <string name="fk_UsbWriter">usb, pendrive, pamięć, bootowalny, rozruchowy, boot, iso, img, obraz, nagraj, wypal, zapisz, etcher, rufus, dd, linux, ubuntu, windows, instalator, instalacja, raspberry pi, otg, uefi, arm64, x64</string>
     <string name="fd_UsbWriter">Pendrive rozruchowy z obrazu ISO</string>
 
+    <string name="f_UsbWriter_share_desc">Otwieraj albo udostępniaj obraz ISO lub dysku, by go zapisać</string>
+
     <string name="f_UsbWriter_intro_title">Pendrive rozruchowy</string>
     <string name="f_UsbWriter_intro_1">ISO Linuksa i obrazy dysków są zapisywane tak, jak są</string>
     <string name="f_UsbWriter_intro_2">ISO Windowsa (x64 i ARM64) staje się instalatorem, z którego uruchamia się UEFI</string>
@@ -12,10 +14,13 @@
     <string name="f_UsbWriter_pick">Wybierz obraz</string>
     <string name="f_UsbWriter_back_to">Wróć do %1$s</string>
 
-    <string name="f_UsbWriter_mode_raw">zapis bajt w bajt</string>
-    <string name="f_UsbWriter_mode_windows">Instalator Windows (%1$s), FAT32 dla UEFI</string>
-    <string name="f_UsbWriter_mode_split">install.wim podzielony na części.</string>
+    <string name="f_UsbWriter_mode_raw">Zapis bajt w bajt</string>
+    <string name="f_UsbWriter_mode_windows">Instalator Windows (%1$s)</string>
+    <string name="f_UsbWriter_mode_split">install.wim w %1$d częściach</string>
+    <string name="f_UsbWriter_mode_fat32">FAT32, rozruch UEFI</string>
+    <string name="f_UsbWriter_mode_hybrid">Obraz hybrydowy: ma tablicę partycji</string>
     <string name="f_UsbWriter_not_bootable">Nie ma tablicy partycji: po zapisaniu może się nie uruchomić. ISO Linuksa zwykle ją ma.</string>
+    <string name="f_UsbWriter_too_large_file">%1$s ma ponad 4 GB: nie zmieści się na FAT32. Użyj ISO ze strony microsoft.com (z install.wim).</string>
     <string name="f_UsbWriter_no_uefi">Nie ma programu rozruchowego UEFI (efi/boot): pendrive się nie uruchomi.</string>
 
     <string name="f_UsbWriter_drives">Pendrive</string>

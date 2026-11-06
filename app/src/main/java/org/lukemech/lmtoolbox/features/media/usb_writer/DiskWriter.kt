@@ -27,8 +27,8 @@ object DiskWriter {
     const val CHUNK = 1 shl 20
     private const val AHEAD = 3
 
-    /** How far it is: [done] of [total] bytes of the plan's content. */
     fun interface Progress {
+        /** How far it is: [done] of [total] bytes of the plan's content. */
         fun update(done: Long, total: Long)
     }
 
@@ -144,7 +144,7 @@ object DiskWriter {
                     }
                     val c = chunk!!
                     val n = input.read(c.buf, filled, minOf((CHUNK - filled).toLong(), left).toInt())
-                    if (n < 0) throw EOFException("The image ended ${left} bytes early")
+                    if (n < 0) throw EOFException("The image ended $left bytes early")
                     filled += n
                     c.payload += n
                     left -= n

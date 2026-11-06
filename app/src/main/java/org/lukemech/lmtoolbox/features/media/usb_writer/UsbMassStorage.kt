@@ -13,7 +13,7 @@ import java.nio.ByteOrder
 class NoMediumException : IOException("No medium in the drive")
 
 /** A SCSI command failed: its sense key and additional sense code (and qualifier). */
-class ScsiException(val command: Int, val senseKey: Int, val asc: Int, val ascq: Int) :
+class ScsiException(command: Int, val senseKey: Int, val asc: Int, ascq: Int) :
     IOException("SCSI command 0x%02x failed: sense %x/%02x/%02x".format(command, senseKey, asc, ascq))
 
 /**
@@ -39,7 +39,7 @@ class UsbMassStorage private constructor(
 
     @Volatile
     private var closed = false
-    /** Each transfer's: short while it's set up ([init]), long after (a write of a MiB to a slow drive). */
+    /** Each transfer's: short while it's set up ([init]), long after (writing a MiB to a slow drive takes a while). */
     private var timeout = INIT_TIMEOUT_MS
     /** The biggest bulk transfer this phone takes (see [bulk]). */
     private var maxTransfer = MAX_TRANSFER
@@ -100,7 +100,7 @@ class UsbMassStorage private constructor(
         var ready = false
         for (attempt in 0 until 10) {
             try {
-                command(byteArrayOf(0x00, 0, 0, 0, 0, 0), null, 0, 0, input = true)
+                command(byteArrayOf(0x00, 0, 0, 0, 0, 0), null, 0, input = true)
                 ready = true
                 break
             } catch (e: ScsiException) {
@@ -111,7 +111,7 @@ class UsbMassStorage private constructor(
         }
         if (!ready) throw IOException("The drive isn't ready")
         val capacity = ByteArray(8)
-        command(byteArrayOf(0x25, 0, 0, 0, 0, 0, 0, 0, 0, 0), capacity, 0, 8, input = true)
+        command(byteArrayOf(0x25, 0, 0, 0, 0, 0, 0, 0, 0, 0), capacity, 8, input = true)
         val b = ByteBuffer.wrap(capacity).order(ByteOrder.BIG_ENDIAN)
         val lastLba = b.getInt(0).toLong() and 0xFFFFFFFFL
         if (lastLba == 0xFFFFFFFFL) throw IOException("Drives over 2 TiB aren't supported")
@@ -124,7 +124,7 @@ class UsbMassStorage private constructor(
     /** What the drive says it is (INQUIRY): its vendor's and product's names, e.g. "SanDisk" "Ultra". */
     fun inquiry(): String {
         val data = ByteArray(36)
-        command(byteArrayOf(0x12, 0, 0, 0, 36, 0), data, 0, 36, input = true)
+        command(byteArrayOf(0x12, 0, 0, 0, 36, 0), data, 36, input = true)
         val vendor = String(data, 8, 8, Charsets.US_ASCII).trim()
         val product = String(data, 16, 16, Charsets.US_ASCII).trim()
         return listOf(vendor, product).filter { it.isNotEmpty() }.joinToString(" ")
@@ -144,24 +144,24 @@ class UsbMassStorage private constructor(
             (lba ushr 24).toByte(), (lba ushr 16).toByte(), (lba ushr 8).toByte(), lba.toByte(),
             0, (blocks ushr 8).toByte(), blocks.toByte(), 0
         )
-        command(cdb, buf, 0, len, input)
+        command(cdb, buf, len, input)
     }
 
     /**
-     * One SCSI command [cdb] with [len] bytes of data in [buf] (from [off]), in or out: retried as a whole when the
+     * One SCSI command [cdb] with [len] bytes of data in [buf], in or out: retried as a whole when the
      * transfer fails (the transport reset first) or the drive says to (UNIT ATTENTION, NOT READY becoming ready).
      */
-    private fun command(cdb: ByteArray, buf: ByteArray?, off: Int, len: Int, input: Boolean) {
+    private fun command(cdb: ByteArray, buf: ByteArray?, len: Int, input: Boolean) {
         var last: IOException? = null
         for (attempt in 0..RETRIES) {
             checkOpen()
             try {
-                val status = transport(cdb, buf, off, len, input)
+                val status = transport(cdb, buf, len, input)
                 if (status == 0) return
                 if (status == 2) throw IOException("Phase error")
                 // Failed: why, by REQUEST SENSE
                 val sense = ByteArray(18)
-                transport(byteArrayOf(0x03, 0, 0, 0, 18, 0), sense, 0, 18, input = true)
+                transport(byteArrayOf(0x03, 0, 0, 0, 18, 0), sense, 18, input = true)
                 val key = sense[2].toInt() and 0x0F
                 val error = ScsiException(cdb[0].toInt() and 0xFF, key, sense[12].toInt() and 0xFF, sense[13].toInt() and 0xFF)
                 // Only what may go away by itself is retried
@@ -182,7 +182,7 @@ class UsbMassStorage private constructor(
     }
 
     /** CBW, data, CSW: the command's status (0 passed, 1 failed, 2 phase error). */
-    private fun transport(cdb: ByteArray, buf: ByteArray?, off: Int, len: Int, input: Boolean): Int {
+    private fun transport(cdb: ByteArray, buf: ByteArray?, len: Int, input: Boolean): Int {
         val myTag = tag++
         cbw.clear()
         cbw.putInt(0x43425355).putInt(myTag).putInt(len)
@@ -195,7 +195,7 @@ class UsbMassStorage private constructor(
         var dataFailed = false
         if (len > 0 && buf != null) {
             try {
-                bulk(if (input) inEp else outEp, buf, off, len)
+                bulk(if (input) inEp else outEp, buf, 0, len)
             } catch (e: IOException) {
                 Log.w(TAG, "Data stage failed: ${e.message}")
                 dataFailed = true
@@ -237,7 +237,7 @@ class UsbMassStorage private constructor(
                 val took = SystemClock.elapsedRealtime() - started
                 if (n < 0 && took < FAST_FAILURE_MS && maxTransfer > MIN_TRANSFER) {
                     maxTransfer = maxOf(MIN_TRANSFER, maxTransfer / 2)
-                    Log.w(TAG, "A $size-byte transfer refused at once ($took ms): ${maxTransfer} bytes from now on")
+                    Log.w(TAG, "A $size-byte transfer refused at once ($took ms): $maxTransfer bytes from now on")
                     continue
                 }
                 throw IOException("USB transfer of $size bytes failed ($n, $took ms) after $done of $len bytes")

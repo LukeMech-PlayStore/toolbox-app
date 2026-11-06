@@ -21,8 +21,11 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.InstallDesktop
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Usb
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.automirrored.filled.CallSplit
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Window
 import androidx.compose.material.icons.filled.Album
@@ -47,6 +50,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import android.net.Uri
 import kotlinx.coroutines.launch
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.media.usb_writer.UsbDrive
@@ -81,7 +86,7 @@ private enum class Step { Image, Drive, Write }
  * asked to confirm (it erases the drive), its progress in the steps' bar; it goes on as the page is left.
  */
 @Composable
-fun UsbWriterPage() {
+fun UsbWriterPage(providedInput: String? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val image = UsbWriter.image
@@ -107,8 +112,9 @@ fun UsbWriterPage() {
     LaunchedEffect(drives) { drives.forEach { d -> if (seen.none { it.key == d.key }) seen += d } }
     val drive = drives.firstOrNull { it.key == UsbWriter.driveKey }
 
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
+    /** [uri] as the image (looked into), then the drive's step; not while one's being written. */
+    fun open(uri: Uri) {
+        if (working) return
         scope.launch {
             inspecting = true
             try {
@@ -119,6 +125,14 @@ fun UsbWriterPage() {
                 inspecting = false
             }
         }
+    }
+
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(::open) }
+
+    // Opened or shared in from another app ("Open file in…", "Share to…"): straight to the drive, as the checksums' file
+    LaunchedEffect(providedInput) {
+        val given = providedInput?.trim().orEmpty()
+        if (given.startsWith("content://") || given.startsWith("file://")) open(given.toUri())
     }
 
     BackHandler(enabled = step != Step.Image) {
@@ -222,10 +236,15 @@ fun UsbWriterPage() {
                     ) {
                         Column(verticalArrangement = RowArrangement) {
                             ImageCard(image)
-                            Note(stringResource(R.string.f_UsbWriter_not_bootable), visible = image.mode == Mode.Raw && !image.bootable)
+                            Note(stringResource(R.string.f_UsbWriter_not_bootable), visible = image.mode == Mode.Raw && image.bootable == false)
                             Note(
                                 stringResource(R.string.f_UsbWriter_no_uefi),
                                 visible = image.mode == Mode.Windows && image.architectures.isEmpty()
+                            )
+                            // Can't be made: told here, before a drive's chosen (and erased for nothing)
+                            Note(
+                                stringResource(R.string.f_UsbWriter_too_large_file, image.tooLarge.orEmpty()),
+                                visible = image.tooLarge != null
                             )
                         }
                         Column(verticalArrangement = RowArrangement) {
@@ -246,7 +265,7 @@ fun UsbWriterPage() {
                 },
                 buttons = {
                     SecondaryButton(stringResource(R.string.f_UsbWriter_refresh)) { drives = UsbDrives.list(context) }
-                    BigButton(Icons.Default.Usb, stringResource(R.string.f_UsbWriter_next), enabled = drive != null && !asking && !UsbWriter.probing) {
+                    BigButton(Icons.Default.Usb, stringResource(R.string.f_UsbWriter_next), enabled = drive != null && !asking && !UsbWriter.probing && image.tooLarge == null) {
                         val chosen = drive ?: return@BigButton
                         scope.launch {
                             asking = true
@@ -332,15 +351,31 @@ private fun DoneCard() {
 @Composable
 private fun ImageCard(image: UsbWriter.Image) {
     val context = LocalContext.current
-    val size = Formatter.formatShortFileSize(context, image.size)
-    val how = when (image.mode) {
-        Mode.Windows -> stringResource(
-            R.string.f_UsbWriter_mode_windows,
-            image.architectures.joinToString("/").ifEmpty { "?" }
-        ) + if (image.splitsWim) " " + stringResource(R.string.f_UsbWriter_mode_split) else ""
-        Mode.Raw -> stringResource(R.string.f_UsbWriter_mode_raw)
+    // How it's written, a point each (as the tool's intro has them, smaller), under its name and size
+    val points = when (image.mode) {
+        Mode.Windows -> listOfNotNull(
+            Icons.Default.Window to stringResource(R.string.f_UsbWriter_mode_windows, image.architectures.joinToString("/").ifEmpty { "?" }),
+            Icons.Default.Storage to stringResource(R.string.f_UsbWriter_mode_fat32),
+            if (image.wimParts > 1) Icons.AutoMirrored.Default.CallSplit to stringResource(R.string.f_UsbWriter_mode_split, image.wimParts) else null,
+        )
+        Mode.Raw -> listOfNotNull(
+            Icons.Default.ContentCopy to stringResource(R.string.f_UsbWriter_mode_raw),
+            if (image.bootable == true) Icons.Default.Check to stringResource(R.string.f_UsbWriter_mode_hybrid) else null,
+        )
     }
-    Subject(if (image.mode == Mode.Windows) Icons.Default.Window else Icons.Default.Album, image.name, "$size · $how")
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Subject(if (image.mode == Mode.Windows) Icons.Default.Window else Icons.Default.Album, image.name, Formatter.formatShortFileSize(context, image.size))
+        // Lined up with the name, past its icon
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(start = 52.dp, end = 16.dp)) {
+            points.forEach { (icon, text) ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
 }
 
 @Composable

@@ -55,7 +55,6 @@ class Udf private constructor(
         private fun u8(b: ByteArray, at: Int) = b[at].toInt() and 0xFF
         private fun u16(b: ByteArray, at: Int) = u8(b, at) or (u8(b, at + 1) shl 8)
         private fun u32(b: ByteArray, at: Int) = u16(b, at).toLong() or (u16(b, at + 2).toLong() shl 16)
-        private fun u64(b: ByteArray, at: Int) = u32(b, at) or (u32(b, at + 4) shl 32)
 
         /** An OSTA compressed Unicode string: 8 bits a character, or 16 (big endian), as its first byte says. */
         private fun dchars(b: ByteArray, at: Int, len: Int): String {
@@ -67,8 +66,6 @@ class Udf private constructor(
             }
         }
 
-        /** A fixed-length dstring field of [size] bytes: its last byte is how much of it is used. */
-        private fun dstring(b: ByteArray, at: Int, size: Int) = dchars(b, at, u8(b, at + size - 1).coerceAtMost(size - 1))
     }
 
     private class Reader(private val source: RandomSource) {
@@ -89,7 +86,8 @@ class Udf private constructor(
                     5 -> partition = u32(d, 188)
                     6 -> {
                         if (u32(d, 212) != BLOCK.toLong()) throw UnsupportedImageException("Block size ${u32(d, 212)}")
-                        volume = dstring(d, 84, 128)
+                        // A fixed 128-byte field: its last byte is how much of it is used
+                        volume = dchars(d, 84, u8(d, 84 + 127).coerceAtMost(127))
                         // The partition maps: one plain one (type 1) only
                         val maps = u32(d, 268).toInt()
                         var at = 440
@@ -122,7 +120,7 @@ class Udf private constructor(
             }
             val isDirectory = u8(fe, 27) == 4
             val adType = u16(fe, 34) and 7
-            val length = u64(fe, 56)
+            val length = u32(fe, 56) or (u32(fe, 60) shl 32)
             val eaLength = u32(fe, if (extended) 208 else 168).toInt()
             val adLength = u32(fe, if (extended) 212 else 172).toInt()
             val adStart = (if (extended) 216 else 176) + eaLength

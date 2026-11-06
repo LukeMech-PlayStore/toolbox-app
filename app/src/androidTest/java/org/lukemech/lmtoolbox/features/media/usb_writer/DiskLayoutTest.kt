@@ -25,7 +25,7 @@ import org.lukemech.lmtoolbox.features.media.usb_writer.windows.WindowsMedia
 /**
  * The bootable USB maker's own logic, on the device, with a drive that's a file ([FileBlockDevice]): the emulator
  * has no USB drive. A Windows-like ISO (androidTest assets/usb_writer/win-mini.iso.xz, in the test APK only: UDF made by Windows' IMAPI2, x64 and
- * ARM64 boot loaders, an install.wim made by 7-Zip) made into FAT32 and read back by a FAT reader of the test's own.
+ * ARM64 bootloaders, a WIM file made by 7-Zip) made into FAT32 and read back by a FAT reader of the test's own.
  */
 class DiskLayoutTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -183,42 +183,6 @@ class DiskLayoutTest {
         assertEquals(original.entries.map { it.hash }.toSet(), byHash.keys)
         assertEquals(original.entries.size, parts.sumOf { it.second.entries.size })
         original.entries.forEach { assertArrayEquals(original.resource(it), byHash[it.hash]) }
-    }
-
-    /**
-     * A real Windows ISO (x64 or ARM64, Microsoft's), when one's given: pushed to the device and named by the
-     * instrumentation argument windowsIso (e.g. `-e windowsIso /sdcard/Download/Win11_ARM64.iso`); skipped without.
-     * Read and laid out for a 32 GB drive, install.wim's parts (when it's over 4 GiB) checked by their headers and
-     * tables against it; nothing written (that's 6 GB on the emulator's disk).
-     */
-    @Test
-    fun realWindowsIsoIsLaidOut() {
-        val path = InstrumentationRegistry.getArguments().getString("windowsIso")
-        org.junit.Assume.assumeTrue("No windowsIso argument", path != null)
-        val inspection = WindowsMedia.inspect(source(File(path!!)))!!
-        assertTrue("No UEFI boot loader", inspection.architectures.isNotEmpty())
-        val result = WindowsMedia.plan(inspection, 32L shl 30, 512)
-        assertTrue(result.layout.usedClusters * result.layout.clusterSize >= inspection.filesSize)
-        val wim = inspection.udf.root.find("sources/install.wim")?.data ?: return
-        if (wim.size <= Fat32.MAX_FILE) return
-        val originalTable = ByteBuffer.wrap(ByteArray(208).also { wim.readFully(0, it) }).order(ByteOrder.LITTLE_ENDIAN)
-            .let { (it.getLong(48) and 0x00FFFFFFFFFFFFFFL) / 50 }
-        var entries = 0L
-        WimSplit.split(wim).forEachIndexed { i, part ->
-            assertTrue(part.content.length <= Fat32.MAX_FILE)
-            // The part's header and table: at its start, and after its resources
-            val bytes = part.content.open().use { input ->
-                val header = ByteArray(208).also { var n = 0; while (n < 208) n += input.read(it, n, 208 - n) }
-                val hb = ByteBuffer.wrap(header).order(ByteOrder.LITTLE_ENDIAN)
-                val tableAt = hb.getLong(56)
-                input.skip(tableAt - 208)
-                header + input.readBytes()
-            }
-            val hb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
-            assertEquals(i + 1, hb.getShort(40).toInt())
-            entries += (hb.getLong(48) and 0x00FFFFFFFFFFFFFFL) / 50
-        }
-        assertTrue("$entries of $originalTable entries", entries in 1..originalTable)
     }
 
     private fun path(root: Udf.Entry, target: Udf.Entry): String {

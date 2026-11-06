@@ -201,6 +201,52 @@
             </intent-filter>
         </activity-alias>
 
+        <!-- Open in Bootable USB: disk images (ISO, .img) -->
+        <activity-alias
+            android:name="openIn.Usb.Writer"
+            android:enabled="false"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:label="@string/fp_UsbWriter">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="application/x-iso9660-image" />
+                <data android:mimeType="application/x-cd-image" />
+                <data android:mimeType="application/vnd.efi.iso" />
+                <data android:mimeType="application/vnd.efi.img" />
+                <data android:mimeType="application/x-raw-disk-image" />
+                <!-- What most file managers and downloads call an ISO or an .img -->
+                <data android:mimeType="application/octet-stream" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Share (a disk image) to Bootable USB -->
+        <activity-alias
+            android:name="share.Usb.Writer"
+            android:enabled="false"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:label="@string/fp_UsbWriter">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/x-iso9660-image" />
+                <data android:mimeType="application/x-cd-image" />
+                <data android:mimeType="application/vnd.efi.iso" />
+                <data android:mimeType="application/vnd.efi.img" />
+                <data android:mimeType="application/x-raw-disk-image" />
+                <!-- What most file managers and downloads call an ISO or an .img -->
+                <data android:mimeType="application/octet-stream" />
+            </intent-filter>
+        </activity-alias>
+
         <!-- Open in Metadata editor -->
         <activity-alias
             android:name="openIn.Metadata.Edit"

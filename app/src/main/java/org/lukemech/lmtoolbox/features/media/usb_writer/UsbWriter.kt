@@ -44,10 +44,17 @@ object UsbWriter {
         val label: String? = null,
         /** Windows': install.wim is split for FAT32. */
         val splitsWim: Boolean = false,
-        /** It starts with a partition table (MBR): a hybrid ISO, a disk image, which boots written as it is. */
-        val bootable: Boolean = false,
-        /** Windows': the CPUs it boots on (x64, ARM64...), by its UEFI boot loaders. */
+        /**
+         * It starts with a partition table (MBR): a hybrid ISO, a disk image, which boots written as it is; null: not
+         * known (its provider can't be read anywhere in it, so it wasn't looked into).
+         */
+        val bootable: Boolean? = null,
+        /** Windows': the CPUs it boots on (x64, ARM64...), by its UEFI bootloaders. */
         val architectures: List<String> = emptyList(),
+        /** Windows': the parts install.wim's split into (0: it isn't). */
+        val wimParts: Int = 0,
+        /** Windows': a file over 4 GiB that can't be split (e.g. install.esd), so it can't be written. */
+        val tooLarge: String? = null,
     )
 
     enum class Phase { Idle, Preparing, Writing, Verifying, Done, Failed }
@@ -90,7 +97,9 @@ object UsbWriter {
                 Image(
                     uri, name, source.size, if (windows != null) Mode.Windows else Mode.Raw,
                     label = windows?.label, splitsWim = windows?.splitsWim == true, bootable = bootable,
-                    architectures = windows?.architectures.orEmpty().map { it.label }
+                    architectures = windows?.architectures.orEmpty().map { it.label },
+                    wimParts = windows?.wimParts ?: 0,
+                    tooLarge = windows?.tooLarge
                 )
             }
         }.onFailure { Log.w(TAG, "Couldn't look into $uri", it) }.getOrNull()
@@ -163,13 +172,10 @@ object UsbWriter {
     }
 
     private suspend fun write(context: Context, image: Image, drive: UsbDrive, verify: Boolean) {
-        val random = if (image.mode == Mode.Windows) openRandom(context, image.uri) else null
-        try {
+        (if (image.mode == Mode.Windows) openRandom(context, image.uri) else null).use { random ->
             UsbDrives.open(context, drive).use { device ->
                 closedOnCancel(device) { writeTo(context, device, image, random?.source, verify) }
             }
-        } finally {
-            random?.close()
         }
     }
 
@@ -179,11 +185,7 @@ object UsbWriter {
      */
     private suspend fun closedOnCancel(device: BlockDevice, block: suspend () -> Unit) = coroutineScope {
         val closer = launch(Dispatchers.IO) {
-            try {
-                awaitCancellation()
-            } finally {
-                device.close()
-            }
+            device.use { awaitCancellation() }
         }
         try {
             block()
