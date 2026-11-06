@@ -19,6 +19,9 @@
     <!-- The Minecraft server (features/servers/mc_server): the phone and its Wi-Fi awake while it runs -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- The bootable USB maker writes USB drives through OTG; not needed to install the app -->
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+
     <!-- Live widgets (sensors only reach foreground apps); the Minecraft server's service too -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
