@@ -1,9 +1,10 @@
 ✨ Nowości
-• Narzędzia PDF: układanie, scalanie, dzielenie, kompresja, hasło
-• Strony PDF w siatce: przesuń, obróć, skopiuj, usuń; też zdjęcia
-• Narzędzia sieciowe: test łącza, ping, trasa, urządzenia w sieci, porty
+• Bootowalny USB: obrazy Linuksa i dysków na pendrive przez OTG, bez roota
+• Obrazy ISO Windows (x64, ARM64) jako instalator UEFI na pendrive
+• Otwórz lub udostępnij ISO albo obraz prosto do Bootowalnego USB
 
 ⚡ Ulepszenia
-• Narzędzia pracują w tle, z postępem na dolnym pasku
-• Wykrywacz metalu słychać w trybie cichym; ostrzeżenia czujników u góry
-• Strona instalacji otwiera się szybciej; poprawki i inne
+• „Podsystem Linuxa” to teraz „Zadania”, zainstalowane pakiety w ustawieniach
+• Opcjonalne kroki pojawiają się i znikają płynnie
+• Podsystem Linuxa zaktualizowany do 26.11.03
+• Poprawki i inne

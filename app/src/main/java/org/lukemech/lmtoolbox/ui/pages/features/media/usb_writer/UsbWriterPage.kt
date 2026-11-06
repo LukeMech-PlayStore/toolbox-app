@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -356,7 +357,7 @@ private fun ImageCard(image: UsbWriter.Image) {
         Mode.Windows -> listOfNotNull(
             Icons.Default.Window to stringResource(R.string.f_UsbWriter_mode_windows, image.architectures.joinToString("/").ifEmpty { "?" }),
             Icons.Default.Storage to stringResource(R.string.f_UsbWriter_mode_fat32),
-            if (image.wimParts > 1) Icons.AutoMirrored.Default.CallSplit to stringResource(R.string.f_UsbWriter_mode_split, image.wimParts) else null,
+            if (image.wimParts > 1) Icons.AutoMirrored.Default.CallSplit to pluralStringResource(R.plurals.f_UsbWriter_mode_split, image.wimParts, image.wimParts) else null,
         )
         Mode.Raw -> listOfNotNull(
             Icons.Default.ContentCopy to stringResource(R.string.f_UsbWriter_mode_raw),

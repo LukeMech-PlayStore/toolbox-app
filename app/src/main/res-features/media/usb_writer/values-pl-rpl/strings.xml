@@ -16,7 +16,12 @@
 
     <string name="f_UsbWriter_mode_raw">Zapis bajt w bajt</string>
     <string name="f_UsbWriter_mode_windows">Instalator Windows (%1$s)</string>
-    <string name="f_UsbWriter_mode_split">install.wim w %1$d częściach</string>
+    <plurals name="f_UsbWriter_mode_split">
+        <item quantity="one">install.wim w %1$d części</item>
+        <item quantity="few">install.wim w %1$d częściach</item>
+        <item quantity="many">install.wim w %1$d częściach</item>
+        <item quantity="other">install.wim w %1$d częściach</item>
+    </plurals>
     <string name="f_UsbWriter_mode_fat32">FAT32, rozruch UEFI</string>
     <string name="f_UsbWriter_mode_hybrid">Obraz hybrydowy: ma tablicę partycji</string>
     <string name="f_UsbWriter_not_bootable">Nie ma tablicy partycji: po zapisaniu może się nie uruchomić. ISO Linuksa zwykle ją ma.</string>

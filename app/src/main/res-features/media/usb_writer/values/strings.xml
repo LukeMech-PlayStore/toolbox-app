@@ -16,7 +16,10 @@
 
     <string name="f_UsbWriter_mode_raw">Written byte for byte</string>
     <string name="f_UsbWriter_mode_windows">Windows installer (%1$s)</string>
-    <string name="f_UsbWriter_mode_split">install.wim in %1$d parts</string>
+    <plurals name="f_UsbWriter_mode_split">
+        <item quantity="one">install.wim in %1$d part</item>
+        <item quantity="other">install.wim in %1$d parts</item>
+    </plurals>
     <string name="f_UsbWriter_mode_fat32">FAT32, boots with UEFI</string>
     <string name="f_UsbWriter_mode_hybrid">Hybrid image: it has a partition table</string>
     <string name="f_UsbWriter_not_bootable">It has no partition table: it may not boot once written. A Linux ISO usually has one.</string>

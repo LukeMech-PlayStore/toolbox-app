@@ -17,11 +17,11 @@ object WindowsMedia {
     }
 
     /**
-     * What's to say of an ISO: its volume's name, its files' size, whether its install.wim is split, which CPUs it
+     * What's to say of an ISO: its volume's name, whether its install.wim is split, which CPUs it
      * boots on (none: it has no UEFI bootloader, so it will not boot from the drive).
      */
     class Inspection(
-        val udf: Udf, val label: String, val filesSize: Long, val splitsWim: Boolean, val architectures: List<Architecture>,
+        val udf: Udf, val label: String, val splitsWim: Boolean, val architectures: List<Architecture>,
         /** The parts install.wim's split into (0: it isn't). */
         val wimParts: Int = 0,
         /**
@@ -41,7 +41,7 @@ object WindowsMedia {
         // Laid out only (its header and lookup table read), nothing copied
         val parts = wim?.let { runCatching { WimSplit.split(it.data!!).size }.getOrDefault(0) } ?: 0
         val tooLarge = files.firstOrNull { it.size > Fat32.MAX_FILE && !(it === wim && parts > 0) }?.name
-        return Inspection(udf, udf.volumeName, files.sumOf { it.size }, wim != null, architectures, parts, tooLarge)
+        return Inspection(udf, udf.volumeName, wim != null, architectures, parts, tooLarge)
     }
 
     private fun installWim(udf: Udf) = udf.root.find("sources/install.wim")?.takeIf { !it.isDirectory }

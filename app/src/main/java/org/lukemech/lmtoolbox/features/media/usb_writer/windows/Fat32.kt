@@ -47,9 +47,7 @@ object Fat32 {
         val reservedSectors: Int,
         val fatSectors: Long,
         val sectorsPerCluster: Int,
-        val usedClusters: Long,
     ) {
-        val clusterSize get() = sectorsPerCluster * sectorSize
         val dataStart get() = partitionStart + reservedSectors + 2 * fatSectors
 
         /** The drive's byte where [cluster] starts. */
@@ -118,7 +116,7 @@ object Fat32 {
         val used = next - 2
         if (used > clusterCount) throw NotEnoughSpaceException(dataStart * sectorSize + used * clusterSize, deviceSize)
 
-        val layout = Layout(sectorSize, partitionStart, partitionSectors, reserved, fatSectors, spc, used)
+        val layout = Layout(sectorSize, partitionStart, partitionSectors, reserved, fatSectors, spc)
 
         // The FAT: the media byte, then the chains, each to the next cluster in a row
         val fat = java.nio.ByteBuffer.allocate((next * 4).toInt()).order(java.nio.ByteOrder.LITTLE_ENDIAN)

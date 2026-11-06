@@ -188,14 +188,14 @@ class UsbMassStorage private constructor(
         cbw.putInt(0x43425355).putInt(myTag).putInt(len)
             .put(if (input) 0x80.toByte() else 0).put(lun.toByte()).put(cdb.size.toByte()).put(cdb)
         while (cbw.position() < 31) cbw.put(0)
-        bulk(outEp, cbw.array(), 0, 31)
+        bulk(outEp, cbw.array(), 31)
 
         // A data stage that failed: the endpoint may have stalled (the drive refused it: cleared, and its status
         // comes at once), or the drive still waits for the rest (no status ever: reset recovery, by the caller)
         var dataFailed = false
         if (len > 0 && buf != null) {
             try {
-                bulk(if (input) inEp else outEp, buf, 0, len)
+                bulk(if (input) inEp else outEp, buf, len)
             } catch (e: IOException) {
                 Log.w(TAG, "Data stage failed: ${e.message}")
                 dataFailed = true
@@ -222,17 +222,17 @@ class UsbMassStorage private constructor(
     }
 
     /**
-     * [len] bytes of [buf] (from [off]) to or from [ep], in as many transfers as it takes. A transfer refused at
+     * The first [len] bytes of [buf] to or from [ep], in as many transfers as it takes. A transfer refused at
      * once (some phones' kernels can't take big ones: usbfs can't get the memory) is made again, smaller: nothing of
      * it went out, so the drive's none the wiser. The size that worked is kept for the next ones.
      */
-    private fun bulk(ep: UsbEndpoint, buf: ByteArray, off: Int, len: Int) {
+    private fun bulk(ep: UsbEndpoint, buf: ByteArray, len: Int) {
         var done = 0
         while (done < len) {
             checkOpen()
             val size = minOf(maxTransfer, len - done)
             val started = SystemClock.elapsedRealtime()
-            val n = connection.bulkTransfer(ep, buf, off + done, size, timeout)
+            val n = connection.bulkTransfer(ep, buf, done, size, timeout)
             if (n <= 0) {
                 val took = SystemClock.elapsedRealtime() - started
                 if (n < 0 && took < FAST_FAILURE_MS && maxTransfer > MIN_TRANSFER) {
