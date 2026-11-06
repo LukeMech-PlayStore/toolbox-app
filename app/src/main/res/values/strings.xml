@@ -136,6 +136,7 @@
     <string name="s_stat_disk">Writing</string>
     <string name="s_stat_cpu">CPU</string>
     <string name="s_stat_storage">Storage</string>
+    <string name="s_stat_usb">USB</string>
     <string name="s_stat_network">Net</string>
     <string name="s_stat_network_app">Net (app)</string>
     <string name="s_setup_failed">Couldn\'t prepare the Linux subsystem</string>

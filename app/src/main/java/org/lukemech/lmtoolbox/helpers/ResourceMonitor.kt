@@ -21,6 +21,8 @@ enum class ResourceTile {
     Disk,
     /** Downloaded and uploaded (the app's, all of it: Android counts it by app, not by process). */
     Network,
+    /** Sent to (or read from) a USB drive, as the job counts it (ResourceTiles' usbBytes): nothing measured here. */
+    Usb,
 }
 
 /** Whose processes are measured. */
@@ -59,6 +61,8 @@ data class ResourceSample(
     val writePerSec: Long?,
     val rxPerSec: Long?,
     val txPerSec: Long?,
+    /** A USB drive's transfer, as the job tells it (see ResourceTile.Usb). */
+    val usbPerSec: Long? = null,
 )
 
 /**

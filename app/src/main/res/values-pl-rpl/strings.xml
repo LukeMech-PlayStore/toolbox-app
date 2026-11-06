@@ -131,6 +131,7 @@
     <string name="s_stat_disk">Zapis</string>
     <string name="s_stat_cpu">Procesor</string>
     <string name="s_stat_storage">Dysk</string>
+    <string name="s_stat_usb">USB</string>
     <string name="s_stat_network">Sieć</string>
     <string name="s_stat_network_app">Sieć (apk)</string>
     <string name="s_setup_failed">Nie udało się przygotować podsystemu Linuxa</string>
