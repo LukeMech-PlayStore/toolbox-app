@@ -1,9 +1,10 @@
 ✨ New
-• PDF tools: arrange, merge, split, compress, add a password
-• PDF pages in a grid: move, turn, copy, delete; pictures in and out
-• Network tools: speed test, ping, traceroute, LAN devices, port scan
+• Bootable USB: write Linux ISOs and disk images to a USB drive over OTG, no root
+• Windows ISOs (x64, ARM64) become a UEFI installer drive
+• Open or share an ISO or image straight into Bootable USB
 
 ⚡ Improvements
-• Tools keep working in the background, progress in the bottom bar
-• Metal detector heard in silent mode; sensor warnings on top
-• Install page opens faster; fixes and more
+• "Linux subsystem" is now "Tasks", installed packages in the settings
+• Optional steps slide in and out smoothly
+• Linux subsystem updated to 26.11.03
+• Fixes and more

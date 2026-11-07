@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_UsbWriter">Bootowalny USB</string>
+    <string name="fk_UsbWriter">usb, pendrive, pamięć, bootowalny, rozruchowy, boot, iso, img, obraz, nagraj, wypal, zapisz, etcher, rufus, dd, linux, ubuntu, windows, instalator, instalacja, raspberry pi, otg, uefi, arm64, x64</string>
+    <string name="fd_UsbWriter">Pendrive rozruchowy z obrazu ISO</string>
+
+    <string name="f_UsbWriter_share_desc">Otwieraj albo udostępniaj obraz ISO lub dysku, by go zapisać</string>
+
+    <string name="f_UsbWriter_intro_title">Pendrive rozruchowy</string>
+    <string name="f_UsbWriter_intro_1">ISO Linuksa i obrazy dysków są zapisywane tak, jak są</string>
+    <string name="f_UsbWriter_intro_2">ISO Windowsa (x64 i ARM64) staje się instalatorem, z którego uruchamia się UEFI</string>
+    <string name="f_UsbWriter_intro_3">Podłącz pendrive przez adapter OTG: root nie jest potrzebny</string>
+    <string name="f_UsbWriter_intro_tip">Wszystko na pendrivie zostanie usunięte. Duży obraz zajmuje chwilę: niech telefon będzie naładowany.</string>
+    <string name="f_UsbWriter_pick">Wybierz obraz</string>
+    <string name="f_UsbWriter_back_to">Wróć do %1$s</string>
+
+    <string name="f_UsbWriter_mode_raw">Zapis bajt w bajt</string>
+    <string name="f_UsbWriter_mode_windows">Instalator Windows (%1$s)</string>
+    <plurals name="f_UsbWriter_mode_split">
+        <item quantity="one">install.wim w %1$d części</item>
+        <item quantity="few">install.wim w %1$d częściach</item>
+        <item quantity="many">install.wim w %1$d częściach</item>
+        <item quantity="other">install.wim w %1$d częściach</item>
+    </plurals>
+    <string name="f_UsbWriter_mode_fat32">FAT32, rozruch UEFI</string>
+    <string name="f_UsbWriter_mode_hybrid">Obraz hybrydowy: ma tablicę partycji</string>
+    <string name="f_UsbWriter_not_bootable">Nie ma tablicy partycji: po zapisaniu może się nie uruchomić. ISO Linuksa zwykle ją ma.</string>
+    <string name="f_UsbWriter_too_large_file">%1$s ma ponad 4 GB: nie zmieści się na FAT32. Użyj ISO ze strony microsoft.com (z install.wim).</string>
+    <string name="f_UsbWriter_no_uefi">Nie ma programu rozruchowego UEFI (efi/boot): pendrive się nie uruchomi.</string>
+
+    <string name="f_UsbWriter_drives">Pendrive</string>
+    <string name="f_UsbWriter_no_drives">Nie podłączono pendrive\'a. Podłącz go przez adapter albo kabel OTG.</string>
+    <string name="f_UsbWriter_no_host">To urządzenie nie obsługuje pendrive\'ów (brak USB host).</string>
+    <string name="f_UsbWriter_refresh">Szukaj ponownie</string>
+    <string name="f_UsbWriter_next">Użyj tego pendrive\'a</string>
+    <string name="f_UsbWriter_no_medium">Brak nośnika: czytnik kart bez karty albo pendrive, który nie odpowiada</string>
+    <string name="f_UsbWriter_too_small">Obraz jest większy niż pendrive.</string>
+    <string name="f_UsbWriter_denied">Nie zezwolono na użycie pendrive\'a.</string>
+
+    <string name="f_UsbWriter_verify">Sprawdź po zapisie</string>
+    <string name="f_UsbWriter_verify_desc">Odczytuje wszystko z powrotem: trwa drugie tyle</string>
+    <string name="f_UsbWriter_erase_note">Wszystko na pendrivie zostanie usunięte.</string>
+    <string name="f_UsbWriter_keep_plugged">Nie odłączaj pendrive\'a do końca.</string>
+    <string name="f_UsbWriter_write">Zapisz</string>
+    <string name="f_UsbWriter_preparing">Przygotowanie…</string>
+    <string name="f_UsbWriter_writing">Zapisywanie…</string>
+    <string name="f_UsbWriter_verifying">Sprawdzanie…</string>
+    <string name="f_UsbWriter_done">Gotowe</string>
+    <string name="f_UsbWriter_done_desc">Pendrive można odłączyć.</string>
+    <string name="f_UsbWriter_done_verified">Zapisany i sprawdzony: pendrive można odłączyć.</string>
+    <string name="f_UsbWriter_another_drive">Inny pendrive</string>
+    <string name="f_UsbWriter_another">Inny obraz</string>
+
+    <string name="f_UsbWriter_confirm_title">Wyczyścić pendrive?</string>
+    <string name="f_UsbWriter_confirm_text">Wszystko na %1$s zostanie usunięte i zastąpione przez %2$s.</string>
+    <string name="f_UsbWriter_confirm">Wyczyść i zapisz</string>
+</resources>

@@ -2,6 +2,7 @@ package org.lukemech.lmtoolbox.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
@@ -208,47 +209,44 @@ fun StepBarSlot() {
 /** [StepBar]'s bars. */
 @Composable
 private fun StepBars(count: Int, current: Int, loadingNext: Boolean, working: Boolean, progress: Float?) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        repeat(count) { i ->
-            // The current step's own work, where it stands
-            if (working && i == current) {
-                if (progress != null) {
-                    LinearProgressIndicator(
-                        progress = { progress },
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                        strokeCap = StrokeCap.Round,
-                        modifier = Modifier.weight(1f).height(4.dp)
-                    )
-                } else {
-                    LinearProgressIndicator(
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                        strokeCap = StrokeCap.Round,
-                        modifier = Modifier.weight(1f).height(4.dp)
-                    )
-                }
-                return@repeat
+    // The most bars it's had: a step that comes (an optional one turned on) grows in from nothing, one that goes
+    // shrinks away, with the space before it, the others making room or taking it
+    val most = remember { intArrayOf(count) }
+    most[0] = maxOf(most[0], count)
+    Row(modifier = Modifier.fillMaxWidth()) {
+        repeat(most[0]) { i ->
+            val shown by animateFloatAsState(if (i < count) 1f else 0f, tween(REVEAL_MS, easing = FastOutSlowInEasing), label = "step $i")
+            if (shown <= 0f) return@repeat
+            Box(modifier = Modifier.weight(shown).padding(start = if (i > 0) 8.dp * shown else 0.dp)) {
+                StepBarOne(i, current, loadingNext, working, progress)
             }
-            if (loadingNext && i == current + 1) {
-                LinearProgressIndicator(
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                    strokeCap = StrokeCap.Round,
-                    modifier = Modifier.weight(1f).height(4.dp)
-                )
-                return@repeat
-            }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(4.dp)
-                    .background(
-                        if (i <= current) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                        RoundedCornerShape(2.dp)
-                    )
-            )
         }
+    }
+}
+
+/** Step [i]'s bar: filled up to the [current] one, which (or the next, loading) shows its work. */
+@Composable
+private fun StepBarOne(i: Int, current: Int, loadingNext: Boolean, working: Boolean, progress: Float?) {
+    val modifier = Modifier.fillMaxWidth().height(4.dp)
+    when {
+        // The current step's own work, where it stands
+        working && i == current && progress != null -> LinearProgressIndicator(
+            progress = { progress },
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            strokeCap = StrokeCap.Round,
+            modifier = modifier
+        )
+        working && i == current || loadingNext && i == current + 1 -> LinearProgressIndicator(
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            strokeCap = StrokeCap.Round,
+            modifier = modifier
+        )
+        else -> Box(
+            modifier = modifier.background(
+                if (i <= current) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                RoundedCornerShape(2.dp)
+            )
+        )
     }
 }
 

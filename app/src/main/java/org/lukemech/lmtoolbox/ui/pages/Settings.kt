@@ -31,6 +31,7 @@ import org.lukemech.lmtoolbox.ui.pages.settings.CurrentFeatureSettingsSection
 import org.lukemech.lmtoolbox.ui.pages.settings.DefaultToolSetting
 import org.lukemech.lmtoolbox.ui.pages.settings.DiscussionGroupSection
 import org.lukemech.lmtoolbox.ui.pages.settings.EnvManagerSection
+import org.lukemech.lmtoolbox.ui.pages.settings.InstalledPackagesButton
 import org.lukemech.lmtoolbox.ui.pages.settings.FeatureSettingsButton
 import org.lukemech.lmtoolbox.ui.pages.settings.GeneralResetButton
 import org.lukemech.lmtoolbox.ui.pages.settings.OpenSourceLicensesSection
@@ -75,7 +76,9 @@ private val entries = listOf(
         visible = { AppReset.generalChanged }
     ) { GeneralResetButton() },
     Entry(R.string.s_section_app, listOf(R.string.app_name), R.string.sk_app_version) { PkgInfoSection() },
-    Entry(R.string.s_section_app, listOf(R.string.s_env_manager, R.string.s_tasks), R.string.sk_env_manager) { EnvManagerSection() },
+    Entry(R.string.s_section_app, listOf(R.string.s_tasks), R.string.sk_env_manager) { EnvManagerSection() },
+    // The Linux subsystem's parts, right under the tasks that install them
+    Entry(R.string.s_section_app, listOf(R.string.s_packages), R.string.sk_packages) { InstalledPackagesButton() },
     Entry(R.string.s_section_app, listOf(R.string.s_osl_title), R.string.sk_licenses) { OpenSourceLicensesSection() },
     Entry(R.string.s_section_app, listOf(R.string.s_discussion_group), R.string.sk_discussion_group) { DiscussionGroupSection() },
     Entry(R.string.s_section_app, listOf(R.string.s_bug_report), R.string.sk_bug_report) { BugReportSection() },

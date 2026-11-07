@@ -56,9 +56,9 @@ fun EnvManagerSection() {
     }
 
     FeatureButton(
-        title = stringResource(R.string.s_env_manager),
+        title = stringResource(R.string.s_tasks),
         subtitle = subtitle,
-        icon = ImageVector.vectorResource(R.drawable.linux_penguin),
+        icon = ImageVector.vectorResource(R.drawable.ic_tasks),
         icon2 = Icons.AutoMirrored.Default.KeyboardArrowRight,
         // Only when there's something to show, else it'd leave a gap before the arrow
         buttonContent = when {

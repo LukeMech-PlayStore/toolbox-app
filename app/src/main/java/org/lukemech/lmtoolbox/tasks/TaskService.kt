@@ -133,7 +133,7 @@ class TaskService : Service() {
     }
 
     private fun progressNotification(task: AppTask?): Notification {
-        val builder = ongoingNotification(this, CHANNEL_PROGRESS, R.drawable.linux_penguin)
+        val builder = ongoingNotification(this, CHANNEL_PROGRESS, R.drawable.ic_tasks)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setContentTitle(task?.title(this) ?: getString(R.string.s_tasks))
             .setContentText(task?.detail)
@@ -170,7 +170,7 @@ class TaskService : Service() {
             else -> getString(R.string.s_tasks_state_failed) + (task.message?.let { ": $it" } ?: "")
         }
         val notification = NotificationCompat.Builder(this, CHANNEL_RESULT)
-            .setSmallIcon(R.drawable.linux_penguin)
+            .setSmallIcon(R.drawable.ic_tasks)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setContentIntent(openActivity(this, MainActivity.openTasksIntent(this)))
             .setContentTitle(task.title(this))

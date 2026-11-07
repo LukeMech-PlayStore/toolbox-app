@@ -1,6 +1,9 @@
 <component name="ProjectDictionaryState">
   <dictionary name="project">
     <words>
+      <w>ATmega</w>
+      <w>PICkit</w>
+      <w>TgtPwr</w>
       <w>aarch</w>
       <w>abcd</w>
       <w>abcdef</w>
@@ -20,8 +23,8 @@
       <w>aosp's</w>
       <w>aplikacja</w>
       <w>appname</w>
+      <w>ascq</w>
       <w>atempo</w>
-      <w>ATmega</w>
       <w>atmega</w>
       <w>avif</w>
       <w>avrisp</w>
@@ -36,6 +39,7 @@
       <w>bundletool's</w>
       <w>bwiat</w>
       <w>callendar</w>
+      <w>cccoma</w>
       <w>chemistries</w>
       <w>ckit</w>
       <w>cloudflare</w>
@@ -52,6 +56,7 @@
       <w>dbfs</w>
       <w>dbgack</w>
       <w>dbgrq</w>
+      <w>dchars</w>
       <w>ddc</w>
       <w>defaultgamemode</w>
       <w>devkitc</w>
@@ -107,8 +112,8 @@
       <w>gfxstream</w>
       <w>gfxstream's</w>
       <w>gitleaks</w>
-      <w>googlecast</w>
       <w>gnddetect</w>
+      <w>googlecast</w>
       <w>gplay</w>
       <w>gęślą</w>
       <w>hann</w>
@@ -158,13 +163,15 @@
       <w>linuxa</w>
       <w>lmtoolbox</w>
       <w>lolin</w>
+      <w>longfi</w>
       <w>lowmemorykiller</w>
       <w>lstrip</w>
       <w>lukemech</w>
+      <w>luns</w>
       <w>makedirs</w>
-      <w>mdev</w>
       <w>mbit</w>
       <w>mclr</w>
+      <w>mdev</w>
       <w>mdp</w>
       <w>metadanych</w>
       <w>mikepenz</w>
@@ -185,6 +192,8 @@
       <w>mtdi</w>
       <w>mtdo</w>
       <w>mtms</w>
+      <w>nSRST</w>
+      <w>nTRST</w>
       <w>nachylenie</w>
       <w>najnowsze</w>
       <w>narzędzia</w>
@@ -200,9 +209,7 @@
       <w>nosniff</w>
       <w>nowości</w>
       <w>nowszymi</w>
-      <w>nSRST</w>
       <w>nsrst</w>
-      <w>nTRST</w>
       <w>ntrst</w>
       <w>nxdomain</w>
       <w>okhttp</w>
@@ -216,6 +223,7 @@
       <w>pdfarranger</w>
       <w>pdfarranger's</w>
       <w>pdfwrite</w>
+      <w>pendrive</w>
       <w>pgactivate</w>
       <w>pgalloc</w>
       <w>pgdeactivate</w>
@@ -236,7 +244,6 @@
       <w>pgscan</w>
       <w>pgskip</w>
       <w>pgsteal</w>
-      <w>PICkit</w>
       <w>pickit</w>
       <w>plac</w>
       <w>podsystem</w>
@@ -317,11 +324,6 @@
       <w>tailnets</w>
       <w>tempco</w>
       <w>termuxie</w>
-      <w>tracepath</w>
-      <w>tracert</w>
-      <w>trunc</w>
-      <w>ttls</w>
-      <w>TgtPwr</w>
       <w>tgtpwr</w>
       <w>threadtime</w>
       <w>thévenin</w>
@@ -330,9 +332,13 @@
       <w>towbar</w>
       <w>traceclk</w>
       <w>tracedata</w>
+      <w>tracepath</w>
+      <w>tracert</w>
       <w>traceswo</w>
       <w>trrs</w>
+      <w>trunc</w>
       <w>trycloudflare</w>
+      <w>ttls</w>
       <w>txc</w>
       <w>ubble</w>
       <w>udevadm</w>
@@ -351,6 +357,7 @@
       <w>usart</w>
       <w>usbasp</w>
       <w>usbc</w>
+      <w>usbfs</w>
       <w>ushr</w>
       <w>ustawień</w>
       <w>utime</w>
@@ -375,6 +382,7 @@
       <w>walut</w>
       <w>waluta</w>
       <w>waluty</w>
+      <w>wasn</w>
       <w>waveshare</w>
       <w>waveshare's</w>
       <w>wbudowane</w>
@@ -382,6 +390,7 @@
       <w>weba</w>
       <w>wemos</w>
       <w>widżety</w>
+      <w>wimlib</w>
       <w>wkup</w>
       <w>workingset</w>
       <w>wroom</w>

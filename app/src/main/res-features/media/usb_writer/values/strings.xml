@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fp_UsbWriter">Bootable USB</string>
+    <string name="fk_UsbWriter">usb, pendrive, flash drive, thumb drive, bootable, boot, iso, img, image, burn, flash, write, etcher, rufus, dd, linux, ubuntu, windows, installer, install, raspberry pi, otg, uefi, arm64, x64</string>
+    <string name="fd_UsbWriter">Make a bootable USB drive from an ISO</string>
+
+    <string name="f_UsbWriter_share_desc">Open or share an ISO or a disk image to write it</string>
+
+    <string name="f_UsbWriter_intro_title">Bootable USB drives</string>
+    <string name="f_UsbWriter_intro_1">Linux ISOs and disk images are written as they are</string>
+    <string name="f_UsbWriter_intro_2">Windows ISOs (x64 and ARM64) become an installer UEFI boots from</string>
+    <string name="f_UsbWriter_intro_3">Plug the drive in with an OTG adapter: no root needed</string>
+    <string name="f_UsbWriter_intro_tip">Everything on the drive is erased. A big image takes a while: keep the phone charged.</string>
+    <string name="f_UsbWriter_pick">Choose an image</string>
+    <string name="f_UsbWriter_back_to">Back to %1$s</string>
+
+    <string name="f_UsbWriter_mode_raw">Written byte for byte</string>
+    <string name="f_UsbWriter_mode_windows">Windows installer (%1$s)</string>
+    <plurals name="f_UsbWriter_mode_split">
+        <item quantity="one">install.wim in %1$d part</item>
+        <item quantity="other">install.wim in %1$d parts</item>
+    </plurals>
+    <string name="f_UsbWriter_mode_fat32">FAT32, boots with UEFI</string>
+    <string name="f_UsbWriter_mode_hybrid">Hybrid image: it has a partition table</string>
+    <string name="f_UsbWriter_not_bootable">It has no partition table: it may not boot once written. A Linux ISO usually has one.</string>
+    <string name="f_UsbWriter_too_large_file">%1$s has over 4 GB: it does not fit on FAT32. Use an ISO from microsoft.com (with install.wim).</string>
+    <string name="f_UsbWriter_no_uefi">It has no UEFI bootloader (efi/boot): the drive will not boot.</string>
+
+    <string name="f_UsbWriter_drives">USB drive</string>
+    <string name="f_UsbWriter_no_drives">No USB drive is plugged in. Connect one with an OTG adapter or cable.</string>
+    <string name="f_UsbWriter_no_host">This device cannot use USB drives (no USB host).</string>
+    <string name="f_UsbWriter_refresh">Look again</string>
+    <string name="f_UsbWriter_next">Use this drive</string>
+    <string name="f_UsbWriter_no_medium">No medium: a card reader without a card, or a drive that does not answer</string>
+    <string name="f_UsbWriter_too_small">The image is bigger than the drive.</string>
+    <string name="f_UsbWriter_denied">Using the drive was not allowed.</string>
+
+    <string name="f_UsbWriter_verify">Check after writing</string>
+    <string name="f_UsbWriter_verify_desc">Reads everything back: takes as long again</string>
+    <string name="f_UsbWriter_erase_note">Everything on the drive will be erased.</string>
+    <string name="f_UsbWriter_keep_plugged">Keep the drive plugged in until it is done.</string>
+    <string name="f_UsbWriter_write">Write</string>
+    <string name="f_UsbWriter_preparing">Preparing…</string>
+    <string name="f_UsbWriter_writing">Writing…</string>
+    <string name="f_UsbWriter_verifying">Checking…</string>
+    <string name="f_UsbWriter_done">Done</string>
+    <string name="f_UsbWriter_done_desc">The drive can be unplugged.</string>
+    <string name="f_UsbWriter_done_verified">Written and checked: the drive can be unplugged.</string>
+    <string name="f_UsbWriter_another_drive">Another drive</string>
+    <string name="f_UsbWriter_another">Another image</string>
+
+    <string name="f_UsbWriter_confirm_title">Erase the drive?</string>
+    <string name="f_UsbWriter_confirm_text">Everything on %1$s will be erased and replaced with %2$s.</string>
+    <string name="f_UsbWriter_confirm">Erase and write</string>
+</resources>

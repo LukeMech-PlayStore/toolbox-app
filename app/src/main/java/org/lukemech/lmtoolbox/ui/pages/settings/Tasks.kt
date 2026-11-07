@@ -26,8 +26,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -58,7 +56,7 @@ import org.lukemech.lmtoolbox.tasks.AppTasks
 fun TasksPage() {
     val tasks by AppTasks.tasks.collectAsState()
     PageHeading(
-        title = stringResource(R.string.s_env_manager),
+        title = stringResource(R.string.s_tasks),
         back = true,
         verticalArrangement = RowArrangement,
         // Fading in once there's something finished to clear
@@ -67,11 +65,6 @@ fun TasksPage() {
                 ClearAction { AppTasks.clearFinished() }
             }
         },
-        // What's installed of it, on top while what it's been doing scrolls under it
-        header = {
-            InstalledPackagesButton()
-            Spacer(modifier = Modifier.height(6.dp))
-        }
     ) {
         TaskList()
     }

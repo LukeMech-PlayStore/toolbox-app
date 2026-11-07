@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.SaveAs
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Usb
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -102,15 +103,19 @@ fun ResourceTiles(
     extra: List<InfoTile> = emptyList(),
     writtenBytes: (() -> Long)? = null,
     downloadRate: (() -> Long?)? = null,
+    /** [ResourceTile.Usb]'s: the bytes the job has moved to or from a USB drive so far (a running total). */
+    usbBytes: (() -> Long)? = null,
 ) {
     val context = LocalContext.current
     var history by remember(scope) { mutableStateOf(emptyList<ResourceSample>()) }
     val written by rememberUpdatedState(writtenBytes)
     val download by rememberUpdatedState(downloadRate)
+    val usb by rememberUpdatedState(usbBytes)
 
     LaunchedEffect(scope, tiles) {
         var before: ResourceCounters = withContext(Dispatchers.IO) { ResourceMonitor.counters(scope, tiles) }
         var beforeWritten = written?.invoke()
+        var beforeUsb = usb?.invoke()
         var beforeAt = SystemClock.elapsedRealtime()
         // What needs no second sample (memory) at once; the rest soon after, then every SAMPLE_MS
         if (history.isEmpty()) history = listOf(ResourceSample(null, before.rssBytes, null, null, null, null))
@@ -120,6 +125,14 @@ fun ResourceTiles(
             first = false
             val now = withContext(Dispatchers.IO) { ResourceMonitor.counters(scope, tiles) }
             var sample = ResourceMonitor.sample(before, now)
+            val sampledAt = SystemClock.elapsedRealtime()
+            usb?.let { total ->
+                val bytes = total()
+                val seconds = ((sampledAt - beforeAt) / 1000.0).coerceAtLeast(0.001)
+                // A total that went back (checking starts from 0 again) is a new count: from it on
+                sample = sample.copy(usbPerSec = beforeUsb?.takeIf { it <= bytes }?.let { b -> ((bytes - b) / seconds).toLong() })
+                beforeUsb = bytes
+            }
             written?.let { total ->
                 val bytes = total()
                 val at = SystemClock.elapsedRealtime()
@@ -133,6 +146,7 @@ fun ResourceTiles(
             download?.let { rate -> sample = sample.copy(rxPerSec = rate(), txPerSec = null) }
             history = (history + sample).takeLast(HISTORY)
             before = now
+            if (written == null) beforeAt = sampledAt
         }
     }
 
@@ -159,6 +173,10 @@ fun ResourceTiles(
                     history.map { it.disk()?.toFloat() }, max = null, MaterialTheme.colorScheme.tertiary
                 )
             }
+            ResourceTile.Usb -> TileSpec(
+                stringResource(R.string.s_stat_usb), Icons.Default.Usb, rate(last?.usbPerSec) ?: "–", null,
+                history.map { it.usbPerSec?.toFloat() }, max = null, MaterialTheme.colorScheme.primary
+            )
             ResourceTile.Network -> {
                 fun ResourceSample.net() = rxPerSec?.let { it + (txPerSec ?: 0) }
                 TileSpec(
