@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import kotlin.coroutines.cancellation.CancellationException
 import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.features.servers.mc_server.Installer
 import org.lukemech.lmtoolbox.features.servers.mc_server.ServerProfile
@@ -53,11 +54,11 @@ internal fun VersionSettings(profile: ServerProfile, run: ServerRunner.Run?, onC
     var versionsLoading by remember(profile.type, snapshots) { mutableStateOf(true) }
     var loadersLoading by remember(profile.type, profile.version, profile.loader) { mutableStateOf(true) }
     LaunchedEffect(profile.type, snapshots) {
-        versions = runCatching { Installer.versions(profile.type, snapshots) }.getOrNull()
+        versions = runCatching { Installer.versions(profile.type, snapshots) }.onFailure { if (it is CancellationException) throw it }.getOrNull()
         versionsLoading = false
     }
     LaunchedEffect(profile.type, profile.version, profile.loader) {
-        loaders = runCatching { Installer.loaders(profile.type, profile.version) }.getOrNull()
+        loaders = runCatching { Installer.loaders(profile.type, profile.version) }.onFailure { if (it is CancellationException) throw it }.getOrNull()
         loadersLoading = false
     }
     // The version and loader to change to, being confirmed

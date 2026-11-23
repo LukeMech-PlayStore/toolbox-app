@@ -283,11 +283,10 @@ shipped with a build that's no release.
 Requirements:
 - Android Studio (its bundled JDK runs Gradle; Gradle provisions JDK 25 for the code through the foojay
   resolver)
-- Android SDK with platform 37 (`local.properties`: `sdk.dir`)
+- Android SDK with platform 37.2 (`local.properties`: `sdk.dir`)
 - Network access on the first build (the subsystem's release)
 
-The Android Gradle Plugin stays at 9.1.1: it's the newest Android Studio's plugin syncs. Its warnings about a
-newer version, and about deprecated Gradle features it uses itself, are expected.
+The Android Gradle Plugin's warnings about deprecated Gradle features it uses itself are expected.
 
 ```sh
 ./gradlew assembleDebug          # debug APKs (applicationId org.lukemech.lmtoolbox.dbg)

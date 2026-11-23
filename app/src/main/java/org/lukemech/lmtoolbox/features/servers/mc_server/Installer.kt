@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -247,7 +248,7 @@ object Installer {
         val entry = Http.json(MOJANG).getJSONArray("versions").let { a -> (0 until a.length()).map { a.getJSONObject(it) } }
             .first { it.getString("id") == version }
         Http.json(entry.getString("url")).getJSONObject("javaVersion").getInt("majorVersion")
-    }.getOrElse { javaFor(version) }.also { javaCache[version] = it }
+    }.onFailure { if (it is CancellationException) throw it }.getOrElse { javaFor(version) }.also { javaCache[version] = it }
 
     /** The Java version Minecraft [version] needs, as Mojang has them: 8 to 1.16.5, 16 for 1.17, 17 to 1.20.4, 21 to 1.21.11, 25 from 26.1. */
     fun javaFor(version: String): Int {

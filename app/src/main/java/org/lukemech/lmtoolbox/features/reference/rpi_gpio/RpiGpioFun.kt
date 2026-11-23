@@ -138,9 +138,11 @@ object RpiGpioFeature : ReferenceFeature() {
             listOf(29, 28, 27, 26, 15, 14).map { gp(it.toString(), it) }
         val bottom = listOf(13, 12, 11, 10, 9).map { gp(it.toString(), it) }
         val right = (0..8).map { gp(it.toString(), it) }
-        left.mapIndexed { i, pin -> pin.copy(x = 0f, y = i.toFloat()) } +
-            bottom.mapIndexed { i, pin -> pin.copy(x = i + 1f, y = 8f) } +
-            right.mapIndexed { i, pin -> pin.copy(x = 6f, y = i.toFloat()) }
+        buildList {
+            left.mapIndexedTo(this) { i, pin -> pin.copy(x = 0f, y = i.toFloat()) }
+            bottom.mapIndexedTo(this) { i, pin -> pin.copy(x = i + 1f, y = 8f) }
+            right.mapIndexedTo(this) { i, pin -> pin.copy(x = 6f, y = i.toFloat()) }
+        }
     }
 
     override val sheets by lazy {

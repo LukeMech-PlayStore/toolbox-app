@@ -52,8 +52,12 @@ object CarAudioFeature : ReferenceFeature() {
             ),
             PinoutSheet(
                 raw("B"),
-                (speaker(1, R.string.rf_car_rr, Wire.Violet) + speaker(3, R.string.rf_car_rf, Wire.Grey) +
-                    speaker(5, R.string.rf_car_lf, Wire.White) + speaker(7, R.string.rf_car_lr, Wire.Green)).inRow(),
+                buildList {
+                    addAll(speaker(1, R.string.rf_car_rr, Wire.Violet))
+                    addAll(speaker(3, R.string.rf_car_rf, Wire.Grey))
+                    addAll(speaker(5, R.string.rf_car_lf, Wire.White))
+                    addAll(speaker(7, R.string.rf_car_lr, Wire.Green))
+                }.inRow(),
                 note = res(R.string.rf_car_b_note),
                 inOrder = true
             ),

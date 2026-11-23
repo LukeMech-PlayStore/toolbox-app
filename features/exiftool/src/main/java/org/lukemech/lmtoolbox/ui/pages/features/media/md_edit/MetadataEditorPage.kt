@@ -166,7 +166,11 @@ fun MetadataEditorPage(providedInput: String? = "") {
             busy = true
             val result = LinuxTasks.run(
                 context,
-                listOf("exiftool", "-P", "-overwrite_original") + args + file.absolutePath,
+                buildList {
+                    addAll(listOf("exiftool", "-P", "-overwrite_original"))
+                    addAll(args)
+                    add(file.absolutePath)
+                },
                 MetadataEditorFeature
             )
             val updated = result.isSuccess && Regex("""\b1 (image )?files? updated""").containsMatchIn(result.output)

@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.4.21"
-agp = "9.1.1"
+agp = "9.5.2"
 coroutines = "1.11.0"
 
 [libraries]
@@ -11,7 +11,7 @@ androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterfa
 androidx-core-location-altitude = { group = "androidx.core", name = "core-location-altitude", version = "1.0.1" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.10.2" }
 
-androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2026.09.00" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version = "2026.11.01" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-animation = { group = "androidx.compose.animation", name = "animation" }
@@ -26,7 +26,7 @@ play-feature-delivery = { group = "com.google.android.play", name = "feature-del
 # Its own dependencies, newer than the ones its 2023 release asks for (Play flagged its fragment 1.1.0);
 # constraints only (app's build file): not used directly
 androidx-fragment = { group = "androidx.fragment", name = "fragment", version = "1.9.1" }
-play-services-basement = { group = "com.google.android.gms", name = "play-services-basement", version = "18.12.0" }
+play-services-basement = { group = "com.google.android.gms", name = "play-services-basement", version = "18.12.1" }
 play-services-tasks = { group = "com.google.android.gms", name = "play-services-tasks", version = "18.4.1" }
 play-core-common = { group = "com.google.android.play", name = "core-common", version = "2.0.4" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }

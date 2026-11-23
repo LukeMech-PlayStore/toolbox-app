@@ -13,7 +13,7 @@ import org.lukemech.lmtoolbox.linux.ExecResult
 import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.tasks.AppTasks
 
-/** How a tunnel part's connection (bore's, cloudflared's) is doing. */
+/** How a tunnel part's connection (bore's, `cloudflared`'s) is doing. */
 enum class ConnectionPhase { Connecting, Connected, Stopped, Failed }
 
 /** A tunnel part's state, as [Bore]'s and [Tunnel]'s have it: how it's doing, its service (for stopping it), why it failed. */

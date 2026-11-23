@@ -362,7 +362,7 @@ class FolderShareServer(
             return Access(System.currentTimeMillis(), client, via, request.method, shown, status, maxOf(sent, received))
         }
 
-        /** Who asked: through a tunnel it comes from the phone itself, cloudflared telling whose it is. */
+        /** Who asked: through a tunnel it comes from the phone itself, `cloudflared` telling whose it is. */
         private fun client(): Pair<String?, Via> {
             val address = socket.inetAddress
             if (address.isLoopbackAddress) {
@@ -410,10 +410,13 @@ class FolderShareServer(
         private fun writeHead(status: Int, headers: List<Pair<String, String>>, length: Long?, keepAlive: Boolean) {
             this.status = status
             val head = StringBuilder("HTTP/1.1 ").append(status).append(' ').append(Http.reason(status)).append("\r\n")
-            val all = headers + COMMON + listOf(
-                "Date" to Http.date(System.currentTimeMillis()),
-                "Connection" to if (keepAlive && request.keepAlive) "keep-alive" else "close",
-            ) + if (length != null) listOf("Content-Length" to length.toString()) else listOf("Transfer-Encoding" to "chunked")
+            val all = buildList {
+                addAll(headers)
+                addAll(COMMON)
+                add("Date" to Http.date(System.currentTimeMillis()))
+                add("Connection" to if (keepAlive && request.keepAlive) "keep-alive" else "close")
+                add(if (length != null) "Content-Length" to length.toString() else "Transfer-Encoding" to "chunked")
+            }
             all.forEach { (k, v) -> head.append(k).append(": ").append(v.replace(Regex("[\\r\\n]"), " ")).append("\r\n") }
             head.append("\r\n")
             // Headers are ISO-8859-1: a name outside it is in Content-Disposition's filename* already

@@ -34,10 +34,11 @@ object Stm32Feature : ReferenceFeature() {
      * A pill seen from above: its two long rows ([top] left to right, [bottom] under it), and its SWD header ([swd])
      * down its right end.
      */
-    private fun pill(top: List<Pin>, bottom: List<Pin>, swd: List<Pin>) =
-        top.mapIndexed { i, pin -> pin.copy(x = i.toFloat(), y = 0f) } +
-            bottom.mapIndexed { i, pin -> pin.copy(x = i.toFloat(), y = 4f) } +
-            swd.mapIndexed { i, pin -> pin.copy(x = top.size + 0.6f, y = i + 0.5f) }
+    private fun pill(top: List<Pin>, bottom: List<Pin>, swd: List<Pin>) = buildList {
+        top.mapIndexedTo(this) { i, pin -> pin.copy(x = i.toFloat(), y = 0f) }
+        bottom.mapIndexedTo(this) { i, pin -> pin.copy(x = i.toFloat(), y = 4f) }
+        swd.mapIndexedTo(this) { i, pin -> pin.copy(x = top.size + 0.6f, y = i + 0.5f) }
+    }
 
     private val BLUE_PILL: List<Pin> by lazy {
         pill(

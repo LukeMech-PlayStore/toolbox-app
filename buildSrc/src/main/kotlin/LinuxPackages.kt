@@ -26,7 +26,6 @@ private val PACKAGE_LIB = Regex("""libpackage-(.+)\.tar\.xz\.so""")
  * [PullRequestBuild]), to test the app with it; it's never released with one (build-app.yml, tests.yml). [parts]: the Play modules with a part's archive (features/<name>);
  * [prootLibsDir]: where PRoot goes (the core's module).
  */
-@Suppress("unused") // app/build.gradle.kts
 fun Project.registerLinuxPackageTasks(parts: List<String>, prootLibsDir: File) {
     val release = property("linuxRelease").toString()
     val appLibsDir = file("src/main/jniLibs")

@@ -10,8 +10,8 @@ import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.helpers.AppFeature
 
 /**
- * A Cloudflare Tunnel (the cloudflared part), for a server on the phone that players reach from
- * anywhere: cloudflared runs a tunnel set up in Cloudflare's dashboard (its token in [tokenFile]),
+ * A Cloudflare Tunnel (the `cloudflared` part), for a server on the phone that players reach from
+ * anywhere: `cloudflared` runs a tunnel set up in Cloudflare's dashboard (its token in [tokenFile]),
  * which routes its public hostnames to what's on the phone (e.g. tcp://localhost:25565). Its own
  * routes are the dashboard's; here it's connected or not ([state]). Or a quick tunnel ([startQuick]):
  * no account, no token, an address of its own on trycloudflare.com for a web server on the phone.
@@ -21,7 +21,7 @@ import org.lukemech.lmtoolbox.helpers.AppFeature
  */
 class Tunnel(
     source: AppFeature,
-    /** cloudflared reads the token from there: never in a command line, nor a task's log. Null: quick tunnels alone. */
+    /** `cloudflared` reads the token from there: never in a command line, nor a task's log. Null: quick tunnels alone. */
     val tokenFile: File?,
     label: String = "cloudflared",
     group: String? = null,
@@ -31,15 +31,15 @@ class Tunnel(
         override val taskId: Long? = null,
         /** Connections to Cloudflare's edge (it keeps up to four, in nearby data centers). */
         val connections: Int = 0,
-        /** A quick tunnel's address, once cloudflared has it: e.g. https://some-random-words.trycloudflare.com. */
+        /** A quick tunnel's address, once `cloudflared` has it: e.g. https://some-random-words.trycloudflare.com. */
         val url: String? = null,
-        /** Why it couldn't connect, as cloudflared said (e.g. the token's not valid). */
+        /** Why it couldn't connect, as `cloudflared` said (e.g. the token's not valid). */
         override val error: String? = null,
     ) : TunnelState
 
     val hasToken get() = hasSecret(tokenFile)
 
-    /** Connects (unless it is, or there's no token); [onLine] gets each line cloudflared prints. */
+    /** Connects (unless it is, or there's no token); [onLine] gets each line `cloudflared` prints. */
     fun start(context: Context, onLine: (String) -> Unit = {}) {
         if (!hasToken) return
         run(context, listOf("cloudflared", "tunnel", "--no-autoupdate", "run", "--token-file", checkNotNull(tokenFile).absolutePath), onLine)
@@ -102,7 +102,7 @@ class Tunnel(
 
         /**
          * The token in [text] as pasted: the token itself, or one of the installation commands Cloudflare's
-         * dashboard shows for a tunnel ("cloudflared service install <token>", "… run --token <token>");
+         * dashboard shows for a tunnel (`cloudflared service install <token>`, `… run --token <token>`);
          * null if there's none (a token is a long base64 text).
          */
         fun tokenIn(text: String): String? {
@@ -113,7 +113,7 @@ class Tunnel(
         }
 
         private val TOKEN = Regex("[A-Za-z0-9+/=_-]+")
-        /** "INF |  https://some-random-words.trycloudflare.com  |", in the box cloudflared draws around it (not its API's, api.trycloudflare.com, in its errors). */
+        /** "INF |  https://some-random-words.trycloudflare.com  |", in the box `cloudflared` draws around it (not its API's, api.trycloudflare.com, in its errors). */
         private val QUICK_URL = Regex("""https://(?!api\.)[a-z0-9-]+\.trycloudflare\.com""")
     }
 }

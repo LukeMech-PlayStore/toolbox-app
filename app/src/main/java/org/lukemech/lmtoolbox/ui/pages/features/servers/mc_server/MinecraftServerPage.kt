@@ -250,7 +250,7 @@ private fun NewServer(onBack: () -> Unit, onCreated: (String) -> Unit) {
     var loader by rememberSaveable(type, version) { mutableStateOf(install?.draft?.takeIf { it.type == type && it.version == version }?.loader) }
     LaunchedEffect(type, version) {
         val v = version ?: return@LaunchedEffect
-        loaders = runCatching { Installer.loaders(type, v) }.getOrNull()
+        loaders = runCatching { Installer.loaders(type, v) }.onFailure { if (it is CancellationException) throw it }.getOrNull()
         loadersLoading = false
     }
 

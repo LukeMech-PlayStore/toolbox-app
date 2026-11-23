@@ -196,6 +196,8 @@
     <string name="sk_feature_settings">features, tools, options, preferences</string>
     <string name="sk_app_version">version, about, app, update, play store, package</string>
     <string name="sk_env_manager">tasks, commands, logs, progress, failed, running</string>
+    <!-- Keywords as people type them in the search: lowercase -->
+    <!--suppress GrazieInspection -->
     <string name="sk_packages">packages, linux, subsystem, environment, proot, termux, python, perl, ffmpeg, java, storage, size, installed</string>
     <string name="sk_licenses">licenses, open source, legal, credits</string>
     <string name="sk_discussion_group">discussion, group, community, forum, feedback, google</string>

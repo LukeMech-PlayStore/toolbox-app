@@ -118,7 +118,12 @@ object WimSplit {
             ResHdr(0, 0, 0, 0).put(ph, 124)
 
             val content = JoinedContent(
-                listOf(BytesContent(ph.array())) + pieces + BytesContent(partTable.array()) + wim.range(xmlHdr.offset, xmlHdr.size)
+                buildList {
+                    add(BytesContent(ph.array()))
+                    addAll(pieces)
+                    add(BytesContent(partTable.array()))
+                    add(wim.range(xmlHdr.offset, xmlHdr.size))
+                }
             )
             Part(if (number == 1) "$base.swm" else "$base$number.swm", content)
         }

@@ -14,7 +14,6 @@ class PdfCommandsTest {
     private val doc = PdfInput("/c/in.pdf")
 
     @Test
-    @Suppress("KotlinMisorderedAssertEqualsArguments") // expected first: it takes the calls for what's tested
     fun rangesAsTyped() {
         assertEquals(listOf(Group(1, 3), Group(5, 5), Group(7, 12)), PageRanges.parse("1-3,5,7-z", 12))
         // The last pages counted from the end, spaces and capitals as they come
@@ -39,7 +38,6 @@ class PdfCommandsTest {
     }
 
     @Test
-    @Suppress("KotlinMisorderedAssertEqualsArguments") // expected first: it takes the calls for what's tested
     fun inspectedInOneCommand() {
         assertEquals(
             listOf(
@@ -204,9 +202,10 @@ class PdfCommandsTest {
         )
         // A page left out: put together too; a range typed twice is one file
         assertEquals(
-            listOf(
-                PdfCommands.arrange(listOf(inputs.getValue(2) to listOf(Group(1, 3))), arranged.path),
-            ) + PdfCommands.splitRanges(arranged, listOf(Group(1, 2), Group(3, 3))) { "/o/doc-$it.pdf" },
+            buildList {
+                add(PdfCommands.arrange(listOf(inputs.getValue(2) to listOf(Group(1, 3))), arranged.path))
+                addAll(PdfCommands.splitRanges(arranged, listOf(Group(1, 2), Group(3, 3))) { "/o/doc-$it.pdf" })
+            },
             plan(b.take(3), PdfOptions(output = PdfOutput.Split, splitMode = SplitMode.Ranges, ranges = "1-2,3-z,1-2"))?.steps
         )
         assertEquals(

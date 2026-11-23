@@ -38,11 +38,11 @@ object Hosts {
      */
     suspend fun nameOf(address: String): String? {
         // Not the caller's child: it'd wait for it
-        val lookup = lookups.async { runCatching { InetAddress.getByName(address).canonicalHostName }.getOrNull() }
+        val lookup = lookups.async(Dispatchers.IO) { runCatching { InetAddress.getByName(address).canonicalHostName }.getOrNull() }
         return withTimeoutOrNull(LOOKUP_TIMEOUT) { lookup.await() }?.trimEnd('.')?.takeIf { it != address && it.isNotBlank() }
     }
 
-    private val lookups = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val lookups = CoroutineScope(SupervisorJob())
 
     /**
      * Whether [address] is on a local network (private, link-local, unique local), which Android 17 lets an app

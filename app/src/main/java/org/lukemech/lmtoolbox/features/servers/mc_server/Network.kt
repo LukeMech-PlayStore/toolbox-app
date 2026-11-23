@@ -1,5 +1,6 @@
 package org.lukemech.lmtoolbox.features.servers.mc_server
 
+import kotlin.coroutines.cancellation.CancellationException
 import org.json.JSONObject
 
 /**
@@ -19,7 +20,7 @@ object Network {
     }
 
     /**
-     * Asks Cloudflare's DNS over HTTPS (as players' DNS would answer) what [hostname] has: Modflared
+     * Asks Cloudflare DNS over HTTPS (as players' DNS would answer) what [hostname] has: Modflared
      * looks for a TXT record "cloudflared-use-tunnel" (the tunnel on the same hostname) or
      * "cloudflared-route=<hostname>" on the hostname players type.
      */
@@ -36,5 +37,5 @@ object Network {
         // Something there at all (a proxied CNAME to the tunnel shows as Cloudflare's addresses)?
         val a = JSONObject(Http.text(query("A"), accept = "application/dns-json"))
         if (a.optJSONArray("Answer")?.length()?.let { it > 0 } == true) DomainCheck.NoTxt else DomainCheck.NotFound
-    }.getOrElse { DomainCheck.Failed(it.message ?: it.javaClass.simpleName) }
+    }.onFailure { if (it is CancellationException) throw it }.getOrElse { DomainCheck.Failed(it.message ?: it.javaClass.simpleName) }
 }

@@ -162,6 +162,8 @@
     <string name="f_Mc_adding_addons">Adding</string>
 
     <string name="fp_McServer">Minecraft server</string>
+    <!-- Keywords as people type them in the search: lowercase -->
+    <!--suppress GrazieInspection -->
     <string name="fk_McServer" tools:ignore="Typos">minecraft, server, game, multiplayer, host, hosting, world, java, paper, fabric, forge, neoforge, mods, plugins, cloudflare, tunnel, modflared, minecraft server, vanilla, snapshots, java edition, lan, friends</string>
     <string name="fd_McServer">Your server, 1.2.5 to the latest</string>
 </resources>

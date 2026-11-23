@@ -39,7 +39,7 @@ data class ServerProfile(
     val created: Long = System.currentTimeMillis(),
     /** The hostname players connect to through the Cloudflare tunnel (with Modflared), e.g. mc.example.com. */
     val tunnelHostname: String = "",
-    /** Its Cloudflare tunnel is turned on (cloudflared installed for it, see `Tunnel.install`): its settings shown, it starts along with the server once its token is in. */
+    /** Its Cloudflare tunnel is turned on (`cloudflared` installed for it, see `Tunnel.install`): its settings shown, it starts along with the server once its token is in. */
     val tunnelEnabled: Boolean = false,
     /** Its bore tunnel is turned on (bore installed for it, see `Bore.install`): it starts along with the server. */
     val boreEnabled: Boolean = false,

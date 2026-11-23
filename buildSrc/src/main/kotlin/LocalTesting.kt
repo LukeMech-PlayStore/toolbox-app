@@ -12,7 +12,6 @@ private const val BUNDLETOOL_VERSION = "1.18.3"
  * started. Android Studio's "app (Play local testing)" runs it (.idea/runConfigurations); its plain "app" installs
  * every module along with the app, so there's nothing to download.
  */
-@Suppress("unused") // app/build.gradle.kts
 fun Project.registerInstallLocalTesting(debugApplicationId: String) = tasks.register("installLocalTesting") {
     group = "install"
     description = "Installs the debug bundle on the connected device, with its Play modules installed from it (local testing)."

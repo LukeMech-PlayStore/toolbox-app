@@ -208,7 +208,10 @@ object Checksums {
             }
         }
         // A row one hash matched isn't a mismatch for another (e.g. a checksum file with two lines for a name)
-        return Verdict(matched, mismatched - matched, missing - matched - mismatched)
+        mismatched.removeAll(matched)
+        missing.removeAll(matched)
+        missing.removeAll(mismatched)
+        return Verdict(matched, mismatched, missing)
     }
 
     /** What [verify] found: [matched] and [mismatched] rows, and the [missing] ones to compute to tell. */

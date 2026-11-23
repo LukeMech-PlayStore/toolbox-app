@@ -32,7 +32,7 @@ val prootLibsDir: File = rootProject.file("features/core/src/main/jniLibs")
 
 android {
     namespace = "org.lukemech.lmtoolbox"
-    compileSdk { version = release(sdkCompile) { minorApiLevel = 0 } }
+    compileSdk { version = release(sdkCompile) { minorApiLevel = 2 } }
 
     defaultConfig {
         applicationId = "org.lukemech.lmtoolbox"

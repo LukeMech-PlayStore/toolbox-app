@@ -25,7 +25,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Minimal image loading (replaces coil + okhttp): decodes off the main thread, downsamples to
+ * Minimal image loading (replaces Coil + OkHttp): decodes off the main thread, downsamples to
  * roughly maxSizePx and keeps network images and PDF pages in a small memory cache.
  */
 object Images {

@@ -223,7 +223,7 @@ object LinuxEnv {
             it.mkdirs()
             Os.chmod(it.absolutePath, "1777".toInt(8))
         }
-        // DNS servers for what doesn't ask Android (Go programs' own resolver, e.g. cloudflared's SRV
+        // DNS servers for what doesn't ask Android (Go programs' own resolver, e.g. `cloudflared`'s SRV
         // lookups; Termux's resolv-conf isn't shipped): the network's, as it is when a command starts
         writeIfChanged(
             linuxDir(context).child("usr/etc/resolv.conf").apply { parentFile?.mkdirs() },

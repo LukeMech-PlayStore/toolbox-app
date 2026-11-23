@@ -38,8 +38,20 @@ object LogicGatesFeature : ReferenceFeature() {
         listOf(
             TableSheet(
                 res(R.string.rf_truth_table),
-                columns = listOf(raw("A"), raw("B")) + GATES.map { raw(it.name) } + raw("NOT A"),
-                rows = inputs.map { (a, b) -> listOf(bit(a), bit(b)) + GATES.map { bit(it.output(a, b)) } + bit(!a) }
+                columns = buildList {
+                    add(raw("A"))
+                    add(raw("B"))
+                    GATES.mapTo(this) { raw(it.name) }
+                    add(raw("NOT A"))
+                },
+                rows = inputs.map { (a, b) ->
+                    buildList {
+                        add(bit(a))
+                        add(bit(b))
+                        GATES.mapTo(this) { bit(it.output(a, b)) }
+                        add(bit(!a))
+                    }
+                }
             ),
             TableSheet(
                 res(R.string.rf_gates),

@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import java.io.File
 import java.security.SecureRandom
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -261,7 +262,7 @@ object PdfJobs {
                 !result.isSuccess || madeFiles.isEmpty() -> _state.update { it?.copy(phase = Phase.Failed) }
                 else -> {
                     _state.update { it?.copy(phase = Phase.Saving, fraction = null, sizeAfter = madeFiles.sumOf { f -> f.length() }) }
-                    val saved = runCatching { save(app, madeFiles, name, o.mimeType) }.getOrNull()
+                    val saved = runCatching { save(app, madeFiles, name, o.mimeType) }.onFailure { if (it is CancellationException) throw it }.getOrNull()
                     _state.update {
                         if (saved != null) it?.copy(phase = Phase.Done, saved = saved)
                         else it?.copy(phase = Phase.Failed)

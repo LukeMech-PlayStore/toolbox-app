@@ -112,7 +112,7 @@ object ServerRunner {
     /** The servers' tunnels (one server's at a time), their lines in its console. */
     private val tunnels = ServerTunnels(MinecraftServerFeature) { line -> addLog(line) }
 
-    /** The tunnel of the server running (or that ran last), as cloudflared's API tells. */
+    /** The tunnel of the server running (or that ran last), as `cloudflared`'s API tells. */
     val tunnel: StateFlow<ServerTunnels.ServerTunnel?> = tunnels.tunnel
 
     /** The bore tunnel of the server running (or that ran last), as bore's API tells. */
@@ -328,11 +328,11 @@ object ServerRunner {
         if (unused.isNotEmpty()) LinuxTasks.removeParts(app, unused)
     }
 
-    /** Installs cloudflared, a server's tunnel turned on: asked first (InstallPrompt), then its table on the page tells how it goes. */
+    /** Installs `cloudflared`, a server's tunnel turned on: asked first (InstallPrompt), then its table on the page tells how it goes. */
     suspend fun installTunnel(context: Context): InstallResult = tunnels.install(context, Tunnel.PART)
 
     /**
-     * Uninstalls cloudflared when no server has its tunnel turned on (nor another tool its own, see
+     * Uninstalls `cloudflared` when no server has its tunnel turned on (nor another tool its own, see
      * MinecraftServerFeature.usesExtraExtension), and none runs.
      */
     fun pruneTunnel(context: Context) = ServerTunnels.prune(context, Tunnel.PART)

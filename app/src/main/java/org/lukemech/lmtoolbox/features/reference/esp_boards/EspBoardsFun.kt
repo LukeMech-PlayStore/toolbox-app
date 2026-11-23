@@ -90,9 +90,13 @@ object EspBoardsFeature : ReferenceFeature() {
     /** Espressif's ESP32-DevKitC (V4), 38 pins, seen from above, the antenna at the top. */
     private val DEVKITC: List<Pin> by lazy {
         sides(
-            listOf(v33(), en()) + listOf(36 to "VP", 39 to "VN", 34 to "34", 35 to "35", 32 to "32", 33 to "33", 25 to "25",
-                26 to "26", 27 to "27", 14 to "14", 12 to "12").map { (n, l) -> esp32(n, l) } +
-                listOf(gnd(), esp32(13), esp32(9, "SD2"), esp32(10, "SD3"), esp32(11, "CMD"), v5()),
+            buildList {
+                add(v33())
+                add(en())
+                listOf(36 to "VP", 39 to "VN", 34 to "34", 35 to "35", 32 to "32", 33 to "33", 25 to "25",
+                    26 to "26", 27 to "27", 14 to "14", 12 to "12").mapTo(this) { (n, l) -> esp32(n, l) }
+                addAll(listOf(gnd(), esp32(13), esp32(9, "SD2"), esp32(10, "SD3"), esp32(11, "CMD"), v5()))
+            },
             listOf(gnd(), esp32(23), esp32(22), esp32(1, "TX"), esp32(3, "RX"), esp32(21), gnd(), esp32(19), esp32(18), esp32(5),
                 esp32(17), esp32(16), esp32(4), esp32(0), esp32(2), esp32(15), esp32(8, "SD1"), esp32(7, "SD0"), esp32(6, "CLK")),
             apart = 4f
@@ -102,9 +106,13 @@ object EspBoardsFeature : ReferenceFeature() {
     /** DOIT's ESP32 DevKit V1 (and its clones), 30 pins, seen from above, the antenna at the top. */
     private val DEVKIT_V1: List<Pin> by lazy {
         sides(
-            listOf(en()) + listOf(36 to "VP", 39 to "VN", 34 to "D34", 35 to "D35", 32 to "D32", 33 to "D33", 25 to "D25",
-                26 to "D26", 27 to "D27", 14 to "D14", 12 to "D12", 13 to "D13").map { (n, l) -> esp32(n, l) } +
-                listOf(gnd(), Pin("VIN", "VIN", Power, res(R.string.rf_esp_vin))),
+            buildList {
+                add(en())
+                listOf(36 to "VP", 39 to "VN", 34 to "D34", 35 to "D35", 32 to "D32", 33 to "D33", 25 to "D25",
+                    26 to "D26", 27 to "D27", 14 to "D14", 12 to "D12", 13 to "D13").mapTo(this) { (n, l) -> esp32(n, l) }
+                add(gnd())
+                add(Pin("VIN", "VIN", Power, res(R.string.rf_esp_vin)))
+            },
             listOf(23 to "D23", 22 to "D22", 1 to "TX0", 3 to "RX0", 21 to "D21", 19 to "D19", 18 to "D18", 5 to "D5",
                 17 to "TX2", 16 to "RX2", 4 to "D4", 2 to "D2", 15 to "D15").map { (n, l) -> esp32(n, l) } + listOf(gnd(), v33()),
             apart = 4f
@@ -156,9 +164,16 @@ object EspBoardsFeature : ReferenceFeature() {
     /** Espressif's ESP32-S3-DevKitC-1, 44 pins, seen from above, the antenna at the top. */
     private val S3_DEVKITC: List<Pin> by lazy {
         sides(
-            listOf(v33(), v33(), en("RST")) + listOf(4, 5, 6, 7, 15, 16, 17, 18, 8, 3, 46, 9, 10, 11, 12, 13, 14).map { s3(it) } + listOf(v5(), gnd()),
-            listOf(gnd(), s3(43, "TX"), s3(44, "RX")) + listOf(1, 2, 42, 41, 40, 39, 38, 37, 36, 35, 0, 45, 48, 47, 21, 20, 19).map { s3(it) } +
-                listOf(gnd(), gnd()),
+            buildList {
+                addAll(listOf(v33(), v33(), en("RST")))
+                listOf(4, 5, 6, 7, 15, 16, 17, 18, 8, 3, 46, 9, 10, 11, 12, 13, 14).mapTo(this) { s3(it) }
+                addAll(listOf(v5(), gnd()))
+            },
+            buildList {
+                addAll(listOf(gnd(), s3(43, "TX"), s3(44, "RX")))
+                listOf(1, 2, 42, 41, 40, 39, 38, 37, 36, 35, 0, 45, 48, 47, 21, 20, 19).mapTo(this) { s3(it) }
+                addAll(listOf(gnd(), gnd()))
+            },
             apart = 4f
         )
     }
@@ -248,8 +263,12 @@ object EspBoardsFeature : ReferenceFeature() {
                 gnd(),
                 Pin("VIN", "VIN", Power, res(R.string.rf_esp_vin)),
             ),
-            listOf("D0", "D1", "D2", "D3", "D4").map(::d) + listOf(v33(), gnd()) + listOf("D5", "D6", "D7", "D8", "RX", "TX").map(::d) +
-                listOf(gnd(), v33()),
+            buildList {
+                listOf("D0", "D1", "D2", "D3", "D4").mapTo(this, ::d)
+                addAll(listOf(v33(), gnd()))
+                listOf("D5", "D6", "D7", "D8", "RX", "TX").mapTo(this, ::d)
+                addAll(listOf(gnd(), v33()))
+            },
             apart = 4f
         )
     }
@@ -257,7 +276,12 @@ object EspBoardsFeature : ReferenceFeature() {
     /** Wemos' (LOLIN's) D1 mini, 16 pins, seen from above, the antenna at the top. */
     private val D1_MINI: List<Pin> by lazy {
         sides(
-            listOf(Pin("RST", "RST", Control, res(R.string.rf_esp_rst)), a0()) + listOf("D0", "D5", "D6", "D7", "D8").map(::d) + listOf(v33()),
+            buildList {
+                add(Pin("RST", "RST", Control, res(R.string.rf_esp_rst)))
+                add(a0())
+                listOf("D0", "D5", "D6", "D7", "D8").mapTo(this, ::d)
+                add(v33())
+            },
             listOf("TX", "RX", "D1", "D2", "D3", "D4").map(::d) + listOf(gnd(), v5())
         )
     }
@@ -266,7 +290,11 @@ object EspBoardsFeature : ReferenceFeature() {
     private val C3_ZERO: List<Pin> by lazy {
         fun adc(n: Int) = io(n, Analog, raw("ADC1_CH$n"), *(if (n == 2) arrayOf(STRAP) else emptyArray()), label = n.toString())
         sides(
-            listOf(v5(), gnd(), v33()) + (0..4).map(::adc) + io(5, Signal, raw("ADC2_CH0"), label = "5"),
+            buildList {
+                addAll(listOf(v5(), gnd(), v33()))
+                (0..4).mapTo(this, ::adc)
+                add(io(5, Signal, raw("ADC2_CH0"), label = "5"))
+            },
             listOf(
                 io(21, Data, raw("UART0 TX"), label = "21"),
                 io(20, Data, raw("UART0 RX"), label = "20"),

@@ -77,7 +77,6 @@ class FolderShareHttpTest {
     }
 
     @Test
-    @Suppress("KotlinMisorderedAssertEqualsArguments") // expected first: it takes the calls for what's tested
     fun ranges() {
         assertEquals(Http.Range.Whole, Http.range(null, 1000))
         assertEquals(Http.Range.Part(0, 499), Http.range("bytes=0-499", 1000))

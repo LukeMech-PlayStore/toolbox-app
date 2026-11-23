@@ -162,7 +162,7 @@ object LanScan {
 
     /** [ip]'s ports that took a connection, and whether it answered at all. */
     private suspend fun probe(ip: String): Pair<List<Int>, Boolean> = coroutineScope {
-        val address = InetAddress.getByName(ip)
+        val address = runInterruptible { InetAddress.getByName(ip) }
         val echo = async { runInterruptible { runCatching { address.isReachable(REACH_MS) }.getOrDefault(false) } }
         val knocks = Services.LAN.map { port -> async { port to knock(address, port) } }.awaitAll()
         val open = knocks.filter { it.second == Knock.Open }.map { it.first }

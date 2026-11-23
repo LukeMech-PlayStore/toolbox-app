@@ -28,7 +28,7 @@ subprojects {
         extensions.configure<com.android.build.api.dsl.DynamicFeatureExtension> {
             namespace = "org.lukemech.lmtoolbox.features.$module"
             // As the app (gradle.properties)
-            compileSdk { version = release(property("sdkCompile").toString().toInt()) { minorApiLevel = 0 } }
+            compileSdk { version = release(property("sdkCompile").toString().toInt()) { minorApiLevel = 2 } }
             defaultConfig { minSdk = property("sdkMin").toString().toInt() }
             compileOptions {
                 sourceCompatibility = JavaVersion.toVersion(property("jvmTarget").toString())

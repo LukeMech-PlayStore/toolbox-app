@@ -6,6 +6,7 @@ import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import java.io.File
 import java.util.Locale
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -253,7 +254,7 @@ object MediaDownloads {
                 !success || file == null -> _state.update { it?.copy(phase = Phase.Failed) }
                 else -> {
                     _state.update { it?.copy(phase = Phase.Processing, step = null) }
-                    val saved = runCatching { save(app, file) }.getOrNull()
+                    val saved = runCatching { save(app, file) }.onFailure { if (it is CancellationException) throw it }.getOrNull()
                     _state.update {
                         if (saved != null) it?.copy(phase = Phase.Done, saved = saved)
                         else it?.copy(phase = Phase.Failed, error = "Couldn't save the file")

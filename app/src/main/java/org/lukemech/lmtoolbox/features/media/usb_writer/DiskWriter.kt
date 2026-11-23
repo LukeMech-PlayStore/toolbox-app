@@ -143,7 +143,8 @@ object DiskWriter {
                         begin(next)
                     }
                     val c = chunk!!
-                    val n = input.read(c.buf, filled, minOf((CHUNK - filled).toLong(), left).toInt())
+                    val want = minOf((CHUNK - filled).toLong(), left).toInt()
+                    val n = withContext(Dispatchers.IO) { input.read(c.buf, filled, want) }
                     if (n < 0) throw EOFException("The image ended $left bytes early")
                     filled += n
                     c.payload += n

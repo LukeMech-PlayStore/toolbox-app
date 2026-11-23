@@ -1,5 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="fp_NetTools">Network tools</string>
+    <!-- Keywords as people type them in the search: lowercase -->
+    <!--suppress GrazieInspection -->
     <string name="fk_NetTools" tools:ignore="Typos">network, ping, traceroute, tracert, route, hops, latency, lag, packet loss, lan, wi-fi, devices, scanner, scan, ip, ip scanner, port, ports, port scanner, open ports, speedtest, speed test, internet speed, download, upload, bandwidth, speed, throughput, cloudflare, mdns, router</string>
     <string name="fd_NetTools">Speed test, ping, trace, scan</string>
 

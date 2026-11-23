@@ -43,7 +43,7 @@ class ServerTunnels(private val source: AppFeature, private val log: (String) ->
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val _tunnel = MutableStateFlow<ServerTunnel?>(null)
-    /** The tunnel of the server running (or that ran last), as cloudflared's API tells. */
+    /** The tunnel of the server running (or that ran last), as `cloudflared`'s API tells. */
     val tunnel: StateFlow<ServerTunnel?> = _tunnel.asStateFlow()
 
     private val _bore = MutableStateFlow<ServerBore?>(null)
@@ -67,7 +67,7 @@ class ServerTunnels(private val source: AppFeature, private val log: (String) ->
     fun boreRuns(serverId: String) = _bore.value?.let { it.serverId == serverId && it.isActive } == true
 
     /**
-     * Server [serverId]'s Cloudflare tunnel ([tunnel], once cloudflared is there): the one set up in Cloudflare's
+     * Server [serverId]'s Cloudflare tunnel ([tunnel], once `cloudflared` is there): the one set up in Cloudflare's
      * dashboard (its token in), routing what its public hostname gets to the server; or with [localUrl], a quick
      * tunnel to that (an address of its own on trycloudflare.com, nothing to set up). Failed, told in the one
      * place errors are, the bottom bar ([label]: what it's for, e.g. the server's name).

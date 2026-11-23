@@ -39,9 +39,9 @@ import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TextSetting
 import org.lukemech.lmtoolbox.tasks.AppTasks
 
 /**
- * Cloudflare's tunnel, turned on or off: on, cloudflared is installed (its row as the Java's table has
+ * Cloudflare's tunnel, turned on or off: on, `cloudflared` is installed (its row as the Java's table has
  * them, telling how it installs) and its settings unfold ([TunnelSettings]), and it starts if the server
- * runs (with its token in); off, they fold away, its tunnel stopped (cloudflared uninstalled once no
+ * runs (with its token in); off, they fold away, its tunnel stopped (`cloudflared` uninstalled once no
  * server has it on, see ServerRunner.pruneTunnel).
  */
 @Composable

@@ -180,12 +180,14 @@ object ArduinoFeature : ReferenceFeature() {
         analogs: Int = 6,
         moreTop: List<Pin> = emptyList(),
     ): List<Pin> {
-        val top = listOf(
-            Pin("SCL", "SCL", Data, scl),
-            Pin("SDA", "SDA", Data, sda),
-            Pin("AREF", "AREF", Analog, res(R.string.rf_ard_aref)),
-            gnd(),
-        ) + (13 downTo 8).map { digital.pin(it) } + (7 downTo 0).map { digital.pin(it) } + moreTop
+        val top = buildList {
+            add(Pin("SCL", "SCL", Data, scl))
+            add(Pin("SDA", "SDA", Data, sda))
+            add(Pin("AREF", "AREF", Analog, res(R.string.rf_ard_aref)))
+            add(gnd())
+            (13 downTo 0).mapTo(this) { digital.pin(it) }
+            addAll(moreTop)
+        }
         val bottom = listOf(
             Pin("NC", "NC", Unused),
             Pin("IOREF", "IOREF", Power, res(R.string.rf_ard_ioref)),
@@ -237,9 +239,13 @@ object ArduinoFeature : ReferenceFeature() {
             moreTop = (14..21).map { MEGA.pin(it) }
         )
         // Pairs down the edge: 5V and 5V, 22 and 23... 52 and 53, GND and GND; the even ones inside
-        val double = listOf(Pin("5V", "5V", Power), Pin("5V", "5V", Power)) +
-            (22..53).map { MEGA.pin(it) } +
-            listOf(gnd(), gnd())
+        val double = buildList {
+            add(Pin("5V", "5V", Power))
+            add(Pin("5V", "5V", Power))
+            (22..53).mapTo(this) { MEGA.pin(it) }
+            add(gnd())
+            add(gnd())
+        }
         val x = headers.maxOf { it.x } + 1.2f
         headers + double.mapIndexed { i, pin -> pin.copy(x = x + i % 2, y = (i / 2).toFloat()) }
     }
@@ -254,14 +260,16 @@ object ArduinoFeature : ReferenceFeature() {
             Pin("3", "RESET", Control, res(R.string.rf_ard_reset)),
             Pin("4", "GND", Ground),
         ) + (2..12).mapIndexed { i, n -> digital.pin(n, (5 + i).toString()) }
-        val left = listOf(digital.pin(13, "16"), Pin("17", "3V3", Power, v33), Pin("18", "AREF", Analog, res(R.string.rf_ard_aref))) +
-            (0..7).mapIndexed { i, n -> analog(n).copy(number = (19 + i).toString()) } +
-            listOf(
-                Pin("27", v5.first, Power, v5.second),
-                Pin("28", "RESET", Control, res(R.string.rf_ard_reset)),
-                Pin("29", "GND", Ground),
-                Pin("30", "VIN", Power, vin),
-            )
+        val left = buildList {
+            add(digital.pin(13, "16"))
+            add(Pin("17", "3V3", Power, v33))
+            add(Pin("18", "AREF", Analog, res(R.string.rf_ard_aref)))
+            (0..7).mapIndexedTo(this) { i, n -> analog(n).copy(number = (19 + i).toString()) }
+            add(Pin("27", v5.first, Power, v5.second))
+            add(Pin("28", "RESET", Control, res(R.string.rf_ard_reset)))
+            add(Pin("29", "GND", Ground))
+            add(Pin("30", "VIN", Power, vin))
+        }
         return aroundNano((right + left).sortedBy { it.number.toInt() })
     }
 
@@ -293,16 +301,21 @@ object ArduinoFeature : ReferenceFeature() {
             ATMEGA328.pin(1, "TXO"), ATMEGA328.pin(0, "RXI"),
             Pin("RST", "RESET", Control, res(R.string.rf_ard_reset)), gnd(),
         ) + (2..9).map { ATMEGA328.pin(it) }
-        val right = listOf(
-            Pin("RAW", "RAW", Power, res(R.string.rf_ard_raw)), gnd(),
-            Pin("RST", "RESET", Control, res(R.string.rf_ard_reset)),
-            Pin("VCC", "VCC", Power, res(R.string.rf_ard_vcc)),
-        ) + (3 downTo 0).map(::uno328Analog) + (13 downTo 10).map { ATMEGA328.pin(it) }
+        val right = buildList {
+            add(Pin("RAW", "RAW", Power, res(R.string.rf_ard_raw)))
+            add(gnd())
+            add(Pin("RST", "RESET", Control, res(R.string.rf_ard_reset)))
+            add(Pin("VCC", "VCC", Power, res(R.string.rf_ard_vcc)))
+            (3 downTo 0).mapTo(this, ::uno328Analog)
+            (13 downTo 10).mapTo(this) { ATMEGA328.pin(it) }
+        }
         val inside = (4..7).map(::uno328Analog)
-        ftdi.mapIndexed { i, pin -> pin.copy(x = i * 0.8f + 0.5f, y = 0f) } +
-            left.mapIndexed { i, pin -> pin.copy(x = 0f, y = i + 1.5f) } +
-            right.mapIndexed { i, pin -> pin.copy(x = 5f, y = i + 1.5f) } +
-            inside.mapIndexed { i, pin -> pin.copy(x = 3.8f, y = i + 5.5f) }
+        buildList {
+            ftdi.mapIndexedTo(this) { i, pin -> pin.copy(x = i * 0.8f + 0.5f, y = 0f) }
+            left.mapIndexedTo(this) { i, pin -> pin.copy(x = 0f, y = i + 1.5f) }
+            right.mapIndexedTo(this) { i, pin -> pin.copy(x = 5f, y = i + 1.5f) }
+            inside.mapIndexedTo(this) { i, pin -> pin.copy(x = 3.8f, y = i + 5.5f) }
+        }
     }
 
     /** The Nano ESP32 (ESP32-S3): the Nano's pins and their numbers, each one's GPIO besides its Arduino name. */
@@ -347,16 +360,17 @@ object ArduinoFeature : ReferenceFeature() {
         val left = listOf(
             LEONARDO.pin(1, "TXO"), LEONARDO.pin(0, "RXI"), gnd(), gnd(),
         ) + (2..9).map { LEONARDO.pin(it) }
-        val right = listOf(
-            Pin("RAW", "RAW", Power, res(R.string.rf_ard_raw)), gnd(),
-            Pin("RST", "RESET", Control, res(R.string.rf_ard_reset)),
-            Pin("VCC", "VCC", Power, res(R.string.rf_ard_vcc)),
-        ) + (3 downTo 0).map { analog(it) } + listOf(
-            Pin("15", "D15", Data, raw("SPI SCK")),
-            Pin("14", "D14", Data, raw("SPI MISO")),
-            Pin("16", "D16", Data, raw("SPI MOSI")),
-            Pin("10", "D10", Signal, and(PWM, raw("A10"))),
-        )
+        val right = buildList {
+            add(Pin("RAW", "RAW", Power, res(R.string.rf_ard_raw)))
+            add(gnd())
+            add(Pin("RST", "RESET", Control, res(R.string.rf_ard_reset)))
+            add(Pin("VCC", "VCC", Power, res(R.string.rf_ard_vcc)))
+            (3 downTo 0).mapTo(this) { analog(it) }
+            add(Pin("15", "D15", Data, raw("SPI SCK")))
+            add(Pin("14", "D14", Data, raw("SPI MISO")))
+            add(Pin("16", "D16", Data, raw("SPI MOSI")))
+            add(Pin("10", "D10", Signal, and(PWM, raw("A10"))))
+        }
         left.mapIndexed { i, pin -> pin.copy(x = 0f, y = i.toFloat()) } + right.mapIndexed { i, pin -> pin.copy(x = 5f, y = i.toFloat()) }
     }
 

@@ -110,7 +110,7 @@ object SpeedTest {
         val times = mutableListOf<Double>()
         for (i in 0..PINGS) {
             val start = System.nanoTime()
-            Socket().use { it.connect(InetSocketAddress(address, 443), TIMEOUT_MS) }
+            withContext(Dispatchers.IO) { Socket().use { it.connect(InetSocketAddress(address, 443), TIMEOUT_MS) } }
             if (i > 0) {
                 times += (System.nanoTime() - start) / 1e6
                 onPing(i)

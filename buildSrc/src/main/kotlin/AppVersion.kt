@@ -48,7 +48,6 @@ abstract class DailyVersionName : DefaultTask() {
 }
 
 /** The daily version's task, its name read from [DailyVersionName.versionName] as [dailyVersionName] does. */
-@Suppress("unused") // app/build.gradle.kts
 fun Project.registerDailyVersionName(): TaskProvider<DailyVersionName> =
     tasks.register("dailyVersionName", DailyVersionName::class.java) {
         group = "build"

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fp_UsbWriter">Bootable USB</string>
+    <!-- Keywords as people type them in the search: lowercase -->
+    <!--suppress GrazieInspection -->
     <string name="fk_UsbWriter">usb, pendrive, flash drive, thumb drive, bootable, boot, iso, img, image, burn, flash, write, etcher, rufus, dd, linux, ubuntu, windows, installer, install, raspberry pi, otg, uefi, arm64, x64</string>
     <string name="fd_UsbWriter">Make a bootable USB drive from an ISO</string>
 

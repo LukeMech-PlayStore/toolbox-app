@@ -94,10 +94,11 @@ object PdfCommands {
      * that ends well either way: qpdf's exit codes are the answer, not a failure (the bottom bar's red
      * line). --requires-password: 0 needs one (other than given), 2 isn't encrypted, 3 opens.
      */
-    fun inspect(input: PdfInput, password: String? = null): List<String> = listOf(
-        "sh", "-c", "qpdf --requires-password \"$@\"; echo $PASSWORD_LINE$?; qpdf --show-npages \"$@\" || true",
-        "sh"
-    ) + passwordArgs(password) + input.path
+    fun inspect(input: PdfInput, password: String? = null): List<String> = buildList {
+        addAll(listOf("sh", "-c", "qpdf --requires-password \"$@\"; echo $PASSWORD_LINE$?; qpdf --show-npages \"$@\" || true", "sh"))
+        addAll(passwordArgs(password))
+        add(input.path)
+    }
 
     /** [inspect]'s output read; null if it's not what it prints (qpdf missing, a file it can't read at all). */
     fun parseInspection(stdout: String): Inspection? {
@@ -114,10 +115,11 @@ object PdfCommands {
      * [parts] one after another into [output]: each some pages of a file (its groups, in their order), a file as often
      * as it comes.
      */
-    fun arrange(parts: List<Pair<PdfInput, List<PageRanges.Group>>>, output: String): List<String> =
-        listOf("qpdf", "--empty", "--pages") +
-            parts.flatMap { (input, groups) -> listOf("--file=${input.path}", "--range=${PageRanges.join(groups)}") } +
-            listOf("--", output)
+    fun arrange(parts: List<Pair<PdfInput, List<PageRanges.Group>>>, output: String): List<String> = buildList {
+        addAll(listOf("qpdf", "--empty", "--pages"))
+        parts.forEach { (input, groups) -> addAll(listOf("--file=${input.path}", "--range=${PageRanges.join(groups)}")) }
+        addAll(listOf("--", output))
+    }
 
     /** [input] as it is into [output]. */
     fun copy(input: PdfInput, output: String): List<String> = listOf("qpdf", input.path, output)
@@ -143,17 +145,22 @@ object PdfCommands {
      */
     fun rotate(input: PdfInput, turns: Map<Int, List<Int>>, output: String): List<String> {
         turns.keys.forEach { require(it in setOf(90, 180, 270)) { "Not a quarter turn: $it" } }
-        return listOf("qpdf") +
-            turns.map { (angle, pages) -> "--rotate=+$angle:${PageRanges.join(PageRanges.of(pages))}" } + listOf(input.path, output)
+        return buildList {
+            add("qpdf")
+            turns.forEach { (angle, pages) -> add("--rotate=+$angle:${PageRanges.join(PageRanges.of(pages))}") }
+            addAll(listOf(input.path, output))
+        }
     }
 
     /**
      * Each page of [input] a picture of [type] at [dpi], by Ghostscript: [output] a pattern of their names, its "%03d"
      * the page's number ("doc-001.png"). It prints "Page n" as it goes (see [progress]).
      */
-    fun images(input: PdfInput, type: ImageType, dpi: Int, output: String): List<String> =
-        listOf("gs", "-dSAFER", "-dBATCH", "-dNOPAUSE") + type.device +
-            listOf("-r$dpi", "-dTextAlphaBits=4", "-dGraphicsAlphaBits=4", "-sOutputFile=$output", input.path)
+    fun images(input: PdfInput, type: ImageType, dpi: Int, output: String): List<String> = buildList {
+        addAll(listOf("gs", "-dSAFER", "-dBATCH", "-dNOPAUSE"))
+        addAll(type.device)
+        addAll(listOf("-r$dpi", "-dTextAlphaBits=4", "-dGraphicsAlphaBits=4", "-sOutputFile=$output", input.path))
+    }
 
     /**
      * [input] made smaller into [output]: by Ghostscript's pdfwrite with [preset]'s settings (pictures scaled down and
@@ -182,8 +189,11 @@ object PdfCommands {
         listOf("qpdf", "--encrypt", "--user-password=$password", "--owner-password=$ownerPassword", "--bits=256", "--", input.path, output)
 
     /** [input] without its password and restrictions (opened with [password], if it needs one), into [output]. */
-    fun unlock(input: PdfInput, password: String?, output: String): List<String> =
-        listOf("qpdf") + passwordArgs(password) + listOf("--decrypt", input.path, output)
+    fun unlock(input: PdfInput, password: String?, output: String): List<String> = buildList {
+        add("qpdf")
+        addAll(passwordArgs(password))
+        addAll(listOf("--decrypt", input.path, output))
+    }
 
     /**
      * [steps] as one command: a single one as it is, several run one after another by sh, stopping at the first

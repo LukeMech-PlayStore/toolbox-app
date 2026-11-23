@@ -90,10 +90,12 @@ private val DIGIT_LABELS = listOf(R.string.ec_band1, R.string.ec_band2, R.string
  */
 private fun bandsOf(value: Double, bandCount: Int, inductor: Boolean): List<Band> {
     val (significant, exponent) = significantDigits(value, if (bandCount == 4) 2 else 3) ?: return emptyList()
-    return significant.mapIndexed { i, d -> Band(BandColor.ofDigit(d), DIGIT_LABELS[i]) } +
-        Band(BandColor.ofExponent(exponent), R.string.ec_multiplier) +
-        Band(if (bandCount == 4 || inductor) BandColor.Gold else BandColor.Brown, R.string.ec_tolerance, wide = true) +
-        listOfNotNull(if (bandCount == 6) Band(BandColor.Brown, R.string.ec_tempco) else null)
+    return buildList {
+        significant.mapIndexedTo(this) { i, d -> Band(BandColor.ofDigit(d), DIGIT_LABELS[i]) }
+        add(Band(BandColor.ofExponent(exponent), R.string.ec_multiplier))
+        add(Band(if (bandCount == 4 || inductor) BandColor.Gold else BandColor.Brown, R.string.ec_tolerance, wide = true))
+        if (bandCount == 6) add(Band(BandColor.Brown, R.string.ec_tempco))
+    }
 }
 
 @Composable
@@ -199,9 +201,12 @@ fun ColorCodePage() {
                 BandSetting(R.string.ec_tempco, tempco, BandColor.entries.filter { it.tempco != null }, { "${stringResource(it.label)} (${it.tempco} ppm/K)" }) { tempco = it }
             }
 
-            val picked = (0 until digitCount).map { Band(digits[it], DIGIT_LABELS[it]) } +
-                Band(multiplier, R.string.ec_multiplier) + Band(tolerance, R.string.ec_tolerance, wide = true) +
-                listOfNotNull(if (bandCount == 6) Band(tempco, R.string.ec_tempco) else null)
+            val picked = buildList {
+                (0 until digitCount).mapTo(this) { Band(digits[it], DIGIT_LABELS[it]) }
+                add(Band(multiplier, R.string.ec_multiplier))
+                add(Band(tolerance, R.string.ec_tolerance, wide = true))
+                if (bandCount == 6) add(Band(tempco, R.string.ec_tempco))
+            }
             val significant = (0 until digitCount).fold(0) { acc, i -> acc * 10 + digits[i].digit!! }
             val value = significant * 10.0.pow(multiplier.exponent) * (if (inductor) 1e-6 else 1.0)
             Results {

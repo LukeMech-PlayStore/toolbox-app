@@ -205,6 +205,7 @@ fun FileHashPage(providedInput: String? = "") {
         val content = Checksums.format(listOfNotNull(item.hashes[alg]?.let { item.name to it }))
         coroutineScope.launch {
             runCatching { FileHash.write(context, uri, content) }
+                .onFailure { if (it is CancellationException) throw it }
                 .onSuccess { Toast.makeText(context, resources.getString(R.string.f_FileHash_saved, ".${alg.fileTag}"), Toast.LENGTH_SHORT).show() }
                 .onFailure { AppTasks.reportFailure(FileHashFeature, "", "Couldn't save the checksum file", it.stackTraceToString()) }
         }
