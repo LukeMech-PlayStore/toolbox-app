@@ -198,7 +198,10 @@ class PdfCommandsTest {
                 PdfCommands.compress(turned, Preset.Printer, "/w/compressed.pdf"),
                 PdfCommands.protect(PdfInput("/w/compressed.pdf"), "open", "owner", "/o/doc.pdf"),
             ),
-            plan(a.drop(1) + b + a[0].turned(90), PdfOptions(preset = Preset.Printer, protect = true, password = "open"))?.steps
+            plan(
+                buildList { addAll(a.drop(1)); addAll(b); add(a[0].turned(90)) },
+                PdfOptions(preset = Preset.Printer, protect = true, password = "open")
+            )?.steps
         )
         // A page left out: put together too; a range typed twice is one file
         assertEquals(

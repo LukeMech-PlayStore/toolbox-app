@@ -69,6 +69,7 @@ import org.lukemech.lmtoolbox.ui.components.ToolIntro
 import org.lukemech.lmtoolbox.helpers.shareFile
 import org.lukemech.lmtoolbox.helpers.openFile
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.ui.components.ValueSlider
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import org.lukemech.lmtoolbox.tasks.AppTasks
 import org.lukemech.lmtoolbox.tasks.ShownWhile
@@ -333,7 +334,7 @@ fun OptionsForm(
             Reveal(visible = options.targetMb <= 0 && format.isLossy) {
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(stringResource(R.string.f_ImgRes_quality, options.quality), style = MaterialTheme.typography.labelLarge)
-                    Slider(
+                    ValueSlider(
                         value = options.quality.toFloat(),
                         onValueChange = { onChange(options.copy(quality = it.toInt())) },
                         valueRange = ResizeOptions.MIN_QUALITY.toFloat()..100f

@@ -1,5 +1,7 @@
 [versions]
 kotlin = "2.4.21"
+# The newest Qodana's Android plugin syncs (9.5 it can't open): its newer-version inspection is off for it
+# (.idea/inspectionProfiles/Project_Default.xml) until Qodana takes 9.5
 agp = "9.4.1"
 coroutines = "1.11.0"
 

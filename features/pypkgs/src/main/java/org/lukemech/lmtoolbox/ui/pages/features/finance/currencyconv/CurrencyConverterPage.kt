@@ -390,7 +390,6 @@ suspend fun listCurrencies(context: Context, status: String, unpack: Boolean = t
 }
 
 /** Field showing [currency] that opens a list of [currencies], each with its name in the app's language. */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CurrencyDropdown(
     modifier: Modifier = Modifier,

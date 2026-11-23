@@ -36,8 +36,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -53,6 +51,7 @@ import org.lukemech.lmtoolbox.linux.LinuxTasks
 import org.lukemech.lmtoolbox.linux.parts.Bore
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.ui.components.SecretField
 import org.lukemech.lmtoolbox.ui.components.PackageTable
 import org.lukemech.lmtoolbox.ui.components.PackageTableRow
 import org.lukemech.lmtoolbox.ui.components.Reveal
@@ -278,15 +277,20 @@ internal fun EditDialog(
         title = { Text(title) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                InputField(
+                // Hidden as it's typed: a secret (the tunnel's token)
+                if (secret) SecretField(
+                    value = text,
+                    onValueChange = { text = filter(it) },
+                    keyboardType = keyboard,
+                    onDone = { if (ok) onSave(text) },
+                    modifier = Modifier.fillMaxWidth()
+                ) else InputField(
                     value = text,
                     // As it's kept: a number's field never holds letters, pasted or typed on a keyboard
                     onValueChange = { text = filter(it) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = keyboard, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { if (ok) onSave(text) }),
-                    // Hidden as it's typed: a secret (the tunnel's token)
-                    visualTransformation = if (secret) PasswordVisualTransformation() else VisualTransformation.None,
                     modifier = Modifier.fillMaxWidth()
                 )
                 note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Start) }

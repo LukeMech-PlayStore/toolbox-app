@@ -58,6 +58,7 @@ import org.lukemech.lmtoolbox.ui.components.Steps
 import org.lukemech.lmtoolbox.ui.components.ToolIntro
 import org.lukemech.lmtoolbox.features.servers.mc_server.MinecraftServerFeature
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.ui.components.ValueSlider
 import org.lukemech.lmtoolbox.ui.components.RowArrangement
 import kotlin.coroutines.cancellation.CancellationException
 import org.lukemech.lmtoolbox.helpers.openLink
@@ -496,7 +497,7 @@ internal fun JavaSetting(needs: Int?) {
 @Composable
 internal fun MemorySlider(value: Int, max: Int, enabled: Boolean = true, onChange: (Int) -> Unit) {
     val steps = ((max - Memory.MIN) / Memory.STEP - 1).coerceAtLeast(0)
-    Slider(
+    ValueSlider(
         value = value.coerceIn(Memory.MIN, max).toFloat(),
         // To its nearest mark, as the thumb shows it (not the one under it)
         onValueChange = { onChange(Memory.snap(it.roundToInt(), max)) },

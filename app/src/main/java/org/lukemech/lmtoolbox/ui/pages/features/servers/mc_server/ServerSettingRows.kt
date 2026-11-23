@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import org.lukemech.lmtoolbox.ui.components.SwitchButton
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.ui.components.ValueSlider
 import org.lukemech.lmtoolbox.ui.components.RowColors
 import org.lukemech.lmtoolbox.ui.pages.features.servers.common.TextSetting
 
@@ -52,7 +53,7 @@ internal fun SliderSetting(title: String, icon: ImageVector, value: Int, range: 
                 Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                 Text(current.toInt().toString(), color = MaterialTheme.colorScheme.primary)
             }
-            Slider(
+            ValueSlider(
                 value = current,
                 onValueChange = { current = it },
                 onValueChangeFinished = { onSave(current.toInt()) },

@@ -86,6 +86,7 @@ import org.lukemech.lmtoolbox.helpers.SavedFile
 import org.lukemech.lmtoolbox.helpers.shareFile
 import org.lukemech.lmtoolbox.helpers.openFile
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.ui.components.ValueRangeSlider
 import org.lukemech.lmtoolbox.tasks.AppTasks
 
 private enum class Step { File, Output, Cut, Encode }
@@ -464,7 +465,7 @@ private fun CutEditor(file: VideoJobs.Opened, cut: Cut, onCut: (Cut) -> Unit) {
 
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         if (probe.video != null) FrameStrip(file)
-        RangeSlider(
+        ValueRangeSlider(
             value = cut.startMs.toFloat()..cut.endMs.toFloat(),
             onValueChange = { range ->
                 var start = range.start.toLong()

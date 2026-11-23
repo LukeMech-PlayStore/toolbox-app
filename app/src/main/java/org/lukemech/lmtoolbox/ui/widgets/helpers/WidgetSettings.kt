@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -52,6 +51,7 @@ import org.lukemech.lmtoolbox.R
 import org.lukemech.lmtoolbox.helpers.PreferenceHelper
 import org.lukemech.lmtoolbox.ui.components.FeatureButton
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.ui.components.ValueSlider
 import org.lukemech.lmtoolbox.helpers.copyText
 import org.lukemech.lmtoolbox.helpers.pastedText
 
@@ -136,7 +136,7 @@ private fun BackgroundEditor(initial: Int, onDismiss: () -> Unit, onConfirm: (In
                 Text(stringResource(R.string.w_setting_background_transparent))
             }
         }
-        Slider(value = alpha, onValueChange = { alpha = it; picked() })
+        ValueSlider(value = alpha, onValueChange = { alpha = it; picked() })
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(

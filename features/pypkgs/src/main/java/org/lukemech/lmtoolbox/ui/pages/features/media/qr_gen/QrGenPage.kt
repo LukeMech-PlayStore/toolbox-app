@@ -72,6 +72,7 @@ import org.lukemech.lmtoolbox.helpers.saveToMediaStore
 import org.lukemech.lmtoolbox.helpers.shareFile
 import org.lukemech.lmtoolbox.features.media.qr_gen.QrStyle
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.ui.components.ValueSlider
 import org.lukemech.lmtoolbox.tasks.AppTasks
 
 private enum class Step { Types, Form, Result }
@@ -368,7 +369,7 @@ fun QrStyleEditor(style: QrStyle, onChange: (QrStyle) -> Unit, modifier: Modifie
 
         Column {
             LabelWithValue(stringResource(R.string.f_QREncode_Size), "${style.size} px")
-            Slider(
+            ValueSlider(
                 value = style.size.toFloat(),
                 onValueChange = {
                     onChange(style.copy(size = (it / QrStyle.SIZE_STEP).roundToInt() * QrStyle.SIZE_STEP))
@@ -393,7 +394,7 @@ fun QrStyleEditor(style: QrStyle, onChange: (QrStyle) -> Unit, modifier: Modifie
 
         Column {
             LabelWithValue(stringResource(R.string.f_QREncode_BS), style.border.toString())
-            Slider(
+            ValueSlider(
                 value = style.border.toFloat(),
                 onValueChange = { onChange(style.copy(border = it.roundToInt())) },
                 valueRange = 0f..QrStyle.MAX_BORDER.toFloat(),

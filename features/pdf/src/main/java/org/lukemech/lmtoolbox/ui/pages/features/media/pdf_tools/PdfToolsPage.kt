@@ -63,8 +63,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -98,6 +96,7 @@ import org.lukemech.lmtoolbox.ui.components.ErrorText
 import org.lukemech.lmtoolbox.ui.components.Fade
 import org.lukemech.lmtoolbox.ui.components.FieldArrangement
 import org.lukemech.lmtoolbox.ui.components.InputField
+import org.lukemech.lmtoolbox.ui.components.SecretField
 import org.lukemech.lmtoolbox.ui.components.Note
 import org.lukemech.lmtoolbox.ui.components.PageHeading
 import org.lukemech.lmtoolbox.ui.components.ResourceTiles
@@ -775,14 +774,12 @@ private fun PagesField(value: String, pageCount: Int, onChange: (String) -> Unit
 @Composable
 private fun PasswordField(value: String, label: String, isError: Boolean = false, onChange: (String) -> Unit) {
     var visible by remember { mutableStateOf(false) }
-    InputField(
+    SecretField(
         value = value,
         onValueChange = onChange,
         label = { Text(label) },
-        singleLine = true,
         isError = isError,
-        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+        hidden = !visible,
         trailingIcon = {
             IconButton(onClick = { visible = !visible }) {
                 Icon(
